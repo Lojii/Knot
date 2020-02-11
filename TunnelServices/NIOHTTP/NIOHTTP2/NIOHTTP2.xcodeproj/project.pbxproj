@@ -1,0 +1,612 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		565CBEBD238BFA5C00CF0A3A /* HTTP2ToHTTP1Codec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE82238BFA5A00CF0A3A /* HTTP2ToHTTP1Codec.swift */; };
+		565CBEBE238BFA5C00CF0A3A /* HTTP2ChannelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE83238BFA5A00CF0A3A /* HTTP2ChannelHandler.swift */; };
+		565CBEBF238BFA5C00CF0A3A /* HTTP2Stream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE84238BFA5A00CF0A3A /* HTTP2Stream.swift */; };
+		565CBEC0238BFA5C00CF0A3A /* HTTP2PipelineHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE85238BFA5A00CF0A3A /* HTTP2PipelineHelpers.swift */; };
+		565CBEC1238BFA5C00CF0A3A /* InboundWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE86238BFA5A00CF0A3A /* InboundWindowManager.swift */; };
+		565CBEC2238BFA5C00CF0A3A /* HTTP2PingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE87238BFA5A00CF0A3A /* HTTP2PingData.swift */; };
+		565CBEC3238BFA5C00CF0A3A /* WatermarkedFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE88238BFA5A00CF0A3A /* WatermarkedFlowController.swift */; };
+		565CBEC4238BFA5C00CF0A3A /* HTTP2StreamID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE89238BFA5A00CF0A3A /* HTTP2StreamID.swift */; };
+		565CBEC5238BFA5C00CF0A3A /* HTTP2StreamChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE8A238BFA5A00CF0A3A /* HTTP2StreamChannel.swift */; };
+		565CBEC6238BFA5C00CF0A3A /* HTTP2ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE8B238BFA5A00CF0A3A /* HTTP2ErrorCode.swift */; };
+		565CBEC7238BFA5C00CF0A3A /* HTTP2UserEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE8C238BFA5A00CF0A3A /* HTTP2UserEvents.swift */; };
+		565CBEC8238BFA5C00CF0A3A /* DOSHeuristics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE8D238BFA5B00CF0A3A /* DOSHeuristics.swift */; };
+		565CBEC9238BFA5C00CF0A3A /* HTTP2FlowControlWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE8E238BFA5B00CF0A3A /* HTTP2FlowControlWindow.swift */; };
+		565CBECA238BFA5C00CF0A3A /* OutboundFrameBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE90238BFA5B00CF0A3A /* OutboundFrameBuffer.swift */; };
+		565CBECB238BFA5C00CF0A3A /* ConcurrentStreamBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE91238BFA5B00CF0A3A /* ConcurrentStreamBuffer.swift */; };
+		565CBECC238BFA5C00CF0A3A /* OutboundFlowControlBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE92238BFA5B00CF0A3A /* OutboundFlowControlBuffer.swift */; };
+		565CBECD238BFA5C00CF0A3A /* ControlFrameBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE93238BFA5B00CF0A3A /* ControlFrameBuffer.swift */; };
+		565CBECE238BFA5C00CF0A3A /* MaySendFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE96238BFA5B00CF0A3A /* MaySendFrames.swift */; };
+		565CBECF238BFA5C00CF0A3A /* SendingDataState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE97238BFA5B00CF0A3A /* SendingDataState.swift */; };
+		565CBED0238BFA5C00CF0A3A /* SendingRstStreamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE98238BFA5B00CF0A3A /* SendingRstStreamState.swift */; };
+		565CBED1238BFA5C00CF0A3A /* SendingGoawayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE99238BFA5B00CF0A3A /* SendingGoawayState.swift */; };
+		565CBED2238BFA5C00CF0A3A /* SendingWindowUpdateState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9A238BFA5B00CF0A3A /* SendingWindowUpdateState.swift */; };
+		565CBED3238BFA5C00CF0A3A /* SendingPushPromiseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9B238BFA5B00CF0A3A /* SendingPushPromiseState.swift */; };
+		565CBED4238BFA5C00CF0A3A /* SendingHeadersState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9C238BFA5B00CF0A3A /* SendingHeadersState.swift */; };
+		565CBED5238BFA5C00CF0A3A /* HTTP2SettingsState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9D238BFA5B00CF0A3A /* HTTP2SettingsState.swift */; };
+		565CBED6238BFA5C00CF0A3A /* SendAndReceiveGoawayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9E238BFA5B00CF0A3A /* SendAndReceiveGoawayState.swift */; };
+		565CBED7238BFA5C00CF0A3A /* ConnectionStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBE9F238BFA5B00CF0A3A /* ConnectionStateMachine.swift */; };
+		565CBED8238BFA5C00CF0A3A /* Optional+HTTP2StreamStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA0238BFA5B00CF0A3A /* Optional+HTTP2StreamStateMachine.swift */; };
+		565CBED9238BFA5C00CF0A3A /* StateMachineResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA1238BFA5B00CF0A3A /* StateMachineResult.swift */; };
+		565CBEDA238BFA5C00CF0A3A /* HasFlowControlWindows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA2238BFA5B00CF0A3A /* HasFlowControlWindows.swift */; };
+		565CBEDB238BFA5C00CF0A3A /* MayReceiveFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA4238BFA5B00CF0A3A /* MayReceiveFrames.swift */; };
+		565CBEDC238BFA5C00CF0A3A /* ReceivingPushPromiseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA5238BFA5B00CF0A3A /* ReceivingPushPromiseState.swift */; };
+		565CBEDD238BFA5C00CF0A3A /* ReceivingWindowUpdateState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA6238BFA5B00CF0A3A /* ReceivingWindowUpdateState.swift */; };
+		565CBEDE238BFA5C00CF0A3A /* ReceivingGoAwayState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA7238BFA5B00CF0A3A /* ReceivingGoAwayState.swift */; };
+		565CBEDF238BFA5C00CF0A3A /* ReceivingDataState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA8238BFA5B00CF0A3A /* ReceivingDataState.swift */; };
+		565CBEE0238BFA5C00CF0A3A /* ReceivingHeadersState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEA9238BFA5B00CF0A3A /* ReceivingHeadersState.swift */; };
+		565CBEE1238BFA5C00CF0A3A /* ReceivingRstStreamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAA238BFA5B00CF0A3A /* ReceivingRstStreamState.swift */; };
+		565CBEE2238BFA5C00CF0A3A /* LocallyQuiescingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAB238BFA5B00CF0A3A /* LocallyQuiescingState.swift */; };
+		565CBEE3238BFA5C00CF0A3A /* RemotelyQuiescingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAC238BFA5B00CF0A3A /* RemotelyQuiescingState.swift */; };
+		565CBEE4238BFA5C00CF0A3A /* ConnectionStreamsState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAD238BFA5B00CF0A3A /* ConnectionStreamsState.swift */; };
+		565CBEE5238BFA5C00CF0A3A /* HasRemoteSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAE238BFA5B00CF0A3A /* HasRemoteSettings.swift */; };
+		565CBEE6238BFA5C00CF0A3A /* HasLocalSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEAF238BFA5B00CF0A3A /* HasLocalSettings.swift */; };
+		565CBEE7238BFA5C00CF0A3A /* QuiescingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB0238BFA5B00CF0A3A /* QuiescingState.swift */; };
+		565CBEE8238BFA5C00CF0A3A /* HTTP2Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB1238BFA5B00CF0A3A /* HTTP2Settings.swift */; };
+		565CBEE9238BFA5C00CF0A3A /* ContentLengthVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB2238BFA5B00CF0A3A /* ContentLengthVerifier.swift */; };
+		565CBEEA238BFA5C00CF0A3A /* HTTP2StreamMultiplexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB3238BFA5B00CF0A3A /* HTTP2StreamMultiplexer.swift */; };
+		565CBEEB238BFA5C00CF0A3A /* StreamChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB4238BFA5B00CF0A3A /* StreamChannelList.swift */; };
+		565CBEEC238BFA5C00CF0A3A /* StreamStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB5238BFA5B00CF0A3A /* StreamStateMachine.swift */; };
+		565CBEED238BFA5C00CF0A3A /* StreamChannelFlowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB6238BFA5B00CF0A3A /* StreamChannelFlowController.swift */; };
+		565CBEEE238BFA5C00CF0A3A /* HTTP2FrameParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB7238BFA5B00CF0A3A /* HTTP2FrameParser.swift */; };
+		565CBEEF238BFA5C00CF0A3A /* HPACKHeaders+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB8238BFA5B00CF0A3A /* HPACKHeaders+Validation.swift */; };
+		565CBEF0238BFA5C00CF0A3A /* HTTP2Frame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEB9238BFA5C00CF0A3A /* HTTP2Frame.swift */; };
+		565CBEF1238BFA5C00CF0A3A /* InboundEventBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEBA238BFA5C00CF0A3A /* InboundEventBuffer.swift */; };
+		565CBEF2238BFA5C00CF0A3A /* HTTP2Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEBB238BFA5C00CF0A3A /* HTTP2Error.swift */; };
+		565CBEF3238BFA5C00CF0A3A /* HTTP2ConnectionStateChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565CBEBC238BFA5C00CF0A3A /* HTTP2ConnectionStateChange.swift */; };
+		565CBF35238BFAE300CF0A3A /* NIOHPACK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF34238BFAE300CF0A3A /* NIOHPACK.framework */; };
+		565CBF36238BFAE300CF0A3A /* NIOHPACK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF34238BFAE300CF0A3A /* NIOHPACK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		565CBF37238BFAE300CF0A3A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				565CBF36238BFAE300CF0A3A /* NIOHPACK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		565CBE77238BF83200CF0A3A /* NIOHTTP2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NIOHTTP2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		565CBE7B238BF83200CF0A3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		565CBE82238BFA5A00CF0A3A /* HTTP2ToHTTP1Codec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2ToHTTP1Codec.swift; sourceTree = "<group>"; };
+		565CBE83238BFA5A00CF0A3A /* HTTP2ChannelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2ChannelHandler.swift; sourceTree = "<group>"; };
+		565CBE84238BFA5A00CF0A3A /* HTTP2Stream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2Stream.swift; sourceTree = "<group>"; };
+		565CBE85238BFA5A00CF0A3A /* HTTP2PipelineHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2PipelineHelpers.swift; sourceTree = "<group>"; };
+		565CBE86238BFA5A00CF0A3A /* InboundWindowManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InboundWindowManager.swift; sourceTree = "<group>"; };
+		565CBE87238BFA5A00CF0A3A /* HTTP2PingData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2PingData.swift; sourceTree = "<group>"; };
+		565CBE88238BFA5A00CF0A3A /* WatermarkedFlowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WatermarkedFlowController.swift; sourceTree = "<group>"; };
+		565CBE89238BFA5A00CF0A3A /* HTTP2StreamID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2StreamID.swift; sourceTree = "<group>"; };
+		565CBE8A238BFA5A00CF0A3A /* HTTP2StreamChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2StreamChannel.swift; sourceTree = "<group>"; };
+		565CBE8B238BFA5A00CF0A3A /* HTTP2ErrorCode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2ErrorCode.swift; sourceTree = "<group>"; };
+		565CBE8C238BFA5A00CF0A3A /* HTTP2UserEvents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2UserEvents.swift; sourceTree = "<group>"; };
+		565CBE8D238BFA5B00CF0A3A /* DOSHeuristics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DOSHeuristics.swift; sourceTree = "<group>"; };
+		565CBE8E238BFA5B00CF0A3A /* HTTP2FlowControlWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2FlowControlWindow.swift; sourceTree = "<group>"; };
+		565CBE90238BFA5B00CF0A3A /* OutboundFrameBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OutboundFrameBuffer.swift; sourceTree = "<group>"; };
+		565CBE91238BFA5B00CF0A3A /* ConcurrentStreamBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConcurrentStreamBuffer.swift; sourceTree = "<group>"; };
+		565CBE92238BFA5B00CF0A3A /* OutboundFlowControlBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OutboundFlowControlBuffer.swift; sourceTree = "<group>"; };
+		565CBE93238BFA5B00CF0A3A /* ControlFrameBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlFrameBuffer.swift; sourceTree = "<group>"; };
+		565CBE96238BFA5B00CF0A3A /* MaySendFrames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaySendFrames.swift; sourceTree = "<group>"; };
+		565CBE97238BFA5B00CF0A3A /* SendingDataState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingDataState.swift; sourceTree = "<group>"; };
+		565CBE98238BFA5B00CF0A3A /* SendingRstStreamState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingRstStreamState.swift; sourceTree = "<group>"; };
+		565CBE99238BFA5B00CF0A3A /* SendingGoawayState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingGoawayState.swift; sourceTree = "<group>"; };
+		565CBE9A238BFA5B00CF0A3A /* SendingWindowUpdateState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingWindowUpdateState.swift; sourceTree = "<group>"; };
+		565CBE9B238BFA5B00CF0A3A /* SendingPushPromiseState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingPushPromiseState.swift; sourceTree = "<group>"; };
+		565CBE9C238BFA5B00CF0A3A /* SendingHeadersState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendingHeadersState.swift; sourceTree = "<group>"; };
+		565CBE9D238BFA5B00CF0A3A /* HTTP2SettingsState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2SettingsState.swift; sourceTree = "<group>"; };
+		565CBE9E238BFA5B00CF0A3A /* SendAndReceiveGoawayState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendAndReceiveGoawayState.swift; sourceTree = "<group>"; };
+		565CBE9F238BFA5B00CF0A3A /* ConnectionStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionStateMachine.swift; sourceTree = "<group>"; };
+		565CBEA0238BFA5B00CF0A3A /* Optional+HTTP2StreamStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Optional+HTTP2StreamStateMachine.swift"; sourceTree = "<group>"; };
+		565CBEA1238BFA5B00CF0A3A /* StateMachineResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StateMachineResult.swift; sourceTree = "<group>"; };
+		565CBEA2238BFA5B00CF0A3A /* HasFlowControlWindows.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HasFlowControlWindows.swift; sourceTree = "<group>"; };
+		565CBEA4238BFA5B00CF0A3A /* MayReceiveFrames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MayReceiveFrames.swift; sourceTree = "<group>"; };
+		565CBEA5238BFA5B00CF0A3A /* ReceivingPushPromiseState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingPushPromiseState.swift; sourceTree = "<group>"; };
+		565CBEA6238BFA5B00CF0A3A /* ReceivingWindowUpdateState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingWindowUpdateState.swift; sourceTree = "<group>"; };
+		565CBEA7238BFA5B00CF0A3A /* ReceivingGoAwayState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingGoAwayState.swift; sourceTree = "<group>"; };
+		565CBEA8238BFA5B00CF0A3A /* ReceivingDataState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingDataState.swift; sourceTree = "<group>"; };
+		565CBEA9238BFA5B00CF0A3A /* ReceivingHeadersState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingHeadersState.swift; sourceTree = "<group>"; };
+		565CBEAA238BFA5B00CF0A3A /* ReceivingRstStreamState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceivingRstStreamState.swift; sourceTree = "<group>"; };
+		565CBEAB238BFA5B00CF0A3A /* LocallyQuiescingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocallyQuiescingState.swift; sourceTree = "<group>"; };
+		565CBEAC238BFA5B00CF0A3A /* RemotelyQuiescingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemotelyQuiescingState.swift; sourceTree = "<group>"; };
+		565CBEAD238BFA5B00CF0A3A /* ConnectionStreamsState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionStreamsState.swift; sourceTree = "<group>"; };
+		565CBEAE238BFA5B00CF0A3A /* HasRemoteSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HasRemoteSettings.swift; sourceTree = "<group>"; };
+		565CBEAF238BFA5B00CF0A3A /* HasLocalSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HasLocalSettings.swift; sourceTree = "<group>"; };
+		565CBEB0238BFA5B00CF0A3A /* QuiescingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuiescingState.swift; sourceTree = "<group>"; };
+		565CBEB1238BFA5B00CF0A3A /* HTTP2Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2Settings.swift; sourceTree = "<group>"; };
+		565CBEB2238BFA5B00CF0A3A /* ContentLengthVerifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentLengthVerifier.swift; sourceTree = "<group>"; };
+		565CBEB3238BFA5B00CF0A3A /* HTTP2StreamMultiplexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2StreamMultiplexer.swift; sourceTree = "<group>"; };
+		565CBEB4238BFA5B00CF0A3A /* StreamChannelList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamChannelList.swift; sourceTree = "<group>"; };
+		565CBEB5238BFA5B00CF0A3A /* StreamStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamStateMachine.swift; sourceTree = "<group>"; };
+		565CBEB6238BFA5B00CF0A3A /* StreamChannelFlowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamChannelFlowController.swift; sourceTree = "<group>"; };
+		565CBEB7238BFA5B00CF0A3A /* HTTP2FrameParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2FrameParser.swift; sourceTree = "<group>"; };
+		565CBEB8238BFA5B00CF0A3A /* HPACKHeaders+Validation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HPACKHeaders+Validation.swift"; sourceTree = "<group>"; };
+		565CBEB9238BFA5C00CF0A3A /* HTTP2Frame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2Frame.swift; sourceTree = "<group>"; };
+		565CBEBA238BFA5C00CF0A3A /* InboundEventBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InboundEventBuffer.swift; sourceTree = "<group>"; };
+		565CBEBB238BFA5C00CF0A3A /* HTTP2Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2Error.swift; sourceTree = "<group>"; };
+		565CBEBC238BFA5C00CF0A3A /* HTTP2ConnectionStateChange.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTP2ConnectionStateChange.swift; sourceTree = "<group>"; };
+		565CBF34238BFAE300CF0A3A /* NIOHPACK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = NIOHPACK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		565CBE74238BF83200CF0A3A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565CBF35238BFAE300CF0A3A /* NIOHPACK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		565CBE6D238BF83200CF0A3A = {
+			isa = PBXGroup;
+			children = (
+				565CBE79238BF83200CF0A3A /* NIOHTTP2 */,
+				565CBE78238BF83200CF0A3A /* Products */,
+				565CBF33238BFAE300CF0A3A /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		565CBE78238BF83200CF0A3A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				565CBE77238BF83200CF0A3A /* NIOHTTP2.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		565CBE79238BF83200CF0A3A /* NIOHTTP2 */ = {
+			isa = PBXGroup;
+			children = (
+				565CBE94238BFA5B00CF0A3A /* ConnectionStateMachine */,
+				565CBE8F238BFA5B00CF0A3A /* Frame Buffers */,
+				565CBEB2238BFA5B00CF0A3A /* ContentLengthVerifier.swift */,
+				565CBE8D238BFA5B00CF0A3A /* DOSHeuristics.swift */,
+				565CBEB8238BFA5B00CF0A3A /* HPACKHeaders+Validation.swift */,
+				565CBE83238BFA5A00CF0A3A /* HTTP2ChannelHandler.swift */,
+				565CBEBC238BFA5C00CF0A3A /* HTTP2ConnectionStateChange.swift */,
+				565CBEBB238BFA5C00CF0A3A /* HTTP2Error.swift */,
+				565CBE8B238BFA5A00CF0A3A /* HTTP2ErrorCode.swift */,
+				565CBE8E238BFA5B00CF0A3A /* HTTP2FlowControlWindow.swift */,
+				565CBEB9238BFA5C00CF0A3A /* HTTP2Frame.swift */,
+				565CBEB7238BFA5B00CF0A3A /* HTTP2FrameParser.swift */,
+				565CBE87238BFA5A00CF0A3A /* HTTP2PingData.swift */,
+				565CBE85238BFA5A00CF0A3A /* HTTP2PipelineHelpers.swift */,
+				565CBEB1238BFA5B00CF0A3A /* HTTP2Settings.swift */,
+				565CBE84238BFA5A00CF0A3A /* HTTP2Stream.swift */,
+				565CBE8A238BFA5A00CF0A3A /* HTTP2StreamChannel.swift */,
+				565CBE89238BFA5A00CF0A3A /* HTTP2StreamID.swift */,
+				565CBEB3238BFA5B00CF0A3A /* HTTP2StreamMultiplexer.swift */,
+				565CBE82238BFA5A00CF0A3A /* HTTP2ToHTTP1Codec.swift */,
+				565CBE8C238BFA5A00CF0A3A /* HTTP2UserEvents.swift */,
+				565CBEBA238BFA5C00CF0A3A /* InboundEventBuffer.swift */,
+				565CBE86238BFA5A00CF0A3A /* InboundWindowManager.swift */,
+				565CBEB6238BFA5B00CF0A3A /* StreamChannelFlowController.swift */,
+				565CBEB4238BFA5B00CF0A3A /* StreamChannelList.swift */,
+				565CBEB5238BFA5B00CF0A3A /* StreamStateMachine.swift */,
+				565CBE88238BFA5A00CF0A3A /* WatermarkedFlowController.swift */,
+				565CBE7B238BF83200CF0A3A /* Info.plist */,
+			);
+			path = NIOHTTP2;
+			sourceTree = "<group>";
+		};
+		565CBE8F238BFA5B00CF0A3A /* Frame Buffers */ = {
+			isa = PBXGroup;
+			children = (
+				565CBE90238BFA5B00CF0A3A /* OutboundFrameBuffer.swift */,
+				565CBE91238BFA5B00CF0A3A /* ConcurrentStreamBuffer.swift */,
+				565CBE92238BFA5B00CF0A3A /* OutboundFlowControlBuffer.swift */,
+				565CBE93238BFA5B00CF0A3A /* ControlFrameBuffer.swift */,
+			);
+			path = "Frame Buffers";
+			sourceTree = "<group>";
+		};
+		565CBE94238BFA5B00CF0A3A /* ConnectionStateMachine */ = {
+			isa = PBXGroup;
+			children = (
+				565CBE95238BFA5B00CF0A3A /* FrameSendingStates */,
+				565CBE9D238BFA5B00CF0A3A /* HTTP2SettingsState.swift */,
+				565CBE9E238BFA5B00CF0A3A /* SendAndReceiveGoawayState.swift */,
+				565CBE9F238BFA5B00CF0A3A /* ConnectionStateMachine.swift */,
+				565CBEA0238BFA5B00CF0A3A /* Optional+HTTP2StreamStateMachine.swift */,
+				565CBEA1238BFA5B00CF0A3A /* StateMachineResult.swift */,
+				565CBEA2238BFA5B00CF0A3A /* HasFlowControlWindows.swift */,
+				565CBEA3238BFA5B00CF0A3A /* FrameReceivingStates */,
+				565CBEAB238BFA5B00CF0A3A /* LocallyQuiescingState.swift */,
+				565CBEAC238BFA5B00CF0A3A /* RemotelyQuiescingState.swift */,
+				565CBEAD238BFA5B00CF0A3A /* ConnectionStreamsState.swift */,
+				565CBEAE238BFA5B00CF0A3A /* HasRemoteSettings.swift */,
+				565CBEAF238BFA5B00CF0A3A /* HasLocalSettings.swift */,
+				565CBEB0238BFA5B00CF0A3A /* QuiescingState.swift */,
+			);
+			path = ConnectionStateMachine;
+			sourceTree = "<group>";
+		};
+		565CBE95238BFA5B00CF0A3A /* FrameSendingStates */ = {
+			isa = PBXGroup;
+			children = (
+				565CBE96238BFA5B00CF0A3A /* MaySendFrames.swift */,
+				565CBE97238BFA5B00CF0A3A /* SendingDataState.swift */,
+				565CBE98238BFA5B00CF0A3A /* SendingRstStreamState.swift */,
+				565CBE99238BFA5B00CF0A3A /* SendingGoawayState.swift */,
+				565CBE9A238BFA5B00CF0A3A /* SendingWindowUpdateState.swift */,
+				565CBE9B238BFA5B00CF0A3A /* SendingPushPromiseState.swift */,
+				565CBE9C238BFA5B00CF0A3A /* SendingHeadersState.swift */,
+			);
+			path = FrameSendingStates;
+			sourceTree = "<group>";
+		};
+		565CBEA3238BFA5B00CF0A3A /* FrameReceivingStates */ = {
+			isa = PBXGroup;
+			children = (
+				565CBEA4238BFA5B00CF0A3A /* MayReceiveFrames.swift */,
+				565CBEA5238BFA5B00CF0A3A /* ReceivingPushPromiseState.swift */,
+				565CBEA6238BFA5B00CF0A3A /* ReceivingWindowUpdateState.swift */,
+				565CBEA7238BFA5B00CF0A3A /* ReceivingGoAwayState.swift */,
+				565CBEA8238BFA5B00CF0A3A /* ReceivingDataState.swift */,
+				565CBEA9238BFA5B00CF0A3A /* ReceivingHeadersState.swift */,
+				565CBEAA238BFA5B00CF0A3A /* ReceivingRstStreamState.swift */,
+			);
+			path = FrameReceivingStates;
+			sourceTree = "<group>";
+		};
+		565CBF33238BFAE300CF0A3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				565CBF34238BFAE300CF0A3A /* NIOHPACK.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		565CBE72238BF83200CF0A3A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		565CBE76238BF83200CF0A3A /* NIOHTTP2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 565CBE7F238BF83200CF0A3A /* Build configuration list for PBXNativeTarget "NIOHTTP2" */;
+			buildPhases = (
+				565CBE72238BF83200CF0A3A /* Headers */,
+				565CBE73238BF83200CF0A3A /* Sources */,
+				565CBE74238BF83200CF0A3A /* Frameworks */,
+				565CBE75238BF83200CF0A3A /* Resources */,
+				565CBF37238BFAE300CF0A3A /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NIOHTTP2;
+			productName = NIOHTTP2;
+			productReference = 565CBE77238BF83200CF0A3A /* NIOHTTP2.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		565CBE6E238BF83200CF0A3A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1110;
+				ORGANIZATIONNAME = lojii;
+				TargetAttributes = {
+					565CBE76238BF83200CF0A3A = {
+						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1110;
+					};
+				};
+			};
+			buildConfigurationList = 565CBE71238BF83200CF0A3A /* Build configuration list for PBXProject "NIOHTTP2" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 565CBE6D238BF83200CF0A3A;
+			productRefGroup = 565CBE78238BF83200CF0A3A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				565CBE76238BF83200CF0A3A /* NIOHTTP2 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		565CBE75238BF83200CF0A3A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		565CBE73238BF83200CF0A3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565CBEE1238BFA5C00CF0A3A /* ReceivingRstStreamState.swift in Sources */,
+				565CBEC6238BFA5C00CF0A3A /* HTTP2ErrorCode.swift in Sources */,
+				565CBEDF238BFA5C00CF0A3A /* ReceivingDataState.swift in Sources */,
+				565CBEC0238BFA5C00CF0A3A /* HTTP2PipelineHelpers.swift in Sources */,
+				565CBED8238BFA5C00CF0A3A /* Optional+HTTP2StreamStateMachine.swift in Sources */,
+				565CBEDB238BFA5C00CF0A3A /* MayReceiveFrames.swift in Sources */,
+				565CBEEA238BFA5C00CF0A3A /* HTTP2StreamMultiplexer.swift in Sources */,
+				565CBECB238BFA5C00CF0A3A /* ConcurrentStreamBuffer.swift in Sources */,
+				565CBED7238BFA5C00CF0A3A /* ConnectionStateMachine.swift in Sources */,
+				565CBED3238BFA5C00CF0A3A /* SendingPushPromiseState.swift in Sources */,
+				565CBEC4238BFA5C00CF0A3A /* HTTP2StreamID.swift in Sources */,
+				565CBEED238BFA5C00CF0A3A /* StreamChannelFlowController.swift in Sources */,
+				565CBEC8238BFA5C00CF0A3A /* DOSHeuristics.swift in Sources */,
+				565CBECF238BFA5C00CF0A3A /* SendingDataState.swift in Sources */,
+				565CBEE3238BFA5C00CF0A3A /* RemotelyQuiescingState.swift in Sources */,
+				565CBEE8238BFA5C00CF0A3A /* HTTP2Settings.swift in Sources */,
+				565CBEF0238BFA5C00CF0A3A /* HTTP2Frame.swift in Sources */,
+				565CBEDD238BFA5C00CF0A3A /* ReceivingWindowUpdateState.swift in Sources */,
+				565CBEE5238BFA5C00CF0A3A /* HasRemoteSettings.swift in Sources */,
+				565CBEF2238BFA5C00CF0A3A /* HTTP2Error.swift in Sources */,
+				565CBEE2238BFA5C00CF0A3A /* LocallyQuiescingState.swift in Sources */,
+				565CBEE4238BFA5C00CF0A3A /* ConnectionStreamsState.swift in Sources */,
+				565CBEF3238BFA5C00CF0A3A /* HTTP2ConnectionStateChange.swift in Sources */,
+				565CBEE9238BFA5C00CF0A3A /* ContentLengthVerifier.swift in Sources */,
+				565CBED5238BFA5C00CF0A3A /* HTTP2SettingsState.swift in Sources */,
+				565CBEEC238BFA5C00CF0A3A /* StreamStateMachine.swift in Sources */,
+				565CBEC5238BFA5C00CF0A3A /* HTTP2StreamChannel.swift in Sources */,
+				565CBED9238BFA5C00CF0A3A /* StateMachineResult.swift in Sources */,
+				565CBEE0238BFA5C00CF0A3A /* ReceivingHeadersState.swift in Sources */,
+				565CBECA238BFA5C00CF0A3A /* OutboundFrameBuffer.swift in Sources */,
+				565CBED4238BFA5C00CF0A3A /* SendingHeadersState.swift in Sources */,
+				565CBEDE238BFA5C00CF0A3A /* ReceivingGoAwayState.swift in Sources */,
+				565CBEC3238BFA5C00CF0A3A /* WatermarkedFlowController.swift in Sources */,
+				565CBED1238BFA5C00CF0A3A /* SendingGoawayState.swift in Sources */,
+				565CBEDA238BFA5C00CF0A3A /* HasFlowControlWindows.swift in Sources */,
+				565CBECD238BFA5C00CF0A3A /* ControlFrameBuffer.swift in Sources */,
+				565CBEBF238BFA5C00CF0A3A /* HTTP2Stream.swift in Sources */,
+				565CBEC9238BFA5C00CF0A3A /* HTTP2FlowControlWindow.swift in Sources */,
+				565CBEEB238BFA5C00CF0A3A /* StreamChannelList.swift in Sources */,
+				565CBED2238BFA5C00CF0A3A /* SendingWindowUpdateState.swift in Sources */,
+				565CBEDC238BFA5C00CF0A3A /* ReceivingPushPromiseState.swift in Sources */,
+				565CBEBD238BFA5C00CF0A3A /* HTTP2ToHTTP1Codec.swift in Sources */,
+				565CBEBE238BFA5C00CF0A3A /* HTTP2ChannelHandler.swift in Sources */,
+				565CBED6238BFA5C00CF0A3A /* SendAndReceiveGoawayState.swift in Sources */,
+				565CBEE6238BFA5C00CF0A3A /* HasLocalSettings.swift in Sources */,
+				565CBEC7238BFA5C00CF0A3A /* HTTP2UserEvents.swift in Sources */,
+				565CBECC238BFA5C00CF0A3A /* OutboundFlowControlBuffer.swift in Sources */,
+				565CBED0238BFA5C00CF0A3A /* SendingRstStreamState.swift in Sources */,
+				565CBECE238BFA5C00CF0A3A /* MaySendFrames.swift in Sources */,
+				565CBEEF238BFA5C00CF0A3A /* HPACKHeaders+Validation.swift in Sources */,
+				565CBEC2238BFA5C00CF0A3A /* HTTP2PingData.swift in Sources */,
+				565CBEF1238BFA5C00CF0A3A /* InboundEventBuffer.swift in Sources */,
+				565CBEEE238BFA5C00CF0A3A /* HTTP2FrameParser.swift in Sources */,
+				565CBEE7238BFA5C00CF0A3A /* QuiescingState.swift in Sources */,
+				565CBEC1238BFA5C00CF0A3A /* InboundWindowManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		565CBE7D238BF83200CF0A3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		565CBE7E238BF83200CF0A3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		565CBE80238BF83200CF0A3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = NIOHTTP2/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = lojii.NIOHTTP2;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		565CBE81238BF83200CF0A3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = NIOHTTP2/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = lojii.NIOHTTP2;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		565CBE71238BF83200CF0A3A /* Build configuration list for PBXProject "NIOHTTP2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565CBE7D238BF83200CF0A3A /* Debug */,
+				565CBE7E238BF83200CF0A3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		565CBE7F238BF83200CF0A3A /* Build configuration list for PBXNativeTarget "NIOHTTP2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				565CBE80238BF83200CF0A3A /* Debug */,
+				565CBE81238BF83200CF0A3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 565CBE6E238BF83200CF0A3A /* Project object */;
+}

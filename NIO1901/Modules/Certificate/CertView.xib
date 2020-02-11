@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="CertView" customModule="NIO1901" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="338" height="129"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="liw-zz-66M">
+                    <rect key="frame" x="0.0" y="84" width="338" height="45"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="45" id="s5a-dd-bsY"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                    <state key="normal" title="点击安装"/>
+                </button>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tVD-nv-02j">
+                    <rect key="frame" x="0.0" y="0.0" width="338" height="83"/>
+                    <subviews>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="certicon" translatesAutoresizingMaskIntoConstraints="NO" id="SLx-g2-uka">
+                            <rect key="frame" x="15" y="15" width="64" height="53"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="SLx-g2-uka" secondAttribute="height" multiplier="128:106" id="KC9-Z7-zv1"/>
+                            </constraints>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NIO-Generate-CA-Certificate" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Nb-Pl-soR">
+                            <rect key="frame" x="94" y="20" width="213" height="19.5"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="本机状态:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wsi-u5-xP4">
+                            <rect key="frame" x="94" y="47.5" width="70" height="19.5"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="未安装" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1zR-K9-fI9">
+                            <rect key="frame" x="169" y="47.5" width="49" height="19.5"/>
+                            <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                            <color key="textColor" red="0.94901960784313721" green="0.21110738415152802" blue="0.021450076780304594" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="SLx-g2-uka" firstAttribute="top" secondItem="tVD-nv-02j" secondAttribute="top" constant="15" id="4wy-u3-hsX"/>
+                        <constraint firstItem="Wsi-u5-xP4" firstAttribute="top" secondItem="0Nb-Pl-soR" secondAttribute="bottom" constant="8" id="6p6-Np-y18"/>
+                        <constraint firstAttribute="bottom" secondItem="SLx-g2-uka" secondAttribute="bottom" constant="15" id="VRe-I8-XyS"/>
+                        <constraint firstItem="0Nb-Pl-soR" firstAttribute="top" secondItem="SLx-g2-uka" secondAttribute="top" constant="5" id="VuS-JM-WNq"/>
+                        <constraint firstItem="SLx-g2-uka" firstAttribute="leading" secondItem="tVD-nv-02j" secondAttribute="leading" constant="15" id="eq6-cA-Aeb"/>
+                        <constraint firstItem="1zR-K9-fI9" firstAttribute="leading" secondItem="Wsi-u5-xP4" secondAttribute="trailing" constant="5" id="g9u-QA-Ie0"/>
+                        <constraint firstItem="1zR-K9-fI9" firstAttribute="centerY" secondItem="Wsi-u5-xP4" secondAttribute="centerY" id="rZ7-jE-61n"/>
+                        <constraint firstItem="0Nb-Pl-soR" firstAttribute="leading" secondItem="SLx-g2-uka" secondAttribute="trailing" constant="15" id="yA3-HX-b5n"/>
+                        <constraint firstItem="Wsi-u5-xP4" firstAttribute="leading" secondItem="0Nb-Pl-soR" secondAttribute="leading" id="zVT-cW-Ide"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.92941176470588238" green="0.93725490196078431" blue="0.94901960784313721" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="liw-zz-66M" secondAttribute="bottom" id="8Hp-I7-g1u"/>
+                <constraint firstItem="liw-zz-66M" firstAttribute="top" secondItem="tVD-nv-02j" secondAttribute="bottom" constant="1" id="Rrc-Nb-F4n"/>
+                <constraint firstItem="liw-zz-66M" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="WKy-wR-Uo4"/>
+                <constraint firstItem="tVD-nv-02j" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="bwp-fh-BPL"/>
+                <constraint firstItem="tVD-nv-02j" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="eW3-H2-BMJ"/>
+                <constraint firstItem="tVD-nv-02j" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="mRZ-b5-gvt"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="liw-zz-66M" secondAttribute="trailing" id="otH-xe-aXu"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="certContentView" destination="tVD-nv-02j" id="hcJ-N9-5zy"/>
+                <outlet property="certIconView" destination="SLx-g2-uka" id="TOr-sV-Q4m"/>
+                <outlet property="certNameLabel" destination="0Nb-Pl-soR" id="Zus-q8-tI4"/>
+                <outlet property="installBtn" destination="liw-zz-66M" id="t6b-gi-GmE"/>
+                <outlet property="localTitleLabel" destination="Wsi-u5-xP4" id="8aJ-W5-H9Z"/>
+                <outlet property="statusLabel" destination="1zR-K9-fI9" id="pHK-JM-nrr"/>
+            </connections>
+            <point key="canvasLocation" x="-97" y="-98"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="certicon" width="128" height="106"/>
+    </resources>
+</document>
