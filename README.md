@@ -13,7 +13,9 @@
   - 真机运行
   - <iOS13 (时间仓促，目前没做iOS13的适配)
   ## 功能截图(仓库里有演示视频)
-   截图 | 截图 | 截图 
+  截图无法显示可以去这里看 https://juejin.im/post/5e426f1a518825496f38149a
+  
+截图 | 截图 | 截图 
 --- |  --- | --- 
 ![截图](https://s2.ax1x.com/2020/02/11/1ovHtf.png) | ![截图](https://s2.ax1x.com/2020/02/11/1ovo7t.png) | ![截图](https://s2.ax1x.com/2020/02/11/1ovW1e.png) 
 ![截图](https://s2.ax1x.com/2020/02/11/1ov7AP.png) | ![截图](https://s2.ax1x.com/2020/02/11/1ov5nA.png) | ![截图](https://s2.ax1x.com/2020/02/11/1ovbh8.png)
