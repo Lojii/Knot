@@ -35,7 +35,7 @@ DEPENDENCIES:
   - YYWebImage
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Bugly
     - CocoaAsyncSocket
     - FileBrowser
@@ -61,6 +61,6 @@ SPEC CHECKSUMS:
   YYImage: 1e1b62a9997399593e4b9c4ecfbbabbf1d3f3b54
   YYWebImage: 5f7f36aee2ae293f016d418c7d6ba05c4863e928
 
-PODFILE CHECKSUM: 5511d30a042c6f5b68329761ffd615ae588ac935
+PODFILE CHECKSUM: 647da526b59781f0b2b7604b0a44eb94e7a297c6
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.9.0
