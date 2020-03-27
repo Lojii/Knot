@@ -23,7 +23,7 @@ let NetWorkChangedNoti: NSNotification.Name = NSNotification.Name(rawValue: "Net
 
 class MainViewController: BaseViewController {
     
-    let reachability = Reachability()!
+    let reachability = try! Reachability()
     var currentIsWifi = false
     var netStr = ""
     var _vpnStatus: NEVPNStatus = .disconnected
@@ -206,6 +206,7 @@ class MainViewController: BaseViewController {
         case .none:
             netStr = "none"
             currentIsWifi = false
+        default: break;
         }
         NotificationCenter.default.post(name: NetWorkChangedNoti, object: netStr)
         updateData()

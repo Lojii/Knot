@@ -18,7 +18,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
     open var connection: NWTCPConnection!
     var mitmServer: MitmService!
-    var reachability = Reachability()!
+    var reachability = try! Reachability()
     
     /// The completion handler to call when the tunnel is fully established.
     var pendingStartCompletion: ((Error?) -> Void)!
