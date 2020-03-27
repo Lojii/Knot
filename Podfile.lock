@@ -1,13 +1,13 @@
 PODS:
-  - Bugly (2.5.0)
-  - CocoaAsyncSocket (7.6.3)
+  - Bugly (2.5.2)
+  - CocoaAsyncSocket (7.6.4)
   - FileBrowser (1.0.0)
-  - Highlightr (2.0.1)
-  - ReachabilitySwift (4.1.0)
-  - SQLite.swift (0.11.5):
-    - SQLite.swift/standard (= 0.11.5)
-  - SQLite.swift/standard (0.11.5)
-  - TangramKit (1.2.0)
+  - Highlightr (2.1.0)
+  - ReachabilitySwift (5.0.0)
+  - SQLite.swift (0.12.2):
+    - SQLite.swift/standard (= 0.12.2)
+  - SQLite.swift/standard (0.12.2)
+  - TangramKit (1.4.2)
   - YYCache (1.0.4)
   - YYCategories (1.0.4):
     - YYCategories/no-arc (= 1.0.4)
@@ -49,18 +49,18 @@ SPEC REPOS:
     - YYWebImage
 
 SPEC CHECKSUMS:
-  Bugly: 3ca9f255c01025582df26f9222893b383c7e4b4e
-  CocoaAsyncSocket: eafaa68a7e0ec99ead0a7b35015e0bf25d2c8987
+  Bugly: dbac48b55ad469a97cc4321045cd50df8f63d44f
+  CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
   FileBrowser: 2ca91ff61c9ea09665eb3b8f9e64a7a77e66a0bf
-  Highlightr: 65655134dd0d5e1320afdd8a9d880c9e9dc0b437
-  ReachabilitySwift: 6849231cd4e06559f3b9ef4a97a0a0f96d41e09f
-  SQLite.swift: 6e5356850bb1791459f8c16d6ee9195b28714a2e
-  TangramKit: 43d01f9d5d820037c241de6570d30a968e291abf
+  Highlightr: 595f3e100737c8de41113385da8bd0b5b65212c6
+  ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
+  SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
+  TangramKit: aad3ab8f9617418c9da96d59cddd71134ae8af83
   YYCache: 8105b6638f5e849296c71f331ff83891a4942952
   YYCategories: 6bcd4314c6661a561410dce4a793379ebd306abd
   YYImage: 1e1b62a9997399593e4b9c4ecfbbabbf1d3f3b54
   YYWebImage: 5f7f36aee2ae293f016d418c7d6ba05c4863e928
 
-PODFILE CHECKSUM: 647da526b59781f0b2b7604b0a44eb94e7a297c6
+PODFILE CHECKSUM: 3f4a8fc10b7b4e794d8f59101e83344b217ec53e
 
 COCOAPODS: 1.9.0
