@@ -16,7 +16,7 @@ public let LocalHTTPServerChanged: NSNotification.Name = NSNotification.Name(raw
 
 public class LocalHTTPServer {
     
-    let reachability = Reachability()!
+    let reachability = try! Reachability()
     
     public static let httpRootPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: GROUPNAME)?.appendingPathComponent("Root")
     
@@ -42,6 +42,8 @@ public class LocalHTTPServer {
             runWifiAgain()
         case .cellular,.none:
             closeWifi()
+        default:
+            break;
         }
     }
     

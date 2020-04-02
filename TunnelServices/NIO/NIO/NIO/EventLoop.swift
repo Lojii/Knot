@@ -1029,11 +1029,11 @@ extension EventLoopGroup {
 
     public func syncShutdownGracefully() throws {
         if let eventLoop = MultiThreadedEventLoopGroup.currentEventLoop {
-            preconditionFailure("""
-            BUG DETECTED: syncShutdownGracefully() must not be called when on an EventLoop.
-            Calling syncShutdownGracefully() on any EventLoop can lead to deadlocks.
-            Current eventLoop: \(eventLoop)
-            """)
+//            preconditionFailure("""
+//            BUG DETECTED: syncShutdownGracefully() must not be called when on an EventLoop.
+//            Calling syncShutdownGracefully() on any EventLoop can lead to deadlocks.
+//            Current eventLoop: \(eventLoop)
+//            """)
         }
         let errorStorageLock = Lock()
         var errorStorage: Error? = nil
