@@ -63,6 +63,7 @@ class SettingViewController: BaseViewController {
             mail.setToRecipients([CONNECTEMAIL])
             mail.setMessageBody(describe + info, isHTML: false)
             mail.setSubject(subject)
+            mail.modalPresentationStyle = .fullScreen
             present(mail, animated: true)
         } else {
             let alertController = UIAlertController(title: "Send e-mail".localized, message: "Send email to".localized + CONNECTEMAIL, preferredStyle: .alert)

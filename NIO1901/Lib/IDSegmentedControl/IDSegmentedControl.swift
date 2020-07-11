@@ -17,7 +17,7 @@ public class IDSegmentedView: UISegmentedControl {
         setBackgroundImage(selectedColorImage, for: .selected, barMetrics: .default)
         
         let segAttributesNormal = [NSAttributedString.Key.foregroundColor: textColor, NSAttributedString.Key.font: textFont]
-        let segAttributesSeleted = [NSAttributedString.Key.foregroundColor: UIColor.white,NSAttributedString.Key.font: textFont]
+        let segAttributesSeleted = [NSAttributedString.Key.foregroundColor: UIColor.black,NSAttributedString.Key.font: textFont]
         // 文字在两种状态下的颜色
         setTitleTextAttributes(segAttributesNormal, for: UIControl.State.normal)
         setTitleTextAttributes((segAttributesSeleted), for: UIControl.State.selected)
@@ -46,3 +46,4 @@ fileprivate extension UIImage{
 //        return img ?? UIImage()
 //    }
 }
+

@@ -101,6 +101,7 @@ class RuleOverViewController: UIViewController {
         offY = textEditItem.frame.maxY
         textEditItem.contentDidClickHandle = {
             let container = RuleTextViewController(rule: self.rule)
+            container.modalPresentationStyle = .fullScreen
             self.present(container, animated: true, completion: nil)
         }
         scrollView.addSubview(textEditItem)
