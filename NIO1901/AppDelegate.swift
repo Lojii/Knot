@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import TunnelServices
 import YYWebImage
-import Bugly
+//import Bugly
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,14 +20,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        Bugly.start(withAppId: "0519d95ff6")
-        Bugly.setUserValue("Main", forKey: "App")
+//        Bugly.start(withAppId: "0519d95ff6")
+//        Bugly.setUserValue("Main", forKey: "App")
         
         ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: "Session")
         ASConfigration.logLevel = .error
         // Default Rule
         if UserDefaults.standard.string(forKey: "first") == nil {
-            Bugly.setUserValue("true", forKey: "IsFirst")
+//            Bugly.setUserValue("true", forKey: "IsFirst")
             let defaultRule = Rule.defaultRule()
             try? defaultRule.saveToDB()
             UserDefaults.standard.set("\(defaultRule.id ?? -1)", forKey: CurrentRuleId)

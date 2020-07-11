@@ -186,8 +186,8 @@ class MainViewController: BaseViewController {
     }
     
     override func rightBtnClick() {
-        checkPermissions()
-        return
+//        checkPermissions()
+//        return
         
         let vc = SettingViewController()
         vc.currentNet = netStr
@@ -288,6 +288,7 @@ class MainViewController: BaseViewController {
     @objc func showLog(){
         let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: GROUPNAME)
         let fileBrowser = FileBrowser(initialPath: directory, allowEditing: true, showCancelButton: true)
+        fileBrowser.modalPresentationStyle = .fullScreen
         present(fileBrowser, animated: true, completion: nil)
     }
     // MARK:VPN

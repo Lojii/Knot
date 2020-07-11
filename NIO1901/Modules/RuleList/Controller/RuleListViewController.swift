@@ -77,6 +77,7 @@ class RuleListViewController: BaseViewController,PopupContentViewController {
         PopViewController.show(titles: ["Create an empty configuration".localized,"Download the configuration from the URL".localized], viewController: self.parent ?? self) { (index) in
             if index == 0 {
                 let vc = RuleDetailViewController(rule: nil)
+                vc.modalPresentationStyle = .fullScreen
                 if let homeVC = self.parent?.parent {
                     homeVC.present(vc, animated: true, completion: nil)
                 }
@@ -160,6 +161,7 @@ extension RuleListViewController:UITableViewDelegate,UITableViewDataSource {
                 r?.configParse()
                 if index == 0 {
                     let vc = RuleDetailViewController(rule: r ?? Rule())
+                    vc.modalPresentationStyle = .fullScreen
                     if let homeVC = self.parent?.parent {
                         homeVC.present(vc, animated: true, completion: nil)
                     }
