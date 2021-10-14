@@ -82,13 +82,18 @@ class SSLHandler: ChannelInboundHandler,RemovableChannelHandler {
             let host = proxyContext.request!.host
             var dynamicCert = proxyContext.task.certPool[host]
             if dynamicCert == nil {
-                dynamicCert = CertUtils.generateCert(host: host,rsaKey: rsaKey!, caKey: caPriKey!, caCert: cert!)
+                dynamicCert = CertUtils.genreateCert(host: host,
+                                                     rsaKeyPEM: CertDatas.rsakey.data(using: .utf8)!,
+                                                     caKeyPEM: CertDatas.cakey.data(using: .utf8)!,
+                                                     caCertPEM: CertDatas.cacert.data(using: .utf8)!)
 //                proxyContext.task.certPool[host] = dynamicCert
                 proxyContext.task.certPool.setValue(dynamicCert, forKey: host)
             }
-            let tlsServerConfiguration = TLSConfiguration.forServer(certificateChain: [.certificate(dynamicCert! as! NIOSSLCertificate)], privateKey: .privateKey(rsaKey!))
+            let tlsServerConfiguration = TLSConfiguration.makeServerConfiguration(
+                certificateChain: [.certificate(dynamicCert as! NIOSSLCertificate)],
+                privateKey: .privateKey(rsaKey!))
             let sslServerContext = try! NIOSSLContext(configuration: tlsServerConfiguration)
-            let sslServerHandler = try! NIOSSLServerHandler(context: sslServerContext)
+            let sslServerHandler = NIOSSLServerHandler(context: sslServerContext)
             // issue:握手信息发出后，服务器验证未通过，失败未关闭channel
             // 添加ssl握手处理handler
             let cancelHandshakeTask = context.channel.eventLoop.scheduleTask(in:  TimeAmount.seconds(10)) {

@@ -48,16 +48,36 @@ public class CertUtils: NSObject {
         return pkey
     }
     
-    public static func generateCert(host:String, rsaKey:NIOSSLPrivateKey, caKey: NIOSSLPrivateKey, caCert: NIOSSLCertificate) -> NIOSSLCertificate {
-//        if let result = shared.certPool?[host] {
-//            return result
-//        }
-        let caPriKey = caKey._ref.assumingMemoryBound(to: EVP_PKEY.self)
+    public static func genreateCert(host: String, rsaKeyPEM: Data, caKeyPEM: Data, caCertPEM: Data) -> NIOSSLCertificate {
+        var bp = rsaKeyPEM.withUnsafeBytes({ ptr -> UnsafeMutablePointer<BIO> in
+            let pointer = ptr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            return CNIOBoringSSL_BIO_new_mem_buf(pointer, Int32(rsaKeyPEM.count))
+        })
+        var rsaKey = CNIOBoringSSL_EVP_PKEY_new()
+        defer {CNIOBoringSSL_EVP_PKEY_free(rsaKey)}
+        CNIOBoringSSL_PEM_read_bio_PrivateKey(bp, &rsaKey, nil, nil)
+        CNIOBoringSSL_BIO_free(bp)
+        
+        bp = caKeyPEM.withUnsafeBytes({ ptr -> UnsafeMutablePointer<BIO> in
+            let pointer = ptr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            return CNIOBoringSSL_BIO_new_mem_buf(pointer, Int32(caKeyPEM.count))
+        })
+        var caKey = CNIOBoringSSL_EVP_PKEY_new()
+        defer {CNIOBoringSSL_EVP_PKEY_free(caKey)}
+        CNIOBoringSSL_PEM_read_bio_PrivateKey(bp, &caKey, nil, nil)
+        CNIOBoringSSL_BIO_free(bp)
+        
+        bp = caCertPEM.withUnsafeBytes({ ptr -> UnsafeMutablePointer<BIO> in
+            let pointer = ptr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            return CNIOBoringSSL_BIO_new_mem_buf(pointer, Int32(caCertPEM.count))
+        })
+        let caCert = CNIOBoringSSL_PEM_read_bio_X509(bp, nil, nil, nil)
+        CNIOBoringSSL_BIO_free(bp)
+        
         let req = CNIOBoringSSL_X509_REQ_new()
-        let key:UnsafeMutablePointer<EVP_PKEY> = rsaKey._ref.assumingMemoryBound(to: EVP_PKEY.self)//generateRSAPrivateKey()
-        /* Set the public key. */
-        CNIOBoringSSL_X509_REQ_set_pubkey(req, key)
-        /* Set the DN of the request. */
+        defer { CNIOBoringSSL_X509_REQ_free(req) }
+        CNIOBoringSSL_X509_REQ_set_pubkey(req, rsaKey)
+        
         let name = CNIOBoringSSL_X509_NAME_new()
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, "SE", -1, -1, 0);
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, "", -1, -1, 0);
@@ -66,65 +86,56 @@ public class CertUtils: NSObject {
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, "", -1, -1, 0);
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, host, -1, -1, 0);
         CNIOBoringSSL_X509_REQ_set_subject_name(req, name)
-        /* Self-sign the request to prove that we posses the key. */
-        CNIOBoringSSL_X509_REQ_sign(req, key, CNIOBoringSSL_EVP_sha256())
-        /* Sign with the CA. */
-        let crt = CNIOBoringSSL_X509_new() // nil?
-        /* Set version to X509v3 */
-        CNIOBoringSSL_X509_set_version(crt, 2)
-        /* Generate random 20 byte serial. */
+        CNIOBoringSSL_X509_REQ_sign(req, rsaKey, CNIOBoringSSL_EVP_sha256())
+        
+        let cert = CNIOBoringSSL_X509_new()
+        defer {CNIOBoringSSL_X509_free(cert)}
+        CNIOBoringSSL_X509_set_version(cert, 2)
         let serial = Int(arc4random_uniform(UInt32.max))
-//        print("生成一次随机数-------")
-        CNIOBoringSSL_ASN1_INTEGER_set(CNIOBoringSSL_X509_get_serialNumber(crt), serial)
-//        serial = 0
-        /* Set issuer to CA's subject. */
-        // TODO:1125:这句也会报错！fix
-        CNIOBoringSSL_X509_set_issuer_name(crt, CNIOBoringSSL_X509_get_subject_name(caCert._ref.assumingMemoryBound(to: X509.self)))
-        /* Set validity of certificate to 1 years. */
+        CNIOBoringSSL_ASN1_INTEGER_set(CNIOBoringSSL_X509_get_serialNumber(cert), serial)
+        CNIOBoringSSL_X509_set_issuer_name(cert, CNIOBoringSSL_X509_get_subject_name(caCert))
+        
         let notBefore = CNIOBoringSSL_ASN1_TIME_new()!
         var now = time(nil)
         CNIOBoringSSL_ASN1_TIME_set(notBefore, now)
-        let notAfter = CNIOBoringSSL_ASN1_TIME_new()!
+        let notAfter = CNIOBoringSSL_ASN1_TIME_new()
         now += 86400 * 365
         CNIOBoringSSL_ASN1_TIME_set(notAfter, now)
-        CNIOBoringSSL_X509_set_notBefore(crt, notBefore)
-        CNIOBoringSSL_X509_set_notAfter(crt, notAfter)
+        CNIOBoringSSL_X509_set1_notBefore(cert, notBefore)
+        CNIOBoringSSL_X509_set1_notAfter(cert, notAfter)
         CNIOBoringSSL_ASN1_TIME_free(notBefore)
         CNIOBoringSSL_ASN1_TIME_free(notAfter)
-        /* Get the request's subject and just use it (we don't bother checking it since we generated it ourself). Also take the request's public key. */
-        CNIOBoringSSL_X509_set_subject_name(crt, name)
-        let reqPubKey = CNIOBoringSSL_X509_REQ_get_pubkey(req)
-        CNIOBoringSSL_X509_set_pubkey(crt, reqPubKey)
-        CNIOBoringSSL_EVP_PKEY_free(reqPubKey)
+        CNIOBoringSSL_X509_set_subject_name(cert, name)
         
-        // 满足iOS13要求. See https://support.apple.com/en-us/HT210176
-        addExtension(x509: crt!, nid: NID_basic_constraints, value: "critical,CA:FALSE")
-        addExtension(x509: crt!, nid: NID_ext_key_usage, value: "serverAuth,OCSPSigning")
-        addExtension(x509: crt!, nid: NID_subject_key_identifier, value: "hash")
-        addExtension(x509: crt!, nid: NID_subject_alt_name, value: "DNS:" + host)
+        let reqPubkey = CNIOBoringSSL_X509_REQ_get_pubkey(req)
+        CNIOBoringSSL_X509_set_pubkey(cert, reqPubkey)
+        CNIOBoringSSL_EVP_PKEY_free(reqPubkey)
         
-        /* Now perform the actual signing with the CA. */
-        CNIOBoringSSL_X509_sign(crt, caPriKey, CNIOBoringSSL_EVP_sha256())
-        CNIOBoringSSL_X509_REQ_free(req)
+        addExtension(x509: cert!, nid: NID_basic_constraints, value: "critical,CA:FALSE")
+        addExtension(x509: cert!, nid: NID_ext_key_usage, value: "serverAuth,OCSPSigning")
+        addExtension(x509: cert!, nid: NID_subject_key_identifier, value: "hash")
+        addExtension(x509: cert!, nid: NID_subject_alt_name, value: "DNS:" + host)
+        
+        CNIOBoringSSL_X509_sign(cert, caKey, CNIOBoringSSL_EVP_sha256())
+        
+        /// X509 -> Data -> [UInt8] -> NIOSSLCertificate
+        let out = CNIOBoringSSL_BIO_new(CNIOBoringSSL_BIO_s_mem())!
+        defer {CNIOBoringSSL_BIO_free(out)}
+        CNIOBoringSSL_PEM_write_bio_X509(out, cert)
+        var ptr: UnsafeMutableRawPointer?
+        let len = CNIOBoringSSL_BIO_ctrl(out, BIO_CTRL_INFO, 0, &ptr)
+        let buffer = Data(bytes: ptr!, count: len)
 
-//        CNIOBoringSSL_EVP_PKEY_CTX_dup(key)
-//        let copyCrt = CNIOBoringSSL_X509_dup(crt!)!
-//        shared.certPool?[host] = NIOSSLCertificate.fromUnsafePointer(takingOwnership: copyCrt)
-        let copyCrt2 = CNIOBoringSSL_X509_dup(crt!)!
-        //
-        let cert = NIOSSLCertificate.fromUnsafePointer(takingOwnership: copyCrt2)
-//        let cert = try! NIOSSLCertificate(file: "", format: .pem)
-        CNIOBoringSSL_X509_free(crt!)
-        return cert
+        return try! NIOSSLCertificate(bytes: [UInt8](buffer), format: .pem)
     }
-
-    public static func addExtension(x509: UnsafeMutablePointer<X509>, nid: CInt, value: String) {
+    
+    private static func addExtension(x509: OpaquePointer, nid: CInt, value: String) {
         var extensionContext = X509V3_CTX()
         
         CNIOBoringSSL_X509V3_set_ctx(&extensionContext, x509, x509, nil, nil, 0)
         let ext = value.withCString { (pointer) in
             return CNIOBoringSSL_X509V3_EXT_nconf_nid(nil, &extensionContext, nid, UnsafeMutablePointer(mutating: pointer))
-        }!
+        }
         CNIOBoringSSL_X509_add_ext(x509, ext, -1)
         CNIOBoringSSL_X509_EXTENSION_free(ext)
     }

@@ -10,7 +10,7 @@
 import Foundation
 import UIKit
 
-@objc public protocol RefreshableHeader: class{
+@objc public protocol RefreshableHeader: AnyObject{
     /**
      视图的高度
      */

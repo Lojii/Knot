@@ -56,15 +56,18 @@ public class LocalSSLServer {
             return
         }
         // 通过CA证书给域名动态签发证书
-        let dynamicCert = CertUtils.generateCert(host: SSLHost,rsaKey: rsakey, caKey: cakey, caCert: cacert)
-        let tlsServerConfiguration = TLSConfiguration.forServer(certificateChain: [.certificate(dynamicCert)], privateKey: .privateKey(rsakey))
+        let dynamicCert = CertUtils.genreateCert(host: SSLHost,
+                                                 rsaKeyPEM: CertDatas.rsakey.data(using: .utf8)!,
+                                                 caKeyPEM: CertDatas.cakey.data(using: .utf8)!,
+                                                 caCertPEM: CertDatas.cacert.data(using: .utf8)!)
+        let tlsServerConfiguration = TLSConfiguration.makeServerConfiguration(certificateChain: [.certificate(dynamicCert)], privateKey: .privateKey(rsakey))
         sslContext = try! NIOSSLContext(configuration: tlsServerConfiguration)
         group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let bootstrap = ServerBootstrap(group: group!)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
-                return channel.pipeline.addHandler(try! NIOSSLServerHandler(context: self.sslContext)).flatMap {
+                return channel.pipeline.addHandler(NIOSSLServerHandler(context: self.sslContext)).flatMap {
                     channel.pipeline.addHandler(EchoHandler())
                 }
             }
@@ -145,8 +148,8 @@ public class CheckCert {
     }
     
     public static func checkPermissions(_ callBack:@escaping (TrustResultType) -> Void){
-        let check = CheckCert()
-        check.isTrust(callBack)
+//        let check = CheckCert()
+//        check.isTrust(callBack)
     }
     
     public func isTrust(_ callBack:@escaping (TrustResultType) -> Void){

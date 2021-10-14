@@ -9,7 +9,7 @@
 import UIKit
 import TunnelServices
 
-protocol HistoryViewDelegate: class {
+protocol HistoryViewDelegate: AnyObject {
     func taskDidClick(task:Task)
     func taskModeDidClick()
 }

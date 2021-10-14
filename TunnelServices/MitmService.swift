@@ -13,7 +13,7 @@ import AxLogger
 
 
 public let StartInExtension = true
-public let GROUPNAME = "group.Lojii.NIO1901"
+public let GROUPNAME = "group.com.dbgman.iOSSniffer"
 public let CurrentRuleId = "CurrentRuleId"
 
 /// 定义一个结构体类型的错误类型

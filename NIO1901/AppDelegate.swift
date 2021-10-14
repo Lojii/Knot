@@ -43,19 +43,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let rsakeyPath = certDir.appendingPathComponent("rsakey.pem", isDirectory: false)
 //            let cc = try? String(contentsOf: cacertPath)
             if !fileManager.fileExists(url: cacertPath) {
-                let fullCC = cc1 + cc2 + cc3
+                let fullCC = CertDatas.cacert
                 try? fullCC.write(to: cacertPath, atomically: true, encoding: .utf8)
             }
             if !fileManager.fileExists(url: cacertDerPath) {
-                let derData = Data(base64Encoded: ccDerBase64)
+                let derData = Data(base64Encoded: CertDatas.cader)
                 try? derData?.write(to: cacertDerPath, options: Data.WritingOptions.atomic)
             }
             if !fileManager.fileExists(url: cakeyPath) {
-                let fullck = ck1 + ck2 + ck3
+                let fullck = CertDatas.cakey
                 try? fullck.write(to: cakeyPath, atomically: true, encoding: .utf8)
             }
             if !fileManager.fileExists(url: rsakeyPath) {
-                let fullrk = rk1 + rk2 + rk3
+                let fullrk = CertDatas.rsakey
                 try? fullrk.write(to: rsakeyPath, atomically: true, encoding: .utf8)
             }
             // DefaultBlackLisk
@@ -76,7 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 let cacertPath = httpRootDir.appendingPathComponent("cacert.pem", isDirectory: false)
                 if !fileManager.fileExists(url: cacertPath) {
-                    let fullCC = cc1 + cc2 + cc3
+                    let fullCC = CertDatas.cader
                     let ccData = fullCC.data(using: .utf8)
                     try! ccData?.write(to: cacertPath, options: Data.WritingOptions.atomic)
                 }
@@ -92,7 +92,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     }
                     let cacertPath = httpRootDir.appendingPathComponent("cacert.pem", isDirectory: false)
                     if !fileManager.fileExists(url: cacertPath) {
-                        let fullCC = cc1 + cc2 + cc3
+                        let fullCC = CertDatas.cader
                         let ccData = fullCC.data(using: .utf8)
                         try! ccData?.write(to: cacertPath, options: Data.WritingOptions.atomic)
                     }

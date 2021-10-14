@@ -113,7 +113,7 @@ class HTTPHandler : ChannelInboundHandler, RemovableChannelHandler {
             // TODO:添加握手超时断开
             channelInitializer = { (outChannel) -> EventLoopFuture<Void> in
                 self.proxyContext.clientChannel = outChannel
-                let tlsClientConfiguration = TLSConfiguration.forClient(applicationProtocols: ["http/1.1"])
+                let tlsClientConfiguration = TLSConfiguration.makeClientConfiguration()
                 let sslClientContext = try! NIOSSLContext(configuration: tlsClientConfiguration)
                 let sniName = request.host.isIPAddress() ? nil : request.host
                 let sslClientHandler = try! NIOSSLClientHandler(context: sslClientContext, serverHostname: sniName)

@@ -46,12 +46,12 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             mitmServer.run({ (result) in
                 switch result {
                 case .success( _):
-                    let endpoint = NWHostEndpoint(hostname:"127.0.0.1", port:"8034")
-                    self.connection = self.createTCPConnection(to: endpoint, enableTLS:false, tlsParameters:nil, delegate:nil)
+//                    let endpoint = NWHostEndpoint(hostname:"127.0.0.1", port:"8034")
+//                    self.connection = self.createTCPConnection(to: endpoint, enableTLS:false, tlsParameters:nil, delegate:nil)
                     self.startVPNWithOptions(options: nil) { (error) in
                         if error == nil {
                             NSLog("***************** Start Tunel Success !")
-                            self.readPakcets()
+//                            self.readPakcets()
                             self.pendingStartCompletion(nil)
                             
                         }else{
@@ -67,8 +67,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             })
         }else{
             // 单独启动
-            let endpoint = NWHostEndpoint(hostname:"127.0.0.1", port:"8034")
-            self.connection = self.createTCPConnection(to: endpoint, enableTLS:false, tlsParameters:nil, delegate:nil)
+//            let endpoint = NWHostEndpoint(hostname:"127.0.0.1", port:"8034")
+//            self.connection = self.createTCPConnection(to: endpoint, enableTLS:false, tlsParameters:nil, delegate:nil)
             self.startVPNWithOptions(options: nil) { (error) in
                 if error == nil {
                     NSLog("Start Tunel Success !")

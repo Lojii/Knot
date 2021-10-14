@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol SearchFocusViewDelegate: class {
+protocol SearchFocusViewDelegate: AnyObject {
     func focusViewDidFocuse(focuseOption:SearchOption)    // Focus
     func focusViewAddToFiter(focuseOption:SearchOption)   // 添加到过滤器
     func focusViewDidHiden() // 隐藏时候调用

@@ -7,127 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		150C855721F6A04400318C60 /* NIO1901Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C855621F6A04400318C60 /* NIO1901Tests.swift */; };
-		150C85DB21F6A05800318C60 /* NIOConcurrencyHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */; };
-		150C85DC21F6A05800318C60 /* NIOConcurrencyHelpersTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */; };
-		150C85DD21F6A05800318C60 /* LinuxMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856121F6A05600318C60 /* LinuxMain.swift */; };
-		150C85DE21F6A05800318C60 /* HTTPUpgradeTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856321F6A05600318C60 /* HTTPUpgradeTests+XCTest.swift */; };
-		150C85DF21F6A05800318C60 /* HTTPServerClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856421F6A05600318C60 /* HTTPServerClientTest.swift */; };
-		150C85E021F6A05800318C60 /* HTTPHeadersTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856521F6A05600318C60 /* HTTPHeadersTest+XCTest.swift */; };
-		150C85E121F6A05800318C60 /* HTTPRequestEncoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856621F6A05600318C60 /* HTTPRequestEncoderTest.swift */; };
-		150C85E221F6A05800318C60 /* HTTPDecoderLengthTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856721F6A05600318C60 /* HTTPDecoderLengthTest+XCTest.swift */; };
-		150C85E321F6A05800318C60 /* HTTPResponseEncoderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856821F6A05600318C60 /* HTTPResponseEncoderTest+XCTest.swift */; };
-		150C85E421F6A05800318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856921F6A05600318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift */; };
-		150C85E521F6A05800318C60 /* HTTPServerProtocolErrorHandlerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856A21F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest.swift */; };
-		150C85E621F6A05800318C60 /* HTTPDecoderLengthTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856B21F6A05600318C60 /* HTTPDecoderLengthTest.swift */; };
-		150C85E721F6A05800318C60 /* HTTPResponseEncoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856C21F6A05600318C60 /* HTTPResponseEncoderTest.swift */; };
-		150C85E821F6A05800318C60 /* HTTPServerClientTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856D21F6A05600318C60 /* HTTPServerClientTest+XCTest.swift */; };
-		150C85E921F6A05800318C60 /* HTTPRequestEncoderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856E21F6A05600318C60 /* HTTPRequestEncoderTest+XCTest.swift */; };
-		150C85EA21F6A05800318C60 /* HTTPHeadersTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856F21F6A05600318C60 /* HTTPHeadersTest.swift */; };
-		150C85EB21F6A05800318C60 /* ByteBufferUtilsTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857021F6A05600318C60 /* ByteBufferUtilsTest+XCTest.swift */; };
-		150C85EC21F6A05800318C60 /* HTTPServerPipelineHandlerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857121F6A05600318C60 /* HTTPServerPipelineHandlerTest.swift */; };
-		150C85ED21F6A05800318C60 /* ByteBufferUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857221F6A05600318C60 /* ByteBufferUtilsTest.swift */; };
-		150C85EE21F6A05800318C60 /* HTTPUpgradeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857321F6A05600318C60 /* HTTPUpgradeTests.swift */; };
-		150C85EF21F6A05800318C60 /* HTTPResponseCompressorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857421F6A05600318C60 /* HTTPResponseCompressorTest.swift */; };
-		150C85F021F6A05800318C60 /* HTTPTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857521F6A05600318C60 /* HTTPTest.swift */; };
-		150C85F121F6A05800318C60 /* HTTPResponseCompressorTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857621F6A05600318C60 /* HTTPResponseCompressorTest+XCTest.swift */; };
-		150C85F221F6A05800318C60 /* HTTPDecoderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857721F6A05600318C60 /* HTTPDecoderTest+XCTest.swift */; };
-		150C85F321F6A05800318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857821F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift */; };
-		150C85F421F6A05800318C60 /* HTTPDecoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857921F6A05600318C60 /* HTTPDecoderTest.swift */; };
-		150C85F521F6A05800318C60 /* HTTPTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857A21F6A05600318C60 /* HTTPTest+XCTest.swift */; };
-		150C85F621F6A05800318C60 /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857B21F6A05600318C60 /* TestUtils.swift */; };
-		150C85F721F6A05800318C60 /* ByteBufferTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857D21F6A05800318C60 /* ByteBufferTest+XCTest.swift */; };
-		150C85F821F6A05800318C60 /* ChannelNotificationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857E21F6A05800318C60 /* ChannelNotificationTest.swift */; };
-		150C85F921F6A05800318C60 /* ChannelNotificationTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C857F21F6A05800318C60 /* ChannelNotificationTest+XCTest.swift */; };
-		150C85FA21F6A05800318C60 /* RecvByteBufAllocatorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858021F6A05800318C60 /* RecvByteBufAllocatorTest.swift */; };
-		150C85FB21F6A05800318C60 /* PriorityQueueTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858121F6A05800318C60 /* PriorityQueueTests+XCTest.swift */; };
-		150C85FC21F6A05800318C60 /* BootstrapTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858221F6A05800318C60 /* BootstrapTest+XCTest.swift */; };
-		150C85FD21F6A05800318C60 /* BlockingIOThreadPoolTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858321F6A05800318C60 /* BlockingIOThreadPoolTest.swift */; };
-		150C85FE21F6A05800318C60 /* EchoServerClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858421F6A05800318C60 /* EchoServerClientTest.swift */; };
-		150C85FF21F6A05800318C60 /* SocketChannelTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858521F6A05800318C60 /* SocketChannelTest+XCTest.swift */; };
-		150C860021F6A05800318C60 /* IntegerTypesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858621F6A05800318C60 /* IntegerTypesTest.swift */; };
-		150C860121F6A05800318C60 /* BaseObjectsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858721F6A05800318C60 /* BaseObjectsTest.swift */; };
-		150C860221F6A05800318C60 /* ThreadTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858821F6A05800318C60 /* ThreadTest+XCTest.swift */; };
-		150C860321F6A05800318C60 /* SystemTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858921F6A05800318C60 /* SystemTest+XCTest.swift */; };
-		150C860421F6A05800318C60 /* CodecTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858A21F6A05800318C60 /* CodecTest.swift */; };
-		150C860521F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858B21F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift */; };
-		150C860621F6A05800318C60 /* CustomChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858C21F6A05800318C60 /* CustomChannelTests.swift */; };
-		150C860721F6A05800318C60 /* ChannelPipelineTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858D21F6A05800318C60 /* ChannelPipelineTest+XCTest.swift */; };
-		150C860821F6A05900318C60 /* BootstrapTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858E21F6A05800318C60 /* BootstrapTest.swift */; };
-		150C860921F6A05900318C60 /* FileRegionTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C858F21F6A05800318C60 /* FileRegionTest+XCTest.swift */; };
-		150C860A21F6A05900318C60 /* CompositeErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859021F6A05800318C60 /* CompositeErrorTests.swift */; };
-		150C860B21F6A05900318C60 /* SystemTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859121F6A05800318C60 /* SystemTest.swift */; };
-		150C860C21F6A05900318C60 /* FileRegionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859221F6A05800318C60 /* FileRegionTest.swift */; };
-		150C860D21F6A05900318C60 /* MulticastTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859321F6A05800318C60 /* MulticastTest.swift */; };
-		150C860E21F6A05900318C60 /* SocketOptionProviderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859421F6A05800318C60 /* SocketOptionProviderTest+XCTest.swift */; };
-		150C860F21F6A05900318C60 /* DatagramChannelTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859521F6A05800318C60 /* DatagramChannelTests+XCTest.swift */; };
-		150C861021F6A05900318C60 /* UtilitiesTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859621F6A05800318C60 /* UtilitiesTest.swift */; };
-		150C861121F6A05900318C60 /* ByteBufferTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859721F6A05800318C60 /* ByteBufferTest.swift */; };
-		150C861221F6A05900318C60 /* MarkedCircularBufferTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859821F6A05800318C60 /* MarkedCircularBufferTests+XCTest.swift */; };
-		150C861321F6A05900318C60 /* NonBlockingFileIOTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859921F6A05800318C60 /* NonBlockingFileIOTest+XCTest.swift */; };
-		150C861421F6A05900318C60 /* ChannelTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859A21F6A05800318C60 /* ChannelTests+XCTest.swift */; };
-		150C861521F6A05900318C60 /* EmbeddedEventLoopTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859B21F6A05800318C60 /* EmbeddedEventLoopTest+XCTest.swift */; };
-		150C861621F6A05900318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859C21F6A05800318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift */; };
-		150C861721F6A05900318C60 /* RecvByteBufAllocatorTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859D21F6A05800318C60 /* RecvByteBufAllocatorTest+XCTest.swift */; };
-		150C861821F6A05900318C60 /* BlockingIOThreadPoolTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859E21F6A05800318C60 /* BlockingIOThreadPoolTest+XCTest.swift */; };
-		150C861921F6A05900318C60 /* CustomChannelTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C859F21F6A05800318C60 /* CustomChannelTests+XCTest.swift */; };
-		150C861A21F6A05900318C60 /* IdleStateHandlerTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A021F6A05800318C60 /* IdleStateHandlerTest+XCTest.swift */; };
-		150C861B21F6A05900318C60 /* SystemCallWrapperHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A121F6A05800318C60 /* SystemCallWrapperHelpers.swift */; };
-		150C861C21F6A05900318C60 /* GetAddrInfoResolverTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A221F6A05800318C60 /* GetAddrInfoResolverTest.swift */; };
-		150C861D21F6A05900318C60 /* MarkedCircularBufferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A321F6A05800318C60 /* MarkedCircularBufferTests.swift */; };
-		150C861E21F6A05900318C60 /* TypeAssistedChannelHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A421F6A05800318C60 /* TypeAssistedChannelHandlerTests.swift */; };
-		150C861F21F6A05900318C60 /* CircularBufferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A521F6A05800318C60 /* CircularBufferTests.swift */; };
-		150C862021F6A05900318C60 /* AcceptBackoffHandlerTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A621F6A05800318C60 /* AcceptBackoffHandlerTest+XCTest.swift */; };
-		150C862121F6A05900318C60 /* UtilitiesTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A721F6A05800318C60 /* UtilitiesTest+XCTest.swift */; };
-		150C862221F6A05900318C60 /* EventLoopTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A821F6A05800318C60 /* EventLoopTest+XCTest.swift */; };
-		150C862321F6A05900318C60 /* IdleStateHandlerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85A921F6A05800318C60 /* IdleStateHandlerTest.swift */; };
-		150C862421F6A05900318C60 /* SocketChannelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AA21F6A05800318C60 /* SocketChannelTest.swift */; };
-		150C862521F6A05900318C60 /* SelectorTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AB21F6A05800318C60 /* SelectorTest+XCTest.swift */; };
-		150C862621F6A05900318C60 /* MulticastTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AC21F6A05800318C60 /* MulticastTest+XCTest.swift */; };
-		150C862721F6A05900318C60 /* EmbeddedChannelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AD21F6A05800318C60 /* EmbeddedChannelTest.swift */; };
-		150C862821F6A05900318C60 /* PendingDatagramWritesManagerTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AE21F6A05800318C60 /* PendingDatagramWritesManagerTests+XCTest.swift */; };
-		150C862921F6A05900318C60 /* AcceptBackoffHandlerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85AF21F6A05800318C60 /* AcceptBackoffHandlerTest.swift */; };
-		150C862A21F6A05900318C60 /* ChannelPipelineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B021F6A05800318C60 /* ChannelPipelineTest.swift */; };
-		150C862B21F6A05900318C60 /* BaseObjectsTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B121F6A05800318C60 /* BaseObjectsTest+XCTest.swift */; };
-		150C862C21F6A05900318C60 /* HappyEyeballsTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B221F6A05800318C60 /* HappyEyeballsTest+XCTest.swift */; };
-		150C862D21F6A05900318C60 /* SelectorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B321F6A05800318C60 /* SelectorTest.swift */; };
-		150C862E21F6A05900318C60 /* ThreadTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B421F6A05800318C60 /* ThreadTest.swift */; };
-		150C862F21F6A05900318C60 /* PendingDatagramWritesManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B521F6A05800318C60 /* PendingDatagramWritesManagerTests.swift */; };
-		150C863021F6A05900318C60 /* HeapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B621F6A05800318C60 /* HeapTests.swift */; };
-		150C863121F6A05900318C60 /* CompositeErrorTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B721F6A05800318C60 /* CompositeErrorTests+XCTest.swift */; };
-		150C863221F6A05900318C60 /* HeapTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B821F6A05800318C60 /* HeapTests+XCTest.swift */; };
-		150C863321F6A05900318C60 /* CircularBufferTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85B921F6A05800318C60 /* CircularBufferTests+XCTest.swift */; };
-		150C863421F6A05900318C60 /* CodecTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BA21F6A05800318C60 /* CodecTest+XCTest.swift */; };
-		150C863521F6A05900318C60 /* SocketAddressTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BB21F6A05800318C60 /* SocketAddressTest.swift */; };
-		150C863621F6A05900318C60 /* HappyEyeballsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BC21F6A05800318C60 /* HappyEyeballsTest.swift */; };
-		150C863721F6A05900318C60 /* DatagramChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BD21F6A05800318C60 /* DatagramChannelTests.swift */; };
-		150C863821F6A05900318C60 /* IntegerTypesTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BE21F6A05800318C60 /* IntegerTypesTest+XCTest.swift */; };
-		150C863921F6A05900318C60 /* NonBlockingFileIOTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85BF21F6A05800318C60 /* NonBlockingFileIOTest.swift */; };
-		150C863A21F6A05900318C60 /* EmbeddedChannelTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C021F6A05800318C60 /* EmbeddedChannelTest+XCTest.swift */; };
-		150C863B21F6A05900318C60 /* EmbeddedEventLoopTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C121F6A05800318C60 /* EmbeddedEventLoopTest.swift */; };
-		150C863C21F6A05900318C60 /* EventLoopFutureTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C221F6A05800318C60 /* EventLoopFutureTest+XCTest.swift */; };
-		150C863D21F6A05900318C60 /* EventLoopFutureTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C321F6A05800318C60 /* EventLoopFutureTest.swift */; };
-		150C863E21F6A05900318C60 /* SocketAddressTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C421F6A05800318C60 /* SocketAddressTest+XCTest.swift */; };
-		150C863F21F6A05900318C60 /* EchoServerClientTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C521F6A05800318C60 /* EchoServerClientTest+XCTest.swift */; };
-		150C864021F6A05900318C60 /* SocketOptionProviderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C621F6A05800318C60 /* SocketOptionProviderTest.swift */; };
-		150C864121F6A05900318C60 /* GetAddrInfoResolverTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C721F6A05800318C60 /* GetAddrInfoResolverTest+XCTest.swift */; };
-		150C864221F6A05900318C60 /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C821F6A05800318C60 /* TestUtils.swift */; };
-		150C864321F6A05900318C60 /* PriorityQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85C921F6A05800318C60 /* PriorityQueueTests.swift */; };
-		150C864421F6A05900318C60 /* ChannelOptionStorageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85CA21F6A05800318C60 /* ChannelOptionStorageTest.swift */; };
-		150C864521F6A05900318C60 /* ChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85CB21F6A05800318C60 /* ChannelTests.swift */; };
-		150C864621F6A05900318C60 /* EventLoopTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85CC21F6A05800318C60 /* EventLoopTest.swift */; };
-		150C864721F6A05900318C60 /* ApplicationProtocolNegotiationHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85CE21F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests.swift */; };
-		150C864821F6A05900318C60 /* SNIHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85CF21F6A05800318C60 /* SNIHandlerTests.swift */; };
-		150C864921F6A05900318C60 /* SNIHandlerTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D021F6A05800318C60 /* SNIHandlerTests+XCTest.swift */; };
-		150C864A21F6A05900318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D121F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift */; };
-		150C864B21F6A05900318C60 /* Base64Test+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D321F6A05800318C60 /* Base64Test+XCTest.swift */; };
-		150C864C21F6A05900318C60 /* WebSocketFrameEncoderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D421F6A05800318C60 /* WebSocketFrameEncoderTest+XCTest.swift */; };
-		150C864D21F6A05900318C60 /* EndToEndTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D521F6A05800318C60 /* EndToEndTests+XCTest.swift */; };
-		150C864E21F6A05900318C60 /* WebSocketFrameDecoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D621F6A05800318C60 /* WebSocketFrameDecoderTest.swift */; };
-		150C864F21F6A05900318C60 /* Base64Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D721F6A05800318C60 /* Base64Test.swift */; };
-		150C865021F6A05900318C60 /* EndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D821F6A05800318C60 /* EndToEndTests.swift */; };
-		150C865121F6A05900318C60 /* WebSocketFrameDecoderTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85D921F6A05800318C60 /* WebSocketFrameDecoderTest+XCTest.swift */; };
-		150C865221F6A05900318C60 /* WebSocketFrameEncoderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C85DA21F6A05800318C60 /* WebSocketFrameEncoderTest.swift */; };
 		153E207821EC26B500B82536 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153E207721EC26B500B82536 /* AppDelegate.swift */; };
 		153E207D21EC26B500B82536 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 153E207B21EC26B500B82536 /* Main.storyboard */; };
 		153E207F21EC26C800B82536 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 153E207E21EC26C800B82536 /* Assets.xcassets */; };
@@ -138,29 +17,6 @@
 		5604390C22886A16007CB3DB /* SessionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5604390B22886A16007CB3DB /* SessionItem.swift */; };
 		5604390E22887222007CB3DB /* Float+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5604390D22887222007CB3DB /* Float+Extension.swift */; };
 		5609BAB92264E30A006820E4 /* CA in Resources */ = {isa = PBXBuildFile; fileRef = 5609BAB82264E30A006820E4 /* CA */; };
-		5609BAD42265C13D006820E4 /* CertificateVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BABD2265C13D006820E4 /* CertificateVerificationTests.swift */; };
-		5609BAD52265C13D006820E4 /* TLSConfigurationTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BABE2265C13D006820E4 /* TLSConfigurationTest+XCTest.swift */; };
-		5609BAD62265C13D006820E4 /* SSLCertificateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BABF2265C13D006820E4 /* SSLCertificateTest.swift */; };
-		5609BAD72265C13D006820E4 /* SSLPrivateKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC02265C13D006820E4 /* SSLPrivateKeyTests.swift */; };
-		5609BAD82265C13D006820E4 /* IdentityVerificationTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC12265C13D006820E4 /* IdentityVerificationTest+XCTest.swift */; };
-		5609BAD92265C13D006820E4 /* IdentityVerificationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC22265C13D006820E4 /* IdentityVerificationTest.swift */; };
-		5609BADA2265C13D006820E4 /* ByteBufferBIOTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC32265C13D006820E4 /* ByteBufferBIOTest.swift */; };
-		5609BADB2265C13D006820E4 /* NIOSSLIntegrationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC42265C13D006820E4 /* NIOSSLIntegrationTest.swift */; };
-		5609BADC2265C13D006820E4 /* ClientSNITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC52265C13D006820E4 /* ClientSNITests.swift */; };
-		5609BADD2265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC62265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift */; };
-		5609BADE2265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC72265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift */; };
-		5609BADF2265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC82265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift */; };
-		5609BAE02265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAC92265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift */; };
-		5609BAE12265C13D006820E4 /* UnwrappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACA2265C13D006820E4 /* UnwrappingTests.swift */; };
-		5609BAE22265C13D006820E4 /* NIOSSLTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACB2265C13D006820E4 /* NIOSSLTestHelpers.swift */; };
-		5609BAE32265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACC2265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift */; };
-		5609BAE42265C13D006820E4 /* TLSConfigurationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACD2265C13D006820E4 /* TLSConfigurationTest.swift */; };
-		5609BAE52265C13D006820E4 /* SSLCertificateTest+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACE2265C13D006820E4 /* SSLCertificateTest+XCTest.swift */; };
-		5609BAE62265C13D006820E4 /* NIOSSLALPNTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BACF2265C13D006820E4 /* NIOSSLALPNTest.swift */; };
-		5609BAE72265C13D006820E4 /* ClientSNITests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAD02265C13D006820E4 /* ClientSNITests+XCTest.swift */; };
-		5609BAE82265C13D006820E4 /* UnwrappingTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAD12265C13D006820E4 /* UnwrappingTests+XCTest.swift */; };
-		5609BAE92265C13D006820E4 /* SSLPKCS12BundleTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAD22265C13D006820E4 /* SSLPKCS12BundleTest.swift */; };
-		5609BAEA2265C13D006820E4 /* CertificateVerificationTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5609BAD32265C13D006820E4 /* CertificateVerificationTests+XCTest.swift */; };
 		5616186D226DD33F00296E8E /* LocationStepsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5616186C226DD33F00296E8E /* LocationStepsManager.swift */; };
 		56162E5E224F558D00D24F87 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56162E5D224F558D00D24F87 /* PacketTunnelProvider.swift */; };
 		56162E63224F558D00D24F87 /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 56162E5B224F558D00D24F87 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -232,9 +88,6 @@
 		563D169822B5F1CB00AC6F5C /* MMWormhole.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 563D169522B5F0DB00AC6F5C /* MMWormhole.framework */; };
 		563D169922B5F1CB00AC6F5C /* MMWormhole.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 563D169522B5F0DB00AC6F5C /* MMWormhole.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		563D169C22B5F1D900AC6F5C /* MMWormhole.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 563D169522B5F0DB00AC6F5C /* MMWormhole.framework */; };
-		564379F022A769FA00DF957D /* PerfectCURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 564379EF22A769FA00DF957D /* PerfectCURLTests.swift */; };
-		56496586238BD8250089BC4D /* NIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8BC238BD1BD0053EF0F /* NIO.framework */; };
-		56496587238BD8250089BC4D /* NIO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8BC238BD1BD0053EF0F /* NIO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5649662E228FAF620043AC49 /* SessionOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5649662D228FAF620043AC49 /* SessionOverView.swift */; };
 		56496631228FB3A80043AC49 /* SessionTimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56496630228FB3A80043AC49 /* SessionTimeView.swift */; };
 		564B308A22B2215600387E07 /* AxLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564B308722B2213C00387E07 /* AxLogger.framework */; };
@@ -271,46 +124,6 @@
 		565C1C71228ABF33003366DD /* SessionResponseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C1C70228ABF33003366DD /* SessionResponseViewController.swift */; };
 		565C1C73228ABF56003366DD /* SessionOverViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C1C72228ABF56003366DD /* SessionOverViewViewController.swift */; };
 		565C1C75228ACD60003366DD /* SessionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C1C74228ACD60003366DD /* SessionItemView.swift */; };
-		565CB8BE238BEA7100CF0A3A /* NIOHTTP1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */; };
-		565CB8BF238BEA7100CF0A3A /* NIOHTTP1.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565CB8F7238BEB8400CF0A3A /* NIOFoundationCompat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */; };
-		565CB8F8238BEB8400CF0A3A /* NIOFoundationCompat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565CBDA3238BECF100CF0A3A /* CNIOBoringSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */; };
-		565CBDA4238BECF100CF0A3A /* CNIOBoringSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565CBE20238BEEF600CF0A3A /* NIOSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; };
-		565CBE21238BEEF600CF0A3A /* NIOSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565CBE22238BEF1000CF0A3A /* NIOSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; };
-		565CBE23238BEF1000CF0A3A /* NIOSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565CBF38238BFB1300CF0A3A /* NIOHTTP2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF24238BFAC400CF0A3A /* NIOHTTP2.framework */; };
-		565CBF39238BFB1300CF0A3A /* NIOHTTP2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF24238BFAC400CF0A3A /* NIOHTTP2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD96D238CD911004013B0 /* CNIOBoringSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */; };
-		565DD96E238CD911004013B0 /* CNIOBoringSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD97E238CDAB9004013B0 /* NIOSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; };
-		565DD97F238CDAB9004013B0 /* NIOSSL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD980238CDAF3004013B0 /* CNIOAtomics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564965A9238BDCE90089BC4D /* CNIOAtomics.framework */; };
-		565DD981238CDAF3004013B0 /* CNIOAtomics.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 564965A9238BDCE90089BC4D /* CNIOAtomics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD982238CDAF3004013B0 /* CNIODarwin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB839238BE43D00CF0A3A /* CNIODarwin.framework */; };
-		565DD983238CDAF3004013B0 /* CNIODarwin.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB839238BE43D00CF0A3A /* CNIODarwin.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD984238CDAF3004013B0 /* CNIOHTTPParser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8B5238BEA1300CF0A3A /* CNIOHTTPParser.framework */; };
-		565DD985238CDAF3004013B0 /* CNIOHTTPParser.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8B5238BEA1300CF0A3A /* CNIOHTTPParser.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD986238CDAF3004013B0 /* CNIOLinux.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB85F238BE7E600CF0A3A /* CNIOLinux.framework */; };
-		565DD987238CDAF3004013B0 /* CNIOLinux.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB85F238BE7E600CF0A3A /* CNIOLinux.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD988238CDAF3004013B0 /* NIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8BC238BD1BD0053EF0F /* NIO.framework */; };
-		565DD989238CDAF3004013B0 /* NIO.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8BC238BD1BD0053EF0F /* NIO.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD98A238CDAF3004013B0 /* NIOHPACK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF2A238BFAC800CF0A3A /* NIOHPACK.framework */; };
-		565DD98B238CDAF3004013B0 /* NIOHPACK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF2A238BFAC800CF0A3A /* NIOHPACK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD98C238CDAF3004013B0 /* NIOHTTP1.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */; };
-		565DD98D238CDAF3004013B0 /* NIOHTTP1.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD98E238CDAF3004013B0 /* NIOHTTP2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBF24238BFAC400CF0A3A /* NIOHTTP2.framework */; };
-		565DD98F238CDAF4004013B0 /* NIOSSL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */; };
-		565DD990238CDAF4004013B0 /* NIOTLS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE45238BEFF600CF0A3A /* NIOTLS.framework */; };
-		565DD991238CDAF4004013B0 /* NIOTLS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE45238BEFF600CF0A3A /* NIOTLS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD992238CF5AF004013B0 /* CNIOBoringSSLShims.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE17238BEEB200CF0A3A /* CNIOBoringSSLShims.framework */; };
-		565DD993238CF5AF004013B0 /* CNIOBoringSSLShims.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CBE17238BEEB200CF0A3A /* CNIOBoringSSLShims.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD994238CF5DC004013B0 /* NIOConcurrencyHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8DB238BD2660053EF0F /* NIOConcurrencyHelpers.framework */; };
-		565DD995238CF5DC004013B0 /* NIOConcurrencyHelpers.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5694D8DB238BD2660053EF0F /* NIOConcurrencyHelpers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		565DD996238CF5FE004013B0 /* NIOFoundationCompat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */; };
-		565DD997238CF5FE004013B0 /* NIOFoundationCompat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		565F86A422BDEAD700DCD014 /* SSLServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565F86A322BDEAD700DCD014 /* SSLServer.swift */; };
 		566C76A722794C9300DA0B9E /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 566C76A622794C9300DA0B9E /* Task.swift */; };
 		566C76AA22795ADA00DA0B9E /* VPNTunnelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 566C76A922795ADA00DA0B9E /* VPNTunnelManager.swift */; };
@@ -408,12 +221,6 @@
 		56D260A4227D07C2004F5636 /* CloseTimeoutChannelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260A3227D07C2004F5636 /* CloseTimeoutChannelHandler.swift */; };
 		56D260A6227D54ED004F5636 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260A5227D54ED004F5636 /* String+Extension.swift */; };
 		56D260A8227DAC49004F5636 /* NetFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260A7227DAC49004F5636 /* NetFileManager.swift */; };
-		56D260F2228132F7004F5636 /* NIOTSEventLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260EB228132F7004F5636 /* NIOTSEventLoopTests.swift */; };
-		56D260F3228132F7004F5636 /* NIOTSConnectionChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260EC228132F7004F5636 /* NIOTSConnectionChannelTests.swift */; };
-		56D260F4228132F7004F5636 /* NIOTSEndToEndTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260ED228132F7004F5636 /* NIOTSEndToEndTests.swift */; };
-		56D260F5228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260EE228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift */; };
-		56D260F6228132F7004F5636 /* NIOTSListenerChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260EF228132F7004F5636 /* NIOTSListenerChannelTests.swift */; };
-		56D260F7228132F7004F5636 /* NIOTSSocketOptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D260F0228132F7004F5636 /* NIOTSSocketOptionTests.swift */; };
 		56D6C1AE22AAB0E600689FCC /* RuleListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D6C1AD22AAB0E600689FCC /* RuleListViewController.swift */; };
 		56D6C1B222AAB90E00689FCC /* RuleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D6C1B122AAB90E00689FCC /* RuleCell.swift */; };
 		56D6C1B422AAC5D800689FCC /* RuleDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D6C1B322AAC5D800689FCC /* RuleDetailViewController.swift */; };
@@ -481,17 +288,11 @@
 		56F6A23622AC0984006626B2 /* KeyboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F6A23222AC0984006626B2 /* KeyboardManager.swift */; };
 		76BD4069B5DEA69FE4F9F580 /* Pods_PacketTunnel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1780182D785E498D13CA110E /* Pods_PacketTunnel.framework */; };
 		B4691E98DF99033F35092394 /* Pods_NIO1901.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 47BA101E61A6310187327755 /* Pods_NIO1901.framework */; };
+		E4A10F1F27189189009BA850 /* CertDatas.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4A10F1E27189189009BA850 /* CertDatas.swift */; };
 		F27F1CCDEAB554595C667837 /* Pods_TunnelServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37229E5356996334ABDBCD0F /* Pods_TunnelServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		150C855921F6A04400318C60 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 153E207321EC26B500B82536;
-			remoteInfo = NIO1901;
-		};
 		56162E61224F558D00D24F87 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
@@ -520,13 +321,6 @@
 			remoteGlobalIDString = 9B44A4C51B00570E00C9969A;
 			remoteInfo = "MMWormhole-iOS";
 		};
-		564965A8238BDCE90089BC4D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 564965A4238BDCE80089BC4D /* CNIOAtomics.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 56496593238BDBDE0089BC4D;
-			remoteInfo = CNIOAtomics;
-		};
 		564B308622B2213C00387E07 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 564B308122B2213B00387E07 /* AxLogger.xcodeproj */;
@@ -548,97 +342,6 @@
 			remoteGlobalIDString = 69A0D2841DD598F200227353;
 			remoteInfo = AxLogger;
 		};
-		565CB838238BE43D00CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CB832238BE43D00CF0A3A /* CNIODarwin.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 564965B8238BDE120089BC4D;
-			remoteInfo = CNIODarwin;
-		};
-		565CB85E238BE7E600CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CB85A238BE7E600CF0A3A /* CNIOLinux.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CB847238BE78500CF0A3A;
-			remoteInfo = CNIOLinux;
-		};
-		565CB8AE238BEA0E00CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CB8AA238BEA0E00CF0A3A /* NIOHTTP1.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CB872238BE99D00CF0A3A;
-			remoteInfo = NIOHTTP1;
-		};
-		565CB8B4238BEA1300CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CB8B0238BEA1300CF0A3A /* CNIOHTTPParser.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CB899238BE9CD00CF0A3A;
-			remoteInfo = CNIOHTTPParser;
-		};
-		565CB8EF238BEB6200CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CB8E3238BEB6200CF0A3A /* NIOFoundationCompat.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CB8D4238BEB2900CF0A3A;
-			remoteInfo = NIOFoundationCompat;
-		};
-		565CBDA1238BECE000CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBD9D238BECE000CF0A3A /* CNIOBoringSSL.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CB903238BEBF600CF0A3A;
-			remoteInfo = CNIOBoringSSL;
-		};
-		565CBE10238BEEAF00CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBE0C238BEEAE00CF0A3A /* NIOSSL.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CBDC4238BEE2B00CF0A3A;
-			remoteInfo = NIOSSL;
-		};
-		565CBE16238BEEB200CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBE12238BEEB200CF0A3A /* CNIOBoringSSLShims.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CBDFD238BEE6D00CF0A3A;
-			remoteInfo = CNIOBoringSSLShims;
-		};
-		565CBE44238BEFF600CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBE40238BEFF600CF0A3A /* NIOTLS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CBE2F238BEFA100CF0A3A;
-			remoteInfo = NIOTLS;
-		};
-		565CBF23238BFAC400CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBF1F238BFAC400CF0A3A /* NIOHTTP2.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CBE77238BF83200CF0A3A;
-			remoteInfo = NIOHTTP2;
-		};
-		565CBF29238BFAC800CF0A3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 565CBF25238BFAC800CF0A3A /* NIOHPACK.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 565CBEFE238BFA7600CF0A3A;
-			remoteInfo = NIOHPACK;
-		};
-		5694D8BB238BD1BD0053EF0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5694D8B5238BD1BD0053EF0F /* NIO.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 5694D834238BCFCE0053EF0F;
-			remoteInfo = NIO;
-		};
-		5694D8DA238BD2660053EF0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5694D8D6238BD2660053EF0F /* NIOConcurrencyHelpers.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 5694D8C7238BD23F0053EF0F;
-			remoteInfo = NIOConcurrencyHelpers;
-		};
 		56F415BB227711A000AE1554 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
@@ -655,23 +358,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				565DD997238CF5FE004013B0 /* NIOFoundationCompat.framework in Embed Frameworks */,
 				56F415BE227711A000AE1554 /* TunnelServices.framework in Embed Frameworks */,
-				565DD98D238CDAF3004013B0 /* NIOHTTP1.framework in Embed Frameworks */,
-				565DD981238CDAF3004013B0 /* CNIOAtomics.framework in Embed Frameworks */,
-				565DD985238CDAF3004013B0 /* CNIOHTTPParser.framework in Embed Frameworks */,
-				565DD98B238CDAF3004013B0 /* NIOHPACK.framework in Embed Frameworks */,
 				564B308B22B2215600387E07 /* AxLogger.framework in Embed Frameworks */,
-				565DD989238CDAF3004013B0 /* NIO.framework in Embed Frameworks */,
-				565DD993238CF5AF004013B0 /* CNIOBoringSSLShims.framework in Embed Frameworks */,
-				565CBF39238BFB1300CF0A3A /* NIOHTTP2.framework in Embed Frameworks */,
-				565DD96E238CD911004013B0 /* CNIOBoringSSL.framework in Embed Frameworks */,
-				565DD987238CDAF3004013B0 /* CNIOLinux.framework in Embed Frameworks */,
-				565DD97F238CDAB9004013B0 /* NIOSSL.framework in Embed Frameworks */,
-				565DD991238CDAF4004013B0 /* NIOTLS.framework in Embed Frameworks */,
-				565DD983238CDAF3004013B0 /* CNIODarwin.framework in Embed Frameworks */,
 				563D169922B5F1CB00AC6F5C /* MMWormhole.framework in Embed Frameworks */,
-				565DD995238CF5DC004013B0 /* NIOConcurrencyHelpers.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -693,11 +382,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				565CBE21238BEEF600CF0A3A /* NIOSSL.framework in Embed Frameworks */,
-				56496587238BD8250089BC4D /* NIO.framework in Embed Frameworks */,
-				565CB8F8238BEB8400CF0A3A /* NIOFoundationCompat.framework in Embed Frameworks */,
-				565CB8BF238BEA7100CF0A3A /* NIOHTTP1.framework in Embed Frameworks */,
-				565CBDA4238BECF100CF0A3A /* CNIOBoringSSL.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -708,7 +392,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				565CBE23238BEF1000CF0A3A /* NIOSSL.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -716,129 +399,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		150C855421F6A04400318C60 /* NIO1901Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NIO1901Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		150C855621F6A04400318C60 /* NIO1901Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIO1901Tests.swift; sourceTree = "<group>"; };
-		150C855821F6A04400318C60 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOConcurrencyHelpersTests.swift; sourceTree = "<group>"; };
-		150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOConcurrencyHelpersTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C856121F6A05600318C60 /* LinuxMain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinuxMain.swift; sourceTree = "<group>"; };
-		150C856321F6A05600318C60 /* HTTPUpgradeTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPUpgradeTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C856421F6A05600318C60 /* HTTPServerClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerClientTest.swift; sourceTree = "<group>"; };
-		150C856521F6A05600318C60 /* HTTPHeadersTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPHeadersTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856621F6A05600318C60 /* HTTPRequestEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPRequestEncoderTest.swift; sourceTree = "<group>"; };
-		150C856721F6A05600318C60 /* HTTPDecoderLengthTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPDecoderLengthTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856821F6A05600318C60 /* HTTPResponseEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPResponseEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856921F6A05600318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerPipelineHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856A21F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerProtocolErrorHandlerTest.swift; sourceTree = "<group>"; };
-		150C856B21F6A05600318C60 /* HTTPDecoderLengthTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPDecoderLengthTest.swift; sourceTree = "<group>"; };
-		150C856C21F6A05600318C60 /* HTTPResponseEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPResponseEncoderTest.swift; sourceTree = "<group>"; };
-		150C856D21F6A05600318C60 /* HTTPServerClientTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerClientTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856E21F6A05600318C60 /* HTTPRequestEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPRequestEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C856F21F6A05600318C60 /* HTTPHeadersTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersTest.swift; sourceTree = "<group>"; };
-		150C857021F6A05600318C60 /* ByteBufferUtilsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferUtilsTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857121F6A05600318C60 /* HTTPServerPipelineHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerPipelineHandlerTest.swift; sourceTree = "<group>"; };
-		150C857221F6A05600318C60 /* ByteBufferUtilsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferUtilsTest.swift; sourceTree = "<group>"; };
-		150C857321F6A05600318C60 /* HTTPUpgradeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPUpgradeTests.swift; sourceTree = "<group>"; };
-		150C857421F6A05600318C60 /* HTTPResponseCompressorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPResponseCompressorTest.swift; sourceTree = "<group>"; };
-		150C857521F6A05600318C60 /* HTTPTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPTest.swift; sourceTree = "<group>"; };
-		150C857621F6A05600318C60 /* HTTPResponseCompressorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPResponseCompressorTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857721F6A05600318C60 /* HTTPDecoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPDecoderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857821F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerProtocolErrorHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857921F6A05600318C60 /* HTTPDecoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPDecoderTest.swift; sourceTree = "<group>"; };
-		150C857A21F6A05600318C60 /* HTTPTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857B21F6A05600318C60 /* TestUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtils.swift; sourceTree = "<group>"; };
-		150C857D21F6A05800318C60 /* ByteBufferTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C857E21F6A05800318C60 /* ChannelNotificationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelNotificationTest.swift; sourceTree = "<group>"; };
-		150C857F21F6A05800318C60 /* ChannelNotificationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelNotificationTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858021F6A05800318C60 /* RecvByteBufAllocatorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecvByteBufAllocatorTest.swift; sourceTree = "<group>"; };
-		150C858121F6A05800318C60 /* PriorityQueueTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PriorityQueueTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C858221F6A05800318C60 /* BootstrapTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BootstrapTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858321F6A05800318C60 /* BlockingIOThreadPoolTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockingIOThreadPoolTest.swift; sourceTree = "<group>"; };
-		150C858421F6A05800318C60 /* EchoServerClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EchoServerClientTest.swift; sourceTree = "<group>"; };
-		150C858521F6A05800318C60 /* SocketChannelTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketChannelTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858621F6A05800318C60 /* IntegerTypesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegerTypesTest.swift; sourceTree = "<group>"; };
-		150C858721F6A05800318C60 /* BaseObjectsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseObjectsTest.swift; sourceTree = "<group>"; };
-		150C858821F6A05800318C60 /* ThreadTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ThreadTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858921F6A05800318C60 /* SystemTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SystemTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858A21F6A05800318C60 /* CodecTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodecTest.swift; sourceTree = "<group>"; };
-		150C858B21F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelOptionStorageTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858C21F6A05800318C60 /* CustomChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomChannelTests.swift; sourceTree = "<group>"; };
-		150C858D21F6A05800318C60 /* ChannelPipelineTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelPipelineTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C858E21F6A05800318C60 /* BootstrapTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BootstrapTest.swift; sourceTree = "<group>"; };
-		150C858F21F6A05800318C60 /* FileRegionTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "FileRegionTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859021F6A05800318C60 /* CompositeErrorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompositeErrorTests.swift; sourceTree = "<group>"; };
-		150C859121F6A05800318C60 /* SystemTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemTest.swift; sourceTree = "<group>"; };
-		150C859221F6A05800318C60 /* FileRegionTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileRegionTest.swift; sourceTree = "<group>"; };
-		150C859321F6A05800318C60 /* MulticastTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastTest.swift; sourceTree = "<group>"; };
-		150C859421F6A05800318C60 /* SocketOptionProviderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketOptionProviderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859521F6A05800318C60 /* DatagramChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DatagramChannelTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C859621F6A05800318C60 /* UtilitiesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilitiesTest.swift; sourceTree = "<group>"; };
-		150C859721F6A05800318C60 /* ByteBufferTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferTest.swift; sourceTree = "<group>"; };
-		150C859821F6A05800318C60 /* MarkedCircularBufferTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MarkedCircularBufferTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C859921F6A05800318C60 /* NonBlockingFileIOTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NonBlockingFileIOTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859A21F6A05800318C60 /* ChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C859B21F6A05800318C60 /* EmbeddedEventLoopTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EmbeddedEventLoopTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859C21F6A05800318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TypeAssistedChannelHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C859D21F6A05800318C60 /* RecvByteBufAllocatorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "RecvByteBufAllocatorTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859E21F6A05800318C60 /* BlockingIOThreadPoolTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlockingIOThreadPoolTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C859F21F6A05800318C60 /* CustomChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CustomChannelTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85A021F6A05800318C60 /* IdleStateHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IdleStateHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85A121F6A05800318C60 /* SystemCallWrapperHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemCallWrapperHelpers.swift; sourceTree = "<group>"; };
-		150C85A221F6A05800318C60 /* GetAddrInfoResolverTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetAddrInfoResolverTest.swift; sourceTree = "<group>"; };
-		150C85A321F6A05800318C60 /* MarkedCircularBufferTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarkedCircularBufferTests.swift; sourceTree = "<group>"; };
-		150C85A421F6A05800318C60 /* TypeAssistedChannelHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeAssistedChannelHandlerTests.swift; sourceTree = "<group>"; };
-		150C85A521F6A05800318C60 /* CircularBufferTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularBufferTests.swift; sourceTree = "<group>"; };
-		150C85A621F6A05800318C60 /* AcceptBackoffHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AcceptBackoffHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85A721F6A05800318C60 /* UtilitiesTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UtilitiesTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85A821F6A05800318C60 /* EventLoopTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EventLoopTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85A921F6A05800318C60 /* IdleStateHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdleStateHandlerTest.swift; sourceTree = "<group>"; };
-		150C85AA21F6A05800318C60 /* SocketChannelTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketChannelTest.swift; sourceTree = "<group>"; };
-		150C85AB21F6A05800318C60 /* SelectorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SelectorTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85AC21F6A05800318C60 /* MulticastTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MulticastTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85AD21F6A05800318C60 /* EmbeddedChannelTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedChannelTest.swift; sourceTree = "<group>"; };
-		150C85AE21F6A05800318C60 /* PendingDatagramWritesManagerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PendingDatagramWritesManagerTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85AF21F6A05800318C60 /* AcceptBackoffHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcceptBackoffHandlerTest.swift; sourceTree = "<group>"; };
-		150C85B021F6A05800318C60 /* ChannelPipelineTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelPipelineTest.swift; sourceTree = "<group>"; };
-		150C85B121F6A05800318C60 /* BaseObjectsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BaseObjectsTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85B221F6A05800318C60 /* HappyEyeballsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HappyEyeballsTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85B321F6A05800318C60 /* SelectorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorTest.swift; sourceTree = "<group>"; };
-		150C85B421F6A05800318C60 /* ThreadTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreadTest.swift; sourceTree = "<group>"; };
-		150C85B521F6A05800318C60 /* PendingDatagramWritesManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PendingDatagramWritesManagerTests.swift; sourceTree = "<group>"; };
-		150C85B621F6A05800318C60 /* HeapTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapTests.swift; sourceTree = "<group>"; };
-		150C85B721F6A05800318C60 /* CompositeErrorTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CompositeErrorTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85B821F6A05800318C60 /* HeapTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HeapTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85B921F6A05800318C60 /* CircularBufferTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CircularBufferTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85BA21F6A05800318C60 /* CodecTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CodecTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85BB21F6A05800318C60 /* SocketAddressTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAddressTest.swift; sourceTree = "<group>"; };
-		150C85BC21F6A05800318C60 /* HappyEyeballsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HappyEyeballsTest.swift; sourceTree = "<group>"; };
-		150C85BD21F6A05800318C60 /* DatagramChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatagramChannelTests.swift; sourceTree = "<group>"; };
-		150C85BE21F6A05800318C60 /* IntegerTypesTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IntegerTypesTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85BF21F6A05800318C60 /* NonBlockingFileIOTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NonBlockingFileIOTest.swift; sourceTree = "<group>"; };
-		150C85C021F6A05800318C60 /* EmbeddedChannelTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EmbeddedChannelTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85C121F6A05800318C60 /* EmbeddedEventLoopTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedEventLoopTest.swift; sourceTree = "<group>"; };
-		150C85C221F6A05800318C60 /* EventLoopFutureTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EventLoopFutureTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85C321F6A05800318C60 /* EventLoopFutureTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopFutureTest.swift; sourceTree = "<group>"; };
-		150C85C421F6A05800318C60 /* SocketAddressTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketAddressTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85C521F6A05800318C60 /* EchoServerClientTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EchoServerClientTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85C621F6A05800318C60 /* SocketOptionProviderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketOptionProviderTest.swift; sourceTree = "<group>"; };
-		150C85C721F6A05800318C60 /* GetAddrInfoResolverTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GetAddrInfoResolverTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85C821F6A05800318C60 /* TestUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtils.swift; sourceTree = "<group>"; };
-		150C85C921F6A05800318C60 /* PriorityQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PriorityQueueTests.swift; sourceTree = "<group>"; };
-		150C85CA21F6A05800318C60 /* ChannelOptionStorageTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelOptionStorageTest.swift; sourceTree = "<group>"; };
-		150C85CB21F6A05800318C60 /* ChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelTests.swift; sourceTree = "<group>"; };
-		150C85CC21F6A05800318C60 /* EventLoopTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopTest.swift; sourceTree = "<group>"; };
-		150C85CE21F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationProtocolNegotiationHandlerTests.swift; sourceTree = "<group>"; };
-		150C85CF21F6A05800318C60 /* SNIHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SNIHandlerTests.swift; sourceTree = "<group>"; };
-		150C85D021F6A05800318C60 /* SNIHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SNIHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85D121F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ApplicationProtocolNegotiationHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85D321F6A05800318C60 /* Base64Test+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Base64Test+XCTest.swift"; sourceTree = "<group>"; };
-		150C85D421F6A05800318C60 /* WebSocketFrameEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WebSocketFrameEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85D521F6A05800318C60 /* EndToEndTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EndToEndTests+XCTest.swift"; sourceTree = "<group>"; };
-		150C85D621F6A05800318C60 /* WebSocketFrameDecoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocketFrameDecoderTest.swift; sourceTree = "<group>"; };
-		150C85D721F6A05800318C60 /* Base64Test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64Test.swift; sourceTree = "<group>"; };
-		150C85D821F6A05800318C60 /* EndToEndTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndToEndTests.swift; sourceTree = "<group>"; };
-		150C85D921F6A05800318C60 /* WebSocketFrameDecoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WebSocketFrameDecoderTest+XCTest.swift"; sourceTree = "<group>"; };
-		150C85DA21F6A05800318C60 /* WebSocketFrameEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocketFrameEncoderTest.swift; sourceTree = "<group>"; };
 		153E207421EC26B500B82536 /* NIO1901.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NIO1901.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		153E207721EC26B500B82536 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		153E207C21EC26B500B82536 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -863,29 +423,6 @@
 		5604390B22886A16007CB3DB /* SessionItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionItem.swift; sourceTree = "<group>"; };
 		5604390D22887222007CB3DB /* Float+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Float+Extension.swift"; sourceTree = "<group>"; };
 		5609BAB82264E30A006820E4 /* CA */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CA; sourceTree = "<group>"; };
-		5609BABD2265C13D006820E4 /* CertificateVerificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CertificateVerificationTests.swift; sourceTree = "<group>"; };
-		5609BABE2265C13D006820E4 /* TLSConfigurationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TLSConfigurationTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BABF2265C13D006820E4 /* SSLCertificateTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLCertificateTest.swift; sourceTree = "<group>"; };
-		5609BAC02265C13D006820E4 /* SSLPrivateKeyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLPrivateKeyTests.swift; sourceTree = "<group>"; };
-		5609BAC12265C13D006820E4 /* IdentityVerificationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IdentityVerificationTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAC22265C13D006820E4 /* IdentityVerificationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityVerificationTest.swift; sourceTree = "<group>"; };
-		5609BAC32265C13D006820E4 /* ByteBufferBIOTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferBIOTest.swift; sourceTree = "<group>"; };
-		5609BAC42265C13D006820E4 /* NIOSSLIntegrationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLIntegrationTest.swift; sourceTree = "<group>"; };
-		5609BAC52265C13D006820E4 /* ClientSNITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientSNITests.swift; sourceTree = "<group>"; };
-		5609BAC62265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferBIOTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAC72265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLPrivateKeyTests+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAC82265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOSSLALPNTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAC92265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOSSLIntegrationTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BACA2265C13D006820E4 /* UnwrappingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnwrappingTests.swift; sourceTree = "<group>"; };
-		5609BACB2265C13D006820E4 /* NIOSSLTestHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLTestHelpers.swift; sourceTree = "<group>"; };
-		5609BACC2265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLPKCS12BundleTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BACD2265C13D006820E4 /* TLSConfigurationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TLSConfigurationTest.swift; sourceTree = "<group>"; };
-		5609BACE2265C13D006820E4 /* SSLCertificateTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLCertificateTest+XCTest.swift"; sourceTree = "<group>"; };
-		5609BACF2265C13D006820E4 /* NIOSSLALPNTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLALPNTest.swift; sourceTree = "<group>"; };
-		5609BAD02265C13D006820E4 /* ClientSNITests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ClientSNITests+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAD12265C13D006820E4 /* UnwrappingTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnwrappingTests+XCTest.swift"; sourceTree = "<group>"; };
-		5609BAD22265C13D006820E4 /* SSLPKCS12BundleTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLPKCS12BundleTest.swift; sourceTree = "<group>"; };
-		5609BAD32265C13D006820E4 /* CertificateVerificationTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CertificateVerificationTests+XCTest.swift"; sourceTree = "<group>"; };
 		5616186C226DD33F00296E8E /* LocationStepsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStepsManager.swift; sourceTree = "<group>"; };
 		56162E5B224F558D00D24F87 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		56162E5D224F558D00D24F87 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
@@ -958,8 +495,6 @@
 		5634538922BCEA780076219D /* HTTPServerHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPServerHandler.swift; sourceTree = "<group>"; };
 		563D168B22B5883E00AC6F5C /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		563D168F22B5F0DB00AC6F5C /* MMWormhole.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MMWormhole.xcodeproj; path = MMWormhole/MMWormhole/MMWormhole.xcodeproj; sourceTree = "<group>"; };
-		564379EF22A769FA00DF957D /* PerfectCURLTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PerfectCURLTests.swift; sourceTree = "<group>"; };
-		564965A4238BDCE80089BC4D /* CNIOAtomics.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIOAtomics.xcodeproj; path = CNIOAtomics/CNIOAtomics.xcodeproj; sourceTree = "<group>"; };
 		5649662D228FAF620043AC49 /* SessionOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionOverView.swift; sourceTree = "<group>"; };
 		56496630228FB3A80043AC49 /* SessionTimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTimeView.swift; sourceTree = "<group>"; };
 		564B308122B2213B00387E07 /* AxLogger.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AxLogger.xcodeproj; path = AxLogger/AxLogger.xcodeproj; sourceTree = "<group>"; };
@@ -993,17 +528,6 @@
 		565C1C70228ABF33003366DD /* SessionResponseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResponseViewController.swift; sourceTree = "<group>"; };
 		565C1C72228ABF56003366DD /* SessionOverViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionOverViewViewController.swift; sourceTree = "<group>"; };
 		565C1C74228ACD60003366DD /* SessionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionItemView.swift; sourceTree = "<group>"; };
-		565CB832238BE43D00CF0A3A /* CNIODarwin.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIODarwin.xcodeproj; path = CNIODarwin/CNIODarwin.xcodeproj; sourceTree = "<group>"; };
-		565CB85A238BE7E600CF0A3A /* CNIOLinux.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIOLinux.xcodeproj; path = CNIOLinux/CNIOLinux.xcodeproj; sourceTree = "<group>"; };
-		565CB8AA238BEA0E00CF0A3A /* NIOHTTP1.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOHTTP1.xcodeproj; path = NIOHTTP1/NIOHTTP1.xcodeproj; sourceTree = "<group>"; };
-		565CB8B0238BEA1300CF0A3A /* CNIOHTTPParser.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIOHTTPParser.xcodeproj; path = CNIOHTTPParser/CNIOHTTPParser.xcodeproj; sourceTree = "<group>"; };
-		565CB8E3238BEB6200CF0A3A /* NIOFoundationCompat.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOFoundationCompat.xcodeproj; path = NIOFoundationCompat/NIOFoundationCompat.xcodeproj; sourceTree = "<group>"; };
-		565CBD9D238BECE000CF0A3A /* CNIOBoringSSL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIOBoringSSL.xcodeproj; path = CNIOBoringSSL/CNIOBoringSSL.xcodeproj; sourceTree = "<group>"; };
-		565CBE0C238BEEAE00CF0A3A /* NIOSSL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOSSL.xcodeproj; path = NIOSSL/NIOSSL.xcodeproj; sourceTree = "<group>"; };
-		565CBE12238BEEB200CF0A3A /* CNIOBoringSSLShims.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CNIOBoringSSLShims.xcodeproj; path = CNIOBoringSSLShims/CNIOBoringSSLShims.xcodeproj; sourceTree = "<group>"; };
-		565CBE40238BEFF600CF0A3A /* NIOTLS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOTLS.xcodeproj; path = NIOTLS/NIOTLS.xcodeproj; sourceTree = "<group>"; };
-		565CBF1F238BFAC400CF0A3A /* NIOHTTP2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOHTTP2.xcodeproj; path = NIOHTTP2/NIOHTTP2.xcodeproj; sourceTree = "<group>"; };
-		565CBF25238BFAC800CF0A3A /* NIOHPACK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOHPACK.xcodeproj; path = NIOHPACK/NIOHPACK.xcodeproj; sourceTree = "<group>"; };
 		565F86A322BDEAD700DCD014 /* SSLServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSLServer.swift; sourceTree = "<group>"; };
 		566C76A622794C9300DA0B9E /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		566C76A922795ADA00DA0B9E /* VPNTunnelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPNTunnelManager.swift; sourceTree = "<group>"; };
@@ -1057,8 +581,6 @@
 		5675D15F22AFE2FE00562E73 /* OtherItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OtherItem.swift; sourceTree = "<group>"; };
 		5675D16622AFE36900562E73 /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
 		5688A40E22A10C090033326A /* HAR.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HAR.swift; sourceTree = "<group>"; };
-		5694D8B5238BD1BD0053EF0F /* NIO.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIO.xcodeproj; path = NIO/NIO.xcodeproj; sourceTree = "<group>"; };
-		5694D8D6238BD2660053EF0F /* NIOConcurrencyHelpers.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NIOConcurrencyHelpers.xcodeproj; path = NIOConcurrencyHelpers/NIOConcurrencyHelpers.xcodeproj; sourceTree = "<group>"; };
 		56A137552270606800DEE539 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
 		56A137902270794400DEE539 /* ConstraintLayoutSupportDSL.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintLayoutSupportDSL.swift; sourceTree = "<group>"; };
 		56A137912270794400DEE539 /* ConstraintLayoutGuide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintLayoutGuide.swift; sourceTree = "<group>"; };
@@ -1106,12 +628,6 @@
 		56D260A3227D07C2004F5636 /* CloseTimeoutChannelHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseTimeoutChannelHandler.swift; sourceTree = "<group>"; };
 		56D260A5227D54ED004F5636 /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		56D260A7227DAC49004F5636 /* NetFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetFileManager.swift; sourceTree = "<group>"; };
-		56D260EB228132F7004F5636 /* NIOTSEventLoopTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSEventLoopTests.swift; sourceTree = "<group>"; };
-		56D260EC228132F7004F5636 /* NIOTSConnectionChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSConnectionChannelTests.swift; sourceTree = "<group>"; };
-		56D260ED228132F7004F5636 /* NIOTSEndToEndTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSEndToEndTests.swift; sourceTree = "<group>"; };
-		56D260EE228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSSocketOptionsOnChannelTests.swift; sourceTree = "<group>"; };
-		56D260EF228132F7004F5636 /* NIOTSListenerChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSListenerChannelTests.swift; sourceTree = "<group>"; };
-		56D260F0228132F7004F5636 /* NIOTSSocketOptionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSSocketOptionTests.swift; sourceTree = "<group>"; };
 		56D6C1AD22AAB0E600689FCC /* RuleListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleListViewController.swift; sourceTree = "<group>"; };
 		56D6C1B122AAB90E00689FCC /* RuleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCell.swift; sourceTree = "<group>"; };
 		56D6C1B322AAC5D800689FCC /* RuleDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleDetailViewController.swift; sourceTree = "<group>"; };
@@ -1183,43 +699,21 @@
 		7BA4F9D1F9BD7E1C68E596AC /* Pods-TunnelServices.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TunnelServices.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TunnelServices/Pods-TunnelServices.debug.xcconfig"; sourceTree = "<group>"; };
 		99BAB04DC95D77B60FFFF77E /* Pods-PacketTunnel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketTunnel.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PacketTunnel/Pods-PacketTunnel.debug.xcconfig"; sourceTree = "<group>"; };
 		BFE65698155AEF215FFC3F86 /* Pods-NIO1901.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NIO1901.release.xcconfig"; path = "Pods/Target Support Files/Pods-NIO1901/Pods-NIO1901.release.xcconfig"; sourceTree = "<group>"; };
+		E4A10F1E27189189009BA850 /* CertDatas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertDatas.swift; sourceTree = "<group>"; };
 		E59E2F5FD1342D168E70FB66 /* Pods-PacketTunnel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PacketTunnel.release.xcconfig"; path = "Pods/Target Support Files/Pods-PacketTunnel/Pods-PacketTunnel.release.xcconfig"; sourceTree = "<group>"; };
 		FCC24BC318DA421F593C7177 /* Pods-NIO1901.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NIO1901.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NIO1901/Pods-NIO1901.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		150C855121F6A04400318C60 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		153E207121EC26B500B82536 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				565DD98F238CDAF4004013B0 /* NIOSSL.framework in Frameworks */,
-				565DD986238CDAF3004013B0 /* CNIOLinux.framework in Frameworks */,
 				56162E8D2255CCF600D24F87 /* NetworkExtension.framework in Frameworks */,
-				565DD994238CF5DC004013B0 /* NIOConcurrencyHelpers.framework in Frameworks */,
-				565DD996238CF5FE004013B0 /* NIOFoundationCompat.framework in Frameworks */,
-				565DD992238CF5AF004013B0 /* CNIOBoringSSLShims.framework in Frameworks */,
-				565DD988238CDAF3004013B0 /* NIO.framework in Frameworks */,
-				565DD98C238CDAF3004013B0 /* NIOHTTP1.framework in Frameworks */,
 				563D169822B5F1CB00AC6F5C /* MMWormhole.framework in Frameworks */,
-				565DD96D238CD911004013B0 /* CNIOBoringSSL.framework in Frameworks */,
-				565DD990238CDAF4004013B0 /* NIOTLS.framework in Frameworks */,
-				565DD98E238CDAF3004013B0 /* NIOHTTP2.framework in Frameworks */,
 				56F415BD227711A000AE1554 /* TunnelServices.framework in Frameworks */,
-				565DD982238CDAF3004013B0 /* CNIODarwin.framework in Frameworks */,
-				565DD97E238CDAB9004013B0 /* NIOSSL.framework in Frameworks */,
 				564B308A22B2215600387E07 /* AxLogger.framework in Frameworks */,
-				565DD98A238CDAF3004013B0 /* NIOHPACK.framework in Frameworks */,
-				565CBF38238BFB1300CF0A3A /* NIOHTTP2.framework in Frameworks */,
 				B4691E98DF99033F35092394 /* Pods_NIO1901.framework in Frameworks */,
-				565DD980238CDAF3004013B0 /* CNIOAtomics.framework in Frameworks */,
-				565DD984238CDAF3004013B0 /* CNIOHTTPParser.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1227,7 +721,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				565CBE22238BEF1000CF0A3A /* NIOSSL.framework in Frameworks */,
 				564B308E22B2215D00387E07 /* AxLogger.framework in Frameworks */,
 				565A4F2A227738D300F13CAD /* TunnelServices.framework in Frameworks */,
 				56162E8B2255CCB100D24F87 /* NetworkExtension.framework in Frameworks */,
@@ -1241,190 +734,13 @@
 			files = (
 				563D169C22B5F1D900AC6F5C /* MMWormhole.framework in Frameworks */,
 				564B308F22B2216200387E07 /* AxLogger.framework in Frameworks */,
-				565CBDA3238BECF100CF0A3A /* CNIOBoringSSL.framework in Frameworks */,
 				F27F1CCDEAB554595C667837 /* Pods_TunnelServices.framework in Frameworks */,
-				565CBE20238BEEF600CF0A3A /* NIOSSL.framework in Frameworks */,
-				565CB8BE238BEA7100CF0A3A /* NIOHTTP1.framework in Frameworks */,
-				565CB8F7238BEB8400CF0A3A /* NIOFoundationCompat.framework in Frameworks */,
-				56496586238BD8250089BC4D /* NIO.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		150C855521F6A04400318C60 /* NIO1901Tests */ = {
-			isa = PBXGroup;
-			children = (
-				564379EE22A769FA00DF957D /* PerfectCURLTests */,
-				56D260EA228132F7004F5636 /* NIOTransportServicesTests */,
-				5609BABC2265C13D006820E4 /* NIOSSLTests */,
-				150C855E21F6A05600318C60 /* NIOConcurrencyHelpersTests */,
-				150C856221F6A05600318C60 /* NIOHTTP1Tests */,
-				150C857C21F6A05800318C60 /* NIOTests */,
-				150C85CD21F6A05800318C60 /* NIOTLSTests */,
-				150C85D221F6A05800318C60 /* NIOWebSocketTests */,
-				150C856121F6A05600318C60 /* LinuxMain.swift */,
-				150C855621F6A04400318C60 /* NIO1901Tests.swift */,
-				150C855821F6A04400318C60 /* Info.plist */,
-			);
-			path = NIO1901Tests;
-			sourceTree = "<group>";
-		};
-		150C855E21F6A05600318C60 /* NIOConcurrencyHelpersTests */ = {
-			isa = PBXGroup;
-			children = (
-				150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */,
-				150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */,
-			);
-			path = NIOConcurrencyHelpersTests;
-			sourceTree = "<group>";
-		};
-		150C856221F6A05600318C60 /* NIOHTTP1Tests */ = {
-			isa = PBXGroup;
-			children = (
-				150C857221F6A05600318C60 /* ByteBufferUtilsTest.swift */,
-				150C857021F6A05600318C60 /* ByteBufferUtilsTest+XCTest.swift */,
-				150C856B21F6A05600318C60 /* HTTPDecoderLengthTest.swift */,
-				150C856721F6A05600318C60 /* HTTPDecoderLengthTest+XCTest.swift */,
-				150C857921F6A05600318C60 /* HTTPDecoderTest.swift */,
-				150C857721F6A05600318C60 /* HTTPDecoderTest+XCTest.swift */,
-				150C856F21F6A05600318C60 /* HTTPHeadersTest.swift */,
-				150C856521F6A05600318C60 /* HTTPHeadersTest+XCTest.swift */,
-				150C856621F6A05600318C60 /* HTTPRequestEncoderTest.swift */,
-				150C856E21F6A05600318C60 /* HTTPRequestEncoderTest+XCTest.swift */,
-				150C857421F6A05600318C60 /* HTTPResponseCompressorTest.swift */,
-				150C857621F6A05600318C60 /* HTTPResponseCompressorTest+XCTest.swift */,
-				150C856C21F6A05600318C60 /* HTTPResponseEncoderTest.swift */,
-				150C856821F6A05600318C60 /* HTTPResponseEncoderTest+XCTest.swift */,
-				150C856421F6A05600318C60 /* HTTPServerClientTest.swift */,
-				150C856D21F6A05600318C60 /* HTTPServerClientTest+XCTest.swift */,
-				150C857121F6A05600318C60 /* HTTPServerPipelineHandlerTest.swift */,
-				150C856921F6A05600318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift */,
-				150C856A21F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest.swift */,
-				150C857821F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift */,
-				150C857521F6A05600318C60 /* HTTPTest.swift */,
-				150C857A21F6A05600318C60 /* HTTPTest+XCTest.swift */,
-				150C857321F6A05600318C60 /* HTTPUpgradeTests.swift */,
-				150C856321F6A05600318C60 /* HTTPUpgradeTests+XCTest.swift */,
-				150C857B21F6A05600318C60 /* TestUtils.swift */,
-			);
-			path = NIOHTTP1Tests;
-			sourceTree = "<group>";
-		};
-		150C857C21F6A05800318C60 /* NIOTests */ = {
-			isa = PBXGroup;
-			children = (
-				150C85AF21F6A05800318C60 /* AcceptBackoffHandlerTest.swift */,
-				150C85A621F6A05800318C60 /* AcceptBackoffHandlerTest+XCTest.swift */,
-				150C858721F6A05800318C60 /* BaseObjectsTest.swift */,
-				150C85B121F6A05800318C60 /* BaseObjectsTest+XCTest.swift */,
-				150C858321F6A05800318C60 /* BlockingIOThreadPoolTest.swift */,
-				150C859E21F6A05800318C60 /* BlockingIOThreadPoolTest+XCTest.swift */,
-				150C858E21F6A05800318C60 /* BootstrapTest.swift */,
-				150C858221F6A05800318C60 /* BootstrapTest+XCTest.swift */,
-				150C859721F6A05800318C60 /* ByteBufferTest.swift */,
-				150C857D21F6A05800318C60 /* ByteBufferTest+XCTest.swift */,
-				150C857E21F6A05800318C60 /* ChannelNotificationTest.swift */,
-				150C857F21F6A05800318C60 /* ChannelNotificationTest+XCTest.swift */,
-				150C85CA21F6A05800318C60 /* ChannelOptionStorageTest.swift */,
-				150C858B21F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift */,
-				150C85B021F6A05800318C60 /* ChannelPipelineTest.swift */,
-				150C858D21F6A05800318C60 /* ChannelPipelineTest+XCTest.swift */,
-				150C85CB21F6A05800318C60 /* ChannelTests.swift */,
-				150C859A21F6A05800318C60 /* ChannelTests+XCTest.swift */,
-				150C85A521F6A05800318C60 /* CircularBufferTests.swift */,
-				150C85B921F6A05800318C60 /* CircularBufferTests+XCTest.swift */,
-				150C858A21F6A05800318C60 /* CodecTest.swift */,
-				150C85BA21F6A05800318C60 /* CodecTest+XCTest.swift */,
-				150C859021F6A05800318C60 /* CompositeErrorTests.swift */,
-				150C85B721F6A05800318C60 /* CompositeErrorTests+XCTest.swift */,
-				150C858C21F6A05800318C60 /* CustomChannelTests.swift */,
-				150C859F21F6A05800318C60 /* CustomChannelTests+XCTest.swift */,
-				150C85BD21F6A05800318C60 /* DatagramChannelTests.swift */,
-				150C859521F6A05800318C60 /* DatagramChannelTests+XCTest.swift */,
-				150C858421F6A05800318C60 /* EchoServerClientTest.swift */,
-				150C85C521F6A05800318C60 /* EchoServerClientTest+XCTest.swift */,
-				150C85AD21F6A05800318C60 /* EmbeddedChannelTest.swift */,
-				150C85C021F6A05800318C60 /* EmbeddedChannelTest+XCTest.swift */,
-				150C85C121F6A05800318C60 /* EmbeddedEventLoopTest.swift */,
-				150C859B21F6A05800318C60 /* EmbeddedEventLoopTest+XCTest.swift */,
-				150C85C321F6A05800318C60 /* EventLoopFutureTest.swift */,
-				150C85C221F6A05800318C60 /* EventLoopFutureTest+XCTest.swift */,
-				150C85CC21F6A05800318C60 /* EventLoopTest.swift */,
-				150C85A821F6A05800318C60 /* EventLoopTest+XCTest.swift */,
-				150C859221F6A05800318C60 /* FileRegionTest.swift */,
-				150C858F21F6A05800318C60 /* FileRegionTest+XCTest.swift */,
-				150C85A221F6A05800318C60 /* GetAddrInfoResolverTest.swift */,
-				150C85C721F6A05800318C60 /* GetAddrInfoResolverTest+XCTest.swift */,
-				150C85BC21F6A05800318C60 /* HappyEyeballsTest.swift */,
-				150C85B221F6A05800318C60 /* HappyEyeballsTest+XCTest.swift */,
-				150C85B621F6A05800318C60 /* HeapTests.swift */,
-				150C85B821F6A05800318C60 /* HeapTests+XCTest.swift */,
-				150C85A921F6A05800318C60 /* IdleStateHandlerTest.swift */,
-				150C85A021F6A05800318C60 /* IdleStateHandlerTest+XCTest.swift */,
-				150C858621F6A05800318C60 /* IntegerTypesTest.swift */,
-				150C85BE21F6A05800318C60 /* IntegerTypesTest+XCTest.swift */,
-				150C85A321F6A05800318C60 /* MarkedCircularBufferTests.swift */,
-				150C859821F6A05800318C60 /* MarkedCircularBufferTests+XCTest.swift */,
-				150C859321F6A05800318C60 /* MulticastTest.swift */,
-				150C85AC21F6A05800318C60 /* MulticastTest+XCTest.swift */,
-				150C85BF21F6A05800318C60 /* NonBlockingFileIOTest.swift */,
-				150C859921F6A05800318C60 /* NonBlockingFileIOTest+XCTest.swift */,
-				150C85B521F6A05800318C60 /* PendingDatagramWritesManagerTests.swift */,
-				150C85AE21F6A05800318C60 /* PendingDatagramWritesManagerTests+XCTest.swift */,
-				150C85C921F6A05800318C60 /* PriorityQueueTests.swift */,
-				150C858121F6A05800318C60 /* PriorityQueueTests+XCTest.swift */,
-				150C858021F6A05800318C60 /* RecvByteBufAllocatorTest.swift */,
-				150C859D21F6A05800318C60 /* RecvByteBufAllocatorTest+XCTest.swift */,
-				150C85B321F6A05800318C60 /* SelectorTest.swift */,
-				150C85AB21F6A05800318C60 /* SelectorTest+XCTest.swift */,
-				150C85BB21F6A05800318C60 /* SocketAddressTest.swift */,
-				150C85C421F6A05800318C60 /* SocketAddressTest+XCTest.swift */,
-				150C85AA21F6A05800318C60 /* SocketChannelTest.swift */,
-				150C858521F6A05800318C60 /* SocketChannelTest+XCTest.swift */,
-				150C85C621F6A05800318C60 /* SocketOptionProviderTest.swift */,
-				150C859421F6A05800318C60 /* SocketOptionProviderTest+XCTest.swift */,
-				150C85A121F6A05800318C60 /* SystemCallWrapperHelpers.swift */,
-				150C859121F6A05800318C60 /* SystemTest.swift */,
-				150C858921F6A05800318C60 /* SystemTest+XCTest.swift */,
-				150C85C821F6A05800318C60 /* TestUtils.swift */,
-				150C85B421F6A05800318C60 /* ThreadTest.swift */,
-				150C858821F6A05800318C60 /* ThreadTest+XCTest.swift */,
-				150C85A421F6A05800318C60 /* TypeAssistedChannelHandlerTests.swift */,
-				150C859C21F6A05800318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift */,
-				150C859621F6A05800318C60 /* UtilitiesTest.swift */,
-				150C85A721F6A05800318C60 /* UtilitiesTest+XCTest.swift */,
-			);
-			path = NIOTests;
-			sourceTree = "<group>";
-		};
-		150C85CD21F6A05800318C60 /* NIOTLSTests */ = {
-			isa = PBXGroup;
-			children = (
-				150C85CE21F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests.swift */,
-				150C85CF21F6A05800318C60 /* SNIHandlerTests.swift */,
-				150C85D021F6A05800318C60 /* SNIHandlerTests+XCTest.swift */,
-				150C85D121F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift */,
-			);
-			path = NIOTLSTests;
-			sourceTree = "<group>";
-		};
-		150C85D221F6A05800318C60 /* NIOWebSocketTests */ = {
-			isa = PBXGroup;
-			children = (
-				150C85D321F6A05800318C60 /* Base64Test+XCTest.swift */,
-				150C85D421F6A05800318C60 /* WebSocketFrameEncoderTest+XCTest.swift */,
-				150C85D521F6A05800318C60 /* EndToEndTests+XCTest.swift */,
-				150C85D621F6A05800318C60 /* WebSocketFrameDecoderTest.swift */,
-				150C85D721F6A05800318C60 /* Base64Test.swift */,
-				150C85D821F6A05800318C60 /* EndToEndTests.swift */,
-				150C85D921F6A05800318C60 /* WebSocketFrameDecoderTest+XCTest.swift */,
-				150C85DA21F6A05800318C60 /* WebSocketFrameEncoderTest.swift */,
-			);
-			path = NIOWebSocketTests;
-			sourceTree = "<group>";
-		};
 		153E206B21EC26B500B82536 = {
 			isa = PBXGroup;
 			children = (
@@ -1432,7 +748,6 @@
 				5634538722BCD2E70076219D /* Http */,
 				564B308022B2213400387E07 /* Lib */,
 				153E207621EC26B500B82536 /* NIO1901 */,
-				150C855521F6A04400318C60 /* NIO1901Tests */,
 				56162E5C224F558D00D24F87 /* PacketTunnel */,
 				56F415B7227711A000AE1554 /* TunnelServices */,
 				153E207521EC26B500B82536 /* Products */,
@@ -1445,7 +760,6 @@
 			isa = PBXGroup;
 			children = (
 				153E207421EC26B500B82536 /* NIO1901.app */,
-				150C855421F6A04400318C60 /* NIO1901Tests.xctest */,
 				56162E5B224F558D00D24F87 /* PacketTunnel.appex */,
 				56F415B62277119F00AE1554 /* TunnelServices.framework */,
 			);
@@ -1536,37 +850,6 @@
 				56E63029229AA4F000CD1018 /* SearchOption.swift */,
 			);
 			path = Model;
-			sourceTree = "<group>";
-		};
-		5609BABC2265C13D006820E4 /* NIOSSLTests */ = {
-			isa = PBXGroup;
-			children = (
-				5609BAC32265C13D006820E4 /* ByteBufferBIOTest.swift */,
-				5609BAC62265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift */,
-				5609BABD2265C13D006820E4 /* CertificateVerificationTests.swift */,
-				5609BAD32265C13D006820E4 /* CertificateVerificationTests+XCTest.swift */,
-				5609BAC52265C13D006820E4 /* ClientSNITests.swift */,
-				5609BAD02265C13D006820E4 /* ClientSNITests+XCTest.swift */,
-				5609BAC22265C13D006820E4 /* IdentityVerificationTest.swift */,
-				5609BAC12265C13D006820E4 /* IdentityVerificationTest+XCTest.swift */,
-				5609BACF2265C13D006820E4 /* NIOSSLALPNTest.swift */,
-				5609BAC82265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift */,
-				5609BAC42265C13D006820E4 /* NIOSSLIntegrationTest.swift */,
-				5609BAC92265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift */,
-				5609BACB2265C13D006820E4 /* NIOSSLTestHelpers.swift */,
-				5609BABF2265C13D006820E4 /* SSLCertificateTest.swift */,
-				5609BACE2265C13D006820E4 /* SSLCertificateTest+XCTest.swift */,
-				5609BAD22265C13D006820E4 /* SSLPKCS12BundleTest.swift */,
-				5609BACC2265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift */,
-				5609BAC02265C13D006820E4 /* SSLPrivateKeyTests.swift */,
-				5609BAC72265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift */,
-				5609BACD2265C13D006820E4 /* TLSConfigurationTest.swift */,
-				5609BABE2265C13D006820E4 /* TLSConfigurationTest+XCTest.swift */,
-				5609BACA2265C13D006820E4 /* UnwrappingTests.swift */,
-				5609BAD12265C13D006820E4 /* UnwrappingTests+XCTest.swift */,
-			);
-			name = NIOSSLTests;
-			path = "../../../../../Downloads/swift-nio-ssl-2.0-2.2/Tests/NIOSSLTests";
 			sourceTree = "<group>";
 		};
 		56162E5C224F558D00D24F87 /* PacketTunnel */ = {
@@ -1762,22 +1045,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		564379EE22A769FA00DF957D /* PerfectCURLTests */ = {
-			isa = PBXGroup;
-			children = (
-				564379EF22A769FA00DF957D /* PerfectCURLTests.swift */,
-			);
-			path = PerfectCURLTests;
-			sourceTree = "<group>";
-		};
-		564965A5238BDCE80089BC4D /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				564965A9238BDCE90089BC4D /* CNIOAtomics.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		564B308022B2213400387E07 /* Lib */ = {
 			isa = PBXGroup;
 			children = (
@@ -1897,124 +1164,6 @@
 			path = IDSegmentedControl;
 			sourceTree = "<group>";
 		};
-		565CB833238BE43D00CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CB839238BE43D00CF0A3A /* CNIODarwin.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CB85B238BE7E600CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CB85F238BE7E600CF0A3A /* CNIOLinux.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CB867238BE97C00CF0A3A /* NIOHTTP */ = {
-			isa = PBXGroup;
-			children = (
-				565CBF25238BFAC800CF0A3A /* NIOHPACK.xcodeproj */,
-				565CBF1F238BFAC400CF0A3A /* NIOHTTP2.xcodeproj */,
-				565CB8B0238BEA1300CF0A3A /* CNIOHTTPParser.xcodeproj */,
-				565CB8AA238BEA0E00CF0A3A /* NIOHTTP1.xcodeproj */,
-			);
-			path = NIOHTTP;
-			sourceTree = "<group>";
-		};
-		565CB8AB238BEA0E00CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CB8B1238BEA1300CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CB8B5238BEA1300CF0A3A /* CNIOHTTPParser.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CB8C0238BEABC00CF0A3A /* NIOLib */ = {
-			isa = PBXGroup;
-			children = (
-				565CBE40238BEFF600CF0A3A /* NIOTLS.xcodeproj */,
-				565CB8E3238BEB6200CF0A3A /* NIOFoundationCompat.xcodeproj */,
-			);
-			path = NIOLib;
-			sourceTree = "<group>";
-		};
-		565CB8E4238BEB6200CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBD9C238BECCD00CF0A3A /* NIOSSL */ = {
-			isa = PBXGroup;
-			children = (
-				565CBE12238BEEB200CF0A3A /* CNIOBoringSSLShims.xcodeproj */,
-				565CBE0C238BEEAE00CF0A3A /* NIOSSL.xcodeproj */,
-				565CBD9D238BECE000CF0A3A /* CNIOBoringSSL.xcodeproj */,
-			);
-			path = NIOSSL;
-			sourceTree = "<group>";
-		};
-		565CBD9E238BECE000CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBE0D238BEEAE00CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBE13238BEEB200CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBE17238BEEB200CF0A3A /* CNIOBoringSSLShims.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBE41238BEFF600CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBE45238BEFF600CF0A3A /* NIOTLS.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBF20238BFAC400CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBF24238BFAC400CF0A3A /* NIOHTTP2.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		565CBF26238BFAC800CF0A3A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				565CBF2A238BFAC800CF0A3A /* NIOHPACK.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		566C76AB227AB44500DA0B9E /* IDLoading */ = {
 			isa = PBXGroup;
 			children = (
@@ -2110,22 +1259,6 @@
 				56F07D3B22A6968F0061407C /* HAR+Extension.swift */,
 			);
 			path = HARParser;
-			sourceTree = "<group>";
-		};
-		5694D8B6238BD1BD0053EF0F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5694D8BC238BD1BD0053EF0F /* NIO.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		5694D8D7238BD2660053EF0F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5694D8DB238BD2660053EF0F /* NIOConcurrencyHelpers.framework */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		56A137522270605E00DEE539 /* Common */ = {
@@ -2272,19 +1405,6 @@
 			path = HexViewer;
 			sourceTree = "<group>";
 		};
-		56D260EA228132F7004F5636 /* NIOTransportServicesTests */ = {
-			isa = PBXGroup;
-			children = (
-				56D260EB228132F7004F5636 /* NIOTSEventLoopTests.swift */,
-				56D260EC228132F7004F5636 /* NIOTSConnectionChannelTests.swift */,
-				56D260ED228132F7004F5636 /* NIOTSEndToEndTests.swift */,
-				56D260EE228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift */,
-				56D260EF228132F7004F5636 /* NIOTSListenerChannelTests.swift */,
-				56D260F0228132F7004F5636 /* NIOTSSocketOptionTests.swift */,
-			);
-			path = NIOTransportServicesTests;
-			sourceTree = "<group>";
-		};
 		56D6C1A822AAB07300689FCC /* RuleList */ = {
 			isa = PBXGroup;
 			children = (
@@ -2371,10 +1491,6 @@
 		56F415B7227711A000AE1554 /* TunnelServices */ = {
 			isa = PBXGroup;
 			children = (
-				565CBD9C238BECCD00CF0A3A /* NIOSSL */,
-				565CB8C0238BEABC00CF0A3A /* NIOLib */,
-				56F415E7227712B200AE1554 /* NIO */,
-				565CB867238BE97C00CF0A3A /* NIOHTTP */,
 				5634538122BA41160076219D /* HttpService */,
 				565A4F2D2277427700F13CAD /* ActiveSQLite */,
 				56F415CA2277122C00AE1554 /* Utils */,
@@ -2413,6 +1529,7 @@
 				56F415CB2277122C00AE1554 /* NetRequest.swift */,
 				56F415CD2277122C00AE1554 /* ProxyContext.swift */,
 				56F415CE2277122C00AE1554 /* CertUtils.swift */,
+				E4A10F1E27189189009BA850 /* CertDatas.swift */,
 				56F415CF2277122C00AE1554 /* NetAddress.swift */,
 				565A4F5C2277FE1700F13CAD /* NetworkInfo.swift */,
 				566C76A922795ADA00DA0B9E /* VPNTunnelManager.swift */,
@@ -2437,18 +1554,6 @@
 				56F415D42277122D00AE1554 /* ProtocolMatcher.swift */,
 			);
 			path = Detector;
-			sourceTree = "<group>";
-		};
-		56F415E7227712B200AE1554 /* NIO */ = {
-			isa = PBXGroup;
-			children = (
-				565CB85A238BE7E600CF0A3A /* CNIOLinux.xcodeproj */,
-				565CB832238BE43D00CF0A3A /* CNIODarwin.xcodeproj */,
-				564965A4238BDCE80089BC4D /* CNIOAtomics.xcodeproj */,
-				5694D8D6238BD2660053EF0F /* NIOConcurrencyHelpers.xcodeproj */,
-				5694D8B5238BD1BD0053EF0F /* NIO.xcodeproj */,
-			);
-			path = NIO;
 			sourceTree = "<group>";
 		};
 		56F6A22F22AC0984006626B2 /* KeyboradManager */ = {
@@ -2488,24 +1593,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		150C855321F6A04400318C60 /* NIO1901Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 150C855B21F6A04400318C60 /* Build configuration list for PBXNativeTarget "NIO1901Tests" */;
-			buildPhases = (
-				150C855021F6A04400318C60 /* Sources */,
-				150C855121F6A04400318C60 /* Frameworks */,
-				150C855221F6A04400318C60 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				150C855A21F6A04400318C60 /* PBXTargetDependency */,
-			);
-			name = NIO1901Tests;
-			productName = NIO1901Tests;
-			productReference = 150C855421F6A04400318C60 /* NIO1901Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		153E207321EC26B500B82536 /* NIO1901 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 153E208621EC26C800B82536 /* Build configuration list for PBXNativeTarget "NIO1901" */;
@@ -2577,13 +1664,9 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1020;
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1300;
 				ORGANIZATIONNAME = Lojii;
 				TargetAttributes = {
-					150C855321F6A04400318C60 = {
-						CreatedOnToolsVersion = 10.0;
-						TestTargetID = 153E207321EC26B500B82536;
-					};
 					153E207321EC26B500B82536 = {
 						CreatedOnToolsVersion = 10.0;
 						LastSwiftMigration = 1020;
@@ -2640,70 +1723,13 @@
 					ProjectRef = 564B308122B2213B00387E07 /* AxLogger.xcodeproj */;
 				},
 				{
-					ProductGroup = 564965A5238BDCE80089BC4D /* Products */;
-					ProjectRef = 564965A4238BDCE80089BC4D /* CNIOAtomics.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBD9E238BECE000CF0A3A /* Products */;
-					ProjectRef = 565CBD9D238BECE000CF0A3A /* CNIOBoringSSL.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBE13238BEEB200CF0A3A /* Products */;
-					ProjectRef = 565CBE12238BEEB200CF0A3A /* CNIOBoringSSLShims.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CB833238BE43D00CF0A3A /* Products */;
-					ProjectRef = 565CB832238BE43D00CF0A3A /* CNIODarwin.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CB8B1238BEA1300CF0A3A /* Products */;
-					ProjectRef = 565CB8B0238BEA1300CF0A3A /* CNIOHTTPParser.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CB85B238BE7E600CF0A3A /* Products */;
-					ProjectRef = 565CB85A238BE7E600CF0A3A /* CNIOLinux.xcodeproj */;
-				},
-				{
 					ProductGroup = 563D169022B5F0DB00AC6F5C /* Products */;
 					ProjectRef = 563D168F22B5F0DB00AC6F5C /* MMWormhole.xcodeproj */;
-				},
-				{
-					ProductGroup = 5694D8B6238BD1BD0053EF0F /* Products */;
-					ProjectRef = 5694D8B5238BD1BD0053EF0F /* NIO.xcodeproj */;
-				},
-				{
-					ProductGroup = 5694D8D7238BD2660053EF0F /* Products */;
-					ProjectRef = 5694D8D6238BD2660053EF0F /* NIOConcurrencyHelpers.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CB8E4238BEB6200CF0A3A /* Products */;
-					ProjectRef = 565CB8E3238BEB6200CF0A3A /* NIOFoundationCompat.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBF26238BFAC800CF0A3A /* Products */;
-					ProjectRef = 565CBF25238BFAC800CF0A3A /* NIOHPACK.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CB8AB238BEA0E00CF0A3A /* Products */;
-					ProjectRef = 565CB8AA238BEA0E00CF0A3A /* NIOHTTP1.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBF20238BFAC400CF0A3A /* Products */;
-					ProjectRef = 565CBF1F238BFAC400CF0A3A /* NIOHTTP2.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBE0D238BEEAE00CF0A3A /* Products */;
-					ProjectRef = 565CBE0C238BEEAE00CF0A3A /* NIOSSL.xcodeproj */;
-				},
-				{
-					ProductGroup = 565CBE41238BEFF600CF0A3A /* Products */;
-					ProjectRef = 565CBE40238BEFF600CF0A3A /* NIOTLS.xcodeproj */;
 				},
 			);
 			projectRoot = "";
 			targets = (
 				153E207321EC26B500B82536 /* NIO1901 */,
-				150C855321F6A04400318C60 /* NIO1901Tests */,
 				56162E5A224F558D00D24F87 /* PacketTunnel */,
 				56F415B52277119F00AE1554 /* TunnelServices */,
 			);
@@ -2725,13 +1751,6 @@
 			remoteRef = 563D169622B5F0DB00AC6F5C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		564965A9238BDCE90089BC4D /* CNIOAtomics.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIOAtomics.framework;
-			remoteRef = 564965A8238BDCE90089BC4D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		564B308722B2213C00387E07 /* AxLogger.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -2746,107 +1765,9 @@
 			remoteRef = 564B308822B2213C00387E07 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		565CB839238BE43D00CF0A3A /* CNIODarwin.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIODarwin.framework;
-			remoteRef = 565CB838238BE43D00CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CB85F238BE7E600CF0A3A /* CNIOLinux.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIOLinux.framework;
-			remoteRef = 565CB85E238BE7E600CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CB8AF238BEA0E00CF0A3A /* NIOHTTP1.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOHTTP1.framework;
-			remoteRef = 565CB8AE238BEA0E00CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CB8B5238BEA1300CF0A3A /* CNIOHTTPParser.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIOHTTPParser.framework;
-			remoteRef = 565CB8B4238BEA1300CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CB8F0238BEB6200CF0A3A /* NIOFoundationCompat.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOFoundationCompat.framework;
-			remoteRef = 565CB8EF238BEB6200CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBDA2238BECE000CF0A3A /* CNIOBoringSSL.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIOBoringSSL.framework;
-			remoteRef = 565CBDA1238BECE000CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBE11238BEEAF00CF0A3A /* NIOSSL.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOSSL.framework;
-			remoteRef = 565CBE10238BEEAF00CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBE17238BEEB200CF0A3A /* CNIOBoringSSLShims.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CNIOBoringSSLShims.framework;
-			remoteRef = 565CBE16238BEEB200CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBE45238BEFF600CF0A3A /* NIOTLS.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOTLS.framework;
-			remoteRef = 565CBE44238BEFF600CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBF24238BFAC400CF0A3A /* NIOHTTP2.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOHTTP2.framework;
-			remoteRef = 565CBF23238BFAC400CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		565CBF2A238BFAC800CF0A3A /* NIOHPACK.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOHPACK.framework;
-			remoteRef = 565CBF29238BFAC800CF0A3A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		5694D8BC238BD1BD0053EF0F /* NIO.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIO.framework;
-			remoteRef = 5694D8BB238BD1BD0053EF0F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		5694D8DB238BD2660053EF0F /* NIOConcurrencyHelpers.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = NIOConcurrencyHelpers.framework;
-			remoteRef = 5694D8DA238BD2660053EF0F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
-		150C855221F6A04400318C60 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		153E207221EC26B500B82536 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2966,164 +1887,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		150C855021F6A04400318C60 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				150C864021F6A05900318C60 /* SocketOptionProviderTest.swift in Sources */,
-				150C862621F6A05900318C60 /* MulticastTest+XCTest.swift in Sources */,
-				150C860921F6A05900318C60 /* FileRegionTest+XCTest.swift in Sources */,
-				150C85FD21F6A05800318C60 /* BlockingIOThreadPoolTest.swift in Sources */,
-				150C862921F6A05900318C60 /* AcceptBackoffHandlerTest.swift in Sources */,
-				150C85EC21F6A05800318C60 /* HTTPServerPipelineHandlerTest.swift in Sources */,
-				150C864F21F6A05900318C60 /* Base64Test.swift in Sources */,
-				150C861021F6A05900318C60 /* UtilitiesTest.swift in Sources */,
-				150C861D21F6A05900318C60 /* MarkedCircularBufferTests.swift in Sources */,
-				150C864921F6A05900318C60 /* SNIHandlerTests+XCTest.swift in Sources */,
-				150C85E221F6A05800318C60 /* HTTPDecoderLengthTest+XCTest.swift in Sources */,
-				150C85E121F6A05800318C60 /* HTTPRequestEncoderTest.swift in Sources */,
-				5609BAE42265C13D006820E4 /* TLSConfigurationTest.swift in Sources */,
-				5609BAE32265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift in Sources */,
-				150C865221F6A05900318C60 /* WebSocketFrameEncoderTest.swift in Sources */,
-				150C864421F6A05900318C60 /* ChannelOptionStorageTest.swift in Sources */,
-				150C862E21F6A05900318C60 /* ThreadTest.swift in Sources */,
-				5609BADC2265C13D006820E4 /* ClientSNITests.swift in Sources */,
-				5609BAE62265C13D006820E4 /* NIOSSLALPNTest.swift in Sources */,
-				150C85EE21F6A05800318C60 /* HTTPUpgradeTests.swift in Sources */,
-				5609BAD72265C13D006820E4 /* SSLPrivateKeyTests.swift in Sources */,
-				150C85FB21F6A05800318C60 /* PriorityQueueTests+XCTest.swift in Sources */,
-				150C85DB21F6A05800318C60 /* NIOConcurrencyHelpersTests.swift in Sources */,
-				150C861521F6A05900318C60 /* EmbeddedEventLoopTest+XCTest.swift in Sources */,
-				150C85FF21F6A05800318C60 /* SocketChannelTest+XCTest.swift in Sources */,
-				5609BAD52265C13D006820E4 /* TLSConfigurationTest+XCTest.swift in Sources */,
-				150C861221F6A05900318C60 /* MarkedCircularBufferTests+XCTest.swift in Sources */,
-				150C85DE21F6A05800318C60 /* HTTPUpgradeTests+XCTest.swift in Sources */,
-				150C860C21F6A05900318C60 /* FileRegionTest.swift in Sources */,
-				5609BADD2265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift in Sources */,
-				5609BAE12265C13D006820E4 /* UnwrappingTests.swift in Sources */,
-				150C863C21F6A05900318C60 /* EventLoopFutureTest+XCTest.swift in Sources */,
-				150C863121F6A05900318C60 /* CompositeErrorTests+XCTest.swift in Sources */,
-				150C861721F6A05900318C60 /* RecvByteBufAllocatorTest+XCTest.swift in Sources */,
-				150C85F721F6A05800318C60 /* ByteBufferTest+XCTest.swift in Sources */,
-				150C863221F6A05900318C60 /* HeapTests+XCTest.swift in Sources */,
-				150C85F421F6A05800318C60 /* HTTPDecoderTest.swift in Sources */,
-				150C864E21F6A05900318C60 /* WebSocketFrameDecoderTest.swift in Sources */,
-				150C860621F6A05800318C60 /* CustomChannelTests.swift in Sources */,
-				150C85F021F6A05800318C60 /* HTTPTest.swift in Sources */,
-				5609BAD42265C13D006820E4 /* CertificateVerificationTests.swift in Sources */,
-				5609BAE72265C13D006820E4 /* ClientSNITests+XCTest.swift in Sources */,
-				150C863E21F6A05900318C60 /* SocketAddressTest+XCTest.swift in Sources */,
-				150C860021F6A05800318C60 /* IntegerTypesTest.swift in Sources */,
-				150C860D21F6A05900318C60 /* MulticastTest.swift in Sources */,
-				5609BAE92265C13D006820E4 /* SSLPKCS12BundleTest.swift in Sources */,
-				5609BAD92265C13D006820E4 /* IdentityVerificationTest.swift in Sources */,
-				150C862B21F6A05900318C60 /* BaseObjectsTest+XCTest.swift in Sources */,
-				150C85FE21F6A05800318C60 /* EchoServerClientTest.swift in Sources */,
-				150C861C21F6A05900318C60 /* GetAddrInfoResolverTest.swift in Sources */,
-				150C863D21F6A05900318C60 /* EventLoopFutureTest.swift in Sources */,
-				5609BAEA2265C13D006820E4 /* CertificateVerificationTests+XCTest.swift in Sources */,
-				150C85E521F6A05800318C60 /* HTTPServerProtocolErrorHandlerTest.swift in Sources */,
-				150C860321F6A05800318C60 /* SystemTest+XCTest.swift in Sources */,
-				56D260F2228132F7004F5636 /* NIOTSEventLoopTests.swift in Sources */,
-				150C861621F6A05900318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift in Sources */,
-				150C862D21F6A05900318C60 /* SelectorTest.swift in Sources */,
-				150C85E921F6A05800318C60 /* HTTPRequestEncoderTest+XCTest.swift in Sources */,
-				150C862421F6A05900318C60 /* SocketChannelTest.swift in Sources */,
-				150C864721F6A05900318C60 /* ApplicationProtocolNegotiationHandlerTests.swift in Sources */,
-				150C864B21F6A05900318C60 /* Base64Test+XCTest.swift in Sources */,
-				150C861E21F6A05900318C60 /* TypeAssistedChannelHandlerTests.swift in Sources */,
-				150C865121F6A05900318C60 /* WebSocketFrameDecoderTest+XCTest.swift in Sources */,
-				150C862821F6A05900318C60 /* PendingDatagramWritesManagerTests+XCTest.swift in Sources */,
-				150C862F21F6A05900318C60 /* PendingDatagramWritesManagerTests.swift in Sources */,
-				150C85FC21F6A05800318C60 /* BootstrapTest+XCTest.swift in Sources */,
-				5609BADB2265C13D006820E4 /* NIOSSLIntegrationTest.swift in Sources */,
-				150C85F221F6A05800318C60 /* HTTPDecoderTest+XCTest.swift in Sources */,
-				150C85EB21F6A05800318C60 /* ByteBufferUtilsTest+XCTest.swift in Sources */,
-				150C863B21F6A05900318C60 /* EmbeddedEventLoopTest.swift in Sources */,
-				150C863721F6A05900318C60 /* DatagramChannelTests.swift in Sources */,
-				5609BAE52265C13D006820E4 /* SSLCertificateTest+XCTest.swift in Sources */,
-				150C864521F6A05900318C60 /* ChannelTests.swift in Sources */,
-				56D260F3228132F7004F5636 /* NIOTSConnectionChannelTests.swift in Sources */,
-				150C85DC21F6A05800318C60 /* NIOConcurrencyHelpersTests+XCTest.swift in Sources */,
-				5609BAE02265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift in Sources */,
-				56D260F5228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift in Sources */,
-				150C860E21F6A05900318C60 /* SocketOptionProviderTest+XCTest.swift in Sources */,
-				150C863421F6A05900318C60 /* CodecTest+XCTest.swift in Sources */,
-				150C861A21F6A05900318C60 /* IdleStateHandlerTest+XCTest.swift in Sources */,
-				150C860A21F6A05900318C60 /* CompositeErrorTests.swift in Sources */,
-				150C863621F6A05900318C60 /* HappyEyeballsTest.swift in Sources */,
-				564379F022A769FA00DF957D /* PerfectCURLTests.swift in Sources */,
-				150C864121F6A05900318C60 /* GetAddrInfoResolverTest+XCTest.swift in Sources */,
-				150C860521F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift in Sources */,
-				150C864621F6A05900318C60 /* EventLoopTest.swift in Sources */,
-				5609BAD62265C13D006820E4 /* SSLCertificateTest.swift in Sources */,
-				150C862721F6A05900318C60 /* EmbeddedChannelTest.swift in Sources */,
-				150C861121F6A05900318C60 /* ByteBufferTest.swift in Sources */,
-				150C85DF21F6A05800318C60 /* HTTPServerClientTest.swift in Sources */,
-				150C861B21F6A05900318C60 /* SystemCallWrapperHelpers.swift in Sources */,
-				150C85E421F6A05800318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift in Sources */,
-				5609BADF2265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift in Sources */,
-				150C864821F6A05900318C60 /* SNIHandlerTests.swift in Sources */,
-				150C864A21F6A05900318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift in Sources */,
-				150C85ED21F6A05800318C60 /* ByteBufferUtilsTest.swift in Sources */,
-				150C85E321F6A05800318C60 /* HTTPResponseEncoderTest+XCTest.swift in Sources */,
-				150C85EF21F6A05800318C60 /* HTTPResponseCompressorTest.swift in Sources */,
-				150C863821F6A05900318C60 /* IntegerTypesTest+XCTest.swift in Sources */,
-				150C861921F6A05900318C60 /* CustomChannelTests+XCTest.swift in Sources */,
-				150C860B21F6A05900318C60 /* SystemTest.swift in Sources */,
-				150C864D21F6A05900318C60 /* EndToEndTests+XCTest.swift in Sources */,
-				150C865021F6A05900318C60 /* EndToEndTests.swift in Sources */,
-				150C85F521F6A05800318C60 /* HTTPTest+XCTest.swift in Sources */,
-				150C862121F6A05900318C60 /* UtilitiesTest+XCTest.swift in Sources */,
-				150C85FA21F6A05800318C60 /* RecvByteBufAllocatorTest.swift in Sources */,
-				150C85F821F6A05800318C60 /* ChannelNotificationTest.swift in Sources */,
-				5609BADA2265C13D006820E4 /* ByteBufferBIOTest.swift in Sources */,
-				150C864321F6A05900318C60 /* PriorityQueueTests.swift in Sources */,
-				56D260F4228132F7004F5636 /* NIOTSEndToEndTests.swift in Sources */,
-				150C85F921F6A05800318C60 /* ChannelNotificationTest+XCTest.swift in Sources */,
-				150C863921F6A05900318C60 /* NonBlockingFileIOTest.swift in Sources */,
-				150C860121F6A05800318C60 /* BaseObjectsTest.swift in Sources */,
-				5609BAD82265C13D006820E4 /* IdentityVerificationTest+XCTest.swift in Sources */,
-				150C860F21F6A05900318C60 /* DatagramChannelTests+XCTest.swift in Sources */,
-				150C860821F6A05900318C60 /* BootstrapTest.swift in Sources */,
-				150C85E721F6A05800318C60 /* HTTPResponseEncoderTest.swift in Sources */,
-				150C861F21F6A05900318C60 /* CircularBufferTests.swift in Sources */,
-				150C861321F6A05900318C60 /* NonBlockingFileIOTest+XCTest.swift in Sources */,
-				150C862221F6A05900318C60 /* EventLoopTest+XCTest.swift in Sources */,
-				150C864C21F6A05900318C60 /* WebSocketFrameEncoderTest+XCTest.swift in Sources */,
-				150C861821F6A05900318C60 /* BlockingIOThreadPoolTest+XCTest.swift in Sources */,
-				150C860221F6A05800318C60 /* ThreadTest+XCTest.swift in Sources */,
-				150C862321F6A05900318C60 /* IdleStateHandlerTest.swift in Sources */,
-				5609BAE82265C13D006820E4 /* UnwrappingTests+XCTest.swift in Sources */,
-				150C85F621F6A05800318C60 /* TestUtils.swift in Sources */,
-				150C862521F6A05900318C60 /* SelectorTest+XCTest.swift in Sources */,
-				56D260F6228132F7004F5636 /* NIOTSListenerChannelTests.swift in Sources */,
-				150C863A21F6A05900318C60 /* EmbeddedChannelTest+XCTest.swift in Sources */,
-				150C863021F6A05900318C60 /* HeapTests.swift in Sources */,
-				5609BADE2265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift in Sources */,
-				150C863F21F6A05900318C60 /* EchoServerClientTest+XCTest.swift in Sources */,
-				150C864221F6A05900318C60 /* TestUtils.swift in Sources */,
-				150C862A21F6A05900318C60 /* ChannelPipelineTest.swift in Sources */,
-				150C862021F6A05900318C60 /* AcceptBackoffHandlerTest+XCTest.swift in Sources */,
-				150C860721F6A05800318C60 /* ChannelPipelineTest+XCTest.swift in Sources */,
-				150C862C21F6A05900318C60 /* HappyEyeballsTest+XCTest.swift in Sources */,
-				150C85E621F6A05800318C60 /* HTTPDecoderLengthTest.swift in Sources */,
-				150C861421F6A05900318C60 /* ChannelTests+XCTest.swift in Sources */,
-				5609BAE22265C13D006820E4 /* NIOSSLTestHelpers.swift in Sources */,
-				150C860421F6A05800318C60 /* CodecTest.swift in Sources */,
-				150C85E821F6A05800318C60 /* HTTPServerClientTest+XCTest.swift in Sources */,
-				150C855721F6A04400318C60 /* NIO1901Tests.swift in Sources */,
-				150C863521F6A05900318C60 /* SocketAddressTest.swift in Sources */,
-				150C85F121F6A05800318C60 /* HTTPResponseCompressorTest+XCTest.swift in Sources */,
-				150C85DD21F6A05800318C60 /* LinuxMain.swift in Sources */,
-				150C863321F6A05900318C60 /* CircularBufferTests+XCTest.swift in Sources */,
-				150C85EA21F6A05800318C60 /* HTTPHeadersTest.swift in Sources */,
-				56D260F7228132F7004F5636 /* NIOTSSocketOptionTests.swift in Sources */,
-				150C85E021F6A05800318C60 /* HTTPHeadersTest+XCTest.swift in Sources */,
-				150C85F321F6A05800318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		153E207021EC26B500B82536 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3372,6 +2135,7 @@
 				565F86A422BDEAD700DCD014 /* SSLServer.swift in Sources */,
 				565A4F3B2277427700F13CAD /* ASProtocol+Query.swift in Sources */,
 				566C76A722794C9300DA0B9E /* Task.swift in Sources */,
+				E4A10F1F27189189009BA850 /* CertDatas.swift in Sources */,
 				565A4F402277427700F13CAD /* ASModel.swift in Sources */,
 				56D260A6227D54ED004F5636 /* String+Extension.swift in Sources */,
 				565A4F5D2277FE1700F13CAD /* NetworkInfo.swift in Sources */,
@@ -3392,11 +2156,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		150C855A21F6A04400318C60 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 153E207321EC26B500B82536 /* NIO1901 */;
-			targetProxy = 150C855921F6A04400318C60 /* PBXContainerItemProxy */;
-		};
 		56162E62224F558D00D24F87 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 56162E5A224F558D00D24F87 /* PacketTunnel */;
@@ -3448,46 +2207,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		150C855C21F6A04400318C60 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
-				INFOPLIST_FILE = NIO1901Tests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901Tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NIO1901.app/NIO1901";
-			};
-			name = Debug;
-		};
-		150C855D21F6A04400318C60 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
-				INFOPLIST_FILE = NIO1901Tests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901Tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NIO1901.app/NIO1901";
-			};
-			name = Release;
-		};
 		153E208421EC26C800B82536 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3515,6 +2234,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -3540,7 +2260,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -3577,6 +2297,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -3596,7 +2317,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -3616,19 +2337,19 @@
 				CODE_SIGN_ENTITLEMENTS = NIO1901/NIO1901.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				DEVELOPMENT_TEAM = 725BYSAQQU;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = NIO1901/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dbgman.iOSSniffer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ENABLE_BATCH_MODE = NO;
@@ -3649,19 +2370,19 @@
 				CODE_SIGN_ENTITLEMENTS = NIO1901/NIO1901.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				DEVELOPMENT_TEAM = 725BYSAQQU;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = NIO1901/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dbgman.iOSSniffer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ENABLE_BATCH_MODE = NO;
@@ -3678,16 +2399,16 @@
 				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				DEVELOPMENT_TEAM = 725BYSAQQU;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901.PacketTunnel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dbgman.iOSSniffer.PacketTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -3701,20 +2422,20 @@
 			baseConfigurationReference = E59E2F5FD1342D168E70FB66 /* Pods-PacketTunnel.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 725BYSAQQU;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = Lojii.NIO1901.PacketTunnel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dbgman.iOSSniffer.PacketTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "NIO2019Tunnel发布描述文件";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3726,7 +2447,7 @@
 			baseConfigurationReference = 7BA4F9D1F9BD7E1C68E596AC /* Pods-TunnelServices.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -3737,7 +2458,7 @@
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = TunnelServices/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3760,7 +2481,7 @@
 			baseConfigurationReference = 460FB976DF65AC5945AAF052 /* Pods-TunnelServices.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -3771,7 +2492,7 @@
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/TunnelServices/NIO/CNIOBoringSSL/CNIOBoringSSL/include\"";
 				INFOPLIST_FILE = TunnelServices/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3791,15 +2512,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		150C855B21F6A04400318C60 /* Build configuration list for PBXNativeTarget "NIO1901Tests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				150C855C21F6A04400318C60 /* Debug */,
-				150C855D21F6A04400318C60 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		153E206F21EC26B500B82536 /* Build configuration list for PBXProject "NIO1901" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
