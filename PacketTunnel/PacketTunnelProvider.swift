@@ -116,7 +116,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         pendingStopCompletion = completionHandler
         // TODO:stop server
         if StartInExtension {
-            mitmServer.close()
+            mitmServer.close(completionHandler)
         }
     }
     

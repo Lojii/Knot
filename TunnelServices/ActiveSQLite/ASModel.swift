@@ -95,51 +95,61 @@ import SQLite
         }
     }
     
-    public var nameOfTable:String{
+    open var nameOfTable:String{
         get{
             return type(of: self).nameOfTable
         }
     }
     
-    class var db:Connection!{
-        get{
+    public class func getDB() throws -> Connection{
+//        get{
             if let name = dbName {
-                return ASConfigration.getDB(name: name)
+                return try ASConfigration.getDB(name: name)
             }else{
-                return ASConfigration.getDefaultDB()
+                return try ASConfigration.getDefaultDB()
             }
             
-        }
+//        }
     }
     
-    public var db:Connection!{
-        get{
-            return type(of: self).db
-        }
+    public func getDB() throws -> Connection{
+    //        get{
+        return try type(of: self).getDB()
+    //        }
     }
     public class func getTable() -> Table{
         return Table(nameOfTable)
     }
-    
+
     public func getTable() -> Table{
         return type(of: self).getTable()
     }
-    
+
+    @objc open override func setValue(_ value: Any?, forKey key: String) {
+        super.setValue(value, forKey: key)
+    }
+
+    @objc open override func value(forKey key: String) -> Any? {
+        return super.value(forKey: key)
+    }
+
     //MARK: - utils
-//    override open var description: String{
-//        var des = "**DB Model**：" + super.description + "->"
-//        //        var des = "**DB Model**" + NSStringFromClass(type(of: self)) + "-> "
-//        
-//        for case let (attribute?, column?, value) in recursionProperties(){
-//            //            if attribute == "created_at" || attribute == "updated_at" {
-//            //                des += "\(attribute) = \((value as! NSNumber).int64Value), "
-//            //            }else{
-//            des += "\(attribute) = \(value), "
-//            //            }
-//            
-//        }
-//        return des
-//    }
+
+
+    override open var description: String{
+        var des = "**DB Model**：" + super.description + "->"
+        //        var des = "**DB Model**" + NSStringFromClass(type(of: self)) + "-> "
+
+        for case let (attribute?, column?, value) in recursionProperties(){
+            //            if attribute == "created_at" || attribute == "updated_at" {
+            //                des += "\(attribute) = \((value as! NSNumber).int64Value), "
+            //            }else{
+            des += "\(attribute) = \(value), "
+            //            }
+            
+        }
+        return des
+    }
     
 }
 
@@ -147,12 +157,12 @@ import SQLite
 //public extension ASModel{
 
 //MARK: - Generic Type
-//    func findAll<T:DBModel>(_ predicate: SQLite.Expression<Bool>, toT t:T)->Array<T>{
+//    func findAll<T:ASModel>(_ predicate: SQLite.Expression<Bool>, toT t:T)->Array<T>{
 //
 //        return findAll(Expression<Bool?>(predicate),toT:t)
 //    }
 //
-//    func findAll<T:DBModel>(_ predicate: SQLite.Expression<Bool?>, toT t:T)->Array<T>{
+//    func findAll<T:ASModel>(_ predicate: SQLite.Expression<Bool?>, toT t:T)->Array<T>{
 //
 //        var results:[T] = [T]()
 //
@@ -171,14 +181,14 @@ import SQLite
 //                results.append(model)
 //            }
 //        }catch{
-//            LogError("Find all for \(nameOfTable) failure: \(error)")
+//            Log.e("Find all for \(nameOfTable) failure: \(error)")
 //        }
 //
 //
 //        return results
 //    }
 //
-//    func findAll<T:DBModel>(_ predicate: SQLite.Expression<Bool?>)->Array<T>{
+//    func findAll<T:ASModel>(_ predicate: SQLite.Expression<Bool?>)->Array<T>{
 //
 //        var results:[T] = [T]()
 //
@@ -198,14 +208,14 @@ import SQLite
 //                results.append(model)
 //            }
 //        }catch{
-//            LogError("Find all for \(nameOfTable) failure: \(error)")
+//            Log.e("Find all for \(nameOfTable) failure: \(error)")
 //        }
 //
 //
 //        return results
 //    }
 
-//    internal func findAll<T:DBModel>(_ predicate: SQLite.Expression<Bool?>) -> [T] where T : ASModel{
+//    internal func findAll<T:ASModel>(_ predicate: SQLite.Expression<Bool?>) -> [T] where T : ASModel{
 //
 //        var results:[T] = [T]()
 //
@@ -224,7 +234,7 @@ import SQLite
 //                results.append(model)
 //            }
 //        }catch{
-//            LogError("Find all for \(nameOfTable) failure: \(error)")
+//            Log.e("Find all for \(nameOfTable) failure: \(error)")
 //        }
 //
 //

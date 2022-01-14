@@ -331,7 +331,7 @@ class MainViewController: BaseViewController {
             }
         }else{
             if vpnStatus == .connected {
-                mitmServer?.close()
+                mitmServer?.close(nil)
                 currentTask = nil
             }else{
                 let task = Task.newTask()

@@ -23,9 +23,6 @@ func getClass(name:String) ->AnyClass?{
     return NSClassFromString(type)
 }
 
-//MARK: - Extension
-
-
 
 func recusionProperties(_ obj:Any) -> Dictionary<String,Any> {
     var properties = [String:Any]()

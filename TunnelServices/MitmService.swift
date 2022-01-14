@@ -60,6 +60,7 @@ public class MitmService: NSObject {
     var enableLocalServer = true
     
     var compelete:((Result<Int, Error>) -> Void)?
+    var closed:(() -> Void)?
     
     public init(task:Task) {
         super.init()
@@ -310,7 +311,8 @@ public class MitmService: NSObject {
         }
     }
     
-    public func close() -> Void{
+    public func close(_ completionHandler: (() -> Void)?) -> Void {
+        closed = completionHandler
         task.stopTime = NSNumber(value: Date().timeIntervalSince1970)
         
         var infoDic = [String:String]()
@@ -321,6 +323,10 @@ public class MitmService: NSObject {
         }
         
         try? task.update()
+        
+        if let callback = completionHandler {
+            callback()
+        }
         
         closeLocalServer()
         closeWifiServer()

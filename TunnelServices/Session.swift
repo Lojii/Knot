@@ -273,7 +273,7 @@ public class Session: ASModel {
     }
     
     public static func groupBy(taskID:NSNumber?,type:String) -> [[String:String]]{
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var group = [[String:String]]()
         do {
 //            let startTime = CFAbsoluteTimeGetCurrent()
@@ -363,7 +363,7 @@ public class Session: ASModel {
     public static func countWith(taskID:String?,keyWord:String?,params:[String:[String]]?,pageSize:Int = 999999,pageIndex:Int = 0,orderBy:String?, timeInterval:Double = Date().timeIntervalSince1970) -> [Int] {
         let sql = getSQL(taskID: taskID, keyWord: keyWord, params: params, pageSize: pageSize, pageIndex: pageIndex, orderBy: "id", timeInterval: timeInterval, isCount: true)
         //        print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var results = [Int]()
         do {
             let result = try db.prepare(sql)
@@ -381,7 +381,7 @@ public class Session: ASModel {
     public static func findAll(taskID:String?,keyWord:String?,params:[String:[String]]?,pageSize:Int = 999999,pageIndex:Int = 0,orderBy:String?, timeInterval:Double = Date().timeIntervalSince1970) -> [Session] {
         let sql = getSQL(taskID: taskID, keyWord: keyWord, params: params, pageSize: pageSize, pageIndex: pageIndex, orderBy: orderBy, timeInterval: timeInterval, isCount: false)
 //        print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var sessions = [Session]()
         do {
 //            let startTime = CFAbsoluteTimeGetCurrent()
@@ -406,7 +406,7 @@ public class Session: ASModel {
         let s = ids.map { (id) -> String in return "\(id)" }
         let sql = "select * from session where id in ( \(s.joined(separator: ",")) )"
         print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var sessions = [Session]()
         do {
             let startTime = CFAbsoluteTimeGetCurrent()

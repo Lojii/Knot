@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00A9660527913F9B002B9FDA /* ASConfigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965F927913F9A002B9FDA /* ASConfigration.swift */; };
+		00A9660627913F9B002B9FDA /* ASProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FA27913F9A002B9FDA /* ASProtocol.swift */; };
+		00A9660727913F9B002B9FDA /* ASProtocol+Query.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FB27913F9A002B9FDA /* ASProtocol+Query.swift */; };
+		00A9660827913F9B002B9FDA /* ASUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FC27913F9A002B9FDA /* ASUtils.swift */; };
+		00A9660927913F9B002B9FDA /* ASProtocol+introspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FD27913F9A002B9FDA /* ASProtocol+introspection.swift */; };
+		00A9660A27913F9B002B9FDA /* ASLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FE27913F9A002B9FDA /* ASLogger.swift */; };
+		00A9660B27913F9B002B9FDA /* ASProtocol+Save.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A965FF27913F9A002B9FDA /* ASProtocol+Save.swift */; };
+		00A9660C27913F9B002B9FDA /* ASError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A9660027913F9A002B9FDA /* ASError.swift */; };
+		00A9660D27913F9B002B9FDA /* ASModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A9660127913F9A002B9FDA /* ASModel.swift */; };
+		00A9660E27913F9B002B9FDA /* ASProtocol+Schame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A9660227913F9A002B9FDA /* ASProtocol+Schame.swift */; };
+		00A9660F27913F9B002B9FDA /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A9660327913F9A002B9FDA /* Types.swift */; };
+		00A9661027913F9B002B9FDA /* ActiveSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A9660427913F9A002B9FDA /* ActiveSQLite.swift */; };
 		150C855721F6A04400318C60 /* NIO1901Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C855621F6A04400318C60 /* NIO1901Tests.swift */; };
 		150C85DB21F6A05800318C60 /* NIOConcurrencyHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */; };
 		150C85DC21F6A05800318C60 /* NIOConcurrencyHelpersTests+XCTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */; };
@@ -252,17 +264,6 @@
 		5653641722714A7B0014F215 /* Left.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5653640C22714A7B0014F215 /* Left.swift */; };
 		5656E2CC229E3C0100981619 /* FilterListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5656E2CB229E3C0100981619 /* FilterListViewController.swift */; };
 		565A4F2A227738D300F13CAD /* TunnelServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56F415B62277119F00AE1554 /* TunnelServices.framework */; };
-		565A4F392277427700F13CAD /* ASConfigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F2E2277427700F13CAD /* ASConfigration.swift */; };
-		565A4F3A2277427700F13CAD /* ASProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F2F2277427700F13CAD /* ASProtocol.swift */; };
-		565A4F3B2277427700F13CAD /* ASProtocol+Query.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F302277427700F13CAD /* ASProtocol+Query.swift */; };
-		565A4F3C2277427700F13CAD /* ASUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F312277427700F13CAD /* ASUtils.swift */; };
-		565A4F3D2277427700F13CAD /* ASProtocol+introspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F322277427700F13CAD /* ASProtocol+introspection.swift */; };
-		565A4F3E2277427700F13CAD /* ASLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F332277427700F13CAD /* ASLogger.swift */; };
-		565A4F3F2277427700F13CAD /* ASProtocol+Save.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F342277427700F13CAD /* ASProtocol+Save.swift */; };
-		565A4F402277427700F13CAD /* ASModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F352277427700F13CAD /* ASModel.swift */; };
-		565A4F412277427700F13CAD /* ASProtocol+Schame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F362277427700F13CAD /* ASProtocol+Schame.swift */; };
-		565A4F422277427700F13CAD /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F372277427700F13CAD /* Types.swift */; };
-		565A4F432277427700F13CAD /* ActiveSQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F382277427700F13CAD /* ActiveSQLite.swift */; };
 		565A4F5B2277436C00F13CAD /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F5A2277436C00F13CAD /* Session.swift */; };
 		565A4F5D2277FE1700F13CAD /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565A4F5C2277FE1700F13CAD /* NetworkInfo.swift */; };
 		565C1C68228A74C3003366DD /* SessionDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565C1C67228A74C3003366DD /* SessionDetailViewController.swift */; };
@@ -716,6 +717,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		00A965F927913F9A002B9FDA /* ASConfigration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASConfigration.swift; sourceTree = "<group>"; };
+		00A965FA27913F9A002B9FDA /* ASProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASProtocol.swift; sourceTree = "<group>"; };
+		00A965FB27913F9A002B9FDA /* ASProtocol+Query.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Query.swift"; sourceTree = "<group>"; };
+		00A965FC27913F9A002B9FDA /* ASUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASUtils.swift; sourceTree = "<group>"; };
+		00A965FD27913F9A002B9FDA /* ASProtocol+introspection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+introspection.swift"; sourceTree = "<group>"; };
+		00A965FE27913F9A002B9FDA /* ASLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASLogger.swift; sourceTree = "<group>"; };
+		00A965FF27913F9A002B9FDA /* ASProtocol+Save.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Save.swift"; sourceTree = "<group>"; };
+		00A9660027913F9A002B9FDA /* ASError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASError.swift; sourceTree = "<group>"; };
+		00A9660127913F9A002B9FDA /* ASModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASModel.swift; sourceTree = "<group>"; };
+		00A9660227913F9A002B9FDA /* ASProtocol+Schame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Schame.swift"; sourceTree = "<group>"; };
+		00A9660327913F9A002B9FDA /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		00A9660427913F9A002B9FDA /* ActiveSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActiveSQLite.swift; sourceTree = "<group>"; };
 		150C855421F6A04400318C60 /* NIO1901Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NIO1901Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		150C855621F6A04400318C60 /* NIO1901Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NIO1901Tests.swift; sourceTree = "<group>"; };
 		150C855821F6A04400318C60 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -974,17 +987,6 @@
 		5653640C22714A7B0014F215 /* Left.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Left.swift; sourceTree = "<group>"; };
 		5656E2CB229E3C0100981619 /* FilterListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterListViewController.swift; sourceTree = "<group>"; };
 		565A4E822277262A00F13CAD /* ActiveSQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ActiveSQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		565A4F2E2277427700F13CAD /* ASConfigration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASConfigration.swift; sourceTree = "<group>"; };
-		565A4F2F2277427700F13CAD /* ASProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASProtocol.swift; sourceTree = "<group>"; };
-		565A4F302277427700F13CAD /* ASProtocol+Query.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Query.swift"; sourceTree = "<group>"; };
-		565A4F312277427700F13CAD /* ASUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASUtils.swift; sourceTree = "<group>"; };
-		565A4F322277427700F13CAD /* ASProtocol+introspection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+introspection.swift"; sourceTree = "<group>"; };
-		565A4F332277427700F13CAD /* ASLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASLogger.swift; sourceTree = "<group>"; };
-		565A4F342277427700F13CAD /* ASProtocol+Save.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Save.swift"; sourceTree = "<group>"; };
-		565A4F352277427700F13CAD /* ASModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASModel.swift; sourceTree = "<group>"; };
-		565A4F362277427700F13CAD /* ASProtocol+Schame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ASProtocol+Schame.swift"; sourceTree = "<group>"; };
-		565A4F372277427700F13CAD /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
-		565A4F382277427700F13CAD /* ActiveSQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActiveSQLite.swift; sourceTree = "<group>"; };
 		565A4F5A2277436C00F13CAD /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		565A4F5C2277FE1700F13CAD /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
 		565C1C67228A74C3003366DD /* SessionDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailViewController.swift; sourceTree = "<group>"; };
@@ -1253,6 +1255,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		00A965F827913F9A002B9FDA /* ActiveSQLite */ = {
+			isa = PBXGroup;
+			children = (
+				00A965F927913F9A002B9FDA /* ASConfigration.swift */,
+				00A965FA27913F9A002B9FDA /* ASProtocol.swift */,
+				00A965FB27913F9A002B9FDA /* ASProtocol+Query.swift */,
+				00A965FC27913F9A002B9FDA /* ASUtils.swift */,
+				00A965FD27913F9A002B9FDA /* ASProtocol+introspection.swift */,
+				00A965FE27913F9A002B9FDA /* ASLogger.swift */,
+				00A965FF27913F9A002B9FDA /* ASProtocol+Save.swift */,
+				00A9660027913F9A002B9FDA /* ASError.swift */,
+				00A9660127913F9A002B9FDA /* ASModel.swift */,
+				00A9660227913F9A002B9FDA /* ASProtocol+Schame.swift */,
+				00A9660327913F9A002B9FDA /* Types.swift */,
+				00A9660427913F9A002B9FDA /* ActiveSQLite.swift */,
+			);
+			path = ActiveSQLite;
+			sourceTree = "<group>";
+		};
 		150C855521F6A04400318C60 /* NIO1901Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1828,24 +1849,6 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
-		565A4F2D2277427700F13CAD /* ActiveSQLite */ = {
-			isa = PBXGroup;
-			children = (
-				565A4F2E2277427700F13CAD /* ASConfigration.swift */,
-				565A4F2F2277427700F13CAD /* ASProtocol.swift */,
-				565A4F302277427700F13CAD /* ASProtocol+Query.swift */,
-				565A4F312277427700F13CAD /* ASUtils.swift */,
-				565A4F322277427700F13CAD /* ASProtocol+introspection.swift */,
-				565A4F332277427700F13CAD /* ASLogger.swift */,
-				565A4F342277427700F13CAD /* ASProtocol+Save.swift */,
-				565A4F352277427700F13CAD /* ASModel.swift */,
-				565A4F362277427700F13CAD /* ASProtocol+Schame.swift */,
-				565A4F372277427700F13CAD /* Types.swift */,
-				565A4F382277427700F13CAD /* ActiveSQLite.swift */,
-			);
-			path = ActiveSQLite;
-			sourceTree = "<group>";
-		};
 		565C1C62228A7465003366DD /* SessionDetail */ = {
 			isa = PBXGroup;
 			children = (
@@ -2371,12 +2374,12 @@
 		56F415B7227711A000AE1554 /* TunnelServices */ = {
 			isa = PBXGroup;
 			children = (
+				00A965F827913F9A002B9FDA /* ActiveSQLite */,
 				565CBD9C238BECCD00CF0A3A /* NIOSSL */,
 				565CB8C0238BEABC00CF0A3A /* NIOLib */,
 				56F415E7227712B200AE1554 /* NIO */,
 				565CB867238BE97C00CF0A3A /* NIOHTTP */,
 				5634538122BA41160076219D /* HttpService */,
-				565A4F2D2277427700F13CAD /* ActiveSQLite */,
 				56F415CA2277122C00AE1554 /* Utils */,
 				56F415D02277122D00AE1554 /* Detector */,
 				56F415C22277122C00AE1554 /* Handler */,
@@ -3336,8 +3339,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				565A4F5B2277436C00F13CAD /* Session.swift in Sources */,
-				565A4F412277427700F13CAD /* ASProtocol+Schame.swift in Sources */,
+				00A9660827913F9B002B9FDA /* ASUtils.swift in Sources */,
 				56F415E22277122D00AE1554 /* HttpMatcher.swift in Sources */,
+				00A9660F27913F9B002B9FDA /* Types.swift in Sources */,
+				00A9660527913F9B002B9FDA /* ASConfigration.swift in Sources */,
 				56F415E62277122D00AE1554 /* SSLMatcher.swift in Sources */,
 				5621724122926DD800C7581D /* DataCompression.swift in Sources */,
 				56F415E12277122D00AE1554 /* NetAddress.swift in Sources */,
@@ -3348,9 +3353,10 @@
 				566C76AA22795ADA00DA0B9E /* VPNTunnelManager.swift in Sources */,
 				56F415E42277122D00AE1554 /* HttpsMatcher.swift in Sources */,
 				5621723E22918EC100C7581D /* Data+Gzip.swift in Sources */,
+				00A9660727913F9B002B9FDA /* ASProtocol+Query.swift in Sources */,
 				56F415D92277122D00AE1554 /* ExchangeHandler.swift in Sources */,
-				565A4F3A2277427700F13CAD /* ASProtocol.swift in Sources */,
 				566C76C9227AE36600DA0B9E /* SwiftyJSON.swift in Sources */,
+				00A9660A27913F9B002B9FDA /* ASLogger.swift in Sources */,
 				56D260A8227DAC49004F5636 /* NetFileManager.swift in Sources */,
 				56F415DC2277122D00AE1554 /* MitmService.swift in Sources */,
 				56F415DD2277122D00AE1554 /* NetRequest.swift in Sources */,
@@ -3360,32 +3366,30 @@
 				5675D16422AFE2FE00562E73 /* Rule.swift in Sources */,
 				56F415E52277122D00AE1554 /* ProtocolMatcher.swift in Sources */,
 				5675D16022AFE2FE00562E73 /* GeneralItem.swift in Sources */,
-				565A4F3C2277427700F13CAD /* ASUtils.swift in Sources */,
-				565A4F3F2277427700F13CAD /* ASProtocol+Save.swift in Sources */,
-				565A4F392277427700F13CAD /* ASConfigration.swift in Sources */,
-				565A4F432277427700F13CAD /* ActiveSQLite.swift in Sources */,
-				565A4F3E2277427700F13CAD /* ASLogger.swift in Sources */,
 				56D260A4227D07C2004F5636 /* CloseTimeoutChannelHandler.swift in Sources */,
 				56D260A1227D02BA004F5636 /* ChannelActiveAwareHandler.swift in Sources */,
 				5675D16322AFE2FE00562E73 /* HostItem.swift in Sources */,
+				00A9660927913F9B002B9FDA /* ASProtocol+introspection.swift in Sources */,
 				5675D16222AFE2FE00562E73 /* RuleItem.swift in Sources */,
 				565F86A422BDEAD700DCD014 /* SSLServer.swift in Sources */,
-				565A4F3B2277427700F13CAD /* ASProtocol+Query.swift in Sources */,
 				566C76A722794C9300DA0B9E /* Task.swift in Sources */,
-				565A4F402277427700F13CAD /* ASModel.swift in Sources */,
+				00A9660E27913F9B002B9FDA /* ASProtocol+Schame.swift in Sources */,
 				56D260A6227D54ED004F5636 /* String+Extension.swift in Sources */,
 				565A4F5D2277FE1700F13CAD /* NetworkInfo.swift in Sources */,
 				5634538A22BCEA780076219D /* HTTPServerHandler.swift in Sources */,
+				00A9660627913F9B002B9FDA /* ASProtocol.swift in Sources */,
+				00A9660C27913F9B002B9FDA /* ASError.swift in Sources */,
 				563D168C22B5883E00AC6F5C /* Extension.swift in Sources */,
 				560438ED22853F84007CB3DB /* Data+Extension.swift in Sources */,
 				566C76CB227AE51C00DA0B9E /* Dictionary+Extension.swift in Sources */,
 				5634538322BA41490076219D /* HTTPServer.swift in Sources */,
 				56F415DB2277122D00AE1554 /* SSLHandler.swift in Sources */,
 				56F415DA2277122D00AE1554 /* HTTPSHandler.swift in Sources */,
-				565A4F422277427700F13CAD /* Types.swift in Sources */,
+				00A9661027913F9B002B9FDA /* ActiveSQLite.swift in Sources */,
+				00A9660B27913F9B002B9FDA /* ASProtocol+Save.swift in Sources */,
+				00A9660D27913F9B002B9FDA /* ASModel.swift in Sources */,
 				56F415D72277122D00AE1554 /* TunnelProxyHandler.swift in Sources */,
 				5675D16722AFE36900562E73 /* Date+Extension.swift in Sources */,
-				565A4F3D2277427700F13CAD /* ASProtocol+introspection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

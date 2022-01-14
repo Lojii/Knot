@@ -238,11 +238,11 @@ class SessionListViewController: BaseViewController {
         tableView.register(SessionCell.self, forCellReuseIdentifier: "SessionCell")
         tableView.separatorStyle = .none
         tableView.allowsMultipleSelectionDuringEditing = true
-        tableView.configRefreshHeader(container: self) {
-            self.loadData()
+        tableView.configRefreshHeader(container: self) { [weak self] in
+            self?.loadData()
         }
-        tableView.configRefreshFooter(container: self, action: {
-            self.loadData(isMore: true)
+        tableView.configRefreshFooter(container: self, action: { [weak self] in
+            self?.loadData(isMore: true)
         })
         tableView.switchRefreshHeader(to: .refreshing)
         return tableView

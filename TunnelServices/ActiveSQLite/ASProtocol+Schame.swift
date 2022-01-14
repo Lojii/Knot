@@ -20,7 +20,7 @@ public extension ASProtocol where Self:ASModel{
         //        type(of: self).createTable()
         
         do{
-            try db.run(getTable().create(ifNotExists: true) { t in
+            try getDB().run(getTable().create(ifNotExists: true) { t in
                 
                 
                 if self is CreateColumnsProtocol {
@@ -38,9 +38,9 @@ public extension ASProtocol where Self:ASModel{
                 
             })
             
-            LogInfo("Create  Table \(nameOfTable) success")
+            Log.i("Create  Table \(nameOfTable) success")
         }catch let e{
-            LogError("Create  Table \(nameOfTable)failure：\(e.localizedDescription)")
+            Log.e("Create  Table \(nameOfTable)failure：\(e.localizedDescription)")
             throw e
         }
         
@@ -104,11 +104,11 @@ public extension ASProtocol where Self:ASModel{
     
     static func dropTable()throws{
         do{
-            try db.run(getTable().drop(ifExists: true))
-            LogInfo("Delete  Table \(nameOfTable) success")
+            try getDB().run(getTable().drop(ifExists: true))
+            Log.i("Delete  Table \(nameOfTable) success")
             
         }catch{
-            LogError("Delete  Table \(nameOfTable)failure：\(error.localizedDescription)")
+            Log.e("Delete  Table \(nameOfTable)failure：\(error.localizedDescription)")
             throw error
         }
         
@@ -118,11 +118,11 @@ public extension ASProtocol where Self:ASModel{
     //MARK: - Rename Table
     static func renameTable(oldName:String, newName:String)throws{
         do{
-            try db.run(Table(oldName).rename(Table(newName)))
-            LogInfo("alter name of table from \(oldName) to \(newName) success")
+            try getDB().run(Table(oldName).rename(Table(newName)))
+            Log.i("alter name of table from \(oldName) to \(newName) success")
             
         }catch{
-            LogError("alter name of table from \(oldName) to \(newName) failure：\(error.localizedDescription)")
+            Log.e("alter name of table from \(oldName) to \(newName) failure：\(error.localizedDescription)")
             throw error
         }
         
@@ -131,19 +131,19 @@ public extension ASProtocol where Self:ASModel{
     //MARK: - Add Column
     static func addColumn(_ columnNames:[String])throws {
         do{
-            try db.savepoint("savepointname_\(nameOfTable)_addColumn_\(NSDate().timeIntervalSince1970 * 1000)", block: {
+            try getDB().savepoint("savepointname_\(nameOfTable)_addColumn_\(NSDate().timeIntervalSince1970 * 1000)", block: {
                 //            try self.db.transaction {
                 let t = getTable()
                 for columnName in columnNames {
-                    try self.db.run(self.init().addColumnReturnSQL(t: t, columnName: columnName)!)
+                    try self.getDB().run(self.init().addColumnReturnSQL(t: t, columnName: columnName)!)
                 }
                 
                 //            }
             })
-            LogInfo("Add \(columnNames) columns to \(nameOfTable) table success")
+            Log.i("Add \(columnNames) columns to \(nameOfTable) table success")
             
         }catch{
-            LogError("Add \(columnNames) columns to \(nameOfTable) table failure")
+            Log.e("Add \(columnNames) columns to \(nameOfTable) table failure")
             throw error
         }
     }
@@ -204,12 +204,12 @@ public extension ASProtocol where Self:ASModel{
     // MARK: - CREATE INDEX
     static func createIndex(_ columns: Expressible...)throws {
         do{
-            try db.run(getTable().createIndexBrage(columns))
-            LogInfo("Create \(columns) indexs on \(nameOfTable) table success")
+            try getDB().run(getTable().createIndexBrage(columns))
+            Log.i("Create \(columns) indexs on \(nameOfTable) table success")
             
             
         }catch{
-            LogError("Create \(columns) indexs on \(nameOfTable) table failure")
+            Log.e("Create \(columns) indexs on \(nameOfTable) table failure")
             throw error
         }
     }
@@ -217,11 +217,11 @@ public extension ASProtocol where Self:ASModel{
     static func createIndex(_ columns: [Expressible], unique: Bool = false, ifNotExists: Bool = false)throws {
         do{
             
-            try db.run(getTable().createIndexBrage(columns, unique: unique, ifNotExists: ifNotExists))
-            LogInfo("Create \(columns) indexs on \(nameOfTable) table success")
+            try getDB().run(getTable().createIndexBrage(columns, unique: unique, ifNotExists: ifNotExists))
+            Log.i("Create \(columns) indexs on \(nameOfTable) table success")
             
         }catch{
-            LogError("Create \(columns) indexs on \(nameOfTable) table failure")
+            Log.e("Create \(columns) indexs on \(nameOfTable) table failure")
             throw error
         }
     }
@@ -229,12 +229,12 @@ public extension ASProtocol where Self:ASModel{
     // MARK: - DROP INDEX
     static func dropIndex(_ columns: Expressible...) -> Bool {
         do{
-            try db.run(getTable().dropIndexBrage(columns))
-            LogInfo("Drop \(columns) indexs from \(nameOfTable) table success")
+            try getDB().run(getTable().dropIndexBrage(columns))
+            Log.i("Drop \(columns) indexs from \(nameOfTable) table success")
             return true
 
         }catch{
-            LogError("Drop \(columns) indexs from \(nameOfTable) table failure")
+            Log.e("Drop \(columns) indexs from \(nameOfTable) table failure")
             return false
         }
     }
@@ -242,12 +242,12 @@ public extension ASProtocol where Self:ASModel{
     static func dropIndex(_ columns: [Expressible], ifExists: Bool = false) -> Bool {
         do{
         
-            try db.run(getTable().dropIndexBrage(columns, ifExists: ifExists))
-            LogInfo("Drop \(columns) indexs from \(nameOfTable) table success")
+            try getDB().run(getTable().dropIndexBrage(columns, ifExists: ifExists))
+            Log.i("Drop \(columns) indexs from \(nameOfTable) table success")
             return true
         
         }catch{
-            LogError("Drop \(columns) indexs from \(nameOfTable) table failure")
+            Log.e("Drop \(columns) indexs from \(nameOfTable) table failure")
             return false
         }
     }
