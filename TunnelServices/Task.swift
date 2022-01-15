@@ -122,7 +122,7 @@ public class Task: ASModel {
         let s = taskIds.map { (id) -> String in return "\(id)" }
         let sql = "delete from task where id in ( \(s.joined(separator: ",")) )"
         print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         do {
 //            _ = try db.prepare(sql)
             try db.run(sql)
@@ -138,7 +138,7 @@ public class Task: ASModel {
         let s = taskIds.map { (id) -> String in return "\(id)" }
         let sql = "select * from session where taskID in ( \(s.joined(separator: ",")) )"
         print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var sessions = [Session]()
         do {
 //            let startTime = CFAbsoluteTimeGetCurrent()
@@ -158,7 +158,7 @@ public class Task: ASModel {
     
     public static func getAllIds() -> [Int] {
         let sql = "select id from task"
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var results = [Int]()
         do {
             let result = try db.prepare(sql)
@@ -176,7 +176,7 @@ public class Task: ASModel {
     public static func findAll(pageSize:Int = 999999,pageIndex:Int = 0,orderBy:String?) -> [Task] {
         let sql = getSQL(pageSize: pageSize, pageIndex: pageIndex, orderBy: orderBy ?? "id")
 //        print("sql:\(sql)")
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         var tasks = [Task]()
         do {
 //            let startTime = CFAbsoluteTimeGetCurrent()
@@ -220,7 +220,7 @@ public class Task: ASModel {
     
     public func setNumbers(){
         let sql = "select count(id) as sessionCount,sum(downloadFlow) as downloadFlowSum,sum(uploadTraffic) as uploadTrafficSum from session where taskID = \(id ?? -1)"
-        let db = ASConfigration.getDefaultDB()
+        let db = try! ASConfigration.getDefaultDB()
         do {
             let result = try db.prepare(sql)
             let columnNames:[String] = result.columnNames

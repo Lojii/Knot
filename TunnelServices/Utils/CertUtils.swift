@@ -49,14 +49,8 @@ public class CertUtils: NSObject {
     }
     
     public static func generateCert(host:String, rsaKey:NIOSSLPrivateKey, caKey: NIOSSLPrivateKey, caCert: NIOSSLCertificate) -> NIOSSLCertificate {
-//        if let result = shared.certPool?[host] {
-//            return result
-//        }
         let caPriKey = caKey._ref.assumingMemoryBound(to: EVP_PKEY.self)
-        let req = CNIOBoringSSL_X509_REQ_new()
         let key:UnsafeMutablePointer<EVP_PKEY> = rsaKey._ref.assumingMemoryBound(to: EVP_PKEY.self)//generateRSAPrivateKey()
-        /* Set the public key. */
-        CNIOBoringSSL_X509_REQ_set_pubkey(req, key)
         /* Set the DN of the request. */
         let name = CNIOBoringSSL_X509_NAME_new()
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, "SE", -1, -1, 0);
@@ -65,9 +59,8 @@ public class CertUtils: NSObject {
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, "Company", -1, -1, 0);
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, "", -1, -1, 0);
         CNIOBoringSSL_X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, host, -1, -1, 0);
-        CNIOBoringSSL_X509_REQ_set_subject_name(req, name)
         /* Self-sign the request to prove that we posses the key. */
-        CNIOBoringSSL_X509_REQ_sign(req, key, CNIOBoringSSL_EVP_sha256())
+//        CNIOBoringSSL_X509_REQ_sign(req, key, CNIOBoringSSL_EVP_sha256())
         /* Sign with the CA. */
         let crt = CNIOBoringSSL_X509_new() // nil?
         /* Set version to X509v3 */
@@ -93,10 +86,10 @@ public class CertUtils: NSObject {
         CNIOBoringSSL_ASN1_TIME_free(notAfter)
         /* Get the request's subject and just use it (we don't bother checking it since we generated it ourself). Also take the request's public key. */
         CNIOBoringSSL_X509_set_subject_name(crt, name)
-        let reqPubKey = CNIOBoringSSL_X509_REQ_get_pubkey(req)
-        CNIOBoringSSL_X509_set_pubkey(crt, reqPubKey)
-        CNIOBoringSSL_EVP_PKEY_free(reqPubKey)
-        
+        CNIOBoringSSL_X509_set_pubkey(crt, key)
+ 
+        CNIOBoringSSL_X509_NAME_free(name)
+ 
         // 满足iOS13要求. See https://support.apple.com/en-us/HT210176
         addExtension(x509: crt!, nid: NID_basic_constraints, value: "critical,CA:FALSE")
         addExtension(x509: crt!, nid: NID_ext_key_usage, value: "serverAuth,OCSPSigning")
@@ -105,15 +98,9 @@ public class CertUtils: NSObject {
         
         /* Now perform the actual signing with the CA. */
         CNIOBoringSSL_X509_sign(crt, caPriKey, CNIOBoringSSL_EVP_sha256())
-        CNIOBoringSSL_X509_REQ_free(req)
-
-//        CNIOBoringSSL_EVP_PKEY_CTX_dup(key)
-//        let copyCrt = CNIOBoringSSL_X509_dup(crt!)!
-//        shared.certPool?[host] = NIOSSLCertificate.fromUnsafePointer(takingOwnership: copyCrt)
-        let copyCrt2 = CNIOBoringSSL_X509_dup(crt!)!
-        //
-        let cert = NIOSSLCertificate.fromUnsafePointer(takingOwnership: copyCrt2)
-//        let cert = try! NIOSSLCertificate(file: "", format: .pem)
+ 
+        let copyCrt = CNIOBoringSSL_X509_dup(crt!)!
+        let cert = NIOSSLCertificate.fromUnsafePointer(takingOwnership: copyCrt)
         CNIOBoringSSL_X509_free(crt!)
         return cert
     }

@@ -11,40 +11,7 @@ import SQLite
 
 
 public extension ASProtocol where Self:ASModel{
-    //    public static var dbName:String?{
-    //        return nil
-    //    }
-    //
-    //    static var db:Connection{
-    //        get{
-    //            if let name = dbName {
-    //                return ASConfigration.getDB(name: name)
-    //            }else{
-    //                return ASConfigration.getDefaultDB()
-    //            }
-    //
-    //        }
-    //    }
-    //
-    //    public static var CREATE_AT_KEY:String{
-    //        return  "created_at"
-    //    }
-    //    public static var created_at:Expression<NSNumber>{
-    //        return Expression<Int64>(CREATE_AT_KEY)
-    //    }
-    //
-    //    public static var isSaveDefaulttimestamp:Bool {
-    //        return false
-    //    }
-    //
-    //    public static var nameOfTable: String{
-    //        return NSStringFromClass(self).components(separatedBy: ".").last!
-    //    }
-    //
-    //    public static func getTable() -> Table{
-    //        return Table(nameOfTable)
-    //    }
-    
+
     //MARK: - Comment
     internal func buildExpression(_ attribute: String, value:Any?)->SQLite.Expression<Bool?>?{
         
@@ -185,8 +152,8 @@ public extension ASProtocol where Self:ASModel{
             //                    "Mirror: \(Mirror(reflecting:value)),  " +
             //                    "Mirror.subjectType: \(Mirror(reflecting:value).subjectType),    " +
             //                    "Mirror.displayStyle: \(String(describing: Mirror(reflecting:value).displayStyle))"
-            //            LogDebug(s)
-            //            LogDebug("assign Value-\(value) to \(attribute)-attribute of \(nameOfTable). ")
+            //            Log.d(s)
+            //            Log.d("assign Value-\(value) to \(attribute)-attribute of \(nameOfTable). ")
 
             if attribute == primaryKeyAttributeName {
                 let v = try! row.get(Expression<NSNumber>(column))
@@ -259,8 +226,8 @@ public extension ASProtocol where Self:ASModel{
             //                    "Mirror: \(Mirror(reflecting:value)),  " +
             //                    "Mirror.subjectType: \(Mirror(reflecting:value).subjectType),    " +
             //                    "Mirror.displayStyle: \(String(describing: Mirror(reflecting:value).displayStyle))"
-            //            LogDebug(s)
-            //            LogDebug("assign Value-\(value) to \(attribute)-attribute of \(nameOfTable). ")
+            //            Log.d(s)
+            //            Log.d("assign Value-\(value) to \(attribute)-attribute of \(nameOfTable). ")
             
             
             let mir = Mirror(reflecting:value)

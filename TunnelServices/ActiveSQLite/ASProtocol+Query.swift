@@ -10,39 +10,7 @@ import Foundation
 import SQLite
 
 public extension ASProtocol where Self:ASModel{
-    //    public static var dbName:String?{
-    //        return nil
-    //    }
-    //
-    //    static var db:Connection{
-    //        get{
-    //            if let name = dbName {
-    //                return ASConfigration.getDB(name: name)
-    //            }else{
-    //                return ASConfigration.getDefaultDB()
-    //            }
-    //
-    //        }
-    //    }
-    //
-    //    public static var CREATE_AT_KEY:String{
-    //        return  "created_at"
-    //    }
-    //    public static var created_at:Expression<NSNumber>{
-    //        return Expression<Int64>(CREATE_AT_KEY)
-    //    }
-    //
-    //    public static var isSaveDefaulttimestamp:Bool {
-    //        return false
-    //    }
-    //
-    //    public static var nameOfTable: String{
-    //        return NSStringFromClass(self).components(separatedBy: ".").last!
-    //    }
-    //
-    //    public static func getTable() -> Table{
-    //        return Table(nameOfTable)
-    //    }
+    
     
     //MARK: - Find
     //MARK: - FindFirst
@@ -129,13 +97,13 @@ public extension ASProtocol where Self:ASModel{
         }
         
         do{
-            for row in try db.prepare(query) {
+            for row in try getDB().prepare(query) {
                 let model = self.init()
                 model.buildFromRow(row: row) //TODO:codable
                 results.append(model)
             }
         }catch{
-            LogError(error)
+            Log.e(error)
         }
         
         
@@ -194,7 +162,7 @@ public extension ASProtocol where Self:ASModel{
         
         
         do{
-            for row in try db.prepare(query) {
+            for row in try getDB().prepare(query) {
                 
                 let model = self.init()
                 model.buildFromRow(row: row) //TODO:Codable
@@ -202,37 +170,12 @@ public extension ASProtocol where Self:ASModel{
                 results.append(model)
             }
         }catch{
-            LogError("Find all for \(nameOfTable) failure: \(error)")
+            Log.e("Find all for \(nameOfTable) failure: \(error)")
         }
         
         
         return results
     }
-    
-    func run()->Array<Self>{
-        
-        var results:Array<Self> = Array<Self>()
-        do{
-            for row in try type(of: self).db.prepare(query!) {
-                
-                let model = type(of: self).init()
-                model.buildFromRow(row: row) //TODO:Codable
-                
-                results.append(model)
-            }
-        }catch{
-            LogError("Execute run() from \(nameOfTable) failure。\(error)")
-        }
-        
-        
-        query = nil
-        
-        LogInfo("Execute Query run() function from \(nameOfTable)  success")
-        
-        return results
-        
-    }
-    
     
     //MARK: - Query
     var query:QueryType?{ //TODO:Codable
@@ -356,21 +299,44 @@ public extension ASProtocol where Self:ASModel{
         return self
     }
     
+    func run()->Array<Self>{
+        
+        var results:Array<Self> = Array<Self>()
+        do{
+            for row in try type(of: self).getDB().prepare(query!) {
+                
+                let model = type(of: self).init()
+                model.buildFromRow(row: row) //TODO:Codable
+                
+                results.append(model)
+            }
+        }catch{
+            Log.e("Execute run() from \(nameOfTable) failure。\(error)")
+        }
+        
+        
+        query = nil
+        
+        Log.i("Execute Query run() function from \(nameOfTable)  success")
+        
+        return results
+        
+    }
     
     //MARK: delete
     //MARK: - Delete
     func runDelete()throws{
         
         do {
-            if try type(of: self).db.run(query!.delete()) > 0 {
-                LogInfo("Delete rows of \(nameOfTable) success")
+            if try type(of: self).getDB().run(query!.delete()) > 0 {
+                Log.i("Delete rows of \(nameOfTable) success")
                 
             } else {
-                LogWarn("Delete rows of \(nameOfTable) failure。")
+                Log.w("Delete rows of \(nameOfTable) failure。")
                 
             }
         } catch {
-            LogError("Delete rows of \(nameOfTable) failure。")
+            Log.e("Delete rows of \(nameOfTable) failure。")
             throw error
         }
     }
@@ -382,15 +348,15 @@ public extension ASProtocol where Self:ASModel{
         
         let query = getTable().where(type(of: self).id == id)
         do {
-            if try db.run(query.delete()) > 0 {
-                LogInfo("Delete  \(nameOfTable)，id:\(id)  success")
+            if try getDB().run(query.delete()) > 0 {
+                Log.i("Delete  \(nameOfTable)，id:\(id)  success")
                 
             } else {
-                LogWarn("Delete \(nameOfTable) failure，haven't found id:\(id) 。")
+                Log.w("Delete \(nameOfTable) failure，haven't found id:\(id) 。")
                 
             }
         } catch {
-            LogError("Delete failure: \(error)")
+            Log.e("Delete failure: \(error)")
             throw error
         }
     }
@@ -399,7 +365,7 @@ public extension ASProtocol where Self:ASModel{
         
         do{
             
-            try db!.savepoint("savepointname_\(nameOfTable)_deleteBatch\(NSDate().timeIntervalSince1970 * 1000)", block: {
+            try getDB().savepoint("savepointname_\(nameOfTable)_deleteBatch\(NSDate().timeIntervalSince1970 * 1000)", block: {
                 
                 var ids = Array<NSNumber>()
                 for model in models{
@@ -411,23 +377,23 @@ public extension ASProtocol where Self:ASModel{
                 
                 let query = getTable().where(ids.contains(id))
                 
-                try db!.run(query.delete())
+                try getDB().run(query.delete())
                 
-                LogInfo("Delete batch rows of \(nameOfTable) success")
+                Log.i("Delete batch rows of \(nameOfTable) success")
             })
         }catch{
-            LogError("Delete batch rows of \(nameOfTable) failure: \(error)")
+            Log.e("Delete batch rows of \(nameOfTable) failure: \(error)")
             throw error
         }
     }
     
     static func deleteAll() throws{
         do{
-            try db.run(getTable().delete())
-            LogInfo("Delete all rows of \(nameOfTable) success")
+            try getDB().run(getTable().delete())
+            Log.i("Delete all rows of \(nameOfTable) success")
             
         }catch{
-            LogError("Delete all rows of \(nameOfTable) failure: \(error)")
+            Log.e("Delete all rows of \(nameOfTable) failure: \(error)")
             throw error
         }
     }

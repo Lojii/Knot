@@ -37,7 +37,7 @@ public extension ASProtocol where Self:ASModel{
 //            if let name = dbName {
 //                return ASConfigration.getDB(name: name)
 //            }else{
-//                return DBConfigration.getDefaultDB()
+//                return ASConfigration.getDefaultDB()
 //            }
 //
 //        }

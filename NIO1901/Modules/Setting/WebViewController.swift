@@ -58,9 +58,12 @@ class WebViewController: BaseViewController,WKNavigationDelegate {
     }
     /// 加载服务条款
     @objc func loadTCHtml() -> Void {
-        let fwtkRequest = URLRequest(url: URL(string: fwtkUrl)!,cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
-        // reloadRevalidatingCacheData
-        webview.load(fwtkRequest)
+//        let fwtkRequest = URLRequest(url: URL(string: fwtkUrl)!,cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
+//        // reloadRevalidatingCacheData
+        if let bundleHttpPath = Bundle.main.url(forResource: "Http/fwtkcn", withExtension: "html") {
+            webview.loadFileURL(bundleHttpPath, allowingReadAccessTo: Bundle.main.bundleURL)
+        }
+//        webview.load(fwtkRequest)
     }
     
     func loadPPHtml() -> Void {

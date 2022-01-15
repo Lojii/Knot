@@ -15,16 +15,16 @@ public  func save(db:Connection? = nil, _ block: @escaping ()throws -> Void,
     do{
         
         
-        let excuteDB = (db != nil ? db! : ASConfigration.getDefaultDB())
+        let excuteDB = (db != nil ? db! : try ASConfigration.getDefaultDB())
         
         try excuteDB.transaction {
             try block()
         }
         
-        LogInfo("Transcation success")
+        Log.i("Transcation success")
         completion?(nil)
     }catch{
-        LogError("Transcation failure:\(error)")
+        Log.e("Transcation failure:\(error)")
         completion?(error)
     }
     
@@ -37,20 +37,23 @@ public  func saveAsync(db:Connection? = nil, _ block: @escaping ()throws -> Void
     DispatchQueue.global().async {
         
         do{
-            let excuteDB = (db != nil ? db! : ASConfigration.getDefaultDB())
+            let excuteDB = (db != nil ? db! : try ASConfigration.getDefaultDB())
             
+            //            try excuteDB.transaction(.exclusive, block: {
+            //                try block()
+            //            })
             try excuteDB.transaction {
                 try block()
             }
             
-            LogInfo("Transcation success")
+            Log.i("Transcation success")
             
             DispatchQueue.main.async {
                 completion?(nil)
             }
             
         }catch{
-            LogError("Transcation failure:\(error)")
+            Log.e("Transcation failure:\(error)")
             
             DispatchQueue.main.async {
                 completion?(error)
