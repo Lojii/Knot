@@ -257,6 +257,7 @@ class RuleItemView: UIView {
             contentField?.tag = 0
             contentField?.delegate = self
             contentView.addSubview(contentField!)
+            contentField?.addTarget(self, action: #selector(textFieldDidChange(_:)), for: UIControl.Event.editingChanged)
             break
         case .Switch:
             let labelFrame = CGRect(x: LRSpacing, y: 0, width: SCREENWIDTH - LRSpacing * 2 - 50, height: contentHeight)
@@ -297,10 +298,13 @@ class RuleItemView: UIView {
     @objc func contentViewDidClick(){
         contentDidClickHandle?()
     }
+    
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        textValueChangeHandle?(textField.text ?? "")
+        
+    }
 }
 
 extension RuleItemView: UITextFieldDelegate {
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        textValueChangeHandle?(textField.text ?? "")
-    }
+ 
 }
