@@ -450,6 +450,10 @@ public class Rule: ASModel {
             case .DOMAINSUFFIX:
                 if host.lowercased().hasSuffix(item.value.lowercased()) { return true }
             case .URLREGEX:
+                guard (try? NSRegularExpression(pattern: item.value, options: .caseInsensitive)) != nil else {
+                    print("Invalid Regex")
+                    return false
+                }
                 let pred = NSPredicate(format: "SELF MATCHES %@", item.value)
                 if pred.evaluate(with: host) || pred.evaluate(with: fullUri) || pred.evaluate(with: fullUri.urlEncoded()) {
                     return true
@@ -497,6 +501,10 @@ public class Rule: ASModel {
 //                    print("命中DOMAINSUFFIX(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
                     return true }
             case .URLREGEX:
+                guard (try? NSRegularExpression(pattern: item.value, options: .caseInsensitive)) != nil else {
+                    print("Invalid Regex")
+                    return false
+                }
                 let pred = NSPredicate(format: "SELF MATCHES %@", item.value)
                 if pred.evaluate(with: host) || pred.evaluate(with: fullUri) || pred.evaluate(with: fullUri.urlEncoded()) {
 //                    print("命中URLREGEX(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
