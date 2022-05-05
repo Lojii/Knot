@@ -1,7 +1,10 @@
 # Knot
  Knot 是一款iOS端抓包工具（没有其他的科学转发功能，单纯的抓包工具），包含所有完整代码(Network+UI)，使用MITM(中间人攻击)技术，用swift编写，目前实现了http(s)解析，可扩展其他任何协议
- 欢迎各位fork,完善
- 如果要提交上架App Store，请在App名字或者描述里添加Knot标识或者代码来源
+ ## 目前已经上架 [App Store](https://apps.apple.com/cn/app/knot-packet-capture/id1618651767) 
+ https://apps.apple.com/cn/app/knot-packet-capture/id1618651767
+ 
+ ![QR](./screenshots/app_store_qrcode.png)
+ 
  ## 已实现功能
   - http、https流量抓取
   - 流量解析、多格式导出、过程分析
