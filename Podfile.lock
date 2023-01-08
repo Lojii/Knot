@@ -1,13 +1,21 @@
 PODS:
-  - Bugly (2.5.2)
-  - CocoaAsyncSocket (7.6.4)
+  - ActiveSQLite (0.5.3):
+    - SQLite.swift (= 0.12.2)
+  - Alamofire (4.9.1)
+  - BrotliKit (1.0.2)
+  - Bugly (2.5.90)
+  - CocoaAsyncSocket (7.6.5)
+  - CocoaHTTPServer (2.3):
+    - CocoaAsyncSocket
   - FileBrowser (1.0.0)
+  - GSPlayer (0.2.25)
   - Highlightr (2.1.0)
   - ReachabilitySwift (5.0.0)
+  - SnapKit (4.2.0)
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
-  - TangramKit (1.4.2)
+  - SwiftEntryKit (2.0.0)
   - YYCache (1.0.4)
   - YYCategories (1.0.4):
     - YYCategories/no-arc (= 1.0.4)
@@ -22,45 +30,69 @@ PODS:
     - YYImage
 
 DEPENDENCIES:
+  - ActiveSQLite (from `./Thirdparty/ActiveSQLite`)
+  - Alamofire
+  - BrotliKit (from `./Thirdparty/BrotliKit`)
   - Bugly
   - CocoaAsyncSocket
+  - CocoaHTTPServer (from `./Thirdparty/CocoaHTTPServer`)
   - FileBrowser
+  - GSPlayer
   - Highlightr
   - ReachabilitySwift
-  - SQLite.swift
-  - TangramKit
+  - SnapKit
+  - SwiftEntryKit (= 2.0.0)
   - YYCategories
-  - YYImage
-  - YYImage/WebP
-  - YYWebImage
+  - YYImage (from `./Thirdparty/YYImage`)
+  - YYImage/WebP (from `./Thirdparty/YYImage`)
+  - YYWebImage (from `./Thirdparty/YYWebImage`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
+    - Alamofire
     - Bugly
     - CocoaAsyncSocket
     - FileBrowser
+    - GSPlayer
     - Highlightr
     - ReachabilitySwift
+    - SnapKit
     - SQLite.swift
-    - TangramKit
+    - SwiftEntryKit
     - YYCache
     - YYCategories
-    - YYImage
-    - YYWebImage
+
+EXTERNAL SOURCES:
+  ActiveSQLite:
+    :path: "./Thirdparty/ActiveSQLite"
+  BrotliKit:
+    :path: "./Thirdparty/BrotliKit"
+  CocoaHTTPServer:
+    :path: "./Thirdparty/CocoaHTTPServer"
+  YYImage:
+    :path: "./Thirdparty/YYImage"
+  YYWebImage:
+    :path: "./Thirdparty/YYWebImage"
 
 SPEC CHECKSUMS:
-  Bugly: dbac48b55ad469a97cc4321045cd50df8f63d44f
-  CocoaAsyncSocket: 694058e7c0ed05a9e217d1b3c7ded962f4180845
+  ActiveSQLite: ff47717bb6e78c37b3867de98fd965682f0debe9
+  Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
+  BrotliKit: 7eb3640b2c206cd4410208696c27ef83e95f43d5
+  Bugly: 88bc32c0acc6fef7b74d610f0319ee7560d6b9fe
+  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
+  CocoaHTTPServer: e2f00e534659ebff54a1237fe04053214b10d2c8
   FileBrowser: 2ca91ff61c9ea09665eb3b8f9e64a7a77e66a0bf
+  GSPlayer: 3b6850a0f26af54967396d637c2e4646dc451013
   Highlightr: 595f3e100737c8de41113385da8bd0b5b65212c6
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
-  TangramKit: aad3ab8f9617418c9da96d59cddd71134ae8af83
+  SwiftEntryKit: 61b5fa36f34a97dd8013e48a7345bc4c4720be9a
   YYCache: 8105b6638f5e849296c71f331ff83891a4942952
   YYCategories: 6bcd4314c6661a561410dce4a793379ebd306abd
-  YYImage: 1e1b62a9997399593e4b9c4ecfbbabbf1d3f3b54
+  YYImage: 6db68da66f20d9f169ceb94dfb9947c3867b9665
   YYWebImage: 5f7f36aee2ae293f016d418c7d6ba05c4863e928
 
-PODFILE CHECKSUM: 3f4a8fc10b7b4e794d8f59101e83344b217ec53e
+PODFILE CHECKSUM: 8ccb7219413fdb63ccc966d35fb4dc41f1758d19
 
-COCOAPODS: 1.9.0
+COCOAPODS: 1.11.3

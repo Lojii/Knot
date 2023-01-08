@@ -1,0 +1,857 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AE0094F120766FB500F9F8F8 /* BrotliKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0094E720766FB500F9F8F8 /* BrotliKit.framework */; };
+		AE0094F620766FB500F9F8F8 /* BrotliKitTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AE0094F520766FB500F9F8F8 /* BrotliKitTests.m */; };
+		AE0094F820766FB500F9F8F8 /* BrotliKit.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0094EA20766FB500F9F8F8 /* BrotliKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE0095022076713600F9F8F8 /* BrotliKit.podspec in Resources */ = {isa = PBXBuildFile; fileRef = AE0095012076713600F9F8F8 /* BrotliKit.podspec */; };
+		AE0095052076726F00F9F8F8 /* NSData+BrotliCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095032076726F00F9F8F8 /* NSData+BrotliCompression.h */; };
+		AE0095062076726F00F9F8F8 /* NSData+BrotliCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = AE0095042076726F00F9F8F8 /* NSData+BrotliCompression.m */; };
+		AE00950B2076735500F9F8F8 /* LMBrotliCompressor.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095092076735500F9F8F8 /* LMBrotliCompressor.h */; };
+		AE00950C2076735500F9F8F8 /* LMBrotliCompressor.m in Sources */ = {isa = PBXBuildFile; fileRef = AE00950A2076735500F9F8F8 /* LMBrotliCompressor.m */; };
+		AE0096532076AEE000F9F8F8 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095F82076AEE000F9F8F8 /* constants.h */; };
+		AE0096542076AEE000F9F8F8 /* context.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095F92076AEE000F9F8F8 /* context.h */; };
+		AE0096552076AEE000F9F8F8 /* dictionary.bin in Resources */ = {isa = PBXBuildFile; fileRef = AE0095FA2076AEE000F9F8F8 /* dictionary.bin */; };
+		AE0096562076AEE000F9F8F8 /* dictionary.bin.br in Resources */ = {isa = PBXBuildFile; fileRef = AE0095FB2076AEE000F9F8F8 /* dictionary.bin.br */; };
+		AE0096582076AEE000F9F8F8 /* dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095FD2076AEE000F9F8F8 /* dictionary.h */; };
+		AE0096592076AEE000F9F8F8 /* platform.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0095FE2076AEE000F9F8F8 /* platform.h */; };
+		AE00965B2076AEE000F9F8F8 /* transform.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096002076AEE000F9F8F8 /* transform.h */; };
+		AE00965C2076AEE000F9F8F8 /* version.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096012076AEE000F9F8F8 /* version.h */; };
+		AE00965E2076AEE000F9F8F8 /* bit_reader.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096042076AEE000F9F8F8 /* bit_reader.h */; };
+		AE0096612076AEE000F9F8F8 /* huffman.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096072076AEE000F9F8F8 /* huffman.h */; };
+		AE0096622076AEE000F9F8F8 /* prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096082076AEE000F9F8F8 /* prefix.h */; };
+		AE0096642076AEE000F9F8F8 /* state.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00960A2076AEE000F9F8F8 /* state.h */; };
+		AE0096662076AEE000F9F8F8 /* backward_references.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00960D2076AEE000F9F8F8 /* backward_references.h */; };
+		AE0096682076AEE100F9F8F8 /* backward_references_hq.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00960F2076AEE000F9F8F8 /* backward_references_hq.h */; };
+		AE0096692076AEE100F9F8F8 /* backward_references_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096102076AEE000F9F8F8 /* backward_references_inc.h */; };
+		AE00966B2076AEE100F9F8F8 /* bit_cost.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096122076AEE000F9F8F8 /* bit_cost.h */; };
+		AE00966C2076AEE100F9F8F8 /* bit_cost_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096132076AEE000F9F8F8 /* bit_cost_inc.h */; };
+		AE00966D2076AEE100F9F8F8 /* block_encoder_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096142076AEE000F9F8F8 /* block_encoder_inc.h */; };
+		AE00966F2076AEE100F9F8F8 /* block_splitter.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096162076AEE000F9F8F8 /* block_splitter.h */; };
+		AE0096702076AEE100F9F8F8 /* block_splitter_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096172076AEE000F9F8F8 /* block_splitter_inc.h */; };
+		AE0096722076AEE100F9F8F8 /* brotli_bit_stream.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096192076AEE000F9F8F8 /* brotli_bit_stream.h */; };
+		AE0096742076AEE100F9F8F8 /* cluster.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00961B2076AEE000F9F8F8 /* cluster.h */; };
+		AE0096752076AEE100F9F8F8 /* cluster_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00961C2076AEE000F9F8F8 /* cluster_inc.h */; };
+		AE0096762076AEE100F9F8F8 /* command.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00961D2076AEE000F9F8F8 /* command.h */; };
+		AE0096782076AEE100F9F8F8 /* compress_fragment.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00961F2076AEE000F9F8F8 /* compress_fragment.h */; };
+		AE00967A2076AEE100F9F8F8 /* compress_fragment_two_pass.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096212076AEE000F9F8F8 /* compress_fragment_two_pass.h */; };
+		AE00967C2076AEE100F9F8F8 /* dictionary_hash.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096232076AEE000F9F8F8 /* dictionary_hash.h */; };
+		AE00967F2076AEE100F9F8F8 /* encoder_dict.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096262076AEE000F9F8F8 /* encoder_dict.h */; };
+		AE0096812076AEE100F9F8F8 /* entropy_encode.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096282076AEE000F9F8F8 /* entropy_encode.h */; };
+		AE0096822076AEE100F9F8F8 /* entropy_encode_static.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096292076AEE000F9F8F8 /* entropy_encode_static.h */; };
+		AE0096832076AEE100F9F8F8 /* fast_log.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962A2076AEE000F9F8F8 /* fast_log.h */; };
+		AE0096842076AEE100F9F8F8 /* find_match_length.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962B2076AEE000F9F8F8 /* find_match_length.h */; };
+		AE0096852076AEE100F9F8F8 /* hash.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962C2076AEE000F9F8F8 /* hash.h */; };
+		AE0096862076AEE100F9F8F8 /* hash_forgetful_chain_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962D2076AEE000F9F8F8 /* hash_forgetful_chain_inc.h */; };
+		AE0096872076AEE100F9F8F8 /* hash_longest_match64_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962E2076AEE000F9F8F8 /* hash_longest_match64_inc.h */; };
+		AE0096882076AEE100F9F8F8 /* hash_longest_match_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00962F2076AEE000F9F8F8 /* hash_longest_match_inc.h */; };
+		AE0096892076AEE100F9F8F8 /* hash_longest_match_quickly_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096302076AEE000F9F8F8 /* hash_longest_match_quickly_inc.h */; };
+		AE00968A2076AEE100F9F8F8 /* hash_to_binary_tree_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096312076AEE000F9F8F8 /* hash_to_binary_tree_inc.h */; };
+		AE00968C2076AEE100F9F8F8 /* histogram.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096332076AEE000F9F8F8 /* histogram.h */; };
+		AE00968D2076AEE100F9F8F8 /* histogram_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096342076AEE000F9F8F8 /* histogram_inc.h */; };
+		AE00968F2076AEE100F9F8F8 /* literal_cost.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096362076AEE000F9F8F8 /* literal_cost.h */; };
+		AE0096912076AEE100F9F8F8 /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096382076AEE000F9F8F8 /* memory.h */; };
+		AE0096932076AEE100F9F8F8 /* metablock.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963A2076AEE000F9F8F8 /* metablock.h */; };
+		AE0096942076AEE100F9F8F8 /* metablock_inc.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963B2076AEE000F9F8F8 /* metablock_inc.h */; };
+		AE0096952076AEE100F9F8F8 /* params.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963C2076AEE000F9F8F8 /* params.h */; };
+		AE0096962076AEE100F9F8F8 /* prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963D2076AEE000F9F8F8 /* prefix.h */; };
+		AE0096972076AEE100F9F8F8 /* quality.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963E2076AEE000F9F8F8 /* quality.h */; };
+		AE0096982076AEE100F9F8F8 /* ringbuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00963F2076AEE000F9F8F8 /* ringbuffer.h */; };
+		AE00969A2076AEE100F9F8F8 /* static_dict.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096412076AEE000F9F8F8 /* static_dict.h */; };
+		AE00969B2076AEE100F9F8F8 /* static_dict_lut.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096422076AEE000F9F8F8 /* static_dict_lut.h */; };
+		AE00969D2076AEE100F9F8F8 /* utf8_util.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096442076AEE000F9F8F8 /* utf8_util.h */; };
+		AE00969E2076AEE100F9F8F8 /* write_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096452076AEE000F9F8F8 /* write_bits.h */; };
+		AE0096A12076AEE100F9F8F8 /* test_fuzzer.sh in Resources */ = {isa = PBXBuildFile; fileRef = AE0096492076AEE000F9F8F8 /* test_fuzzer.sh */; };
+		AE0096A22076AEE100F9F8F8 /* decode.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00964C2076AEE000F9F8F8 /* decode.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE0096A32076AEE100F9F8F8 /* encode.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00964D2076AEE000F9F8F8 /* encode.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE0096A42076AEE100F9F8F8 /* port.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00964E2076AEE000F9F8F8 /* port.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE0096A52076AEE100F9F8F8 /* types.h in Headers */ = {isa = PBXBuildFile; fileRef = AE00964F2076AEE000F9F8F8 /* types.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AE0096A72076AEE100F9F8F8 /* brotli.md in Resources */ = {isa = PBXBuildFile; fileRef = AE0096522076AEE000F9F8F8 /* brotli.md */; };
+		AE0096A82076B05700F9F8F8 /* dictionary.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0095FC2076AEE000F9F8F8 /* dictionary.c */; };
+		AE0096A92076B05700F9F8F8 /* transform.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0095FF2076AEE000F9F8F8 /* transform.c */; };
+		AE0096AA2076B05700F9F8F8 /* bit_reader.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096032076AEE000F9F8F8 /* bit_reader.c */; };
+		AE0096AB2076B05700F9F8F8 /* decode.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096052076AEE000F9F8F8 /* decode.c */; };
+		AE0096AC2076B05700F9F8F8 /* huffman.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096062076AEE000F9F8F8 /* huffman.c */; };
+		AE0096AD2076B05700F9F8F8 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096092076AEE000F9F8F8 /* state.c */; };
+		AE0096AE2076B05700F9F8F8 /* backward_references.c in Sources */ = {isa = PBXBuildFile; fileRef = AE00960C2076AEE000F9F8F8 /* backward_references.c */; };
+		AE0096AF2076B05700F9F8F8 /* backward_references_hq.c in Sources */ = {isa = PBXBuildFile; fileRef = AE00960E2076AEE000F9F8F8 /* backward_references_hq.c */; };
+		AE0096B02076B05700F9F8F8 /* bit_cost.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096112076AEE000F9F8F8 /* bit_cost.c */; };
+		AE0096B12076B05700F9F8F8 /* block_splitter.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096152076AEE000F9F8F8 /* block_splitter.c */; };
+		AE0096B22076B05700F9F8F8 /* brotli_bit_stream.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096182076AEE000F9F8F8 /* brotli_bit_stream.c */; };
+		AE0096B32076B05700F9F8F8 /* cluster.c in Sources */ = {isa = PBXBuildFile; fileRef = AE00961A2076AEE000F9F8F8 /* cluster.c */; };
+		AE0096B42076B05700F9F8F8 /* compress_fragment.c in Sources */ = {isa = PBXBuildFile; fileRef = AE00961E2076AEE000F9F8F8 /* compress_fragment.c */; };
+		AE0096B52076B05700F9F8F8 /* compress_fragment_two_pass.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096202076AEE000F9F8F8 /* compress_fragment_two_pass.c */; };
+		AE0096B62076B05700F9F8F8 /* dictionary_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096222076AEE000F9F8F8 /* dictionary_hash.c */; };
+		AE0096B72076B05700F9F8F8 /* encode.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096242076AEE000F9F8F8 /* encode.c */; };
+		AE0096B82076B05700F9F8F8 /* encoder_dict.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096252076AEE000F9F8F8 /* encoder_dict.c */; };
+		AE0096B92076B05700F9F8F8 /* entropy_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096272076AEE000F9F8F8 /* entropy_encode.c */; };
+		AE0096BA2076B05700F9F8F8 /* histogram.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096322076AEE000F9F8F8 /* histogram.c */; };
+		AE0096BB2076B05700F9F8F8 /* literal_cost.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096352076AEE000F9F8F8 /* literal_cost.c */; };
+		AE0096BC2076B05700F9F8F8 /* memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096372076AEE000F9F8F8 /* memory.c */; };
+		AE0096BD2076B05700F9F8F8 /* metablock.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096392076AEE000F9F8F8 /* metablock.c */; };
+		AE0096BE2076B05700F9F8F8 /* static_dict.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096402076AEE000F9F8F8 /* static_dict.c */; };
+		AE0096BF2076B05700F9F8F8 /* utf8_util.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096432076AEE000F9F8F8 /* utf8_util.c */; };
+		AE0096C22076B57800F9F8F8 /* LMBrotliCompression.c in Sources */ = {isa = PBXBuildFile; fileRef = AE0096C02076B57800F9F8F8 /* LMBrotliCompression.c */; };
+		AE0096C32076B57800F9F8F8 /* LMBrotliCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = AE0096C12076B57800F9F8F8 /* LMBrotliCompression.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AE0094F220766FB500F9F8F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AE0094DE20766FB500F9F8F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AE0094E620766FB500F9F8F8;
+			remoteInfo = BrotliKit;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AE0094E720766FB500F9F8F8 /* BrotliKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BrotliKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE0094EA20766FB500F9F8F8 /* BrotliKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BrotliKit.h; sourceTree = "<group>"; };
+		AE0094EB20766FB500F9F8F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE0094F020766FB500F9F8F8 /* BrotliKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BrotliKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE0094F520766FB500F9F8F8 /* BrotliKitTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BrotliKitTests.m; sourceTree = "<group>"; };
+		AE0094F720766FB500F9F8F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AE0095012076713600F9F8F8 /* BrotliKit.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = BrotliKit.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		AE0095032076726F00F9F8F8 /* NSData+BrotliCompression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSData+BrotliCompression.h"; sourceTree = "<group>"; };
+		AE0095042076726F00F9F8F8 /* NSData+BrotliCompression.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSData+BrotliCompression.m"; sourceTree = "<group>"; };
+		AE0095092076735500F9F8F8 /* LMBrotliCompressor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBrotliCompressor.h; sourceTree = "<group>"; };
+		AE00950A2076735500F9F8F8 /* LMBrotliCompressor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMBrotliCompressor.m; sourceTree = "<group>"; };
+		AE0095F82076AEE000F9F8F8 /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
+		AE0095F92076AEE000F9F8F8 /* context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = context.h; sourceTree = "<group>"; };
+		AE0095FA2076AEE000F9F8F8 /* dictionary.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = dictionary.bin; sourceTree = "<group>"; };
+		AE0095FB2076AEE000F9F8F8 /* dictionary.bin.br */ = {isa = PBXFileReference; lastKnownFileType = file; path = dictionary.bin.br; sourceTree = "<group>"; };
+		AE0095FC2076AEE000F9F8F8 /* dictionary.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dictionary.c; sourceTree = "<group>"; };
+		AE0095FD2076AEE000F9F8F8 /* dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dictionary.h; sourceTree = "<group>"; };
+		AE0095FE2076AEE000F9F8F8 /* platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = platform.h; sourceTree = "<group>"; };
+		AE0095FF2076AEE000F9F8F8 /* transform.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = transform.c; sourceTree = "<group>"; };
+		AE0096002076AEE000F9F8F8 /* transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = transform.h; sourceTree = "<group>"; };
+		AE0096012076AEE000F9F8F8 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
+		AE0096032076AEE000F9F8F8 /* bit_reader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bit_reader.c; sourceTree = "<group>"; };
+		AE0096042076AEE000F9F8F8 /* bit_reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bit_reader.h; sourceTree = "<group>"; };
+		AE0096052076AEE000F9F8F8 /* decode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = decode.c; sourceTree = "<group>"; };
+		AE0096062076AEE000F9F8F8 /* huffman.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = huffman.c; sourceTree = "<group>"; };
+		AE0096072076AEE000F9F8F8 /* huffman.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = huffman.h; sourceTree = "<group>"; };
+		AE0096082076AEE000F9F8F8 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.h; sourceTree = "<group>"; };
+		AE0096092076AEE000F9F8F8 /* state.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = state.c; sourceTree = "<group>"; };
+		AE00960A2076AEE000F9F8F8 /* state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = state.h; sourceTree = "<group>"; };
+		AE00960C2076AEE000F9F8F8 /* backward_references.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = backward_references.c; sourceTree = "<group>"; };
+		AE00960D2076AEE000F9F8F8 /* backward_references.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = backward_references.h; sourceTree = "<group>"; };
+		AE00960E2076AEE000F9F8F8 /* backward_references_hq.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = backward_references_hq.c; sourceTree = "<group>"; };
+		AE00960F2076AEE000F9F8F8 /* backward_references_hq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = backward_references_hq.h; sourceTree = "<group>"; };
+		AE0096102076AEE000F9F8F8 /* backward_references_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = backward_references_inc.h; sourceTree = "<group>"; };
+		AE0096112076AEE000F9F8F8 /* bit_cost.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bit_cost.c; sourceTree = "<group>"; };
+		AE0096122076AEE000F9F8F8 /* bit_cost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bit_cost.h; sourceTree = "<group>"; };
+		AE0096132076AEE000F9F8F8 /* bit_cost_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bit_cost_inc.h; sourceTree = "<group>"; };
+		AE0096142076AEE000F9F8F8 /* block_encoder_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block_encoder_inc.h; sourceTree = "<group>"; };
+		AE0096152076AEE000F9F8F8 /* block_splitter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = block_splitter.c; sourceTree = "<group>"; };
+		AE0096162076AEE000F9F8F8 /* block_splitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block_splitter.h; sourceTree = "<group>"; };
+		AE0096172076AEE000F9F8F8 /* block_splitter_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block_splitter_inc.h; sourceTree = "<group>"; };
+		AE0096182076AEE000F9F8F8 /* brotli_bit_stream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = brotli_bit_stream.c; sourceTree = "<group>"; };
+		AE0096192076AEE000F9F8F8 /* brotli_bit_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = brotli_bit_stream.h; sourceTree = "<group>"; };
+		AE00961A2076AEE000F9F8F8 /* cluster.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cluster.c; sourceTree = "<group>"; };
+		AE00961B2076AEE000F9F8F8 /* cluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cluster.h; sourceTree = "<group>"; };
+		AE00961C2076AEE000F9F8F8 /* cluster_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cluster_inc.h; sourceTree = "<group>"; };
+		AE00961D2076AEE000F9F8F8 /* command.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = command.h; sourceTree = "<group>"; };
+		AE00961E2076AEE000F9F8F8 /* compress_fragment.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compress_fragment.c; sourceTree = "<group>"; };
+		AE00961F2076AEE000F9F8F8 /* compress_fragment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = compress_fragment.h; sourceTree = "<group>"; };
+		AE0096202076AEE000F9F8F8 /* compress_fragment_two_pass.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compress_fragment_two_pass.c; sourceTree = "<group>"; };
+		AE0096212076AEE000F9F8F8 /* compress_fragment_two_pass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = compress_fragment_two_pass.h; sourceTree = "<group>"; };
+		AE0096222076AEE000F9F8F8 /* dictionary_hash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dictionary_hash.c; sourceTree = "<group>"; };
+		AE0096232076AEE000F9F8F8 /* dictionary_hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dictionary_hash.h; sourceTree = "<group>"; };
+		AE0096242076AEE000F9F8F8 /* encode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = encode.c; sourceTree = "<group>"; };
+		AE0096252076AEE000F9F8F8 /* encoder_dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = encoder_dict.c; sourceTree = "<group>"; };
+		AE0096262076AEE000F9F8F8 /* encoder_dict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = encoder_dict.h; sourceTree = "<group>"; };
+		AE0096272076AEE000F9F8F8 /* entropy_encode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = entropy_encode.c; sourceTree = "<group>"; };
+		AE0096282076AEE000F9F8F8 /* entropy_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = entropy_encode.h; sourceTree = "<group>"; };
+		AE0096292076AEE000F9F8F8 /* entropy_encode_static.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = entropy_encode_static.h; sourceTree = "<group>"; };
+		AE00962A2076AEE000F9F8F8 /* fast_log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fast_log.h; sourceTree = "<group>"; };
+		AE00962B2076AEE000F9F8F8 /* find_match_length.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = find_match_length.h; sourceTree = "<group>"; };
+		AE00962C2076AEE000F9F8F8 /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
+		AE00962D2076AEE000F9F8F8 /* hash_forgetful_chain_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_forgetful_chain_inc.h; sourceTree = "<group>"; };
+		AE00962E2076AEE000F9F8F8 /* hash_longest_match64_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_longest_match64_inc.h; sourceTree = "<group>"; };
+		AE00962F2076AEE000F9F8F8 /* hash_longest_match_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_longest_match_inc.h; sourceTree = "<group>"; };
+		AE0096302076AEE000F9F8F8 /* hash_longest_match_quickly_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_longest_match_quickly_inc.h; sourceTree = "<group>"; };
+		AE0096312076AEE000F9F8F8 /* hash_to_binary_tree_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_to_binary_tree_inc.h; sourceTree = "<group>"; };
+		AE0096322076AEE000F9F8F8 /* histogram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = histogram.c; sourceTree = "<group>"; };
+		AE0096332076AEE000F9F8F8 /* histogram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = histogram.h; sourceTree = "<group>"; };
+		AE0096342076AEE000F9F8F8 /* histogram_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = histogram_inc.h; sourceTree = "<group>"; };
+		AE0096352076AEE000F9F8F8 /* literal_cost.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = literal_cost.c; sourceTree = "<group>"; };
+		AE0096362076AEE000F9F8F8 /* literal_cost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = literal_cost.h; sourceTree = "<group>"; };
+		AE0096372076AEE000F9F8F8 /* memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memory.c; sourceTree = "<group>"; };
+		AE0096382076AEE000F9F8F8 /* memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
+		AE0096392076AEE000F9F8F8 /* metablock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = metablock.c; sourceTree = "<group>"; };
+		AE00963A2076AEE000F9F8F8 /* metablock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metablock.h; sourceTree = "<group>"; };
+		AE00963B2076AEE000F9F8F8 /* metablock_inc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metablock_inc.h; sourceTree = "<group>"; };
+		AE00963C2076AEE000F9F8F8 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = params.h; sourceTree = "<group>"; };
+		AE00963D2076AEE000F9F8F8 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefix.h; sourceTree = "<group>"; };
+		AE00963E2076AEE000F9F8F8 /* quality.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quality.h; sourceTree = "<group>"; };
+		AE00963F2076AEE000F9F8F8 /* ringbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ringbuffer.h; sourceTree = "<group>"; };
+		AE0096402076AEE000F9F8F8 /* static_dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = static_dict.c; sourceTree = "<group>"; };
+		AE0096412076AEE000F9F8F8 /* static_dict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = static_dict.h; sourceTree = "<group>"; };
+		AE0096422076AEE000F9F8F8 /* static_dict_lut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = static_dict_lut.h; sourceTree = "<group>"; };
+		AE0096432076AEE000F9F8F8 /* utf8_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = utf8_util.c; sourceTree = "<group>"; };
+		AE0096442076AEE000F9F8F8 /* utf8_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utf8_util.h; sourceTree = "<group>"; };
+		AE0096452076AEE000F9F8F8 /* write_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = write_bits.h; sourceTree = "<group>"; };
+		AE0096472076AEE000F9F8F8 /* decode_fuzzer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = decode_fuzzer.cc; sourceTree = "<group>"; };
+		AE0096482076AEE000F9F8F8 /* run_decode_fuzzer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_decode_fuzzer.cc; sourceTree = "<group>"; };
+		AE0096492076AEE000F9F8F8 /* test_fuzzer.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = test_fuzzer.sh; sourceTree = "<group>"; };
+		AE00964C2076AEE000F9F8F8 /* decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decode.h; sourceTree = "<group>"; };
+		AE00964D2076AEE000F9F8F8 /* encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = encode.h; sourceTree = "<group>"; };
+		AE00964E2076AEE000F9F8F8 /* port.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = port.h; sourceTree = "<group>"; };
+		AE00964F2076AEE000F9F8F8 /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		AE0096512076AEE000F9F8F8 /* brotli.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = brotli.c; sourceTree = "<group>"; };
+		AE0096522076AEE000F9F8F8 /* brotli.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = brotli.md; sourceTree = "<group>"; };
+		AE0096C02076B57800F9F8F8 /* LMBrotliCompression.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = LMBrotliCompression.c; sourceTree = "<group>"; };
+		AE0096C12076B57800F9F8F8 /* LMBrotliCompression.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMBrotliCompression.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AE0094E320766FB500F9F8F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE0094ED20766FB500F9F8F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0094F120766FB500F9F8F8 /* BrotliKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AE0094DD20766FB500F9F8F8 = {
+			isa = PBXGroup;
+			children = (
+				AE0095012076713600F9F8F8 /* BrotliKit.podspec */,
+				AE0094E920766FB500F9F8F8 /* BrotliKit */,
+				AE0094F420766FB500F9F8F8 /* BrotliKitTests */,
+				AE0094E820766FB500F9F8F8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AE0094E820766FB500F9F8F8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AE0094E720766FB500F9F8F8 /* BrotliKit.framework */,
+				AE0094F020766FB500F9F8F8 /* BrotliKitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AE0094E920766FB500F9F8F8 /* BrotliKit */ = {
+			isa = PBXGroup;
+			children = (
+				AE0094EA20766FB500F9F8F8 /* BrotliKit.h */,
+				AE0094EB20766FB500F9F8F8 /* Info.plist */,
+				AE0095032076726F00F9F8F8 /* NSData+BrotliCompression.h */,
+				AE0095042076726F00F9F8F8 /* NSData+BrotliCompression.m */,
+				AE0095092076735500F9F8F8 /* LMBrotliCompressor.h */,
+				AE00950A2076735500F9F8F8 /* LMBrotliCompressor.m */,
+				AE0096C12076B57800F9F8F8 /* LMBrotliCompression.h */,
+				AE0096C02076B57800F9F8F8 /* LMBrotliCompression.c */,
+				AE0095F62076AEE000F9F8F8 /* c */,
+			);
+			path = BrotliKit;
+			sourceTree = "<group>";
+		};
+		AE0094F420766FB500F9F8F8 /* BrotliKitTests */ = {
+			isa = PBXGroup;
+			children = (
+				AE0094F520766FB500F9F8F8 /* BrotliKitTests.m */,
+				AE0094F720766FB500F9F8F8 /* Info.plist */,
+			);
+			path = BrotliKitTests;
+			sourceTree = "<group>";
+		};
+		AE0095F62076AEE000F9F8F8 /* c */ = {
+			isa = PBXGroup;
+			children = (
+				AE0095F72076AEE000F9F8F8 /* common */,
+				AE0096022076AEE000F9F8F8 /* dec */,
+				AE00960B2076AEE000F9F8F8 /* enc */,
+				AE0096462076AEE000F9F8F8 /* fuzz */,
+				AE00964A2076AEE000F9F8F8 /* include */,
+				AE0096502076AEE000F9F8F8 /* tools */,
+			);
+			name = c;
+			path = Dependencies/brotli/c;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE0095F72076AEE000F9F8F8 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				AE0095F82076AEE000F9F8F8 /* constants.h */,
+				AE0095F92076AEE000F9F8F8 /* context.h */,
+				AE0095FA2076AEE000F9F8F8 /* dictionary.bin */,
+				AE0095FB2076AEE000F9F8F8 /* dictionary.bin.br */,
+				AE0095FC2076AEE000F9F8F8 /* dictionary.c */,
+				AE0095FD2076AEE000F9F8F8 /* dictionary.h */,
+				AE0095FE2076AEE000F9F8F8 /* platform.h */,
+				AE0095FF2076AEE000F9F8F8 /* transform.c */,
+				AE0096002076AEE000F9F8F8 /* transform.h */,
+				AE0096012076AEE000F9F8F8 /* version.h */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+		AE0096022076AEE000F9F8F8 /* dec */ = {
+			isa = PBXGroup;
+			children = (
+				AE0096032076AEE000F9F8F8 /* bit_reader.c */,
+				AE0096042076AEE000F9F8F8 /* bit_reader.h */,
+				AE0096052076AEE000F9F8F8 /* decode.c */,
+				AE0096062076AEE000F9F8F8 /* huffman.c */,
+				AE0096072076AEE000F9F8F8 /* huffman.h */,
+				AE0096082076AEE000F9F8F8 /* prefix.h */,
+				AE0096092076AEE000F9F8F8 /* state.c */,
+				AE00960A2076AEE000F9F8F8 /* state.h */,
+			);
+			path = dec;
+			sourceTree = "<group>";
+		};
+		AE00960B2076AEE000F9F8F8 /* enc */ = {
+			isa = PBXGroup;
+			children = (
+				AE00960C2076AEE000F9F8F8 /* backward_references.c */,
+				AE00960D2076AEE000F9F8F8 /* backward_references.h */,
+				AE00960E2076AEE000F9F8F8 /* backward_references_hq.c */,
+				AE00960F2076AEE000F9F8F8 /* backward_references_hq.h */,
+				AE0096102076AEE000F9F8F8 /* backward_references_inc.h */,
+				AE0096112076AEE000F9F8F8 /* bit_cost.c */,
+				AE0096122076AEE000F9F8F8 /* bit_cost.h */,
+				AE0096132076AEE000F9F8F8 /* bit_cost_inc.h */,
+				AE0096142076AEE000F9F8F8 /* block_encoder_inc.h */,
+				AE0096152076AEE000F9F8F8 /* block_splitter.c */,
+				AE0096162076AEE000F9F8F8 /* block_splitter.h */,
+				AE0096172076AEE000F9F8F8 /* block_splitter_inc.h */,
+				AE0096182076AEE000F9F8F8 /* brotli_bit_stream.c */,
+				AE0096192076AEE000F9F8F8 /* brotli_bit_stream.h */,
+				AE00961A2076AEE000F9F8F8 /* cluster.c */,
+				AE00961B2076AEE000F9F8F8 /* cluster.h */,
+				AE00961C2076AEE000F9F8F8 /* cluster_inc.h */,
+				AE00961D2076AEE000F9F8F8 /* command.h */,
+				AE00961E2076AEE000F9F8F8 /* compress_fragment.c */,
+				AE00961F2076AEE000F9F8F8 /* compress_fragment.h */,
+				AE0096202076AEE000F9F8F8 /* compress_fragment_two_pass.c */,
+				AE0096212076AEE000F9F8F8 /* compress_fragment_two_pass.h */,
+				AE0096222076AEE000F9F8F8 /* dictionary_hash.c */,
+				AE0096232076AEE000F9F8F8 /* dictionary_hash.h */,
+				AE0096242076AEE000F9F8F8 /* encode.c */,
+				AE0096252076AEE000F9F8F8 /* encoder_dict.c */,
+				AE0096262076AEE000F9F8F8 /* encoder_dict.h */,
+				AE0096272076AEE000F9F8F8 /* entropy_encode.c */,
+				AE0096282076AEE000F9F8F8 /* entropy_encode.h */,
+				AE0096292076AEE000F9F8F8 /* entropy_encode_static.h */,
+				AE00962A2076AEE000F9F8F8 /* fast_log.h */,
+				AE00962B2076AEE000F9F8F8 /* find_match_length.h */,
+				AE00962C2076AEE000F9F8F8 /* hash.h */,
+				AE00962D2076AEE000F9F8F8 /* hash_forgetful_chain_inc.h */,
+				AE00962E2076AEE000F9F8F8 /* hash_longest_match64_inc.h */,
+				AE00962F2076AEE000F9F8F8 /* hash_longest_match_inc.h */,
+				AE0096302076AEE000F9F8F8 /* hash_longest_match_quickly_inc.h */,
+				AE0096312076AEE000F9F8F8 /* hash_to_binary_tree_inc.h */,
+				AE0096322076AEE000F9F8F8 /* histogram.c */,
+				AE0096332076AEE000F9F8F8 /* histogram.h */,
+				AE0096342076AEE000F9F8F8 /* histogram_inc.h */,
+				AE0096352076AEE000F9F8F8 /* literal_cost.c */,
+				AE0096362076AEE000F9F8F8 /* literal_cost.h */,
+				AE0096372076AEE000F9F8F8 /* memory.c */,
+				AE0096382076AEE000F9F8F8 /* memory.h */,
+				AE0096392076AEE000F9F8F8 /* metablock.c */,
+				AE00963A2076AEE000F9F8F8 /* metablock.h */,
+				AE00963B2076AEE000F9F8F8 /* metablock_inc.h */,
+				AE00963C2076AEE000F9F8F8 /* params.h */,
+				AE00963D2076AEE000F9F8F8 /* prefix.h */,
+				AE00963E2076AEE000F9F8F8 /* quality.h */,
+				AE00963F2076AEE000F9F8F8 /* ringbuffer.h */,
+				AE0096402076AEE000F9F8F8 /* static_dict.c */,
+				AE0096412076AEE000F9F8F8 /* static_dict.h */,
+				AE0096422076AEE000F9F8F8 /* static_dict_lut.h */,
+				AE0096432076AEE000F9F8F8 /* utf8_util.c */,
+				AE0096442076AEE000F9F8F8 /* utf8_util.h */,
+				AE0096452076AEE000F9F8F8 /* write_bits.h */,
+			);
+			path = enc;
+			sourceTree = "<group>";
+		};
+		AE0096462076AEE000F9F8F8 /* fuzz */ = {
+			isa = PBXGroup;
+			children = (
+				AE0096472076AEE000F9F8F8 /* decode_fuzzer.cc */,
+				AE0096482076AEE000F9F8F8 /* run_decode_fuzzer.cc */,
+				AE0096492076AEE000F9F8F8 /* test_fuzzer.sh */,
+			);
+			path = fuzz;
+			sourceTree = "<group>";
+		};
+		AE00964A2076AEE000F9F8F8 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				AE00964B2076AEE000F9F8F8 /* brotli */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		AE00964B2076AEE000F9F8F8 /* brotli */ = {
+			isa = PBXGroup;
+			children = (
+				AE00964C2076AEE000F9F8F8 /* decode.h */,
+				AE00964D2076AEE000F9F8F8 /* encode.h */,
+				AE00964E2076AEE000F9F8F8 /* port.h */,
+				AE00964F2076AEE000F9F8F8 /* types.h */,
+			);
+			path = brotli;
+			sourceTree = "<group>";
+		};
+		AE0096502076AEE000F9F8F8 /* tools */ = {
+			isa = PBXGroup;
+			children = (
+				AE0096512076AEE000F9F8F8 /* brotli.c */,
+				AE0096522076AEE000F9F8F8 /* brotli.md */,
+			);
+			path = tools;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		AE0094E420766FB500F9F8F8 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0096622076AEE000F9F8F8 /* prefix.h in Headers */,
+				AE0096A22076AEE100F9F8F8 /* decode.h in Headers */,
+				AE0096A32076AEE100F9F8F8 /* encode.h in Headers */,
+				AE0096A42076AEE100F9F8F8 /* port.h in Headers */,
+				AE0096A52076AEE100F9F8F8 /* types.h in Headers */,
+				AE0096582076AEE000F9F8F8 /* dictionary.h in Headers */,
+				AE00965E2076AEE000F9F8F8 /* bit_reader.h in Headers */,
+				AE0096932076AEE100F9F8F8 /* metablock.h in Headers */,
+				AE00969E2076AEE100F9F8F8 /* write_bits.h in Headers */,
+				AE0096842076AEE100F9F8F8 /* find_match_length.h in Headers */,
+				AE00967A2076AEE100F9F8F8 /* compress_fragment_two_pass.h in Headers */,
+				AE0096812076AEE100F9F8F8 /* entropy_encode.h in Headers */,
+				AE00967F2076AEE100F9F8F8 /* encoder_dict.h in Headers */,
+				AE0096972076AEE100F9F8F8 /* quality.h in Headers */,
+				AE0096982076AEE100F9F8F8 /* ringbuffer.h in Headers */,
+				AE00968C2076AEE100F9F8F8 /* histogram.h in Headers */,
+				AE00967C2076AEE100F9F8F8 /* dictionary_hash.h in Headers */,
+				AE00966F2076AEE100F9F8F8 /* block_splitter.h in Headers */,
+				AE0096662076AEE000F9F8F8 /* backward_references.h in Headers */,
+				AE00968F2076AEE100F9F8F8 /* literal_cost.h in Headers */,
+				AE0096882076AEE100F9F8F8 /* hash_longest_match_inc.h in Headers */,
+				AE0096682076AEE100F9F8F8 /* backward_references_hq.h in Headers */,
+				AE0096752076AEE100F9F8F8 /* cluster_inc.h in Headers */,
+				AE00968D2076AEE100F9F8F8 /* histogram_inc.h in Headers */,
+				AE00966D2076AEE100F9F8F8 /* block_encoder_inc.h in Headers */,
+				AE00968A2076AEE100F9F8F8 /* hash_to_binary_tree_inc.h in Headers */,
+				AE0096892076AEE100F9F8F8 /* hash_longest_match_quickly_inc.h in Headers */,
+				AE0096782076AEE100F9F8F8 /* compress_fragment.h in Headers */,
+				AE0096612076AEE000F9F8F8 /* huffman.h in Headers */,
+				AE0096862076AEE100F9F8F8 /* hash_forgetful_chain_inc.h in Headers */,
+				AE0096722076AEE100F9F8F8 /* brotli_bit_stream.h in Headers */,
+				AE0096852076AEE100F9F8F8 /* hash.h in Headers */,
+				AE0096832076AEE100F9F8F8 /* fast_log.h in Headers */,
+				AE00950B2076735500F9F8F8 /* LMBrotliCompressor.h in Headers */,
+				AE0096542076AEE000F9F8F8 /* context.h in Headers */,
+				AE0096952076AEE100F9F8F8 /* params.h in Headers */,
+				AE0096912076AEE100F9F8F8 /* memory.h in Headers */,
+				AE0096692076AEE100F9F8F8 /* backward_references_inc.h in Headers */,
+				AE00969B2076AEE100F9F8F8 /* static_dict_lut.h in Headers */,
+				AE0096872076AEE100F9F8F8 /* hash_longest_match64_inc.h in Headers */,
+				AE0096702076AEE100F9F8F8 /* block_splitter_inc.h in Headers */,
+				AE0096642076AEE000F9F8F8 /* state.h in Headers */,
+				AE0096822076AEE100F9F8F8 /* entropy_encode_static.h in Headers */,
+				AE0095052076726F00F9F8F8 /* NSData+BrotliCompression.h in Headers */,
+				AE0096742076AEE100F9F8F8 /* cluster.h in Headers */,
+				AE0096762076AEE100F9F8F8 /* command.h in Headers */,
+				AE00965C2076AEE000F9F8F8 /* version.h in Headers */,
+				AE00966C2076AEE100F9F8F8 /* bit_cost_inc.h in Headers */,
+				AE0096532076AEE000F9F8F8 /* constants.h in Headers */,
+				AE0096962076AEE100F9F8F8 /* prefix.h in Headers */,
+				AE00969D2076AEE100F9F8F8 /* utf8_util.h in Headers */,
+				AE00969A2076AEE100F9F8F8 /* static_dict.h in Headers */,
+				AE00966B2076AEE100F9F8F8 /* bit_cost.h in Headers */,
+				AE00965B2076AEE000F9F8F8 /* transform.h in Headers */,
+				AE0096C32076B57800F9F8F8 /* LMBrotliCompression.h in Headers */,
+				AE0096942076AEE100F9F8F8 /* metablock_inc.h in Headers */,
+				AE0094F820766FB500F9F8F8 /* BrotliKit.h in Headers */,
+				AE0096592076AEE000F9F8F8 /* platform.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		AE0094E620766FB500F9F8F8 /* BrotliKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE0094FB20766FB500F9F8F8 /* Build configuration list for PBXNativeTarget "BrotliKit" */;
+			buildPhases = (
+				AE0094E220766FB500F9F8F8 /* Sources */,
+				AE0094E320766FB500F9F8F8 /* Frameworks */,
+				AE0094E420766FB500F9F8F8 /* Headers */,
+				AE0094E520766FB500F9F8F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BrotliKit;
+			productName = BrotliKit;
+			productReference = AE0094E720766FB500F9F8F8 /* BrotliKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		AE0094EF20766FB500F9F8F8 /* BrotliKitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE0094FE20766FB500F9F8F8 /* Build configuration list for PBXNativeTarget "BrotliKitTests" */;
+			buildPhases = (
+				AE0094EC20766FB500F9F8F8 /* Sources */,
+				AE0094ED20766FB500F9F8F8 /* Frameworks */,
+				AE0094EE20766FB500F9F8F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AE0094F320766FB500F9F8F8 /* PBXTargetDependency */,
+			);
+			name = BrotliKitTests;
+			productName = BrotliKitTests;
+			productReference = AE0094F020766FB500F9F8F8 /* BrotliKitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AE0094DE20766FB500F9F8F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = Paw;
+				TargetAttributes = {
+					AE0094E620766FB500F9F8F8 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					AE0094EF20766FB500F9F8F8 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = AE0094E120766FB500F9F8F8 /* Build configuration list for PBXProject "BrotliKit" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = AE0094DD20766FB500F9F8F8;
+			productRefGroup = AE0094E820766FB500F9F8F8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AE0094E620766FB500F9F8F8 /* BrotliKit */,
+				AE0094EF20766FB500F9F8F8 /* BrotliKitTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AE0094E520766FB500F9F8F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0096A12076AEE100F9F8F8 /* test_fuzzer.sh in Resources */,
+				AE0096A72076AEE100F9F8F8 /* brotli.md in Resources */,
+				AE0095022076713600F9F8F8 /* BrotliKit.podspec in Resources */,
+				AE0096552076AEE000F9F8F8 /* dictionary.bin in Resources */,
+				AE0096562076AEE000F9F8F8 /* dictionary.bin.br in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE0094EE20766FB500F9F8F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AE0094E220766FB500F9F8F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0096A82076B05700F9F8F8 /* dictionary.c in Sources */,
+				AE0096A92076B05700F9F8F8 /* transform.c in Sources */,
+				AE0096AA2076B05700F9F8F8 /* bit_reader.c in Sources */,
+				AE0096AB2076B05700F9F8F8 /* decode.c in Sources */,
+				AE0096AC2076B05700F9F8F8 /* huffman.c in Sources */,
+				AE0096AD2076B05700F9F8F8 /* state.c in Sources */,
+				AE0096AE2076B05700F9F8F8 /* backward_references.c in Sources */,
+				AE0096AF2076B05700F9F8F8 /* backward_references_hq.c in Sources */,
+				AE0096B02076B05700F9F8F8 /* bit_cost.c in Sources */,
+				AE0096B12076B05700F9F8F8 /* block_splitter.c in Sources */,
+				AE0096B22076B05700F9F8F8 /* brotli_bit_stream.c in Sources */,
+				AE0096B32076B05700F9F8F8 /* cluster.c in Sources */,
+				AE0096B42076B05700F9F8F8 /* compress_fragment.c in Sources */,
+				AE0096B52076B05700F9F8F8 /* compress_fragment_two_pass.c in Sources */,
+				AE0096B62076B05700F9F8F8 /* dictionary_hash.c in Sources */,
+				AE0096B72076B05700F9F8F8 /* encode.c in Sources */,
+				AE0096B82076B05700F9F8F8 /* encoder_dict.c in Sources */,
+				AE0096B92076B05700F9F8F8 /* entropy_encode.c in Sources */,
+				AE0096BA2076B05700F9F8F8 /* histogram.c in Sources */,
+				AE0096BB2076B05700F9F8F8 /* literal_cost.c in Sources */,
+				AE0096C22076B57800F9F8F8 /* LMBrotliCompression.c in Sources */,
+				AE0096BC2076B05700F9F8F8 /* memory.c in Sources */,
+				AE0096BD2076B05700F9F8F8 /* metablock.c in Sources */,
+				AE0096BE2076B05700F9F8F8 /* static_dict.c in Sources */,
+				AE0096BF2076B05700F9F8F8 /* utf8_util.c in Sources */,
+				AE00950C2076735500F9F8F8 /* LMBrotliCompressor.m in Sources */,
+				AE0095062076726F00F9F8F8 /* NSData+BrotliCompression.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE0094EC20766FB500F9F8F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0094F620766FB500F9F8F8 /* BrotliKitTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AE0094F320766FB500F9F8F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AE0094E620766FB500F9F8F8 /* BrotliKit */;
+			targetProxy = AE0094F220766FB500F9F8F8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AE0094F920766FB500F9F8F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		AE0094FA20766FB500F9F8F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		AE0094FC20766FB500F9F8F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/brotli/c/include\"";
+				INFOPLIST_FILE = BrotliKit/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.luckymarmot.BrotliKit;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		AE0094FD20766FB500F9F8F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/Dependencies/brotli/c/include\"";
+				INFOPLIST_FILE = BrotliKit/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.luckymarmot.BrotliKit;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		AE0094FF20766FB500F9F8F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = BrotliKitTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.luckymarmot.BrotliKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		AE00950020766FB500F9F8F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = BrotliKitTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.luckymarmot.BrotliKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AE0094E120766FB500F9F8F8 /* Build configuration list for PBXProject "BrotliKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE0094F920766FB500F9F8F8 /* Debug */,
+				AE0094FA20766FB500F9F8F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AE0094FB20766FB500F9F8F8 /* Build configuration list for PBXNativeTarget "BrotliKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE0094FC20766FB500F9F8F8 /* Debug */,
+				AE0094FD20766FB500F9F8F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AE0094FE20766FB500F9F8F8 /* Build configuration list for PBXNativeTarget "BrotliKitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE0094FF20766FB500F9F8F8 /* Debug */,
+				AE00950020766FB500F9F8F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AE0094DE20766FB500F9F8F8 /* Project object */;
+}

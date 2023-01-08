@@ -1,0 +1,14 @@
+language: objective-c
+osx_image: xcode8
+xcode_project: Framework/YYImage.xcodeproj
+xcode_scheme: YYImage
+
+before_install:
+- env
+- xcodebuild -version
+- xcodebuild -showsdks
+- xcpretty --version
+
+script:
+- set -o pipefail
+- xcodebuild clean build -project "$TRAVIS_XCODE_PROJECT"  -scheme "$TRAVIS_XCODE_SCHEME" | xcpretty
