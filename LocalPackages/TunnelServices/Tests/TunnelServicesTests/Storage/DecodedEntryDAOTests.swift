@@ -35,6 +35,20 @@ final class DecodedEntryDAOTests: XCTestCase {
         // Note: inlineData retrieval depends on SQLite.swift BLOB handling
     }
 
+    func testFindAllPaginated() throws {
+        for i in 0..<10 {
+            let entry = DecodedEntry(flowId: "ws_001", direction: i % 2,
+                decodedType: "text", decodedSize: 100,
+                searchText: "frame \(i)", decodedAt: Double(1000 + i), sequence: i / 2)
+            try DecodedEntryDAO.insert(db: db, entry: entry)
+        }
+        let page1 = try DecodedEntryDAO.findAll(db: db, flowId: "ws_001", offset: 0, limit: 5)
+        XCTAssertEqual(page1.count, 5)
+        let page2 = try DecodedEntryDAO.findAll(db: db, flowId: "ws_001", offset: 5, limit: 5)
+        XCTAssertEqual(page2.count, 5)
+        XCTAssertTrue(page1[0].decodedAt <= page1[4].decodedAt)
+    }
+
     func testFTSSearch() throws {
         let entry1 = DecodedEntry(flowId: "f_010", direction: 1,
             decodedType: "text/html", decodedSize: 50,

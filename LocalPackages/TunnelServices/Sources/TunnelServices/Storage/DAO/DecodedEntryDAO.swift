@@ -33,6 +33,15 @@ public enum DecodedEntryDAO {
         return nil
     }
 
+    /// Fetch all decoded entries for a flow, ordered by decoded_at ASC, with pagination.
+    public static func findAll(db: Connection, flowId: String, offset: Int = 0, limit: Int = 50) throws -> [DecodedEntry] {
+        let stmt = try db.prepare(
+            "SELECT * FROM decoded_entry WHERE flow_id = ? ORDER BY decoded_at ASC LIMIT ? OFFSET ?",
+            flowId, limit, offset
+        )
+        return stmt.map { mapRow($0) }
+    }
+
     /// Full-text search via FTS5
     public static func searchFullText(db: Connection, query: String, limit: Int = 50) throws -> [DecodedEntry] {
         let stmt = try db.prepare("""
