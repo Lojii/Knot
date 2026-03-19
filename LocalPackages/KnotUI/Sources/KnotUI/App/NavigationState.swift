@@ -4,7 +4,7 @@ import SwiftUI
 
 public enum PrimaryPage: Hashable {
     case dashboard
-    case sessionList(taskId: String)
+    case flowList(taskId: String)
     case ruleList
     case certificate
     case historyTask
@@ -22,10 +22,8 @@ public enum WebDocType: String, Hashable {
 // MARK: - DetailDestination
 
 public enum DetailDestination: Hashable {
-    case sessionList(taskId: String)
-    case sessionDetail(sessionId: String)
-    case sessionHeader(isRequest: Bool, sessionId: String)
-    case sessionBody(isRequest: Bool, sessionId: String)
+    case flowList(taskId: String)
+    case flowDetail(flowId: String, taskId: String)
     case ruleDetail(ruleId: String)
     case ruleAdd(ruleId: String)
     case settingCertificate

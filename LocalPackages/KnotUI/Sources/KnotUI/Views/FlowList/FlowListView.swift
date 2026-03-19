@@ -7,8 +7,13 @@ public struct FlowListView: View {
     @State private var searchText = ""
     @State private var protocolFilter: String?
 
-    public init(dbGroup: TaskDatabaseGroup) {
+    private let nav: NavigationState
+    private let taskId: String
+
+    public init(dbGroup: TaskDatabaseGroup, nav: NavigationState, taskId: String) {
         _vm = StateObject(wrappedValue: FlowListViewModel(dbGroup: dbGroup))
+        self.nav = nav
+        self.taskId = taskId
     }
 
     public var body: some View {
@@ -19,7 +24,9 @@ public struct FlowListView: View {
             // Flow list
             List {
                 ForEach(vm.flows, id: \.flowId) { flow in
-                    NavigationLink(value: flow.flowId) {
+                    Button {
+                        nav.navigate(to: .flowDetail(flowId: flow.flowId, taskId: taskId))
+                    } label: {
                         FlowCell(flow: flow)
                     }
                 }

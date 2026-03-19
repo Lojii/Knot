@@ -11,17 +11,17 @@ final class NavigationStateTests: XCTestCase {
 
     func testNavigateAppends() {
         let state = NavigationState()
-        state.navigate(to: .sessionDetail(sessionId: "abc"))
+        state.navigate(to: .flowDetail(flowId: "f1", taskId: "1"))
         state.navigate(to: .settingAbout)
 
         XCTAssertEqual(state.detailPath.count, 2)
-        XCTAssertEqual(state.detailPath[0], .sessionDetail(sessionId: "abc"))
+        XCTAssertEqual(state.detailPath[0], .flowDetail(flowId: "f1", taskId: "1"))
         XCTAssertEqual(state.detailPath[1], .settingAbout)
     }
 
     func testSwitchPrimaryClearsPath() {
         let state = NavigationState()
-        state.navigate(to: .sessionDetail(sessionId: "abc"))
+        state.navigate(to: .flowDetail(flowId: "f1", taskId: "1"))
         state.navigate(to: .settingAbout)
         XCTAssertEqual(state.detailPath.count, 2)
 
@@ -47,8 +47,8 @@ final class NavigationStateTests: XCTestCase {
 
         state.navigate(to: .ruleDetail(ruleId: "r1"))
         state.navigate(to: .ruleAdd(ruleId: "r2"))
-        state.navigate(to: .sessionHeader(isRequest: true, sessionId: "s1"))
-        state.navigate(to: .sessionBody(isRequest: false, sessionId: "s2"))
+        state.navigate(to: .flowList(taskId: "1"))
+        state.navigate(to: .flowDetail(flowId: "f1", taskId: "1"))
         state.navigate(to: .settingCertificate)
         state.navigate(to: .settingWeb(type: .privacy))
 

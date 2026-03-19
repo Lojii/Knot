@@ -38,7 +38,7 @@ struct DashboardView: View {
 
                 CurrentTaskView(task: appState.currentTask) {
                     if let task = appState.currentTask, let taskId = task.id {
-                        nav.navigate(to: .sessionList(taskId: taskId.stringValue))
+                        nav.navigate(to: .flowList(taskId: taskId.stringValue))
                     }
                 }
                 .padding(.horizontal)
@@ -59,7 +59,7 @@ struct DashboardView: View {
                         ForEach(historyTasks, id: \.id) { task in
                             HistoryTaskCell(task: task) {
                                 if let taskId = task.id {
-                                    nav.navigate(to: .sessionList(taskId: taskId.stringValue))
+                                    nav.navigate(to: .flowList(taskId: taskId.stringValue))
                                 }
                             }
                             .padding(.horizontal)

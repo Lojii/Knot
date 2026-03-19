@@ -19,7 +19,7 @@ struct HistoryTaskView: View {
                     ForEach(tasks, id: \.id) { task in
                         HistoryTaskCell(task: task) {
                             if let taskId = task.id {
-                                nav.navigate(to: .sessionList(taskId: taskId.stringValue))
+                                nav.navigate(to: .flowList(taskId: taskId.stringValue))
                             }
                         }
                     }
