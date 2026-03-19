@@ -9,6 +9,11 @@
 
 import Foundation
 
+public enum FileType {
+    case REQ
+    case RSP
+}
+
 public class ProxySession {
     // Request
     public var taskID: String = ""
