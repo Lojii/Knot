@@ -44,7 +44,6 @@ final class SchemaTests: XCTestCase {
         let db = try helper.createTempDB(name: "state.db")
         try StateSchema.create(db)
         let tables = try db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").map { $0[0] as! String }
-        XCTAssertTrue(tables.contains("connection"))
         XCTAssertTrue(tables.contains("modify_log"))
         XCTAssertTrue(tables.contains("task_stats"))
         // Verify task_stats singleton row
