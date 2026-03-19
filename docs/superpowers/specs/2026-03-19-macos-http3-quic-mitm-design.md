@@ -11,6 +11,7 @@ Enable HTTP/3 packet capture on macOS by compiling quiche and lsquic for macOS (
 - `CQuiche.xcframework` and `CLsquic.xcframework` only contain `ios-arm64` and `ios-arm64-simulator` slices
 - `TunnelServices/Package.swift` restricts QUIC dependencies to iOS via `.when(platforms: [.iOS])`
 - `PacketCaptureEngine` currently logs QUIC headers and forwards UDP:443 via `udpForwarder` without MITM
+- Existing iOS build scripts: `Scripts/build_quiche_xcframework.sh`, `Scripts/build_lsquic_xcframework.sh`
 
 ## Approach
 
@@ -20,46 +21,69 @@ Extend existing xcframeworks with macOS Universal slices, remove platform restri
 
 ### 1. Build Scripts
 
-Three new scripts in `scripts/`:
+Extend the two existing iOS build scripts with `--platform macos` support, and add a combined rebuild script:
 
-**`scripts/build-quiche-macos.sh`**
-- Clones quiche at pinned tag (e.g. `0.22.0`)
-- Builds with `cargo build --release --features ffi` for both targets:
+**`Scripts/build_quiche_xcframework.sh --platform macos`**
+- Reuses existing clone + iOS build logic
+- Adds macOS targets: `cargo build --release --features ffi` for:
   - `aarch64-apple-darwin` (arm64)
   - `x86_64-apple-darwin` (Intel)
-- Merges with `lipo -create` into Universal `libquiche.a`
-- Copies `quiche.h` header
+- `lipo -create` into Universal `libquiche.a`
+- Copies `quiche.h` header + `module.modulemap`
 
-**`scripts/build-lsquic-macos.sh`**
-- Clones lsquic at pinned tag + boringssl submodule
-- CMake builds for each architecture:
-  - `-DCMAKE_OSX_ARCHITECTURES=arm64`
-  - `-DCMAKE_OSX_ARCHITECTURES=x86_64`
-- Merges `liblsquic.a` (+ `libssl.a`, `libcrypto.a`) into Universal binaries
-- Copies `lsquic.h`, `lsquic_types.h` headers
+**`Scripts/build_lsquic_xcframework.sh --platform macos`**
+- Reuses existing clone + iOS build logic
+- Adds macOS CMake builds:
+  - `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_SYSTEM_NAME=Darwin`
+  - `-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_SYSTEM_NAME=Darwin`
+- **BoringSSL symbol collision prevention**: Build lsquic's bundled BoringSSL with `-DBORINGSSL_PREFIX=lsquic_` to prefix all exported symbols (`SSL_*` → `lsquic_SSL_*`, `EVP_*` → `lsquic_EVP_*`). This avoids duplicate symbol conflicts with swift-nio-ssl's `CNIOBoringSSL` which is linked into the same System Extension binary.
+- `lipo -create` for `liblsquic.a` (BoringSSL statically linked with prefix)
+- Copies `lsquic.h`, `lsquic_types.h` + `module.modulemap`
 
-**`scripts/rebuild-xcframeworks.sh`**
-- Calls both build scripts
-- Uses `xcodebuild -create-xcframework` to merge existing iOS slices with new macOS slices
+**`Scripts/rebuild_xcframeworks.sh`** (NEW)
+- Calls both scripts with `--platform all` (iOS + macOS)
+- Uses `xcodebuild -create-xcframework` to combine all slices
 - Outputs to `Frameworks/CQuiche.xcframework` and `Frameworks/CLsquic.xcframework`
+
+### 1a. BoringSSL Symbol Collision Mitigation
+
+The macOS System Extension links both `swift-nio-ssl` (CNIOBoringSSL) and lsquic into a single binary. Both vendor BoringSSL, causing duplicate `SSL_*`/`EVP_*`/`BN_*` symbols.
+
+**Solution**: Build lsquic's BoringSSL with `-DBORINGSSL_PREFIX=lsquic_`:
+```bash
+cmake ../third_party/boringssl \
+    -DBORINGSSL_PREFIX=lsquic_ \
+    -DBORINGSSL_PREFIX_SYMBOLS=../third_party/boringssl/util/SYMBOLS.txt \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+    -DCMAKE_SYSTEM_NAME=Darwin
+```
+
+This is a standard BoringSSL feature — the `SYMBOLS.txt` file lists all public symbols, and the prefix flag generates a header that `#define`s each to a prefixed version. lsquic picks up the prefixed symbols via includes. No source patches needed.
+
+Note: quiche does NOT have this problem — it statically links its own BoringSSL copy inside `libquiche.a` with Rust symbol mangling, so no C-level symbol conflicts.
 
 ### 2. xcframework Structure (After)
 
 ```
 CQuiche.xcframework/
 ├── ios-arm64/
+│   └── libCQuiche.a + Headers/ + module.modulemap
 ├── ios-arm64-simulator/
+│   └── libCQuiche.a + Headers/ + module.modulemap
 ├── macos-arm64_x86_64/              ← NEW
 │   └── libCQuiche.a (Universal)
-│       └── Headers/CQuiche/quiche.h
+│       └── Headers/CQuiche/quiche.h + module.modulemap
 └── Info.plist
 
 CLsquic.xcframework/
 ├── ios-arm64/
+│   └── libCLsquic.a + Headers/ + module.modulemap
 ├── ios-arm64-simulator/
+│   └── libCLsquic.a + Headers/ + module.modulemap
 ├── macos-arm64_x86_64/              ← NEW
-│   └── libCLsquic.a (Universal)
-│       └── Headers/CLsquic/lsquic.h, lsquic_types.h
+│   └── libCLsquic.a (Universal, BoringSSL prefixed)
+│       └── Headers/CLsquic/lsquic.h, lsquic_types.h + module.modulemap
 └── Info.plist
 ```
 
@@ -91,7 +115,8 @@ private var quicheMITMManager: QUICMITMManager?
 private var lsquicMITMManager: LsquicMITMManager?
 #endif
 
-private var fallbackConnections = Set<Data>()  // connIds that failed MITM
+// connIds that failed MITM → transparent forwarding. Key = connId, Value = expiry timestamp.
+private var fallbackConnections = [Data: TimeInterval]()
 private let fallbackLock = NSLock()
 ```
 
@@ -99,6 +124,10 @@ private let fallbackLock = NSLock()
 
 - `setupQUICMITM(task:certPath:keyPath:)` — initializes the selected MITM manager based on `ProxyConfig.HTTP3.backend`
 - `shutdownQUICMITM()` — tears down active sessions
+
+#### Concurrency Model
+
+All MITM manager calls happen on the `packetFlow.readPackets` callback queue (provider main queue). The MITM managers (`QUICMITMManager`, `LsquicMITMManager`) use internal `NSLock` for session map access. `QUICMITMSession` methods are NOT thread-safe — this is OK because both outbound processing and the `udpForwarder` response callback are dispatched onto the same serial processing queue via `DispatchQueue(label: "com.knot.quic.mitm")` added to `PacketCaptureEngine`. All MITM session access is serialized through this queue.
 
 #### Modified: processUDPPacket (port 443 branch)
 
@@ -109,7 +138,7 @@ UDP dst:443 arrives
   │
   ├─ HTTP3.enabled == true
   │   │
-  │   ├─ connId in fallbackConnections? → transparent forwarding (udpForwarder)
+  │   ├─ connId in fallbackConnections (and not expired)? → transparent forwarding (udpForwarder)
   │   │
   │   └─ MITM Manager path
   │       ├─ processOutbound() succeeds
@@ -117,41 +146,62 @@ UDP dst:443 arrives
   │       │   └─ toServer packets → udpForwarder.sendRaw()
   │       │
   │       └─ processOutbound() fails
-  │           ├─ Add connId to fallbackConnections
+  │           ├─ Add connId to fallbackConnections with TTL
   │           └─ Forward this and future packets via udpForwarder
 ```
 
-#### Modified: processInboundPacket (UDP:443)
+#### Inbound Path: UDP:443 Response Handling
+
+**Important**: Inbound UDP responses do NOT arrive via `processInboundPacket()`. They arrive via the `udpForwarder.forward()` completion callback (line 240 of PacketCaptureEngine.swift). The integration point for MITM inbound is inside this callback:
 
 ```
-Server UDP:443 response arrives
+udpForwarder.forward(packet) callback fires with responseData
   │
-  ├─ connId in fallbackConnections → write directly to client
+  ├─ HTTP3.enabled == false OR connId in fallbackConnections
+  │   → Normal path: buildUDPResponse + writePacket (existing behavior)
   │
   └─ Active MITM session exists
-      ├─ mitmManager.processInbound(data, srcIP, srcPort)
-      ├─ toApp packets → buildUDPResponse + writePacket
-      └─ toServer packets (if any) → sendRaw
+      ├─ Dispatch to quicMITMQueue (serial queue)
+      ├─ mitmManager.processInbound(responseData, srcIP, srcPort)
+      ├─ toApp packets → buildUDPResponse + delegate.writePacket
+      └─ toServer packets (if any) → udpForwarder.sendRaw()
 ```
+
+For fallback connections, the existing `udpForwarder` path is used unchanged — server responses flow through to the client transparently.
 
 #### Fallback Cleanup
 
-- `fallbackConnections` entries have 30s TTL (matching `ProxyConfig.HTTP3.idleTimeoutMs`)
-- Expired entries removed to prevent unbounded growth
+- `fallbackConnections` uses `[Data: TimeInterval]` — value is expiry timestamp (`Date().timeIntervalSince1970 + 30`)
+- Lazy cleanup: on each `processUDPPacket` call for port 443, expired entries are removed (amortized O(1))
+- Additional cleanup on `shutdownQUICMITM()`
 
 #### Session Limit
 
 - Active sessions ≥ `ProxyConfig.HTTP3.maxSessions` (20) → new connections enter fallback directly
 
+#### Short Header DCID Length
+
+`QUICDecoder.parseShortHeader()` uses a heuristic of `min(8, data.count - 1)` for DCID length. After the QUIC handshake, all packets use short headers. If the actual DCID length differs from 8, session lookup may fail. To address this:
+- `QUICMITMManager` maintains a `[Data: QUICMITMSession]` session map keyed by DCID
+- On session creation (from Initial packet, which has explicit DCID length), the actual DCID length is recorded
+- `PacketCaptureEngine` passes the full UDP payload to the MITM manager, which tries lookup with the known DCID length first, falling back to the 8-byte heuristic
+- If both lookups miss, the packet goes to fallback (transparent forwarding) — no data loss
+
 ### 5. MacPacketTunnelProvider Adaptation
+
+#### CaptureTask Lifecycle
+
+`setupQUICMITM` requires a valid `CaptureTask`. On macOS, `mitmServer.task` is initialized during `MitmService.prepare()` and is valid after `mitmServer.run()` succeeds. However, the task represents a user-initiated capture session — if the tunnel starts without an active task, MITM initialization is deferred.
+
+The `enable_h3` IPC command handles deferred init: when the user enables HTTP/3 at runtime, the command checks for a valid task and initializes the MITM manager at that point.
 
 #### Startup (in startTunnel, after mitmServer.run succeeds)
 
 ```swift
-if ProxyConfig.HTTP3.enabled {
+if ProxyConfig.HTTP3.enabled, let task = mitmServer?.task, task.isActive {
     let certPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caCert
     let keyPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caKey
-    captureEngine.setupQUICMITM(task: mitmServer.task,
+    captureEngine.setupQUICMITM(task: task,
                                  certPath: certPath, keyPath: keyPath)
 }
 ```
@@ -197,9 +247,21 @@ Fully reuses iOS recording pipeline. Zero new storage code.
 | TLS handshake fails | quiche/lsquic handshake error | connId → fallback |
 | Active sessions ≥ 20 | `processOutbound` check | connId → fallback |
 | Unknown QUIC version | `QUICDecoder.parseHeader()` returns nil | connId → fallback |
+| QUIC Version Negotiation | `parseHeader` returns version 0 / `.unknown` type | connId → fallback |
 | Non-HTTP/3 ALPN | Handshake completes but ALPN ≠ `h3` | connId → fallback |
 
-### 8. Logging
+### 8. lsquic Packet Output Fix
+
+`LsquicMITMHandler.processClientPacket()` and `processServerPacket()` currently return empty arrays (`[]`). Outbound packets are emitted via the `onPacketsOut` callback, but this callback is not wired to return packets to the caller. This must be fixed for lsquic backend to function on macOS (and iOS).
+
+**Fix**: Buffer packets emitted by `onPacketsOut` during a `processClientPacket` / `processServerPacket` call, then return them as the method's return value. This is a change to `LsquicMITMHandler.swift` (moves from "Files NOT Changed" to "Files Changed").
+
+### 9. Known Limitations
+
+- **IPv6 QUIC**: `IPPacketBuilder.buildUDPResponse` only handles IPv4. IPv6 QUIC response packets will be empty. This is a pre-existing limitation in the packet builder, not introduced by this design. IPv6 support can be added as a follow-up.
+- **Distribution model**: This design assumes Developer ID / direct distribution. App Store distribution would require `com.apple.security.app-sandbox` entitlement in the System Extension, which may restrict cert/key file access paths. Not in scope.
+
+### 10. Logging
 
 - MITM established: `AxLogger.log("QUIC MITM session established: \(sni)", level: .Info)`
 - Fallback triggered: `AxLogger.log("QUIC MITM fallback for \(connId.hex): \(reason)", level: .Warning)`
@@ -209,19 +271,19 @@ Fully reuses iOS recording pipeline. Zero new storage code.
 
 | File | Change |
 |---|---|
-| `scripts/build-quiche-macos.sh` | NEW — build quiche for macOS Universal |
-| `scripts/build-lsquic-macos.sh` | NEW — build lsquic for macOS Universal |
-| `scripts/rebuild-xcframeworks.sh` | NEW — combine iOS + macOS slices |
-| `Frameworks/CQuiche.xcframework` | ADD macOS arm64_x86_64 slice |
-| `Frameworks/CLsquic.xcframework` | ADD macOS arm64_x86_64 slice |
+| `Scripts/build_quiche_xcframework.sh` | MODIFY — add `--platform macos` flag for macOS Universal build |
+| `Scripts/build_lsquic_xcframework.sh` | MODIFY — add `--platform macos` flag + BoringSSL prefix build |
+| `Scripts/rebuild_xcframeworks.sh` | NEW — combined script to build all platforms + assemble xcframeworks |
+| `Frameworks/CQuiche.xcframework` | ADD macOS arm64_x86_64 slice + modulemap |
+| `Frameworks/CLsquic.xcframework` | ADD macOS arm64_x86_64 slice (prefixed BoringSSL) + modulemap |
 | `LocalPackages/TunnelServices/Package.swift` | REMOVE `.when(platforms: [.iOS])` from QUIC deps |
-| `LocalPackages/TunnelServices/.../PacketCaptureEngine.swift` | ADD MITM manager integration + fallback logic |
+| `LocalPackages/TunnelServices/.../PacketCaptureEngine.swift` | ADD MITM manager integration + fallback logic + serial queue |
+| `LocalPackages/TunnelServices/.../LsquicMITMHandler.swift` | FIX packet output — buffer `onPacketsOut` and return from process methods |
 | `SystemExtension-macOS/MacPacketTunnelProvider.swift` | ADD MITM init/shutdown + IPC commands |
 
 ## Files NOT Changed
 
 - `QUICMITMHandler.swift` — works as-is once `canImport` resolves
-- `LsquicMITMHandler.swift` — works as-is once `canImport` resolves
 - `SwiftQuiche/` package — works as-is with macOS slice
 - `SwiftLsquic/` package — works as-is with macOS slice
 - `ProxyConfig.swift` — existing config sufficient
