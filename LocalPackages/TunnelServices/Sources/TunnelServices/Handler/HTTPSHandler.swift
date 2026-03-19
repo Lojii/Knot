@@ -13,20 +13,20 @@ import NIO
 class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart//IOData//
-    
+
     enum ResponseState {
         case ready
         case parsingBody(HTTPRequestHead, ByteBuffer?)
     }
-    
+
     var state: ResponseState
     var proxyContext:ProxyContext
-    
+
     init(proxyContext:ProxyContext) {
         self.state = .ready
         self.proxyContext = proxyContext
     }
-    
+
     // 原始消息报文
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         prepareProxyContext(context: context, data: data)
@@ -61,22 +61,20 @@ class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
                 // 填充数据到session
                 proxyContext.session.reqLine = "\(head.method) \(head.uri) \(head.version)"
                 proxyContext.session.host = netReq.host
-                proxyContext.session.localAddress = Session.getIPAddress(socketAddress: context.channel.remoteAddress)
+                proxyContext.session.localAddress = NetworkUtils.getIPAddress(socketAddress: context.channel.remoteAddress)
                 proxyContext.session.methods = "\(head.method)"//
                 proxyContext.session.uri = head.uri//
                 proxyContext.session.reqHttpVersion = "\(head.version)"//
-                proxyContext.session.target = Session.getUserAgent(target: head.headers["User-Agent"].first)
-                proxyContext.session.reqHeads = Session.getHeadsJson(headers: head.headers)// //
-                proxyContext.session.connectTime = NSNumber(value: Date().timeIntervalSince1970)  // 开始建立连接
+                proxyContext.session.target = NetworkUtils.getUserAgent(target: head.headers["User-Agent"].first)
+                proxyContext.session.reqHeads = NetworkUtils.getHeadsJson(headers: head.headers)// //
+                proxyContext.session.connectTime = Date().timeIntervalSince1970
                 //TODO:判断是否匹配
-                
-                
+
+
                 // 必须加个content-length:0 不然会自动添加transfer-encoding:chunked,导致部分设备无法识别，坑
                 let rspHead = HTTPResponseHead(version: head.version,
                                                status: .custom(code: 200, reasonPhrase: "Connection Established"),
                                                headers: ["content-length":"0"])
-//                let rspHead = HTTPResponseHead(version: head.version,
-//                                               status: .custom(code: 200, reasonPhrase: "Connection Established"))
                 context.channel.writeAndFlush(HTTPServerResponsePart.head(rspHead), promise: nil)
                 context.channel.writeAndFlush(HTTPServerResponsePart.end(nil), promise: nil)
                 // 移除多余handler
@@ -87,13 +85,13 @@ class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
                 context.pipeline.removeHandler(name: "HTTPSHandler", promise: nil)
                 // 添加ssl握手处理handler
                 let cancelTask = context.channel.eventLoop.scheduleTask(in:  TimeAmount.seconds(ProxyConfig.SSL.handshakeTimeout)) {
-                    print( "error:can not get client hello from APP \(self.proxyContext.session.target ?? "") \(self.proxyContext.request?.host ?? "")")
-                    self.proxyContext.session.note = "error:can not get client hello from APP \(self.proxyContext.session.target ?? "")"
+                    print( "error:can not get client hello from APP \(self.proxyContext.session.target) \(self.proxyContext.request?.host ?? "")")
+                    self.proxyContext.session.note = "error:can not get client hello from APP \(self.proxyContext.session.target)"
                     self.proxyContext.session.sstate = "failure"
                     context.channel.close(mode: .all,promise: nil)
                 }
                 // 判断规则，是否拦截，copy等
-                proxyContext.session.ignore = proxyContext.task.rule.matching(host: proxyContext.session.host ?? "",uri: head.uri, target: proxyContext.session.target ?? "")
+                proxyContext.session.ignore = proxyContext.task.rule.matching(host: proxyContext.session.host,uri: head.uri, target: proxyContext.session.target)
 //                print("HTTPSHandler匹配")
                 if proxyContext.task.rule.defaultStrategy == .COPY {
                     proxyContext.session.ignore = !proxyContext.session.ignore
@@ -109,7 +107,7 @@ class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
             }
         }
     }
-    
+
     func prepareProxyContext(context: ChannelHandlerContext, data: NIOAny) -> Void {
         if proxyContext.serverChannel == nil {
             proxyContext.serverChannel = context.channel
@@ -125,7 +123,7 @@ class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
             break
         }
     }
-    
+
     func errorCaught(context: ChannelHandlerContext, error: Error) {
 //        print("HTTPSHandler errorCaught:\(error.localizedDescription)")
 //        _ = context.channel.close(mode: .all)

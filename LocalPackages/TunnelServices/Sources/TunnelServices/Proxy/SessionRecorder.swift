@@ -18,7 +18,7 @@ import NIO
 public class SessionRecorder {
 
     // TODO: Remove once all handlers stop accessing recorder.session directly.
-    public let session: Session
+    public let session: ProxySession
     public let task: CaptureTask
 
     // New storage system
@@ -42,12 +42,12 @@ public class SessionRecorder {
 
     public init(task: CaptureTask) {
         self.task = task
-        self.session = Session.newSession(task)
+        self.session = ProxySession()
         self._startTime = Date().timeIntervalSince1970
 
         // Populate session in-memory fields that handlers still read
         session.inState = "open"
-        session.startTime = NSNumber(value: _startTime)
+        session.startTime = _startTime
 
         // Initialize new storage system
         let tid = task.id?.int64Value ?? 0
@@ -68,29 +68,29 @@ public class SessionRecorder {
 
     public func recordRequestHead(_ head: HTTPRequestHead, localAddress: SocketAddress?, isSSL: Bool) {
         // Populate session in-memory fields that handlers still read
-        let localAddr = Session.getIPAddress(socketAddress: localAddress)
+        let localAddr = NetworkUtils.getIPAddress(socketAddress: localAddress)
         _localAddress = localAddr
-        session.host = head.headers["Host"].first
+        session.host = head.headers["Host"].first ?? ""
         session.localAddress = localAddr
         session.methods = "\(head.method)"
         session.uri = head.uri
-        session.target = Session.getUserAgent(target: head.headers["User-Agent"].first)
+        session.target = NetworkUtils.getUserAgent(target: head.headers["User-Agent"].first)
         session.reqLine = "\(head.method) \(head.uri) \(head.version)"
         session.reqHttpVersion = "\(head.version)"
-        session.reqHeads = Session.getHeadsJson(headers: head.headers)
+        session.reqHeads = NetworkUtils.getHeadsJson(headers: head.headers)
         session.reqEncoding = head.headers["Content-Encoding"].first ?? ""
         session.reqType = head.headers["Content-Type"].first ?? ""
 
         if !isSSL {
             session.ignore = task.rule.matching(
-                host: session.host ?? "", uri: head.uri, target: session.target ?? ""
+                host: session.host, uri: head.uri, target: session.target
             )
             if task.rule.defaultStrategy == .COPY {
                 session.ignore = !session.ignore
             }
         }
 
-        session.connectTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.connectTime = Date().timeIntervalSince1970
 
         // Record request head to new storage
         if let fid = flowId, httpRecorder == nil {
@@ -129,9 +129,9 @@ public class SessionRecorder {
 
     public func recordConnected(remoteAddress: SocketAddress?) {
         // Update session in-memory fields that handlers still read
-        session.connectedTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.connectedTime = Date().timeIntervalSince1970
         session.outState = "open"
-        session.remoteAddress = Session.getIPAddress(socketAddress: remoteAddress)
+        session.remoteAddress = NetworkUtils.getIPAddress(socketAddress: remoteAddress)
 
         // Record connection timing in new storage
         let now = Date().timeIntervalSince1970
@@ -139,7 +139,7 @@ public class SessionRecorder {
 
         // Create TCP connection record in connection.db
         if let fid = flowId, let group = dbGroup {
-            let dstIp = Session.getIPAddress(socketAddress: remoteAddress)
+            let dstIp = NetworkUtils.getIPAddress(socketAddress: remoteAddress)
             let dstPort = remoteAddress?.port ?? 0
             var record = TcpConnectionRecord(
                 flowId: fid,
@@ -151,7 +151,7 @@ public class SessionRecorder {
                 state: "open",
                 establishedAt: now
             )
-            record.tlsSni = session.host ?? ""
+            record.tlsSni = session.host
             self.tcpRecord = record
             group.connectionWriteQueue.async {
                 try? TcpConnectionDAO.insertOrUpdate(db: group.connection, record: record)
@@ -160,7 +160,7 @@ public class SessionRecorder {
     }
 
     public func recordHandshakeComplete() {
-        session.handshakeEndTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.handshakeEndTime = Date().timeIntervalSince1970
 
         // Record TLS timing
         httpRecorder?.recordTLSDone(at: Date().timeIntervalSince1970)
@@ -187,13 +187,13 @@ public class SessionRecorder {
 
     public func recordResponseHead(_ head: HTTPResponseHead) {
         // Update session in-memory fields that handlers still read
-        session.rspStartTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.rspStartTime = Date().timeIntervalSince1970
         session.rspHttpVersion = "\(head.version)"
         session.state = "\(head.status.code)"
         session.rspMessage = head.status.reasonPhrase
         session.rspType = head.headers["Content-Type"].first ?? ""
         session.rspEncoding = head.headers["Content-Encoding"].first ?? ""
-        session.rspHeads = Session.getHeadsJson(headers: head.headers)
+        session.rspHeads = NetworkUtils.getHeadsJson(headers: head.headers)
         session.rspDisposition = head.headers["Content-Disposition"].first ?? ""
 
         if let contentType = head.headers["Content-Type"].first?.components(separatedBy: ";").first {
@@ -240,7 +240,7 @@ public class SessionRecorder {
     // MARK: - Lifecycle
 
     public func recordClosed() {
-        session.endTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.endTime = Date().timeIntervalSince1970
 
         // Send real-time status to main app (uses session in-memory fields for URL construction)
         if !session.ignore {

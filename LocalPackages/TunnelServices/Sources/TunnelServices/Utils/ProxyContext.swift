@@ -11,10 +11,10 @@ import NIO
 import NIOSSL
 
 class ProxyContext: NSObject {
-    
+
     var cert:NIOSSLCertificate?
     var pkey:NIOSSLPrivateKey?
-    
+
     var _clientChannel:Channel?
     var clientChannel:Channel?{
         set{
@@ -25,9 +25,8 @@ class ProxyContext: NSObject {
                     print("******\(self.request?.host ?? "") clientChannel close error ! \(error.localizedDescription)")
                     break
                 case .success(_):
-                    self.session.outState = "\(self.session.outState ?? "")->close"
-                    self.session.endTime = NSNumber(value: Date().timeIntervalSince1970)
-                    try? self.session.saveToDB()
+                    self.session.outState = "\(self.session.outState)->close"
+                    self.session.endTime = Date().timeIntervalSince1970
                     self.serverChannel?.close(mode: .all, promise: nil)
                     break
                 }
@@ -37,7 +36,7 @@ class ProxyContext: NSObject {
             return _clientChannel
         }
     }
-    
+
     var _serverChannel:Channel?
     var serverChannel:Channel?{
         set{
@@ -48,12 +47,11 @@ class ProxyContext: NSObject {
                     print("******\(self.request?.host ?? "") serverChannel close error ! \(error.localizedDescription)")
                     break
                 case .success(_):
-                    self.session.inState = "\(self.session.inState ?? "")->close"
-                    self.session.endTime = NSNumber(value: Date().timeIntervalSince1970)
-                    try? self.session.saveToDB()
+                    self.session.inState = "\(self.session.inState)->close"
+                    self.session.endTime = Date().timeIntervalSince1970
                     // 发送实时状态数据到主App
                     if !self.session.ignore {
-                        self.task.sendInfo(url: self.session.getFullUrl(), uploadTraffic: self.session.uploadTraffic, downloadFlow: self.session.downloadFlow)
+                        self.task.sendInfo(url: self.session.getFullUrl(), uploadTraffic: NSNumber(value: self.session.uploadTraffic), downloadFlow: NSNumber(value: self.session.downloadFlow))
                     }
                     break
                 }
@@ -63,24 +61,24 @@ class ProxyContext: NSObject {
             return _serverChannel
         }
     }
-    
+
     var request:NetRequest?
     var isHttp:Bool
     var isSSL:Bool = false
-    
+
     var task:CaptureTask
-    var session:Session
+    var session:ProxySession
 
     init(isHttp:Bool = false, task:CaptureTask) {
         self.isHttp = isHttp
         self.task = task
-        self.session = Session.newSession(task)
+        self.session = ProxySession()
         session.inState = "open"
-        session.startTime = NSNumber(value: Date().timeIntervalSince1970)
+        session.startTime = Date().timeIntervalSince1970
     }
-    
+
     /*
-     
+
      context.channel.closeFuture.whenComplete { (R) in
      print("context:\(context):closed")
      }

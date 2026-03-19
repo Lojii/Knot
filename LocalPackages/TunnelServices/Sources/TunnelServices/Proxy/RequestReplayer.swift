@@ -23,18 +23,19 @@ public class RequestReplayer {
     }
 
     /// Replay a captured session's request.
-    public static func replay(session: Session, modifications: RequestModification? = nil) throws -> ReplayResult {
+    public static func replay(session: ProxySession, modifications: RequestModification? = nil) throws -> ReplayResult {
         let url = session.getFullUrl()
         guard let urlObj = URL(string: url) else {
             throw ReplayError.invalidURL(url)
         }
 
         var request = URLRequest(url: urlObj)
-        request.httpMethod = modifications?.method ?? session.methods ?? "GET"
+        request.httpMethod = modifications?.method ?? (session.methods.isEmpty ? "GET" : session.methods)
         request.timeoutInterval = 30
 
         // Restore original headers
-        if let headersJSON = session.reqHeads, let data = headersJSON.data(using: .utf8),
+        let headersJSON = session.reqHeads
+        if let data = headersJSON.data(using: .utf8),
            let headers = try? JSONSerialization.jsonObject(with: data) as? [[String: String]] {
             for header in headers {
                 for (key, value) in header {
