@@ -91,4 +91,23 @@ final class HTTPRecorderTests: XCTestCase {
         XCTAssertEqual(record.status, .failed)
         XCTAssertEqual(record.errorMessage, "Connection reset by peer")
     }
+
+    func testProtocolOverrideH2() {
+        let recorder = HTTPRecorder(flowId: "h2_0001", host: "api.example.com", port: 443,
+                                    protocolOverride: "H2", extraMetadata: ["streamId": 5])
+        recorder.recordRequestHead(method: "GET", uri: "/api", httpVersion: "HTTP/2", headers: [])
+        recorder.recordResponseHead(statusCode: 200, headers: [])
+        let record = recorder.buildFlowRecord()
+        XCTAssertEqual(record.protocolName, "H2")
+        XCTAssertEqual(record.metadata["streamId"] as? Int, 5)
+    }
+
+    func testProtocolOverrideH3() {
+        let recorder = HTTPRecorder(flowId: "h3_0001", host: "api.example.com", port: 443,
+                                    protocolOverride: "H3", extraMetadata: ["quicVersion": "1"])
+        recorder.recordRequestHead(method: "POST", uri: "/data", httpVersion: "HTTP/3", headers: [])
+        recorder.recordResponseHead(statusCode: 201, headers: [])
+        let record = recorder.buildFlowRecord()
+        XCTAssertEqual(record.protocolName, "H3")
+    }
 }

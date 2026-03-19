@@ -12,6 +12,8 @@ public class HTTPRecorder: ProtocolRecorder {
     private let host: String
     private let port: Int
     private let startedAt: TimeInterval
+    private var protocolOverride: String?
+    private var extraMetadata: [String: Any]
 
     // Request
     private var method: String = ""
@@ -44,10 +46,12 @@ public class HTTPRecorder: ProtocolRecorder {
     // Error
     private var error: String?
 
-    public init(flowId: String, host: String, port: Int) {
+    public init(flowId: String, host: String, port: Int, protocolOverride: String? = nil, extraMetadata: [String: Any] = [:]) {
         self.flowId = flowId
         self.host = host
         self.port = port
+        self.protocolOverride = protocolOverride
+        self.extraMetadata = extraMetadata
         self.startedAt = Date().timeIntervalSince1970
     }
 
@@ -81,7 +85,7 @@ public class HTTPRecorder: ProtocolRecorder {
     // MARK: - ProtocolRecorder
 
     public func buildFlowRecord() -> FlowRecord {
-        var record = FlowRecord(flowId: flowId, protocolName: Self.protocolName, host: host, port: port, startedAt: startedAt)
+        var record = FlowRecord(flowId: flowId, protocolName: protocolOverride ?? Self.protocolName, host: host, port: port, startedAt: startedAt)
 
         record.endedAt = endedAt
         if let ended = endedAt {
@@ -121,6 +125,7 @@ public class HTTPRecorder: ProtocolRecorder {
             "rspHeaders": rspHeaders.map { ["\($0.0)": "\($0.1)"] },
             "contentEncoding": contentEncoding,
         ]
+        record.metadata.merge(extraMetadata) { _, new in new }
 
         // Payload refs
         record.reqPayloadRef = reqPayloadRef
