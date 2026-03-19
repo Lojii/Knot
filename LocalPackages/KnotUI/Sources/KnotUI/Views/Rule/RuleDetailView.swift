@@ -6,7 +6,7 @@ struct RuleDetailView: View {
     @Bindable var nav: NavigationState
 
     @State private var selectedTab = 0
-    @State private var rule: Rule?
+    @State private var rule: RuleRecord?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -54,23 +54,23 @@ struct RuleDetailView: View {
     }
 
     @ViewBuilder
-    private func ruleOverviewTab(_ rule: Rule) -> some View {
+    private func ruleOverviewTab(_ rule: RuleRecord) -> some View {
         List {
             Section("基本信息") {
                 LabeledContent("名称", value: rule.name)
-                LabeledContent("作者", value: rule.author ?? "—")
-                LabeledContent("创建时间", value: rule.createTime)
+                LabeledContent("作者", value: rule.author.isEmpty ? "—" : rule.author)
+                LabeledContent("创建时间", value: formattedDate(rule.createdAt))
             }
 
             Section("统计") {
                 LabeledContent("规则数", value: "\(rule.ruleItems.count)")
                 LabeledContent("Host 映射数", value: "\(rule.hosts.count)")
-                LabeledContent("默认策略", value: rule.defaultStrategy.rawValue)
+                LabeledContent("默认策略", value: rule.defaultStrategy)
             }
 
-            if let note = rule.note, !note.isEmpty {
+            if !rule.note.isEmpty {
                 Section("备注") {
-                    Text(note)
+                    Text(rule.note)
                         .font(.body)
                 }
             }
@@ -81,7 +81,7 @@ struct RuleDetailView: View {
     }
 
     @ViewBuilder
-    private func ruleItemsTab(_ rule: Rule) -> some View {
+    private func ruleItemsTab(_ rule: RuleRecord) -> some View {
         if rule.ruleItems.isEmpty {
             ContentUnavailableView(
                 "暂无规则项",
@@ -99,7 +99,7 @@ struct RuleDetailView: View {
     }
 
     @ViewBuilder
-    private func ruleHostTab(_ rule: Rule) -> some View {
+    private func ruleHostTab(_ rule: RuleRecord) -> some View {
         if rule.hosts.isEmpty {
             ContentUnavailableView(
                 "暂无 Host 映射",
@@ -118,12 +118,14 @@ struct RuleDetailView: View {
     }
 
     private func loadRule() {
-        if let idNum = Int(ruleId) {
-            let results = Rule.findAll(["id": NSNumber(value: idNum)])
-            if let r = results.first {
-                _ = r.config
-                rule = r
-            }
-        }
+        guard let idNum = Int64(ruleId) else { return }
+        rule = try? CatalogDAO.findRule(db: DatabaseManager.shared.catalogDB, id: idNum)
+    }
+
+    private func formattedDate(_ ts: TimeInterval) -> String {
+        guard ts > 0 else { return "—" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: Date(timeIntervalSince1970: ts))
     }
 }

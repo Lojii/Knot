@@ -10,6 +10,36 @@ public struct CaptureTaskRecord {
     public init() {}
 }
 
+public struct RuleRecord {
+    public var id: Int64 = 0
+    public var name: String = ""
+    public var config: String = ""
+    public var defaultStrategy: String = "DIRECT"
+    public var blacklistEnabled: Bool = false
+    public var createdAt: TimeInterval = 0
+    public var author: String = ""
+    public var note: String = ""
+    public init() {}
+
+    /// Parsed rule items from config via RuleEngine.
+    public var ruleItems: [RuleItem] {
+        let engine = RuleEngine(config: config)
+        return engine.validRuleItems
+    }
+
+    /// Parsed host items from config via RuleEngine.
+    public var hosts: [HostItem] {
+        let engine = RuleEngine(config: config)
+        return engine.lines.compactMap { $0 as? HostItem }
+    }
+
+    /// All parsed lines from config via RuleEngine.
+    public var lines: [RuleLine] {
+        let engine = RuleEngine(config: config)
+        return engine.lines
+    }
+}
+
 public struct BreakpointRecord {
     public var id: Int64 = 0
     public var enabled: Bool = true
@@ -66,9 +96,68 @@ public enum CatalogDAO {
     // MARK: - Rule
 
     @discardableResult
-    public static func insertRule(db: Connection, name: String, config: String, createdAt: TimeInterval) throws -> Int64 {
-        try db.run("INSERT INTO rule (name, config, created_at) VALUES (?, ?, ?)", name, config, createdAt)
+    public static func insertRule(db: Connection, name: String, config: String, createdAt: TimeInterval,
+                                  defaultStrategy: String = "DIRECT", blacklistEnabled: Bool = false,
+                                  author: String = "", note: String = "") throws -> Int64 {
+        try db.run("""
+            INSERT INTO rule (name, config, created_at, default_strategy, blacklist_enabled, author, note)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            name, config, createdAt, defaultStrategy, blacklistEnabled ? 1 : 0, author, note
+        )
         return db.lastInsertRowid
+    }
+
+    public static func findAllRules(db: Connection) throws -> [RuleRecord] {
+        let stmt = try db.prepare(
+            "SELECT id, name, config, default_strategy, blacklist_enabled, created_at, author, note FROM rule ORDER BY created_at DESC"
+        )
+        return stmt.map { row in
+            var r = RuleRecord()
+            r.id = row[0] as? Int64 ?? 0
+            r.name = row[1] as? String ?? ""
+            r.config = row[2] as? String ?? ""
+            r.defaultStrategy = row[3] as? String ?? "DIRECT"
+            r.blacklistEnabled = (row[4] as? Int64 ?? 0) == 1
+            r.createdAt = row[5] as? Double ?? 0
+            r.author = row[6] as? String ?? ""
+            r.note = row[7] as? String ?? ""
+            return r
+        }
+    }
+
+    public static func findRule(db: Connection, id: Int64) throws -> RuleRecord? {
+        let stmt = try db.prepare(
+            "SELECT id, name, config, default_strategy, blacklist_enabled, created_at, author, note FROM rule WHERE id = ?", id
+        )
+        for row in stmt {
+            var r = RuleRecord()
+            r.id = row[0] as? Int64 ?? 0
+            r.name = row[1] as? String ?? ""
+            r.config = row[2] as? String ?? ""
+            r.defaultStrategy = row[3] as? String ?? "DIRECT"
+            r.blacklistEnabled = (row[4] as? Int64 ?? 0) == 1
+            r.createdAt = row[5] as? Double ?? 0
+            r.author = row[6] as? String ?? ""
+            r.note = row[7] as? String ?? ""
+            return r
+        }
+        return nil
+    }
+
+    public static func updateRule(db: Connection, record: RuleRecord) throws {
+        try db.run("""
+            UPDATE rule SET name = ?, config = ?, default_strategy = ?, blacklist_enabled = ?, author = ?, note = ?
+            WHERE id = ?
+            """,
+            record.name, record.config, record.defaultStrategy,
+            record.blacklistEnabled ? 1 : 0, record.author, record.note,
+            record.id
+        )
+    }
+
+    public static func deleteRule(db: Connection, id: Int64) throws {
+        try db.run("DELETE FROM rule WHERE id = ?", id)
     }
 
     // MARK: - Breakpoint

@@ -18,16 +18,14 @@ struct RuleListView: View {
                 )
             } else {
                 List {
-                    ForEach(vm.rules, id: \.subName) { rule in
+                    ForEach(vm.rules, id: \.id) { rule in
                         RuleCell(
                             rule: rule,
                             isActive: isActive(rule)
                         )
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            if let ruleId = rule.id {
-                                nav.navigate(to: .ruleDetail(ruleId: ruleId.stringValue))
-                            }
+                            nav.navigate(to: .ruleDetail(ruleId: String(rule.id)))
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -37,14 +35,12 @@ struct RuleListView: View {
                             }
                         }
                         .swipeActions(edge: .leading) {
-                            if let ruleId = rule.id {
-                                Button {
-                                    vm.setActive(ruleId: ruleId.stringValue)
-                                } label: {
-                                    Label("启用", systemImage: "checkmark.circle")
-                                }
-                                .tint(.green)
+                            Button {
+                                vm.setActive(ruleId: String(rule.id))
+                            } label: {
+                                Label("启用", systemImage: "checkmark.circle")
                             }
+                            .tint(.green)
                         }
                     }
                 }
@@ -56,11 +52,7 @@ struct RuleListView: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button {
-                        let rule = Rule.defaultRule()
-                        do {
-                            try rule.saveToDB()
-                            vm.loadRules()
-                        } catch {}
+                        vm.createDefaultRule()
                     } label: {
                         Label("新建配置", systemImage: "plus")
                     }
@@ -87,8 +79,7 @@ struct RuleListView: View {
         }
     }
 
-    private func isActive(_ rule: Rule) -> Bool {
-        guard let ruleId = rule.id else { return false }
-        return ruleId.stringValue == vm.activeRuleId
+    private func isActive(_ rule: RuleRecord) -> Bool {
+        return String(rule.id) == vm.activeRuleId
     }
 }
