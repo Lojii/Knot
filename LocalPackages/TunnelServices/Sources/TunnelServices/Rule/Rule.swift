@@ -71,6 +71,7 @@ public enum RuleType: String {
     case Other = "Other"        // 其他类型。空行、单行注释等，已经其他非规则内容
 }
 
+@available(*, deprecated, message: "Use new Storage layer instead")
 public class Rule: ASModel {
     public var subName:String = "new config"
 

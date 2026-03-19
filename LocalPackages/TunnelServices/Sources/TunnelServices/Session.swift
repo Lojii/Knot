@@ -23,6 +23,7 @@ public let JSTypes = ["javascript","x-javascript"]
 public let CSSTypes = ["css"]
 public let urlEncodedTypes = ["x-www-form-urlencoded"]
 
+@available(*, deprecated, message: "Use new Storage layer instead")
 public class Session: ASModel {
                                         // https http
     public var taskID:NSNumber?         // *

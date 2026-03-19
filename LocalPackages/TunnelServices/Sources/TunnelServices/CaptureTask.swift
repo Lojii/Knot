@@ -15,6 +15,7 @@ public let TaskDidChangedNotification = AppNotification.taskDidChanged
 public let TaskValueDidChanged = AppNotification.taskValueDidChanged
 public let TaskConfigDidChanged = AppNotification.taskConfigDidChanged
 
+@available(*, deprecated, message: "Use new Storage layer instead")
 public class CaptureTask: ASModel {
 
     override open class var nameOfTable: String { return "task" }
