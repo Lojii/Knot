@@ -5,6 +5,9 @@ import SQLite
 /// Manages catalog.db (always open) and per-task database groups (opened on demand).
 public class DatabaseManager {
 
+    /// Shared singleton for production use. Initialized lazily on first access.
+    public static let shared = DatabaseManager()
+
     /// The catalog.db connection (always open while manager exists)
     public let catalogDB: Connection
 
