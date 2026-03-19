@@ -57,7 +57,7 @@ public class CaptureTask: ASModel {
     
     public var fileFolder:String = ""  // 保存文件的文件夹  以Task.id命名的文件夹
     
-    public var rule:Rule!
+    public var ruleEngine:RuleEngine!
     // Certificate management (CA cert, private key, cert pool)
     public var certManager: CertManager!
     public var ipc: AppGroupIPC?
@@ -91,7 +91,7 @@ public class CaptureTask: ASModel {
                 rule = newDefaultRule
             }
         }
-        task.rule = rule
+        task.ruleEngine = RuleEngine(config: rule.config)
         task.ruleName = rule.name
         task.ruleId = rule.id
         //
@@ -247,7 +247,7 @@ public class CaptureTask: ASModel {
                 rule = newDefaultRule
             }
         }
-        task?.rule = rule
+        task?.ruleEngine = RuleEngine(config: rule.config)
         if parseConfig {
             task?.loadCACert()
             task?.addSender()
@@ -333,7 +333,7 @@ extension CaptureTask: TaskProviding {
     public var localEnabled: Bool { localEnable.intValue == 1 }
     public var wifiEnabled: Bool { wifiEnable.intValue == 1 }
     public func matchesRule(host: String, uri: String, target: String) -> Bool {
-        return rule?.matching(host: host, uri: uri, target: target) ?? false
+        return ruleEngine?.matching(host: host, uri: uri, target: target) ?? false
     }
-    public var defaultStrategy: Strategy { rule?.defaultStrategy ?? .DIRECT }
+    public var defaultStrategy: Strategy { ruleEngine?.defaultStrategy ?? .DIRECT }
 }
