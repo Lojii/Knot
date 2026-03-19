@@ -2,15 +2,164 @@
 
 ## 概述
 
-在数据库存储系统重设计（Phase 1）完成后，本设计覆盖剩余三个子项目：
+在数据库存储系统重设计（Phase 1）完成后，本设计覆盖剩余四个子项目：
 
-1. **Sub-project A**：扩展 ProtocolRecorder，支持 WebSocket、DNS、gRPC、HTTP/2
-2. **Sub-project B**：UI 层全面切换到新存储系统 + 各协议专属详情视图
-3. **Sub-project C**：移除 ActiveSQLite 框架、旧模型和旧 UI
+1. **Sub-project A0**：新增 connection.db 连接层数据库（transport 与 protocol 之间的会话/连接层）
+2. **Sub-project A**：扩展 ProtocolRecorder，支持 WebSocket、DNS、gRPC、HTTP/2、QUIC/HTTP3
+3. **Sub-project B**：UI 层全面切换到新存储系统 + 各协议专属详情视图
+4. **Sub-project C**：移除 ActiveSQLite 框架、旧模型和旧 UI
 
-依赖顺序：A → B1 → B2 → C
+依赖顺序：A0 → A → B1 → B2 → C
 
 **前置条件**：`feature/storage-redesign` 分支已完成，包含完整的多数据库架构、FlowDAO、PayloadWriter/Reader、DecodeScheduler、HTTPRecorder 及 SessionRecorder 双写集成。
+
+---
+
+## Sub-project A0：新增 connection.db 连接层
+
+### 设计动机
+
+原有 4 库架构中，transport.db 记录逐包数据，protocol.db 记录应用层请求。但 QUIC 这样的传输协议不属于任何一层——它运行在 UDP 之上，内建 TLS 和多路复用，承载 HTTP/3 请求。需要一个中间层来记录**连接/会话级**数据。
+
+```
+transport.db    → 原始包（IP/TCP/UDP 逐包记录）
+    ↓
+connection.db   → 连接/会话层（TCP 连接、QUIC 连接、QUIC 流）  ← 新增
+    ↓
+protocol.db     → 应用协议（HTTP/WS/DNS/gRPC/H3 请求级）
+```
+
+同时，state.db 中的 `connection` 表（TCP 连接状态）迁移到 connection.db 的 `tcp_connection` 表，state.db 只保留 `modify_log` + `task_stats`。
+
+### Schema
+
+```sql
+-- TCP 连接
+CREATE TABLE IF NOT EXISTS tcp_connection (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    flow_id         TEXT NOT NULL UNIQUE,
+    src_ip          TEXT NOT NULL,
+    src_port        INTEGER NOT NULL,
+    dst_ip          TEXT NOT NULL,
+    dst_port        INTEGER NOT NULL,
+    state           TEXT NOT NULL DEFAULT 'open',
+    started_at      REAL NOT NULL,
+    established_at  REAL,
+    closed_at       REAL,
+    close_reason    TEXT NOT NULL DEFAULT '',
+    tls_version     TEXT NOT NULL DEFAULT '',
+    tls_cipher      TEXT NOT NULL DEFAULT '',
+    tls_sni         TEXT NOT NULL DEFAULT '',
+    server_cert     TEXT NOT NULL DEFAULT '',
+    packets_in      INTEGER NOT NULL DEFAULT 0,
+    packets_out     INTEGER NOT NULL DEFAULT 0,
+    bytes_in        INTEGER NOT NULL DEFAULT 0,
+    bytes_out       INTEGER NOT NULL DEFAULT 0
+);
+
+-- QUIC 连接
+CREATE TABLE IF NOT EXISTS quic_connection (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    flow_id         TEXT NOT NULL UNIQUE,
+    src_ip          TEXT NOT NULL,
+    src_port        INTEGER NOT NULL,
+    dst_ip          TEXT NOT NULL,
+    dst_port        INTEGER NOT NULL,
+    state           TEXT NOT NULL DEFAULT 'handshaking',
+    started_at      REAL NOT NULL,
+    established_at  REAL,
+    closed_at       REAL,
+    close_reason    TEXT NOT NULL DEFAULT '',
+    version         TEXT NOT NULL DEFAULT '',
+    dcid            TEXT NOT NULL DEFAULT '',
+    scid            TEXT NOT NULL DEFAULT '',
+    alpn            TEXT NOT NULL DEFAULT '',
+    tls_cipher      TEXT NOT NULL DEFAULT '',
+    tls_sni         TEXT NOT NULL DEFAULT '',
+    server_cert     TEXT NOT NULL DEFAULT '',
+    is_0rtt         INTEGER NOT NULL DEFAULT 0,
+    packets_in      INTEGER NOT NULL DEFAULT 0,
+    packets_out     INTEGER NOT NULL DEFAULT 0,
+    bytes_in        INTEGER NOT NULL DEFAULT 0,
+    bytes_out       INTEGER NOT NULL DEFAULT 0,
+    streams_count   INTEGER NOT NULL DEFAULT 0
+);
+
+-- QUIC 流（多路复用）
+CREATE TABLE IF NOT EXISTS quic_stream (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    connection_id   TEXT NOT NULL,
+    stream_id       INTEGER NOT NULL,
+    stream_type     TEXT NOT NULL DEFAULT '',
+    state           TEXT NOT NULL DEFAULT 'open',
+    started_at      REAL NOT NULL,
+    closed_at       REAL,
+    protocol_flow_id TEXT NOT NULL DEFAULT '',
+    bytes_in        INTEGER NOT NULL DEFAULT 0,
+    bytes_out       INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(connection_id, stream_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tcp_conn_flow_id ON tcp_connection(flow_id);
+CREATE INDEX IF NOT EXISTS idx_quic_conn_flow_id ON quic_connection(flow_id);
+CREATE INDEX IF NOT EXISTS idx_quic_stream_conn ON quic_stream(connection_id);
+CREATE INDEX IF NOT EXISTS idx_quic_stream_proto ON quic_stream(protocol_flow_id);
+```
+
+### 跨库关联
+
+```
+transport.db          connection.db              protocol.db
+ Packet               tcp_connection              Flow (HTTP/WS)
+ ┌──────┐   flow_id   ┌──────────────┐  conn_id  ┌──────────┐
+ │packet │────────────→│tcp_connection│←──────────│HTTP Flow │
+ │packet │            │              │           │          │
+ └──────┘            └──────────────┘           └──────────┘
+
+                       quic_connection             Flow (H3)
+ ┌──────┐   flow_id   ┌──────────────┐           ┌──────────┐
+ │packet │────────────→│quic_connection│          │H3 Flow   │
+ │(UDP)  │            │              │           │          │
+ └──────┘             ├──────────────┤  proto_id  │          │
+                      │ quic_stream  │───────────→│(stream)  │
+                      │ quic_stream  │───────────→│          │
+                      └──────────────┘           └──────────┘
+```
+
+- `transport.db Packet.flow_id` → `connection.db tcp/quic_connection.flow_id`
+- `protocol.db Flow.metadata.connectionId` → `connection.db tcp/quic_connection.flow_id`
+- `quic_stream.protocol_flow_id` → `protocol.db Flow.flow_id`
+
+### 对现有架构的改动
+
+1. **TaskDatabaseGroup**：从 4 库变为 5 库，新增 `connection: Connection` + `connectionWriteQueue: DispatchQueue`
+2. **新增 `ConnectionSchema.swift`**
+3. **新增 DAO**：`TcpConnectionDAO.swift`、`QuicConnectionDAO.swift`、`QuicStreamDAO.swift`
+4. **新增 Model**：`TcpConnectionRecord.swift`、`QuicConnectionRecord.swift`、`QuicStreamRecord.swift`
+5. **state.db**：移除 `connection` 表（迁移到 connection.db），StateSchema 更新
+6. **state.db ConnectionDAO**：删除（被 TcpConnectionDAO 替代）
+7. **SessionRecorder 双写**：TCP 连接信息改写 connection.db 而非 state.db
+8. **PathManager**：新增 `connectionDBPath(_:root:)` 方法
+9. **PRAGMA 配置**：connection.db 同其他库一致
+
+### 新增/修改文件
+
+| 操作 | 文件 | 说明 |
+|------|------|------|
+| 新建 | `Storage/Schema/ConnectionSchema.swift` | tcp_connection + quic_connection + quic_stream DDL |
+| 新建 | `Storage/DAO/TcpConnectionDAO.swift` | TCP 连接 CRUD |
+| 新建 | `Storage/DAO/QuicConnectionDAO.swift` | QUIC 连接 CRUD |
+| 新建 | `Storage/DAO/QuicStreamDAO.swift` | QUIC 流 CRUD |
+| 新建 | `Storage/Model/TcpConnectionRecord.swift` | TCP 连接 model |
+| 新建 | `Storage/Model/QuicConnectionRecord.swift` | QUIC 连接 model |
+| 新建 | `Storage/Model/QuicStreamRecord.swift` | QUIC 流 model |
+| 修改 | `Storage/TaskDatabaseGroup.swift` | 新增第 5 个库 connection |
+| 修改 | `Storage/DatabaseManager.swift` | 适配 5 库 |
+| 修改 | `Storage/Schema/StateSchema.swift` | 移除 connection 表 |
+| 修改 | `Storage/DAO/ConnectionDAO.swift` | 删除（替换为 TcpConnectionDAO） |
+| 修改 | `Storage/PathManager.swift` | 新增 connectionDBPath |
+| 修改 | `Proxy/SessionRecorder.swift` | 连接信息写 connection.db |
+| 新建 | 测试文件 | ConnectionSchema + DAO 测试 |
 
 ---
 
@@ -21,9 +170,11 @@
 | 协议 | Recorder 策略 | Flow protocol 值 | decoded.db 使用 |
 |------|-------------|------------------|----------------|
 | HTTP/2 | 复用 HTTPRecorder，加 protocolOverride 参数 | `"H2"` | 同 HTTP（req/rsp 各一条） |
+| HTTP/3 | 复用 HTTPRecorder，protocolOverride="H3" | `"H3"` | 同 HTTP |
 | WebSocket | 新建 WebSocketRecorder | `"WS"` / `"WSS"` | 每帧一条，sequence 递增 |
 | DNS | 新建 DNSRecorder | `"DNS"` | 不使用（数据全在 metadata） |
 | gRPC | 新建 GRPCRecorder | `"gRPC"` | 每 message 一条，sequence 递增 |
+| QUIC | 不使用 ProtocolRecorder，直接写 connection.db | connection.db 记录 | 不使用 |
 
 ### WebSocketRecorder
 
@@ -185,6 +336,51 @@ metadata: {
 ```
 
 **decoded.db**：每个 gRPC message 一条记录，streaming RPC 用 sequence 递增。
+
+### QUIC/HTTP3
+
+**QUIC 连接**不通过 ProtocolRecorder，直接写 connection.db：
+
+```
+PacketCaptureEngine 检测 UDP:443 →
+    QUICDecoder.parse() 提取包头 →
+    QuicConnectionDAO.insertOrUpdate() 写 connection.db
+    QuicStreamDAO.insert() 记录流创建
+```
+
+**HTTP/3 请求**复用 HTTPRecorder：
+
+```
+QUIC stream 上的 HTTP/3 帧 →
+    HTTP3Handler 解析为 HTTP 语义 →
+    HTTPRecorder(protocolOverride: "H3", extraMetadata: {
+        "connectionId": quic_connection.flow_id,
+        "streamId": quic_stream.stream_id,
+        "quicVersion": "1"
+    }) →
+    FlowDAO.insert() 到 protocol.db
+    同时 QuicStreamDAO.update(protocol_flow_id: h3FlowId)
+```
+
+**HTTP/3 的完整数据流**：
+
+```
+UDP 包到达
+    ↓
+transport.db: 记录 UDP packet
+    ↓
+QUICDecoder 解析 QUIC 包头
+    ↓
+connection.db: quic_connection（连接级元数据）
+              + quic_stream（每个流）
+    ↓
+HTTP/3 Handler 解析 HTTP 语义
+    ↓
+protocol.db: Flow (protocol="H3")
+             复用 HTTPRecorder (protocolOverride: "H3")
+```
+
+**注意**：项目已有 SwiftQuiche 和 SwiftLsquic 两个 QUIC 后端（iOS only）。HTTP/3 Handler 的具体实现取决于选用的后端，但 Recorder 层不关心——它只消费解析后的 HTTP 语义数据。
 
 ### Handler 集成方式
 
@@ -536,7 +732,9 @@ Step 7: 全量编译验证 + 测试
 
 ## 延迟协议
 
-MQTT 和 QUIC 的 search_key 映射已在先前 database-redesign spec 中预留，但本 spec 不覆盖其 Recorder 实现。它们将在后续 spec 中单独设计（遵循相同的 ProtocolRecorder 模式）。
+MQTT 的 search_key 映射已在先前 database-redesign spec 中预留，但本 spec 不覆盖其 Recorder 实现。MQTT 将在后续 spec 中单独设计（遵循相同的 ProtocolRecorder 模式）。
+
+QUIC/HTTP3 已纳入本 spec（Sub-project A0 connection.db + Sub-project A HTTP3 Recorder）。
 
 ---
 
@@ -544,7 +742,8 @@ MQTT 和 QUIC 的 search_key 映射已在先前 database-redesign spec 中预留
 
 | Sub-project | 范围 | 新建文件 | 修改文件 | 删除文件 |
 |------------|------|---------|---------|---------|
-| A: ProtocolRecorder 扩展 | WS/DNS/gRPC/H2 记录器 + Handler 集成 | ~6 | ~5 | 0 |
+| A0: connection.db 连接层 | TCP/QUIC 连接数据库 + Schema + DAO + Model | ~8 | ~6 | ~1 |
+| A: ProtocolRecorder 扩展 | WS/DNS/gRPC/H2/H3 记录器 + Handler 集成 | ~6 | ~7 | 0 |
 | B1: 数据源切换 + 统一列表 | FlowListView + FlowCell + 筛选 | ~5 | ~2 | 0 |
-| B2: 协议专属详情视图 | HTTP/WS/DNS/gRPC 详情 | ~9 | 0 | 0 |
+| B2: 协议专属详情视图 | HTTP/WS/DNS/gRPC/QUIC 详情 | ~10 | 0 | 0 |
 | C: 清理旧代码 | 提取逻辑 + 移除旧模型/UI/ORM | ~2 | ~3 | ~22 |
