@@ -51,7 +51,7 @@ class ProxyContext: NSObject {
                     self.session.endTime = Date().timeIntervalSince1970
                     // 发送实时状态数据到主App
                     if !self.session.ignore {
-                        self.task.sendInfo(url: self.session.getFullUrl(), uploadTraffic: NSNumber(value: self.session.uploadTraffic), downloadFlow: NSNumber(value: self.session.downloadFlow))
+                        self.task.sendInfo(url: self.session.getFullUrl(), uploadTraffic: self.session.uploadTraffic, downloadFlow: self.session.downloadFlow)
                     }
                     break
                 }

@@ -50,7 +50,7 @@ public class SessionRecorder {
         session.startTime = _startTime
 
         // Initialize new storage system
-        let tid = task.id?.int64Value ?? 0
+        let tid = task.id
         self.taskId = tid
         if tid > 0, let group = try? DatabaseManager.shared.openTask(tid) {
             self.dbGroup = group
@@ -246,8 +246,8 @@ public class SessionRecorder {
         if !session.ignore {
             task.sendInfo(
                 url: session.getFullUrl(),
-                uploadTraffic: NSNumber(value: _uploadBytes),
-                downloadFlow: NSNumber(value: _downloadBytes)
+                uploadTraffic: _uploadBytes,
+                downloadFlow: _downloadBytes
             )
         }
 

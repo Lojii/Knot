@@ -93,6 +93,109 @@ public enum CatalogDAO {
         try db.run("DELETE FROM capture_task WHERE id = ?", taskId)
     }
 
+    /// Insert a full CaptureTask with all columns. Returns the new row id.
+    @discardableResult
+    public static func insertFullTask(db: Connection, task: CaptureTask) throws -> Int64 {
+        try db.run("""
+            INSERT INTO capture_task
+                (name, created_at, started_at, stopped_at, status, rule_id, ssl_enabled,
+                 local_ip, local_port, local_enabled, wifi_ip, wifi_port, wifi_enabled,
+                 flow_count, upload_bytes, download_bytes, note, extra)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            task.ruleName,
+            task.creatTime ?? Date().timeIntervalSince1970,
+            task.startTime,
+            task.stopTime,
+            Int64(task.numberOfUse),
+            task.ruleId.map { Int64($0) },
+            Int64(task.sslEnable),
+            task.localIP,
+            Int64(task.localPort),
+            Int64(task.localEnable),
+            task.wifiIP,
+            Int64(task.wifiPort),
+            Int64(task.wifiEnable),
+            task.interceptCount,
+            task.uploadTraffic,
+            task.downloadFlow,
+            task.note,
+            task.extra
+        )
+        return db.lastInsertRowid
+    }
+
+    /// Update all mutable columns of a CaptureTask by id.
+    public static func updateFullTask(db: Connection, task: CaptureTask) throws {
+        try db.run("""
+            UPDATE capture_task SET
+                name = ?, started_at = ?, stopped_at = ?, status = ?, rule_id = ?,
+                ssl_enabled = ?, local_ip = ?, local_port = ?, local_enabled = ?,
+                wifi_ip = ?, wifi_port = ?, wifi_enabled = ?,
+                flow_count = ?, upload_bytes = ?, download_bytes = ?,
+                note = ?, extra = ?
+            WHERE id = ?
+            """,
+            task.ruleName,
+            task.startTime,
+            task.stopTime,
+            Int64(task.numberOfUse),
+            task.ruleId.map { Int64($0) },
+            Int64(task.sslEnable),
+            task.localIP,
+            Int64(task.localPort),
+            Int64(task.localEnable),
+            task.wifiIP,
+            Int64(task.wifiPort),
+            Int64(task.wifiEnable),
+            task.interceptCount,
+            task.uploadTraffic,
+            task.downloadFlow,
+            task.note,
+            task.extra,
+            task.id
+        )
+    }
+
+    /// Find the most recent task from catalog.db, populating all CaptureTask fields.
+    public static func findLastTask(db: Connection) -> CaptureTask? {
+        do {
+            let stmt = try db.prepare("""
+                SELECT id, name, created_at, started_at, stopped_at, status, rule_id,
+                       ssl_enabled, local_ip, local_port, local_enabled,
+                       wifi_ip, wifi_port, wifi_enabled,
+                       flow_count, upload_bytes, download_bytes, note, extra
+                FROM capture_task ORDER BY id DESC LIMIT 1
+                """)
+            for row in stmt {
+                let task = CaptureTask()
+                task.id = row[0] as? Int64 ?? 0
+                task.ruleName = row[1] as? String ?? ""
+                task.creatTime = row[2] as? Double
+                task.startTime = row[3] as? Double
+                task.stopTime = row[4] as? Double
+                task.numberOfUse = Int(row[5] as? Int64 ?? 0)
+                task.ruleId = row[6] as? Int64
+                task.sslEnable = Int(row[7] as? Int64 ?? 1)
+                task.localIP = row[8] as? String ?? ProxyConfig.LocalProxy.host
+                task.localPort = Int(row[9] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
+                task.localEnable = Int(row[10] as? Int64 ?? 1)
+                task.wifiIP = row[11] as? String ?? ""
+                task.wifiPort = Int(row[12] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
+                task.wifiEnable = Int(row[13] as? Int64 ?? 1)
+                task.interceptCount = row[14] as? Int64 ?? 0
+                task.uploadTraffic = row[15] as? Int64 ?? 0
+                task.downloadFlow = row[16] as? Int64 ?? 0
+                task.note = row[17] as? String ?? ""
+                task.extra = row[18] as? String ?? ""
+                return task
+            }
+        } catch {
+            print("findLastTask error: \(error)")
+        }
+        return nil
+    }
+
     // MARK: - Rule
 
     @discardableResult

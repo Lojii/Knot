@@ -90,10 +90,7 @@ public class MitmService: NSObject {
     }
     
     public static func prepare() -> MitmService? {
-        // 数据库设置
-        ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: ProxyConfig.Database.sessionTableName)
-        ASConfigration.logLevel = .error
-        // Initialize new storage layer (catalog.db + per-task databases)
+        // Initialize storage layer (catalog.db + per-task databases)
         _ = DatabaseManager.shared
         // 日志记录
         let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: GROUPNAME)
@@ -152,15 +149,15 @@ public class MitmService: NSObject {
     
     public func run(_ callback: @escaping ((Result<Int, Error>) -> Void)) -> Void {
         compelete = callback
-        task.startTime = NSNumber(value: Date().timeIntervalSince1970)
+        task.startTime = Date().timeIntervalSince1970
         task.createFileFolder()
-        task.numberOfUse = NSNumber(value: task.numberOfUse.intValue + 1)
+        task.numberOfUse = task.numberOfUse + 1
         
         try? task.update()
         
         if task.localEnable == 1 {
             DispatchQueue.global().async {
-                self.openLocalServer(ip: self.task.localIP, port: Int(truncating: self.task.localPort), { (r) in
+                self.openLocalServer(ip: self.task.localIP, port: self.task.localPort, { (r) in
                     self.runcallback()
                 })
             }
@@ -170,7 +167,7 @@ public class MitmService: NSObject {
         }
         if task.wifiEnable == 1, task.wifiIP != "" {
             DispatchQueue.global().async {
-                self.openWifiServer(ip: self.task.wifiIP, port: Int(truncating: self.task.wifiPort), { (r) in
+                self.openWifiServer(ip: self.task.wifiIP, port: self.task.wifiPort, { (r) in
                     self.runcallback()
                 })
             }
@@ -293,7 +290,7 @@ public class MitmService: NSObject {
             task.wifiEnable = 1
             // 重新启动wifiServer
             DispatchQueue.global().async {
-                self.openWifiServer(ip: wifiIP, port: Int(truncating: self.task?.wifiPort ?? NSNumber(value: ProxyConfig.LocalProxy.port))) { (r) in
+                self.openWifiServer(ip: wifiIP, port: self.task.wifiPort) { (r) in
                     try? self.task.update()
                     // TODO:发送更新信息
                     NSLog("网络切换，重新启动成功")
@@ -314,7 +311,7 @@ public class MitmService: NSObject {
     
     public func close(_ completionHandler: (() -> Void)?) -> Void {
         closed = completionHandler
-        task.stopTime = NSNumber(value: Date().timeIntervalSince1970)
+        task.stopTime = Date().timeIntervalSince1970
         
         var infoDic = [String:String]()
         infoDic["state"] = "close"

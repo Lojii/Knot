@@ -7,18 +7,16 @@ import KnotUI
 struct KnotApp_iOS: App {
 
     init() {
-        // Initialize new storage layer (creates catalog.db and tables automatically)
+        // Initialize storage layer (creates catalog.db and tables automatically)
         _ = DatabaseManager.shared
 
-        // Legacy database setup (for Rule and other ActiveSQLite models still in use)
-        ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: ProxyConfig.Database.sessionTableName)
-        try? CaptureTask.createTable()
-        try? Rule.createTable()
-
-        // First launch: save default rule if none exist
-        if Rule.findRules().isEmpty {
-            let defaultRule = Rule.defaultRule()
-            try? defaultRule.saveToDB()
+        // First launch: ensure a default rule exists
+        let catalogDB = DatabaseManager.shared.catalogDB
+        if let rules = try? CatalogDAO.findAllRules(db: catalogDB), rules.isEmpty {
+            _ = try? CatalogDAO.insertRule(
+                db: catalogDB, name: "Knot(Default)", config: "",
+                createdAt: Date().timeIntervalSince1970,
+                defaultStrategy: "DIRECT", blacklistEnabled: true, author: "Knot")
         }
 
         // Register services into ServiceContainer

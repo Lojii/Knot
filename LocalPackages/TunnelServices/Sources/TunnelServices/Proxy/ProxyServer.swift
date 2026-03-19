@@ -27,16 +27,16 @@ public class ProxyServer {
     // MARK: - Server Lifecycle
 
     public func start(task: CaptureTask, callback: @escaping (Result<Void, Error>) -> Void) {
-        task.startTime = NSNumber(value: Date().timeIntervalSince1970)
+        task.startTime = Date().timeIntervalSince1970
         task.createFileFolder()
-        task.numberOfUse = NSNumber(value: task.numberOfUse.intValue + 1)
+        task.numberOfUse = task.numberOfUse + 1
         try? task.update()
 
         if task.localEnable == 1 {
             DispatchQueue.global().async {
                 self.startServer(
                     host: task.localIP,
-                    port: Int(truncating: task.localPort),
+                    port: task.localPort,
                     task: task,
                     isWifi: false
                 ) { result in
@@ -54,7 +54,7 @@ public class ProxyServer {
             DispatchQueue.global().async {
                 self.startServer(
                     host: task.wifiIP,
-                    port: Int(truncating: task.wifiPort),
+                    port: task.wifiPort,
                     task: task,
                     isWifi: true
                 ) { _ in }
