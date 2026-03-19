@@ -69,5 +69,10 @@ let package = Package(
                 .linkedLibrary("z"),
             ]
         ),
+        .testTarget(
+            name: "TunnelServicesTests",
+            dependencies: ["TunnelServices"],
+            path: "Tests/TunnelServicesTests"
+        ),
     ]
 )
