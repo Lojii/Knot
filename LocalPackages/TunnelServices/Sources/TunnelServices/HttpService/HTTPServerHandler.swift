@@ -210,7 +210,7 @@ class HTTPServerHandler: ChannelInboundHandler {
         case .end:
             self.state.requestComplete()
         default:
-            fatalError("oh noes: \(request)")
+            break
         }
     }
     

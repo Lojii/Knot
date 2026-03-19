@@ -18,9 +18,7 @@ struct HistoryTaskView: View {
                 List {
                     ForEach(tasks, id: \.id) { task in
                         HistoryTaskCell(task: task) {
-                            if let taskId = task.id {
-                                nav.navigate(to: .flowList(taskId: taskId.stringValue))
-                            }
+                            nav.navigate(to: .flowList(taskId: String(task.id)))
                         }
                     }
                     .onDelete(perform: deleteTasks)
@@ -48,7 +46,7 @@ struct HistoryTaskView: View {
     }
 
     private func deleteTasks(at offsets: IndexSet) {
-        let idsToDelete = offsets.compactMap { tasks[$0].id?.intValue }
+        let idsToDelete = offsets.map { Int(tasks[$0].id) }
         if !idsToDelete.isEmpty {
             _ = CaptureTask.deleteAll(taskIds: idsToDelete)
         }

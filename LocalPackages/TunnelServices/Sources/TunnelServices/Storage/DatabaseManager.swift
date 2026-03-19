@@ -21,13 +21,28 @@ public class DatabaseManager {
         self.rootPath = root
         self.profile = profile
 
-        // Ensure root directory exists
-        try! FileManager.default.createDirectory(atPath: root, withIntermediateDirectories: true)
+        do {
+            // Ensure root directory exists
+            try FileManager.default.createDirectory(atPath: root, withIntermediateDirectories: true)
 
-        // Open catalog.db
-        catalogDB = try! Connection(PathManager.catalogDBPath(root: root))
-        try! TaskDatabaseGroup.configurePragmas(catalogDB, profile: profile)
-        try! CatalogSchema.create(catalogDB)
+            // Open catalog.db
+            let db = try Connection(PathManager.catalogDBPath(root: root))
+            try TaskDatabaseGroup.configurePragmas(db, profile: profile)
+            try CatalogSchema.create(db)
+            catalogDB = db
+        } catch {
+            // If we cannot open catalog.db, fall back to an in-memory database so the app
+            // doesn't crash. This is a degraded state — data won't persist.
+            NSLog("[DatabaseManager] Failed to initialize catalog.db at \(root): \(error). Falling back to in-memory database.")
+            do {
+                let db = try Connection(.inMemory)
+                try CatalogSchema.create(db)
+                catalogDB = db
+            } catch {
+                // Absolute last resort — this should never happen with an in-memory DB.
+                fatalError("[DatabaseManager] Cannot create even an in-memory database: \(error)")
+            }
+        }
     }
 
     /// Open or get existing TaskDatabaseGroup. Increments ref count if already open.

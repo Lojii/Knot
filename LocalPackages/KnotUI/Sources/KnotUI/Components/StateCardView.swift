@@ -1,5 +1,8 @@
 import SwiftUI
+import os.log
 import KnotCore
+
+private let log = Logger(subsystem: "KnotUI", category: "StateCard")
 
 struct StateCardView: View {
     let status: TunnelStatus
@@ -29,14 +32,20 @@ struct StateCardView: View {
             }
 
             HStack(spacing: 12) {
-                Button(action: onStart) {
+                Button {
+                    log.info("Start button tapped, isRunning=\(self.isRunning), status=\(self.statusText)")
+                    onStart()
+                } label: {
                     Label("启动", systemImage: "play.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(isRunning)
 
-                Button(action: onStop) {
+                Button {
+                    log.info("Stop button tapped")
+                    onStop()
+                } label: {
                     Label("停止", systemImage: "stop.fill")
                         .frame(maxWidth: .infinity)
                 }
@@ -46,6 +55,9 @@ struct StateCardView: View {
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .onAppear {
+            log.info("StateCardView appeared, status=\(self.statusText), isRunning=\(self.isRunning)")
+        }
     }
 
     // MARK: - Helpers

@@ -17,7 +17,7 @@ struct HistoryTaskCell: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text("\(task.interceptCount.intValue) 条")
+                Text("\(Int(task.interceptCount)) 条")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Image(systemName: "chevron.right")
@@ -31,7 +31,7 @@ struct HistoryTaskCell: View {
 
     private var formattedDate: String {
         guard let ts = task.creatTime else { return "—" }
-        let date = Date(timeIntervalSince1970: ts.doubleValue / 1000)
+        let date = Date(timeIntervalSince1970: ts)
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short

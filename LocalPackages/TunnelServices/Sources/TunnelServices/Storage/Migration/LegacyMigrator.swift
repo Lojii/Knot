@@ -55,6 +55,7 @@ public enum LegacyMigrator {
         } catch {
             // Migration failure is non-fatal.
             // The legacy nio.db backup is still intact; the app can fall back to the old system.
+            NSLog("[LegacyMigrator] Migration failed: \(error). Backup preserved at \(legacyDBPath).bak")
         }
     }
 

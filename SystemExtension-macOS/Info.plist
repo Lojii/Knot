@@ -5,11 +5,11 @@
 	<key>NetworkExtension</key>
 	<dict>
 		<key>NEMachServiceName</key>
-		<string>$(TeamIdentifierPrefix)com.example.app-group.MySystemExtension</string>
+		<string>$(TeamIdentifierPrefix)group.Lojii.NIO1901</string>
 		<key>NEProviderClasses</key>
 		<dict>
 			<key>com.apple.networkextension.packet-tunnel</key>
-			<string>$(PRODUCT_MODULE_NAME).PacketTunnelProvider</string>
+			<string>$(PRODUCT_MODULE_NAME).MacPacketTunnelProvider</string>
 		</dict>
 	</dict>
 </dict>

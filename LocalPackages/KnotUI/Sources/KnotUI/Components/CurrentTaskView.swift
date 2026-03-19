@@ -37,15 +37,15 @@ struct CurrentTaskView: View {
             HStack(spacing: 20) {
                 statItem(
                     label: "拦截",
-                    value: "\(task.interceptCount.intValue)"
+                    value: "\(Int(task.interceptCount))"
                 )
                 statItem(
                     label: "上传",
-                    value: byteFormatter.string(fromByteCount: task.uploadTraffic.int64Value)
+                    value: byteFormatter.string(fromByteCount: task.uploadTraffic)
                 )
                 statItem(
                     label: "下载",
-                    value: byteFormatter.string(fromByteCount: task.downloadFlow.int64Value)
+                    value: byteFormatter.string(fromByteCount: task.downloadFlow)
                 )
             }
         }

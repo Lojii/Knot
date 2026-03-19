@@ -1,16 +1,9 @@
-//
-//  MacPacketTunnelProvider.swift
-//  SystemExtension-macOS
-//
-//  macOS System Extension Packet Tunnel Provider
-//
-//  Architecture mirrors iOS PacketTunnelProvider but with macOS-specific
-//  DNS and route configuration. Runs as a system extension (not in-process).
-//
-
 import NetworkExtension
 import TunnelServices
 import Network
+import os.log
+
+private let log = Logger(subsystem: "com.KingMap.SystemExtension-macOS", category: "Tunnel")
 
 class MacPacketTunnelProvider: NEPacketTunnelProvider {
 
@@ -24,32 +17,41 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
     // MARK: - Start Tunnel
 
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
+        log.info("startTunnel called, options=\(String(describing: options))")
+
         captureEngine.delegate = self
 
+        log.info("startTunnel: calling MitmService.prepare()...")
         guard let server = MitmService.prepare() else {
-            NSLog("SystemExtension-macOS: MitmService.prepare() failed")
-            completionHandler(nil)
+            log.error("startTunnel: MitmService.prepare() returned nil!")
+            let error = NSError(domain: "MacPacketTunnelProvider", code: -1,
+                                userInfo: [NSLocalizedDescriptionKey: "MitmService.prepare() failed"])
+            completionHandler(error)
             return
         }
         mitmServer = server
+        log.info("startTunnel: MitmService.prepare() succeeded, task.localIP=\(server.task.localIP), localPort=\(server.task.localPort), localEnable=\(server.task.localEnable)")
 
+        log.info("startTunnel: calling mitmServer.run()...")
         mitmServer.run { [weak self] result in
             switch result {
             case .success:
+                log.info("startTunnel: mitmServer.run() succeeded, configuring tunnel...")
                 self?.configureTunnel { error in
                     if let error = error {
-                        NSLog("SystemExtension-macOS: configureTunnel failed: %@", error.localizedDescription)
+                        log.error("startTunnel: configureTunnel failed: \(error.localizedDescription)")
                         completionHandler(error)
                         return
                     }
-                    NSLog("SystemExtension-macOS: Started successfully")
+                    log.info("startTunnel: tunnel configured, starting packet capture...")
                     self?.startPacketCapture()
                     self?.startNetworkMonitor()
+                    log.info("startTunnel: all done, calling completionHandler(nil)")
                     completionHandler(nil)
                 }
 
             case .failure(let error):
-                NSLog("SystemExtension-macOS: MitmService.run() failed: %@", error.localizedDescription)
+                log.error("startTunnel: mitmServer.run() failed: \(error.localizedDescription)")
                 completionHandler(error)
             }
         }
@@ -58,6 +60,7 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
     // MARK: - Configure Tunnel (macOS-specific)
 
     private func configureTunnel(completionHandler: @escaping (Error?) -> Void) {
+        log.info("configureTunnel: building NEPacketTunnelNetworkSettings...")
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: ProxyConfig.VPN.tunnelAddress)
         settings.mtu = ProxyConfig.VPN.mtu
 
@@ -76,12 +79,11 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
             subnetMasks: [ProxyConfig.VPN.subnetMask]
         )
         ipv4.includedRoutes = [NEIPv4Route.default()]
-        // macOS: also exclude link-local and multicast ranges
         var excludedRoutes = ProxyConfig.VPN.excludedIPv4Routes.map {
             NEIPv4Route(destinationAddress: $0.0, subnetMask: $0.1)
         }
-        excludedRoutes.append(NEIPv4Route(destinationAddress: "169.254.0.0", subnetMask: "255.255.0.0"))  // link-local
-        excludedRoutes.append(NEIPv4Route(destinationAddress: "224.0.0.0",   subnetMask: "240.0.0.0"))   // multicast
+        excludedRoutes.append(NEIPv4Route(destinationAddress: "169.254.0.0", subnetMask: "255.255.0.0"))
+        excludedRoutes.append(NEIPv4Route(destinationAddress: "224.0.0.0",   subnetMask: "240.0.0.0"))
         ipv4.excludedRoutes = excludedRoutes
         settings.ipv4Settings = ipv4
 
@@ -93,13 +95,19 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
         ipv6.includedRoutes = [NEIPv6Route.default()]
         settings.ipv6Settings = ipv6
 
-        // DNS — macOS supports split DNS; route all through tunnel DNS
+        // DNS
         let dnsSettings = NEDNSSettings(servers: ProxyConfig.VPN.dnsServers)
         dnsSettings.matchDomains = [""]
         dnsSettings.matchDomainsNoSearch = false
         settings.dnsSettings = dnsSettings
 
+        log.info("configureTunnel: calling setTunnelNetworkSettings...")
         setTunnelNetworkSettings(settings) { error in
+            if let error = error {
+                log.error("configureTunnel: setTunnelNetworkSettings error: \(error.localizedDescription)")
+            } else {
+                log.info("configureTunnel: setTunnelNetworkSettings succeeded")
+            }
             completionHandler(error)
         }
     }
@@ -126,7 +134,7 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
 
     private func startNetworkMonitor() {
         pathMonitor.pathUpdateHandler = { path in
-            NSLog("SystemExtension-macOS: Network \(path.status == .satisfied ? "available" : "unavailable")")
+            log.info("Network path: \(path.status == .satisfied ? "available" : "unavailable")")
         }
         pathMonitor.start(queue: monitorQueue)
     }
@@ -134,7 +142,7 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
     // MARK: - Stop Tunnel
 
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
-        NSLog("SystemExtension-macOS: Stopping (reason: \(reason.rawValue))")
+        log.info("stopTunnel called, reason=\(reason.rawValue)")
         pathMonitor.cancel()
         captureEngine.shutdown()
         mitmServer?.close(completionHandler)
@@ -147,6 +155,7 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
             completionHandler?(nil)
             return
         }
+        log.info("handleAppMessage: \(command)")
         switch command {
         case "start_pcap":
             let path = MitmService.getStoreFolder() + "capture.pcap"
@@ -171,10 +180,7 @@ extension MacPacketTunnelProvider: PacketCaptureDelegate {
 
     func didCapturePacket(_ packet: CapturedPacket) {
         #if DEBUG
-        NSLog("PKT %@ %@ %@",
-              packet.direction.rawValue,
-              packet.decodedProtocol ?? packet.ipPacket.proto.name,
-              packet.summary)
+        log.debug("PKT \(packet.direction.rawValue) \(packet.decodedProtocol ?? packet.ipPacket.proto.name) \(packet.summary)")
         #endif
     }
 

@@ -39,7 +39,7 @@ public class MitmService: NSObject {
         case failure    // 失败
     }
 
-    var task:CaptureTask!
+    public var task:CaptureTask!
     let master = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
     let worker = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount*3)
     
@@ -455,7 +455,8 @@ public class MitmService: NSObject {
         let isExits = fileManager.fileExists(atPath: documentDirPath, isDirectory:&isDir)
         
         if isExits && !isDir.boolValue{
-            fatalError("The dir is file，can not create dir.")
+            AxLogger.log("The dir is file, can not create dir: \(documentDirPath)", level: .Error)
+            return ""
         }
         if !isExits {
             try? FileManager.default.createDirectory(atPath: documentDirPath, withIntermediateDirectories: true, attributes: nil)

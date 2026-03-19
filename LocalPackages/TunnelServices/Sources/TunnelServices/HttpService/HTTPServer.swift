@@ -73,7 +73,8 @@ public class LocalHTTPServer {
                 do {
                     self.wifiChannel = try bootstrap.bind(host: wifiIP, port: self.defaultPort).wait()
                     guard let localAddress = self.wifiChannel?.localAddress else {
-                        fatalError("HTTPServer(Wifi):Address was unable to bind:\(wifiIP):\(self.defaultPort)")
+                        if isDebug { print("HTTPServer(Wifi):Address was unable to bind:\(wifiIP):\(self.defaultPort)") }
+                        return
                     }
                     self.wifiChannel?.closeFuture.whenComplete({ (r) in
                         if isDebug { print("HTTPServer(Wifi):Server Channel Closed !") }
@@ -96,7 +97,8 @@ public class LocalHTTPServer {
             do {
                 self.channel = try bootstrap.bind(host: self.defaultHost, port: self.defaultPort).wait()
                 guard let localAddress = self.channel?.localAddress else {
-                    fatalError("HTTPServer(Local):Address was unable to bind:\(self.defaultHost):\(self.defaultPort)")
+                    if isDebug { print("HTTPServer(Local):Address was unable to bind:\(self.defaultHost):\(self.defaultPort)") }
+                    return
                 }
                 self.channel?.closeFuture.whenComplete({ (r) in
                     if isDebug { print("HTTPServer(Local):Server Channel Closed !") }

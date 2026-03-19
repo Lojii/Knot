@@ -1,28 +1,37 @@
 import SwiftUI
+import os.log
 import KnotCore
 import TunnelServices
+
+private let log = Logger(subsystem: "KnotUI", category: "Dashboard")
 
 struct DashboardView: View {
     @Bindable var nav: NavigationState
 
-    @State private var appState = AppState()
+    @State private var currentTask: CaptureTask?
     @State private var historyTasks: [CaptureTask] = []
 
     @State private var localEnabled = true
     @State private var localPort = "9090"
     @State private var wifiEnabled = false
     @State private var wifiPort = "9091"
+    @State private var errorMessage: String?
 
     private var tunnelService: TunnelServiceProtocol? {
         ServiceContainer.shared.resolve(TunnelServiceProtocol.self)
+    }
+
+    /// Directly read from the @Observable TunnelServiceState so SwiftUI tracks changes.
+    private var vpnStatus: TunnelStatus {
+        tunnelService?.state.status ?? .disconnected
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 StateCardView(
-                    status: appState.vpnStatus,
-                    certStatus: appState.certificateStatus,
+                    status: vpnStatus,
+                    certStatus: .notInstalled,
                     onStart: startCapture,
                     onStop: stopCapture
                 )
@@ -36,9 +45,9 @@ struct DashboardView: View {
                     wifiIP: nil
                 )
 
-                CurrentTaskView(task: appState.currentTask) {
-                    if let task = appState.currentTask, let taskId = task.id {
-                        nav.navigate(to: .flowList(taskId: taskId.stringValue))
+                CurrentTaskView(task: currentTask) {
+                    if let task = currentTask {
+                        nav.navigate(to: .flowList(taskId: String(task.id)))
                     }
                 }
                 .padding(.horizontal)
@@ -58,9 +67,7 @@ struct DashboardView: View {
 
                         ForEach(historyTasks, id: \.id) { task in
                             HistoryTaskCell(task: task) {
-                                if let taskId = task.id {
-                                    nav.navigate(to: .flowList(taskId: taskId.stringValue))
-                                }
+                                nav.navigate(to: .flowList(taskId: String(task.id)))
                             }
                             .padding(.horizontal)
                         }
@@ -74,26 +81,55 @@ struct DashboardView: View {
             loadHistoryTasks()
             loadCurrentTask()
         }
+        .alert("启动失败", isPresented: .init(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("确定") { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
 
     private func startCapture() {
-        guard let svc = tunnelService else { return }
+        log.info("startCapture: button tapped")
+        log.info("startCapture: tunnelService=\(self.tunnelService != nil ? "resolved" : "nil")")
+        guard let svc = tunnelService else {
+            log.error("startCapture: tunnelService is nil!")
+            errorMessage = "隧道服务未初始化"
+            return
+        }
+        log.info("startCapture: vpnStatus=\(String(describing: self.vpnStatus))")
         let config = CaptureConfig(
             localPort: Int(localPort) ?? 9090,
             localEnabled: localEnabled,
             wifiPort: Int(wifiPort) ?? 9091,
-            wifiEnabled: wifiEnabled,
-            ruleId: appState.activeRuleId
+            wifiEnabled: wifiEnabled
         )
+        log.info("startCapture: config local=\(config.localPort) wifi=\(config.wifiPort)")
         Task {
-            try? await svc.startCapture(config: config)
+            do {
+                log.info("startCapture: calling svc.startCapture...")
+                try await svc.startCapture(config: config)
+                log.info("startCapture: success")
+                loadCurrentTask()
+            } catch {
+                log.error("startCapture: failed: \(error.localizedDescription)")
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
     private func stopCapture() {
         guard let svc = tunnelService else { return }
         Task {
-            try? await svc.stopCapture()
+            do {
+                try await svc.stopCapture()
+                loadCurrentTask()
+                loadHistoryTasks()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -102,6 +138,6 @@ struct DashboardView: View {
     }
 
     private func loadCurrentTask() {
-        appState.currentTask = CaptureTask.getLast()
+        currentTask = CaptureTask.getLast()
     }
 }

@@ -26,9 +26,6 @@ class ChannelWatchHandler: ChannelDuplexHandler, RemovableChannelHandler {
 
         self.proxyContext.session.uploadTraffic += Int64(outData.readableBytes)
 
-//        let taskdownloadFlow = self.proxyContext.task.uploadTraffic
-//        self.proxyContext.task.uploadTraffic = NSNumber(value: (taskdownloadFlow.intValue + outData.readableBytes))
-
         context.writeAndFlush(data, promise: promise)
     }
 
@@ -36,9 +33,6 @@ class ChannelWatchHandler: ChannelDuplexHandler, RemovableChannelHandler {
         let inData = unwrapInboundIn(data)
 
         self.proxyContext.session.downloadFlow += Int64(inData.readableBytes)
-
-//        let taskdownloadFlow = self.proxyContext.task.downloadFlow
-//        self.proxyContext.task.downloadFlow = NSNumber(value: (taskdownloadFlow.intValue + inData.readableBytes))
 
         context.fireChannelRead(data)
     }
