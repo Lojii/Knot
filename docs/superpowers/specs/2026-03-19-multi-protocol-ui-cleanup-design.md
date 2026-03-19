@@ -36,10 +36,12 @@ flow_id: "ws_0001"
 protocol: "WS" (或 "WSS")
 host: "ws.example.com"
 summary: "↑12 ↓34 frames"
-search_key1: "wss"          (scheme)
+search_key1: "graphql-ws"   (subprotocol, 空则为 "")
 search_key2: "/chat"        (uri)
 search_key3: "46"           (total frames)
 search_key4: "1000"         (close code)
+注意：scheme 信息已由 protocol 字段（"WS"/"WSS"）承载，search_key1 用于 subprotocol 更有查询价值。
+此映射覆盖先前 database-redesign spec 中的 WebSocket search_key 表，以本 spec 为准。
 metadata: {
     "upgradeReqHeaders": [...],
     "upgradeRspHeaders": [...],
@@ -73,7 +75,9 @@ flow_id: "ws_0001", direction: 0, sequence: 1   ← 客户端第2帧
 
 **帧序号**：客户端和服务端各自独立递增 sequence。`direction=0`（客户端→服务器）从 0 起，`direction=1`（服务器→客户端）从 0 起。UI 展示时按 `decoded_at` 时间戳交错排列。
 
-**生命周期**：WebSocketRecorder 不在 init 时插入 protocol.db，而是先在内存中积累元数据，关闭时才插入。但帧数据实时写入 decoded.db（帧可能很多，不能全在内存中积累）。
+**生命周期**：WebSocketRecorder 在连接建立时立即插入一条 `status=inProgress` 的 Flow 记录到 protocol.db（避免崩溃导致 decoded.db 中帧数据成为孤儿）。帧数据实时写入 decoded.db。连接关闭时 UPDATE 该 Flow 记录（设置 endedAt、summary、status=completed、search_key3=帧总数、search_key4=closeCode）。
+
+**大文件帧存储**：TEXT 帧 > 4KB 和 BINARY 帧不通过 PayloadWriter（它设计为单文件追加），而是直接使用 `FileManager.createFile` + `FileHandle` 写入单帧文件。大多数 WS 帧 ≤ 4KB，走 decoded.db 内联路径，无需文件 I/O。
 
 ### DNSRecorder
 
@@ -198,17 +202,34 @@ WebSocketUpgradeInterceptor 检测 101 →
         → FlowDAO.insert() 到 protocol.db
 ```
 
-**HTTP2CaptureHandler**：
+**HTTP2CaptureHandler（需要完整重构）**：
 
-创建 HTTPRecorder 时传 `protocolOverride: "H2"` + `extraMetadata: ["streamId": N]`。检测到 gRPC 时改为创建 GRPCRecorder。
+当前 `HTTP2CaptureHandler` 的 `H2StreamCaptureHandler` 和 `H2ResponseRelayHandler` 直接使用 `SessionRecorder`。需要完整重构：
+1. `H2StreamCaptureHandler` 中的 `SessionRecorder` 替换为 `HTTPRecorder`（带 `protocolOverride: "H2"`, `extraMetadata: ["streamId": N]`）
+2. gRPC 检测（`content-type: application/grpc*`）时，改为创建 `GRPCRecorder` 替代 HTTPRecorder
+3. `H2ResponseRelayHandler` 中 recorder 引用类型从 `SessionRecorder` 改为 `ProtocolRecorder` 协议
+4. `HTTP2CaptureBuilder` multiplexer 闭包中的 recorder 创建逻辑同步更新
+5. 注意：当前代理对上游使用 HTTP/1.1（`applicationProtocols: ["http/1.1"]`），metadata 中应记录 `"upstreamVersion": "HTTP/1.1"` 以区分
+
+这是 Sub-project A 中改动量最大的部分。
 
 **HTTPCaptureHandler（DoH 检测）**：
 
 在 `recordResponseEnd()` 中，检测 `content-type == "application/dns-message"`，读取响应 body，`DNSDecoder.parse()`，创建独立 DNS Flow。
 
-**UDPForwarder（UDP DNS）**：
+**UDP DNS（跨进程问题）**：
 
-收到 DNS 请求/响应对 → `DNSRecorder.recordQuery()` + `recordResponse()` → `FlowDAO.insert()`。
+`UDPForwarder` 运行在 PacketTunnel 扩展进程中，而 `FlowDAO` 和 `DatabaseManager` 运行在主 App 进程中。两者是不同进程，不能直接共享内存对象。
+
+**解决方案：App Group 共享数据库 + 进程感知**：
+- PacketTunnel 扩展进程中的 `DNSRecorder` 直接写入 App Group 目录下的 `protocol.db`（SQLite WAL 模式支持跨进程一写多读，只要不同时多写）
+- PacketTunnel 使用 `PragmaProfile.packetTunnel`（低内存配置）
+- 主 App 进程读取 `protocol.db` 时无需额外同步（WAL 模式允许并发读写）
+- 注意：如果主 App 的 NIO Handler 也在写同一个 `protocol.db`，两个进程会竞争写锁。通过 `busy_timeout = 3000` 缓解，但高并发时仍可能阻塞。因此 UDP DNS 写入走 `BatchWriter`（100ms 窗口），减少锁竞争频率。
+
+**替代方案（如果跨进程写锁成为瓶颈）**：
+- 延迟 UDP DNS 记录——PacketTunnel 扩展仅将 DNS 数据写入共享文件（JSON lines），主 App 进程启动时或定期扫描该文件并导入 protocol.db。
+- 这样 protocol.db 只有一个写者（主 App），但 DNS 数据延迟展示。
 
 ### 新增/修改文件
 
@@ -220,9 +241,11 @@ WebSocketUpgradeInterceptor 检测 101 →
 | 修改 | `Storage/Protocol/HTTPRecorder.swift` | 加 protocolOverride + extraMetadata |
 | 修改 | `Proxy/WebSocketCaptureHandler.swift` | 集成 WebSocketRecorder |
 | 修改 | `Proxy/HTTP2CaptureHandler.swift` | 传 H2 参数 + gRPC 路由 |
-| 修改 | `Proxy/GRPCCaptureHandler.swift` | 集成 GRPCRecorder |
+| 修改 | `Proxy/GRPCCaptureHandler.swift` | GRPCDecoder 工具方法供 GRPCRecorder 调用 |
 | 修改 | `Proxy/HTTPCaptureHandler.swift` | DoH 检测 + DNS Flow 创建 |
 | 修改 | `PacketCapture/UDPForwarder.swift` | UDP DNS → DNSRecorder |
+| 修改 | `Storage/DAO/DecodedEntryDAO.swift` | 新增 findAll(db:flowId:offset:limit:) 分页查询 |
+| 修改 | `Storage/DAO/FlowDAO.swift` | 新增 keyword 搜索参数 + FlowDAO.search() 方法 |
 | 新建 | 测试文件 × 3 | WebSocket/DNS/gRPC Recorder 测试 |
 
 ---
@@ -236,10 +259,10 @@ class FlowListViewModel: ObservableObject {
     @Published var flows: [FlowRecord] = []
     @Published var isLoading = false
 
-    var taskId: Int64
+    var taskId: Int64                // 数据库层使用 Int64；UI 导航层传入 String 时需转换
     var protocolFilter: String?       // nil=全部, "HTTP", "WS", "DNS", "gRPC"
     var hostContains: String?
-    var keyword: String?
+    var keyword: String?              // 搜索 host + summary + searchKey2(uri)，需扩展 FlowDAO.query
     var pageIndex: Int = 0
     let pageSize: Int = 50
 
@@ -466,11 +489,13 @@ Step 2: 移除 SessionRecorder 中旧写入路径
 Step 3: 移除 MitmService 中的 ASConfigration 调用
         → 替换为 DatabaseManager 初始化
 
-Step 4: 删除旧模型 (Session.swift, CaptureTask.swift, Rule.swift)
+Step 4: 删除旧 UI 组件 (SessionListView 等 7 个文件)
+        → 先删 UI，因为 UI 引用了旧模型；先删模型会导致编译失败
 
-Step 5: 删除旧 UI 组件 (SessionListView 等 7 个文件)
+Step 5: 删除旧模型 (Session.swift, CaptureTask.swift, Rule.swift)
 
 Step 6: 删除 ActiveSQLite 框架 (12 个文件)
+        → 最后删 ORM，因为旧模型依赖它
 
 Step 7: 全量编译验证 + 测试
 ```
@@ -506,6 +531,12 @@ Step 7: 全量编译验证 + 测试
 - `ActiveSQLite/ASUtils.swift`
 - `ActiveSQLite/Types.swift`
 - `ActiveSQLite/ActiveSQLite.swift`
+
+---
+
+## 延迟协议
+
+MQTT 和 QUIC 的 search_key 映射已在先前 database-redesign spec 中预留，但本 spec 不覆盖其 Recorder 实现。它们将在后续 spec 中单独设计（遵循相同的 ProtocolRecorder 模式）。
 
 ---
 
