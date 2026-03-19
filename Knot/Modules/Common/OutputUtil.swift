@@ -5,6 +5,9 @@
 //  Created by LiuJie on 2019/6/2.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: Legacy export utility that operates on Session objects.
+// New export functionality should use FlowRecord from KnotCore storage.
+// Includes Session.getCUrl() extension that depends on Session.swift.
 
 import UIKit
 import TunnelServices

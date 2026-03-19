@@ -5,6 +5,8 @@
 //  Created by LiuJie on 2019/6/4.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: Legacy HAR export extension that operates on Session objects.
+// New HAR export should use FlowRecord from KnotCore storage.
 
 import UIKit
 import TunnelServices

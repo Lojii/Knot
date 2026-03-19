@@ -5,6 +5,10 @@
 //  Created by LiuJie on 2019/5/10.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: This UIKit view controller is part of the legacy Session-based UI.
+// It reads from the old nio.db/Session table via ActiveSQLite.
+// It will be replaced by FlowListView (KnotUI SwiftUI) + new KnotCore storage.
+// Do not add new features here. See KnotUI/Views/FlowListView.swift instead.
 
 import UIKit
 import TunnelServices

@@ -5,6 +5,7 @@
 //  Created by LiuJie on 2019/5/21.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: Legacy UIKit code. Will be replaced by KnotUI SwiftUI views.
 
 import UIKit
 import TunnelServices

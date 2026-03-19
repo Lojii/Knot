@@ -5,6 +5,9 @@
 //  Created by LiuJie on 2019/5/14.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: This UIKit view controller is part of the legacy Session-based UI.
+// It will be replaced by FlowDetailView (KnotUI SwiftUI) + new KnotCore storage.
+// Do not add new features here. See KnotUI/Views/FlowDetailView.swift instead.
 
 import UIKit
 import TunnelServices

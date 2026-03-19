@@ -5,6 +5,8 @@
 //  Created by LiuJie on 2019/5/12.
 //  Copyright © 2019 Lojii. All rights reserved.
 //
+// DEPRECATED: Legacy model wrapping Session for UIKit cells. Will be removed
+// when the Knot target migrates to KnotUI SwiftUI views.
 
 import UIKit
 import TunnelServices
