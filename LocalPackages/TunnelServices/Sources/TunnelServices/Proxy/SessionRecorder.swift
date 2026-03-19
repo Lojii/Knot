@@ -10,14 +10,18 @@ import Foundation
 import NIOHTTP1
 import NIO
 
-/// Records HTTP session data to the database and file system.
-/// This is NOT a ChannelHandler - it's a plain helper used by handlers.
+/// Records HTTP session data via the new storage system (FlowDAO, PayloadWriter, TcpConnectionDAO).
+/// The `session` property is retained temporarily as an in-memory data holder
+/// because external handlers still read/write fields like `schemes`, `ignore`, `host`, etc.
+/// TODO: Replace handler references to `recorder.session.xxx` with dedicated SessionRecorder API,
+///       then remove the `session` property entirely.
 public class SessionRecorder {
 
+    // TODO: Remove once all handlers stop accessing recorder.session directly.
     public let session: Session
     public let task: CaptureTask
 
-    // New storage system (dual-write, Phase 1 migration)
+    // New storage system
     private var httpRecorder: HTTPRecorder?
     private var reqPayloadWriter: PayloadWriter?
     private var rspPayloadWriter: PayloadWriter?
@@ -26,13 +30,26 @@ public class SessionRecorder {
     private var taskId: Int64 = 0
     private var tcpRecord: TcpConnectionRecord?
 
+    // Local traffic counters (replaces session.uploadTraffic / session.downloadFlow)
+    private var _uploadBytes: Int64 = 0
+    private var _downloadBytes: Int64 = 0
+
+    // Local timing (replaces session.startTime reads)
+    private let _startTime: TimeInterval
+
+    // Local address cache (replaces session.localAddress reads)
+    private var _localAddress: String = ""
+
     public init(task: CaptureTask) {
         self.task = task
         self.session = Session.newSession(task)
-        session.inState = "open"
-        session.startTime = NSNumber(value: Date().timeIntervalSince1970)
+        self._startTime = Date().timeIntervalSince1970
 
-        // Initialize new storage system (fail-safe — must not affect existing flow)
+        // Populate session in-memory fields that handlers still read
+        session.inState = "open"
+        session.startTime = NSNumber(value: _startTime)
+
+        // Initialize new storage system
         let tid = task.id?.int64Value ?? 0
         self.taskId = tid
         if tid > 0, let group = try? DatabaseManager.shared.openTask(tid) {
@@ -50,13 +67,16 @@ public class SessionRecorder {
     // MARK: - Request Recording
 
     public func recordRequestHead(_ head: HTTPRequestHead, localAddress: SocketAddress?, isSSL: Bool) {
-        session.reqLine = "\(head.method) \(head.uri) \(head.version)"
+        // Populate session in-memory fields that handlers still read
+        let localAddr = Session.getIPAddress(socketAddress: localAddress)
+        _localAddress = localAddr
         session.host = head.headers["Host"].first
-        session.localAddress = Session.getIPAddress(socketAddress: localAddress)
+        session.localAddress = localAddr
         session.methods = "\(head.method)"
         session.uri = head.uri
-        session.reqHttpVersion = "\(head.version)"
         session.target = Session.getUserAgent(target: head.headers["User-Agent"].first)
+        session.reqLine = "\(head.method) \(head.uri) \(head.version)"
+        session.reqHttpVersion = "\(head.version)"
         session.reqHeads = Session.getHeadsJson(headers: head.headers)
         session.reqEncoding = head.headers["Content-Encoding"].first ?? ""
         session.reqType = head.headers["Content-Type"].first ?? ""
@@ -71,9 +91,8 @@ public class SessionRecorder {
         }
 
         session.connectTime = NSNumber(value: Date().timeIntervalSince1970)
-        try? session.saveToDB()
 
-        // Dual-write: record request head to new storage
+        // Record request head to new storage
         if let fid = flowId, httpRecorder == nil {
             let host = head.headers["Host"].first ?? ""
             let port = isSSL ? 443 : 80
@@ -89,20 +108,16 @@ public class SessionRecorder {
 
     public func recordRequestBody(_ buffer: ByteBuffer) {
         guard !session.ignore else { return }
-        session.writeBody(type: .REQ, buffer: buffer)
 
-        // Dual-write: write request body to new payload writer
+        // Write request body to new payload writer
         try? reqPayloadWriter?.append(buffer)
         httpRecorder?.addUpload(bytes: Int64(buffer.readableBytes))
     }
 
     public func recordRequestEnd() {
         guard !session.ignore else { return }
-        session.writeBody(type: .REQ, buffer: nil)
-        session.reqEndTime = NSNumber(value: Date().timeIntervalSince1970)
-        try? session.saveToDB()
 
-        // Dual-write: finalize request payload and record timing
+        // Finalize request payload and record timing
         try? reqPayloadWriter?.close()
         if reqPayloadWriter != nil, let fid = flowId {
             httpRecorder?.reqPayloadRef = "\(fid)_req.bin"
@@ -113,27 +128,26 @@ public class SessionRecorder {
     // MARK: - Connection Recording
 
     public func recordConnected(remoteAddress: SocketAddress?) {
+        // Update session in-memory fields that handlers still read
         session.connectedTime = NSNumber(value: Date().timeIntervalSince1970)
         session.outState = "open"
         session.remoteAddress = Session.getIPAddress(socketAddress: remoteAddress)
-        try? session.saveToDB()
 
-        // Dual-write: record connection timing
+        // Record connection timing in new storage
         let now = Date().timeIntervalSince1970
         httpRecorder?.recordConnected(at: now)
 
-        // Dual-write: create TCP connection record in connection.db
+        // Create TCP connection record in connection.db
         if let fid = flowId, let group = dbGroup {
-            let srcIp = session.localAddress ?? ""
             let dstIp = Session.getIPAddress(socketAddress: remoteAddress)
             let dstPort = remoteAddress?.port ?? 0
             var record = TcpConnectionRecord(
                 flowId: fid,
-                srcIp: srcIp,
+                srcIp: _localAddress,
                 srcPort: 0,
                 dstIp: dstIp,
                 dstPort: dstPort,
-                startedAt: session.startTime?.doubleValue ?? now,
+                startedAt: _startTime,
                 state: "open",
                 establishedAt: now
             )
@@ -148,10 +162,10 @@ public class SessionRecorder {
     public func recordHandshakeComplete() {
         session.handshakeEndTime = NSNumber(value: Date().timeIntervalSince1970)
 
-        // Dual-write: record TLS timing
+        // Record TLS timing
         httpRecorder?.recordTLSDone(at: Date().timeIntervalSince1970)
 
-        // Dual-write: update TCP connection with TLS info in connection.db
+        // Update TCP connection with TLS info in connection.db
         if var record = tcpRecord, let group = dbGroup {
             record.state = "established"
             self.tcpRecord = record
@@ -165,13 +179,14 @@ public class SessionRecorder {
         session.outState = "failure"
         session.note = "error:connect \(host):\(port) failure:\(error)"
 
-        // Dual-write: record error
+        // Record error in new storage
         httpRecorder?.recordError("connect \(host):\(port) failure: \(error)")
     }
 
     // MARK: - Response Recording
 
     public func recordResponseHead(_ head: HTTPResponseHead) {
+        // Update session in-memory fields that handlers still read
         session.rspStartTime = NSNumber(value: Date().timeIntervalSince1970)
         session.rspHttpVersion = "\(head.version)"
         session.state = "\(head.status.code)"
@@ -185,9 +200,7 @@ public class SessionRecorder {
             session.suffix = contentType.components(separatedBy: "/").last ?? ""
         }
 
-        try? session.saveToDB()
-
-        // Dual-write: record response head to new storage
+        // Record response head to new storage
         httpRecorder?.recordResponseHead(
             statusCode: Int(head.status.code),
             headers: head.headers.map { ($0.name, $0.value) }
@@ -197,30 +210,16 @@ public class SessionRecorder {
 
     public func recordResponseBody(_ buffer: ByteBuffer) {
         guard !session.ignore else { return }
-        if session.fileName == "" {
-            if let fileName = session.uri?.getFileName() {
-                session.fileName = fileName
-                let nameParts = session.fileName.components(separatedBy: ".")
-                if nameParts.count < 2 {
-                    let type = session.rspType.getRealType()
-                    if type != "" { session.fileName = "\(session.fileName).\(type)" }
-                }
-                try? session.saveToDB()
-            }
-        }
-        session.writeBody(type: .RSP, buffer: buffer, realName: session.fileName)
 
-        // Dual-write: write response body to new payload writer
+        // Write response body to new payload writer
         try? rspPayloadWriter?.append(buffer)
         httpRecorder?.addDownload(bytes: Int64(buffer.readableBytes))
     }
 
     public func recordResponseEnd() {
         guard !session.ignore else { return }
-        session.writeBody(type: .RSP, buffer: nil, realName: session.fileName)
-        session.rspEndTime = NSNumber(value: Date().timeIntervalSince1970)
 
-        // Dual-write: finalize response payload and record timing
+        // Finalize response payload and record timing
         try? rspPayloadWriter?.close()
         if rspPayloadWriter != nil, let fid = flowId {
             httpRecorder?.rspPayloadRef = "\(fid)_rsp.bin"
@@ -231,38 +230,39 @@ public class SessionRecorder {
     // MARK: - Traffic Counting
 
     public func addUpload(_ bytes: Int) {
-        session.uploadTraffic = NSNumber(value: session.uploadTraffic.intValue + bytes)
+        _uploadBytes += Int64(bytes)
     }
 
     public func addDownload(_ bytes: Int) {
-        session.downloadFlow = NSNumber(value: session.downloadFlow.intValue + bytes)
+        _downloadBytes += Int64(bytes)
     }
 
     // MARK: - Lifecycle
 
     public func recordClosed() {
         session.endTime = NSNumber(value: Date().timeIntervalSince1970)
-        try? session.saveToDB()
+
+        // Send real-time status to main app (uses session in-memory fields for URL construction)
         if !session.ignore {
             task.sendInfo(
                 url: session.getFullUrl(),
-                uploadTraffic: session.uploadTraffic,
-                downloadFlow: session.downloadFlow
+                uploadTraffic: NSNumber(value: _uploadBytes),
+                downloadFlow: NSNumber(value: _downloadBytes)
             )
         }
 
-        // Dual-write: build FlowRecord and insert into protocol.db
+        // Build FlowRecord and insert into protocol.db
         if let recorder = httpRecorder, let group = dbGroup {
             let flowRecord = recorder.buildFlowRecord()
             try? FlowDAO.insert(db: group.proto, record: flowRecord)
         }
 
-        // Dual-write: update TCP connection state to closed in connection.db
+        // Update TCP connection state to closed in connection.db
         if var record = tcpRecord, let group = dbGroup {
             record.state = "closed"
             record.closedAt = Date().timeIntervalSince1970
-            record.bytesOut = Int64(session.uploadTraffic.intValue)
-            record.bytesIn = Int64(session.downloadFlow.intValue)
+            record.bytesOut = _uploadBytes
+            record.bytesIn = _downloadBytes
             self.tcpRecord = record
             group.connectionWriteQueue.async {
                 try? TcpConnectionDAO.insertOrUpdate(db: group.connection, record: record)
@@ -279,7 +279,7 @@ public class SessionRecorder {
         session.sstate = "failure"
         session.note = message
 
-        // Dual-write: record error
+        // Record error in new storage
         httpRecorder?.recordError(message)
     }
 }
