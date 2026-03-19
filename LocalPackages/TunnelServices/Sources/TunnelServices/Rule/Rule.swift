@@ -73,37 +73,21 @@ public enum RuleType: String {
 
 public class Rule: ASModel {
     public var subName:String = "new config"
-    // [General]
-    public lazy var defaulBlacklistRuleItems: [RuleItem] = {
-        var blackItems = [RuleItem]()
-        if let certDir = MitmService.getCertPath() {
-            print("******************* BlackList read !")
-            let blackListPath = certDir.appendingPathComponent("DefaultBlackLisk.conf", isDirectory: false)
-            if let blackList = try? String(contentsOf: blackListPath, encoding: .utf8) {
-                let allLines = blackList.components(separatedBy: "\n")
-                for index in 0..<allLines.count {
-                    let line = allLines[index]
-                    RuleItem.fromLine(line, index, success: { (item) in
-                        blackItems.append(item)
-                    }, failure: { (errorStr) in
-                        print("BlackList index:\(index) error:\(errorStr ?? "unknow")")
-                    })
-                }
-            }
-        }
-        return blackItems
+
+    // MARK: - RuleEngine (delegates parsing & matching)
+
+    private lazy var engine: RuleEngine = {
+        RuleEngine(config: self._config)
     }()
-    
+
+    // [General]
+    public var defaulBlacklistRuleItems: [RuleItem] {
+        return engine.defaultBlacklistRuleItems
+    }
+
     var _validRuleItems:[RuleItem]?
     public var validRuleItems: [RuleItem] {
-        var items = [RuleItem]()
-        for i in 0..<lines.count {
-            if let item = lines[i] as? RuleItem {
-                item.index = i
-                items.append(item)
-            }
-        }
-        return items
+        return engine.validRuleItems
     }
     public var numberOfRule: Int {
         return validRuleItems.count
@@ -156,8 +140,11 @@ public class Rule: ASModel {
             addGeneral("note", _note ?? "")
         }
     }
-    
-    public var lines = [RuleLine]()
+
+    public var lines: [RuleLine] {
+        get { return engine.lines }
+        set { /* lines are managed by engine after parsing */ }
+    }
     /*
      [General]
      name = 副本  // 名称
@@ -197,10 +184,17 @@ public class Rule: ASModel {
             return _config
         }
         set {
-            
+
             _config = newValue
-            // 解析规则配置
-            configParse()
+            // 解析规则配置 via engine
+            engine.configParse(_config)
+            // Sync parsed general values back to Rule properties
+            _name = engine.name
+            _defaultStrategy = engine.defaultStrategy
+            _defaultBlacklistEnable = engine.defaultBlacklistEnable
+            _createTime = engine.createTime
+            _author = engine.author
+            _note = engine.note
             NotificationCenter.default.post(name: CurrentRuleDidChange, object: "config")
         }
     }
@@ -231,10 +225,10 @@ public class Rule: ASModel {
     
     @discardableResult
     public func add(_ type:RuleType, _ item: RuleLine) -> Bool{
-        
+
         var insertPosition = -1
-        for i in 0..<lines.count {
-            let line = lines[i]
+        for i in 0..<engine.lines.count {
+            let line = engine.lines[i]
             if let typeLine = line as? TypeItem {
                 if typeLine.itemType == type {
                     insertPosition = i
@@ -244,58 +238,58 @@ public class Rule: ASModel {
         }
         if insertPosition < 0 {
             let typeStr = "[\(type)]"
-            lines.append(TypeItem(typeStr))
-            insertPosition = lines.count - 1
+            engine.lines.append(TypeItem(typeStr))
+            insertPosition = engine.lines.count - 1
         }
-        
+
         switch type {
         case .General:
             var find = false
             if let generalItem = item as? GeneralItem {
-                for index in insertPosition..<lines.count {
-                    if let rule = lines[index] as? GeneralItem {
+                for index in insertPosition..<engine.lines.count {
+                    if let rule = engine.lines[index] as? GeneralItem {
                         if rule.key == generalItem.key {
-                            (lines[index] as? GeneralItem)?.value = generalItem.value
+                            (engine.lines[index] as? GeneralItem)?.value = generalItem.value
                             find = true
                         }
                     }
                 }
             }
             if !find {
-                lines.insert(item, at: insertPosition+1)
+                engine.lines.insert(item, at: insertPosition+1)
             }
             break
         case .Other,.Type:
             print("Inset shound not be \(type) !")
             return false
         default:
-            lines.insert(item, at: insertPosition+1)
+            engine.lines.insert(item, at: insertPosition+1)
             break
         }
         NotificationCenter.default.post(name: CurrentRuleDidChange, object: "add")
         return true
     }
-    
+
     @discardableResult
     public func move(from: Int, to:Int) -> Bool {
-        let line = lines[from]
+        let line = engine.lines[from]
         if from > to {
-            lines.remove(at: from)
-            lines.insert(line, at: to)
+            engine.lines.remove(at: from)
+            engine.lines.insert(line, at: to)
         }else{
-            lines.insert(line, at: to+1)
-            lines.remove(at: from)
+            engine.lines.insert(line, at: to+1)
+            engine.lines.remove(at: from)
         }
         NotificationCenter.default.post(name: CurrentRuleDidChange, object: "add")
         return true
     }
-    
+
     @discardableResult
     public func delete(_ type:RuleType, _ index: Int ) -> Bool{
-        if lines.count > index , index > 0 {
-            let item = lines[index]
+        if engine.lines.count > index , index > 0 {
+            let item = engine.lines[index]
             if item.lineType == type {
-                lines.remove(at: index)
+                engine.lines.remove(at: index)
             }else{
                 print("Delete error: \(item.lineType) != \(type)")
                 NotificationCenter.default.post(name: CurrentRuleDidChange, object: "delete")
@@ -309,14 +303,14 @@ public class Rule: ASModel {
         NotificationCenter.default.post(name: CurrentRuleDidChange, object: "delete")
         return true
     }
-    
+
     @discardableResult
     public func replace(_ type:RuleType, _ item: RuleLine, _ index: Int = -1) -> Bool{
-        if lines.count > index , index > 0 {
-            let line = lines[index]
+        if engine.lines.count > index , index > 0 {
+            let line = engine.lines[index]
             if line.lineType == type {
-                lines.remove(at: index)
-                lines.insert(item, at: index)
+                engine.lines.remove(at: index)
+                engine.lines.insert(item, at: index)
             }else{
                 print("Replace error: \(item.lineType) != \(type)")
                 NotificationCenter.default.post(name: CurrentRuleDidChange, object: "replace")
@@ -330,214 +324,29 @@ public class Rule: ASModel {
         NotificationCenter.default.post(name: CurrentRuleDidChange, object: "replace")
         return true
     }
-    
+
     public func configParse(){
-        lines.removeAll()
-        let allLines = _config.components(separatedBy: "\n")
-        var type:RuleType = .Other
-        for index in 0..<allLines.count {
-            let line = allLines[index]
-            if line.lowercased().starts(with: "[general]"){
-                lines.append(TypeItem(line))
-                type = .General
-                continue
-            }
-            if line.lowercased().starts(with: "[rule]") {
-                lines.append(TypeItem(line))
-                type = .Rule
-                continue
-            }
-            if line.lowercased().starts(with: "[host]") {
-                lines.append(TypeItem(line))
-                type = .Host
-                continue
-            }
-            
-            switch type {
-            case .General:
-                generalParse(line,index)
-                continue
-            case .Rule:
-                ruleParse(line, index)
-                continue
-            case .Host:
-                hostParse(line, index)
-                continue
-            case .Other:
-                otherParse(line, index)
-                continue
-            case .Type:
-                continue
-            }
-        }
+        engine.configParse(_config)
+        // Sync parsed general values back to Rule properties
+        _name = engine.name
+        _defaultStrategy = engine.defaultStrategy
+        _defaultBlacklistEnable = engine.defaultBlacklistEnable
+        _createTime = engine.createTime
+        _author = engine.author
+        _note = engine.note
     }
-    
-    func generalParse(_ line:String, _ index:Int){
-        GeneralItem.fromLine(line, success: { (generalLine) in
-            switch generalLine.key {
-            case "name":
-                _name = generalLine.value
-            case "default-strategy":
-                if let strategyType = Strategy(rawValue: generalLine.value.uppercased()) {
-                    _defaultStrategy = strategyType
-                }else{
-                    _defaultStrategy = .COPY
-                    generalLine.value = Strategy.COPY.rawValue
-                    print("Warning(\(index)): unknow strategy : \(generalLine.value) !")
-                }
-            case "default-direct-enable":
-                _defaultBlacklistEnable = generalLine.value == "true"
-            case "createtime":
-                _createTime = generalLine.value
-            case "author":
-                _author = generalLine.value
-            case "note":
-                _note = generalLine.value
-            default:
-                otherParse(line, index)
-                print("Warning(\(index)): unknow general key \(generalLine.key) !")
-                return
-            }
-            lines.append(generalLine)
-        }) { (errorStr) in
-            otherParse(line, index)
-            print("Warning(\(index)): is not general line \(errorStr ?? "")!")
-        }
-    }
-    
-    func ruleParse(_ line:String, _ index:Int){
-        RuleItem.fromLine(line, index, success: { (ruleLine) in
-            lines.append(ruleLine)
-        }) { (errorStr) in
-            otherParse(line, index)
-            print("Warning(\(index)): is not rule line \(errorStr ?? "")!")
-        }
-    }
-    
-    func hostParse(_ line:String, _ index:Int){
-        HostItem.fromLine(line, success: { (hostLine) in
-            lines.append(hostLine)
-        }) { (errorStr) in
-            otherParse(line, index)
-            print("Warning(\(index)): is not host line \(errorStr ?? "")!")
-        }
-    }
-    
-    func otherParse(_ line:String, _ index:Int){
-        lines.append(OtherItem(line))
-    }
-    
+
     public func saveToDB()  throws {
         _ = config  // 更新 _congig
         try save()
     }
-    
+
     public static func findRules() -> [Rule] {
         return Rule.findAll()
     }
-    
-    func matchingDefaultBlacklist(host: String,uri: String, target: String) -> Bool {
-        var fullUri = uri
-        if uri.hasPrefix("/") {
-            fullUri = host + uri
-        }
-        for item in defaulBlacklistRuleItems {
-            switch item.matchRule {
-            case .DOMAIN:
-                if host.lowercased() == item.value.lowercased() { return true }
-            case .DOMAINKEYWORD:
-                if host.lowercased().contains(item.value) || fullUri.lowercased().contains(item.value) { return true }
-            case .DOMAINSUFFIX:
-                if host.lowercased().hasSuffix(item.value.lowercased()) { return true }
-            case .URLREGEX:
-                guard (try? NSRegularExpression(pattern: item.value, options: .caseInsensitive)) != nil else {
-                    print("Invalid Regex")
-                    return false
-                }
-                let pred = NSPredicate(format: "SELF MATCHES %@", item.value)
-                if pred.evaluate(with: host) || pred.evaluate(with: fullUri) || pred.evaluate(with: fullUri.urlEncoded()) {
-                    return true
-                }
-            case .USERAGENT:
-                if target.lowercased().contains(item.value.lowercased()) || target.lowercased().contains(item.value.urlEncoded()){
-                    return true
-                }
-            case .NONE:
-                break
-            case .IPCIDR:
-                break
-            }
-        }
-        return false
-    }
-    
+
     public func matching(host: String,uri: String, target: String) -> Bool {
-        if defaultBlacklistEnable, defaultStrategy == .DIRECT {
-            // 匹配默认黑名单
-            if matchingDefaultBlacklist(host: host, uri: uri, target: target) {
-                print("命中默认黑名单:\n**********\n\(host)\n\(target)\n\(uri)\n**********")
-                return true
-            }
-        }
-        if _validRuleItems == nil {
-            _validRuleItems = validRuleItems
-        }
-        var fullUri = uri
-        if uri.hasPrefix("/") {
-            fullUri = host + uri
-        }
-        for item in _validRuleItems! {
-            switch item.matchRule {
-            case .DOMAIN:
-                if host.lowercased() == item.value.lowercased() {
-//                    print("命中DOMAIN(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-                    return true }
-            case .DOMAINKEYWORD:
-                if host.lowercased().contains(item.value) || fullUri.lowercased().contains(item.value) {
-//                    print("命中DOMAINKEYWORD(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-                    return true }
-            case .DOMAINSUFFIX:
-                if host.lowercased().hasSuffix(item.value.lowercased()) {
-//                    print("命中DOMAINSUFFIX(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-                    return true }
-            case .URLREGEX:
-                guard (try? NSRegularExpression(pattern: item.value, options: .caseInsensitive)) != nil else {
-                    print("Invalid Regex")
-                    return false
-                }
-                let pred = NSPredicate(format: "SELF MATCHES %@", item.value)
-                if pred.evaluate(with: host) || pred.evaluate(with: fullUri) || pred.evaluate(with: fullUri.urlEncoded()) {
-//                    print("命中URLREGEX(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-                    return true
-                }
-            case .USERAGENT:
-                if target.lowercased().contains(item.value.lowercased()) || target.lowercased().contains(item.value.urlEncoded()){
-//                    print("命中USERAGENT(\(item.value)):\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-                    return true
-                }
-            case .NONE:
-                break
-            case .IPCIDR:
-                break
-            }
-        }
-//        print("未命中:\n*************************\n\(host)\n\(target)\n\(uri)\n*************************")
-        return false
+        return engine.matching(host: host, uri: uri, target: target)
     }
-    
-}
 
-private extension String {
-    func urlEncoded() -> String {
-        guard let result = self.addingPercentEncoding(withAllowedCharacters: _allowedCharacters) else {
-            return "jfaongkxhaugksnxhghrkdghxgiajgnfkhnknxnkjiwoietoi"
-        }
-        return result
-    }
 }
-
-private var _allowedCharacters: CharacterSet = {
-    var allowed = CharacterSet.urlQueryAllowed
-    allowed.remove("+")
-    return allowed
-}()
