@@ -17,12 +17,14 @@ public class TaskDatabaseGroup {
     public let proto: Connection
     public let decoded: Connection
     public let state: Connection
+    public let connection: Connection
 
     // Serial write queues (one per database)
     public let transportWriteQueue: DispatchQueue
     public let protoWriteQueue: DispatchQueue
     public let decodedWriteQueue: DispatchQueue
     public let stateWriteQueue: DispatchQueue
+    public let connectionWriteQueue: DispatchQueue
 
     // FlowId generator (one per task)
     public let flowIdGenerator: FlowIdGenerator
@@ -42,9 +44,10 @@ public class TaskDatabaseGroup {
         proto = try Connection(PathManager.protocolDBPath(taskId, root: rootPath))
         decoded = try Connection(PathManager.decodedDBPath(taskId, root: rootPath))
         state = try Connection(PathManager.stateDBPath(taskId, root: rootPath))
+        connection = try Connection(PathManager.connectionDBPath(taskId, root: rootPath))
 
         // Configure PRAGMAs
-        for db in [transport, proto, decoded, state] {
+        for db in [transport, proto, decoded, state, connection] {
             try Self.configurePragmas(db, profile: profile)
         }
 
@@ -53,12 +56,14 @@ public class TaskDatabaseGroup {
         try ProtocolSchema.create(proto)
         try DecodedSchema.create(decoded)
         try StateSchema.create(state)
+        try ConnectionSchema.create(connection)
 
         // Create write queues
         transportWriteQueue = DispatchQueue(label: "db.transport.\(taskId)")
         protoWriteQueue = DispatchQueue(label: "db.proto.\(taskId)")
         decodedWriteQueue = DispatchQueue(label: "db.decoded.\(taskId)")
         stateWriteQueue = DispatchQueue(label: "db.state.\(taskId)")
+        connectionWriteQueue = DispatchQueue(label: "db.connection.\(taskId)")
     }
 
     static func configurePragmas(_ db: Connection, profile: PragmaProfile) throws {

@@ -25,6 +25,7 @@ final class DatabaseManagerTests: XCTestCase {
         XCTAssertNoThrow(try group.transport.scalar("SELECT COUNT(*) FROM packet"))
         XCTAssertNoThrow(try group.decoded.scalar("SELECT COUNT(*) FROM decoded_entry"))
         XCTAssertNoThrow(try group.state.scalar("SELECT COUNT(*) FROM task_stats"))
+        XCTAssertNoThrow(try group.connection.scalar("SELECT COUNT(*) FROM tcp_connection"))
         // Verify FlowIdGenerator is available
         let flowId = group.flowIdGenerator.next()
         XCTAssertFalse(flowId.isEmpty)
@@ -58,6 +59,7 @@ final class DatabaseManagerTests: XCTestCase {
         XCTAssertTrue(fm.fileExists(atPath: "\(helper.tempDir)/tasks/42/protocol.db"))
         XCTAssertTrue(fm.fileExists(atPath: "\(helper.tempDir)/tasks/42/decoded.db"))
         XCTAssertTrue(fm.fileExists(atPath: "\(helper.tempDir)/tasks/42/state.db"))
+        XCTAssertTrue(fm.fileExists(atPath: "\(helper.tempDir)/tasks/42/connection.db"))
         XCTAssertTrue(fm.fileExists(atPath: "\(helper.tempDir)/tasks/42/payloads/raw"))
         mgr.closeTask(42)
     }
