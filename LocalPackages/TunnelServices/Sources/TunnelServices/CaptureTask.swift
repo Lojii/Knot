@@ -131,29 +131,6 @@ public class CaptureTask: ASModel {
         }
     }
     
-    public static func findAll(taskIds:[Int]) -> [Session] {
-        if taskIds.count <= 0 { return [] }
-        let s = taskIds.map { (id) -> String in return "\(id)" }
-        let sql = "select * from session where taskID in ( \(s.joined(separator: ",")) )"
-        print("sql:\(sql)")
-        let db = try! ASConfigration.getDefaultDB()
-        var sessions = [Session]()
-        do {
-//            let startTime = CFAbsoluteTimeGetCurrent()
-            let result = try db.prepare(sql)
-            let columnNames:[String] = result.columnNames
-            for row in result {
-                let session = Session.getWith(columnNames: columnNames, row: row)
-                if session != nil { sessions.append(session!) }
-            }
-//            let endTime = CFAbsoluteTimeGetCurrent()
-//            print("查询时长：\((endTime - startTime)*1000) 毫秒" )
-        } catch  {
-            print("getAll error:\(error)")
-        }
-        return sessions
-    }
-    
     public static func getAllIds() -> [Int] {
         let sql = "select id from task"
         let db = try! ASConfigration.getDefaultDB()

@@ -7,11 +7,11 @@ import KnotUI
 struct KnotApp_iOS: App {
 
     init() {
-        // Setup database
-        ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: ProxyConfig.Database.sessionTableName)
+        // Initialize new storage layer (creates catalog.db and tables automatically)
+        _ = DatabaseManager.shared
 
-        // Create tables if not exist
-        try? Session.createTable()
+        // Legacy database setup (for Rule and other ActiveSQLite models still in use)
+        ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: ProxyConfig.Database.sessionTableName)
         try? CaptureTask.createTable()
         try? Rule.createTable()
 

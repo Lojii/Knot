@@ -164,80 +164,9 @@ public struct TCPFlags: OptionSet {
     public static let ack = TCPFlags(rawValue: 0x10)
 }
 
-// MARK: - Session Export
+// MARK: - PCAPExporter (Session-based methods removed; FlowRecord export is in SPM package)
 
 public class PCAPExporter {
-
-    /// Export a list of sessions to a .pcap file.
-    public static func export(sessions: [Session], to filePath: String) throws -> Int {
-        let writer = try PCAPWriter(filePath: filePath)
-        defer { writer.close() }
-
-        for session in sessions {
-            exportSession(session, writer: writer)
-        }
-        return writer.count
-    }
-
-    /// Export a single session as TCP packets.
-    private static func exportSession(_ session: Session, writer: PCAPWriter) {
-        let srcIP = session.localAddress?.components(separatedBy: ":").first ?? "127.0.0.1"
-        let dstIP = session.remoteAddress?.components(separatedBy: ":").first ?? "0.0.0.0"
-        let dstPort = UInt16(session.host?.components(separatedBy: ":").last.flatMap { UInt16($0) } ?? 80)
-        let srcPort = UInt16.random(in: 49152...65535)
-
-        let startTime = Date(timeIntervalSince1970: session.startTime?.doubleValue ?? Date().timeIntervalSince1970)
-
-        // Request
-        if let reqHeadData = session.reqLine?.data(using: .utf8) {
-            writer.writeTCPPacket(
-                timestamp: startTime,
-                srcIP: srcIP, srcPort: srcPort,
-                dstIP: dstIP, dstPort: dstPort,
-                payload: reqHeadData,
-                flags: [.psh, .ack]
-            )
-        }
-
-        if session.reqBody != "", let reqBodyData = readSessionFile(session.reqBody) {
-            let ts = Date(timeIntervalSince1970: session.reqEndTime?.doubleValue ?? startTime.timeIntervalSince1970)
-            writer.writeTCPPacket(
-                timestamp: ts,
-                srcIP: srcIP, srcPort: srcPort,
-                dstIP: dstIP, dstPort: dstPort,
-                payload: reqBodyData,
-                flags: [.psh, .ack]
-            )
-        }
-
-        // Response
-        if let rspLine = "\(session.reqHttpVersion ?? "HTTP/1.1") \(session.state ?? "200") \(session.rspMessage ?? "OK")".data(using: .utf8) {
-            let ts = Date(timeIntervalSince1970: session.rspStartTime?.doubleValue ?? startTime.timeIntervalSince1970)
-            writer.writeTCPPacket(
-                timestamp: ts,
-                srcIP: dstIP, srcPort: dstPort,
-                dstIP: srcIP, dstPort: srcPort,
-                payload: rspLine,
-                flags: [.psh, .ack]
-            )
-        }
-
-        if session.rspBody != "", let rspBodyData = readSessionFile(session.rspBody) {
-            let ts = Date(timeIntervalSince1970: session.rspEndTime?.doubleValue ?? startTime.timeIntervalSince1970)
-            writer.writeTCPPacket(
-                timestamp: ts,
-                srcIP: dstIP, srcPort: dstPort,
-                dstIP: srcIP, dstPort: srcPort,
-                payload: rspBodyData,
-                flags: [.psh, .ack]
-            )
-        }
-    }
-
-    private static func readSessionFile(_ path: String) -> Data? {
-        guard !path.isEmpty else { return nil }
-        return FileManager.default.contents(atPath: path)
-    }
 }
 
 // MARK: - PCAP Error
