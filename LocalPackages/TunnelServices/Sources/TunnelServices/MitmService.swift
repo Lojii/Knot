@@ -93,6 +93,8 @@ public class MitmService: NSObject {
         // 数据库设置
         ASConfigration.setDefaultDB(path: MitmService.getDBPath(), name: ProxyConfig.Database.sessionTableName)
         ASConfigration.logLevel = .error
+        // Initialize new storage layer (catalog.db + per-task databases)
+        _ = DatabaseManager.shared
         // 日志记录
         let directory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: GROUPNAME)
         if let tunnelDir = directory?.appendingPathComponent(ProxyConfig.Storage.tunnelLogFolder) {
