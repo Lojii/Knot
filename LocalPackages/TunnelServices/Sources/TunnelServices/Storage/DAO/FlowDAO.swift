@@ -140,6 +140,7 @@ public enum FlowDAO {
         db: Connection,
         protocolFilter: String? = nil,
         hostContains: String? = nil,
+        keyword: String? = nil,
         offset: Int = 0,
         limit: Int = 100
     ) throws -> [FlowRecord] {
@@ -153,6 +154,13 @@ public enum FlowDAO {
         if let host = hostContains {
             conditions.append("host LIKE ?")
             bindings.append("%\(host)%")
+        }
+        if let kw = keyword {
+            conditions.append("(host LIKE ? OR search_key2 LIKE ? OR summary LIKE ?)")
+            let pattern = "%\(kw)%"
+            bindings.append(pattern)
+            bindings.append(pattern)
+            bindings.append(pattern)
         }
 
         let whereClause = conditions.isEmpty ? "" : "WHERE \(conditions.joined(separator: " AND "))"
