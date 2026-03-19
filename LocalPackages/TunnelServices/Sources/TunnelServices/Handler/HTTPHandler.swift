@@ -56,9 +56,9 @@ class HTTPHandler : ChannelInboundHandler, RemovableChannelHandler {
 
             // 判断规则，是否拦截，copy等
             if !(proxyContext.request?.ssl ?? false) {
-                proxyContext.session.ignore = proxyContext.task.rule.matching(host: proxyContext.session.host,uri: head.uri, target: proxyContext.session.target)
+                proxyContext.session.ignore = proxyContext.task.ruleEngine.matching(host: proxyContext.session.host,uri: head.uri, target: proxyContext.session.target)
 //                print("HTTPHandler匹配")
-                if proxyContext.task.rule.defaultStrategy == .COPY {
+                if proxyContext.task.ruleEngine.defaultStrategy == .COPY {
                     proxyContext.session.ignore = !proxyContext.session.ignore
                 }
             }

@@ -82,10 +82,10 @@ public class SessionRecorder {
         session.reqType = head.headers["Content-Type"].first ?? ""
 
         if !isSSL {
-            session.ignore = task.rule.matching(
+            session.ignore = task.ruleEngine.matching(
                 host: session.host, uri: head.uri, target: session.target
             )
-            if task.rule.defaultStrategy == .COPY {
+            if task.ruleEngine.defaultStrategy == .COPY {
                 session.ignore = !session.ignore
             }
         }

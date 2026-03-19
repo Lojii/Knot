@@ -69,31 +69,34 @@ public class CaptureTask: ASModel {
     
     public static func newTask() -> CaptureTask{
         let task = CaptureTask()
-        // 获取或创建rule
-        var rule:Rule
-        if let currentRuleId = UserDefaults.standard.string(forKey: CurrentRuleId),
-            let currentRule = Rule.findAll(["id":NSNumber(value: Int(currentRuleId) ?? -1)]).first {
-            currentRule.configParse()
-            rule = currentRule
-        }else{ //
-            if let lastRule = Rule.findFirst(orders: ["id": false]) {
-                rule = lastRule
-                UserDefaults.standard.set("\(rule.id!)", forKey: CurrentRuleId)
-                UserDefaults.standard.synchronize()
-            }else{ // 创建一个
-                let newDefaultRule = Rule.defaultRule()
-                try? newDefaultRule.saveToDB()
-                NSLog("New Default Rule:%d",newDefaultRule.id ?? -1)
-                if let ruleid = newDefaultRule.id {
-                    UserDefaults.standard.set("\(ruleid)", forKey: CurrentRuleId)
-                    UserDefaults.standard.synchronize()
-                }
-                rule = newDefaultRule
+        // Load rule from catalog.db via CatalogDAO
+        let catalogDB = DatabaseManager.shared.catalogDB
+        let ruleRecord: RuleRecord? = {
+            if let currentRuleIdStr = UserDefaults.standard.string(forKey: CurrentRuleId),
+               let currentRuleId = Int64(currentRuleIdStr),
+               let record = try? CatalogDAO.findRule(db: catalogDB, id: currentRuleId) {
+                return record
             }
-        }
-        task.ruleEngine = RuleEngine(config: rule.config)
-        task.ruleName = rule.name
-        task.ruleId = rule.id
+            // Fall back to first available rule
+            if let first = (try? CatalogDAO.findAllRules(db: catalogDB))?.first {
+                UserDefaults.standard.set("\(first.id)", forKey: CurrentRuleId)
+                UserDefaults.standard.synchronize()
+                return first
+            }
+            // No rules exist — create a default one
+            if let newId = try? CatalogDAO.insertRule(
+                db: catalogDB, name: "Knot(Default)", config: "",
+                createdAt: Date().timeIntervalSince1970,
+                defaultStrategy: "DIRECT", blacklistEnabled: true, author: "Knot") {
+                UserDefaults.standard.set("\(newId)", forKey: CurrentRuleId)
+                UserDefaults.standard.synchronize()
+                return try? CatalogDAO.findRule(db: catalogDB, id: newId)
+            }
+            return nil
+        }()
+        task.ruleEngine = RuleEngine(config: ruleRecord?.config ?? "")
+        task.ruleName = ruleRecord?.name ?? "Knot(Default)"
+        task.ruleId = ruleRecord.map { NSNumber(value: $0.id) }
         //
         task.creatTime = NSNumber(value: Date().timeIntervalSince1970)
         let creatTimeStr = task.creatTime!.stringValue.components(separatedBy: ".")
@@ -225,29 +228,31 @@ public class CaptureTask: ASModel {
             task?.setNumbers()
             return task
         }
-        var rule:Rule
-        if let ruleid = task?.ruleId,let currentRule = Rule.findAll(["id":ruleid]).first {
-            if parseConfig {
-                currentRule.configParse()
+        // Load rule from catalog.db via CatalogDAO
+        let catalogDB = DatabaseManager.shared.catalogDB
+        let ruleRecord: RuleRecord? = {
+            if let ruleid = task?.ruleId,
+               let record = try? CatalogDAO.findRule(db: catalogDB, id: ruleid.int64Value) {
+                return record
             }
-            rule = currentRule
-        }else{ //
-            if let lastRule = Rule.findFirst(orders: ["id": false]) {
-                rule = lastRule
-                UserDefaults.standard.set("\(rule.id!)", forKey: CurrentRuleId)
+            // Fall back to first available rule
+            if let first = (try? CatalogDAO.findAllRules(db: catalogDB))?.first {
+                UserDefaults.standard.set("\(first.id)", forKey: CurrentRuleId)
                 UserDefaults.standard.synchronize()
-            }else{ // 创建一个
-                let newDefaultRule = Rule.defaultRule()
-                try? newDefaultRule.saveToDB()
-                NSLog("New Default Rule:%d",newDefaultRule.id ?? -1)
-                if let ruleid = newDefaultRule.id {
-                    UserDefaults.standard.set("\(ruleid)", forKey: CurrentRuleId)
-                    UserDefaults.standard.synchronize()
-                }
-                rule = newDefaultRule
+                return first
             }
-        }
-        task?.ruleEngine = RuleEngine(config: rule.config)
+            // No rules exist — create a default one
+            if let newId = try? CatalogDAO.insertRule(
+                db: catalogDB, name: "Knot(Default)", config: "",
+                createdAt: Date().timeIntervalSince1970,
+                defaultStrategy: "DIRECT", blacklistEnabled: true, author: "Knot") {
+                UserDefaults.standard.set("\(newId)", forKey: CurrentRuleId)
+                UserDefaults.standard.synchronize()
+                return try? CatalogDAO.findRule(db: catalogDB, id: newId)
+            }
+            return nil
+        }()
+        task?.ruleEngine = RuleEngine(config: ruleRecord?.config ?? "")
         if parseConfig {
             task?.loadCACert()
             task?.addSender()

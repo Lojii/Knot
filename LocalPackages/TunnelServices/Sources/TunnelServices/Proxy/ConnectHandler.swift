@@ -53,10 +53,10 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         recorder.session.schemes = "Https"
 
         // Apply rule matching
-        recorder.session.ignore = task.rule.matching(
+        recorder.session.ignore = task.ruleEngine.matching(
             host: recorder.session.host ?? "", uri: head.uri, target: recorder.session.target ?? ""
         )
-        if task.rule.defaultStrategy == .COPY {
+        if task.ruleEngine.defaultStrategy == .COPY {
             recorder.session.ignore = !recorder.session.ignore
         }
 

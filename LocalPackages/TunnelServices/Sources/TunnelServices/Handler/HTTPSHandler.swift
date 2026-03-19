@@ -91,9 +91,9 @@ class HTTPSHandler: ChannelInboundHandler, RemovableChannelHandler {
                     context.channel.close(mode: .all,promise: nil)
                 }
                 // 判断规则，是否拦截，copy等
-                proxyContext.session.ignore = proxyContext.task.rule.matching(host: proxyContext.session.host,uri: head.uri, target: proxyContext.session.target)
+                proxyContext.session.ignore = proxyContext.task.ruleEngine.matching(host: proxyContext.session.host,uri: head.uri, target: proxyContext.session.target)
 //                print("HTTPSHandler匹配")
-                if proxyContext.task.rule.defaultStrategy == .COPY {
+                if proxyContext.task.ruleEngine.defaultStrategy == .COPY {
                     proxyContext.session.ignore = !proxyContext.session.ignore
                 }
                 if proxyContext.task.sslEnable == 1, !proxyContext.session.ignore {
