@@ -238,6 +238,82 @@ public class PCAPExporter {
         guard !path.isEmpty else { return nil }
         return FileManager.default.contents(atPath: path)
     }
+
+    // MARK: - FlowRecord Export
+
+    /// Export a list of FlowRecords to a .pcap file.
+    public static func export(flows: [FlowRecord], to filePath: String) throws -> Int {
+        let writer = try PCAPWriter(filePath: filePath)
+        defer { writer.close() }
+
+        for flow in flows {
+            exportFlow(flow, writer: writer)
+        }
+        return writer.count
+    }
+
+    /// Export a single FlowRecord as TCP packets.
+    private static func exportFlow(_ flow: FlowRecord, writer: PCAPWriter) {
+        // Extract IPs from metadata, fall back to defaults
+        let srcIP = (flow.metadata["localAddress"] as? String)?.components(separatedBy: ":").first ?? "127.0.0.1"
+        let dstIP = (flow.metadata["remoteAddress"] as? String)?.components(separatedBy: ":").first ?? "0.0.0.0"
+        let dstPort = UInt16(flow.port)
+        let srcPort = UInt16.random(in: 49152...65535)
+
+        let startTime = Date(timeIntervalSince1970: flow.startedAt)
+
+        // Request header line from metadata or synthesize from search keys
+        let reqLine = (flow.metadata["reqLine"] as? String)
+            ?? "\(flow.searchKey1) \(flow.searchKey2) HTTP/1.1\r\nHost: \(flow.host)\r\n\r\n"
+        if let reqHeadData = reqLine.data(using: .utf8) {
+            writer.writeTCPPacket(
+                timestamp: startTime,
+                srcIP: srcIP, srcPort: srcPort,
+                dstIP: dstIP, dstPort: dstPort,
+                payload: reqHeadData,
+                flags: [.psh, .ack]
+            )
+        }
+
+        // Request body
+        if !flow.reqPayloadRef.isEmpty, let reqBodyData = readSessionFile(flow.reqPayloadRef) {
+            let ts = Date(timeIntervalSince1970: flow.reqEndAt ?? flow.startedAt)
+            writer.writeTCPPacket(
+                timestamp: ts,
+                srcIP: srcIP, srcPort: srcPort,
+                dstIP: dstIP, dstPort: dstPort,
+                payload: reqBodyData,
+                flags: [.psh, .ack]
+            )
+        }
+
+        // Response status line
+        let httpVersion = (flow.metadata["rspHttpVersion"] as? String) ?? "HTTP/1.1"
+        let statusCode = flow.searchKey3.isEmpty ? "200" : flow.searchKey3
+        let statusMessage = (flow.metadata["rspMessage"] as? String) ?? "OK"
+        if let rspLine = "\(httpVersion) \(statusCode) \(statusMessage)".data(using: .utf8) {
+            let ts = Date(timeIntervalSince1970: flow.rspStartAt ?? flow.startedAt)
+            writer.writeTCPPacket(
+                timestamp: ts,
+                srcIP: dstIP, srcPort: dstPort,
+                dstIP: srcIP, dstPort: srcPort,
+                payload: rspLine,
+                flags: [.psh, .ack]
+            )
+        }
+
+        // Response body
+        if !flow.rspPayloadRef.isEmpty, let rspBodyData = readSessionFile(flow.rspPayloadRef) {
+            let ts = Date(timeIntervalSince1970: flow.endedAt ?? flow.startedAt)
+            writer.writeTCPPacket(
+                timestamp: ts,
+                srcIP: dstIP, srcPort: dstPort,
+                dstIP: srcIP, dstPort: srcPort,
+                payload: rspBodyData,
+                flags: [.psh, .ack]
+            )
+        }
+    }
 }
 
 // MARK: - PCAP Error
