@@ -12,7 +12,7 @@ import Foundation
 /// Lightweight runtime configuration holder for a capture task.
 /// Holds certificate management, rule engine, proxy config, and IPC —
 /// everything handlers need at runtime — without any database (ASModel) coupling.
-public class TaskConfig {
+public class TaskConfig: TaskProviding {
 
     public let taskId: Int64
 
@@ -64,6 +64,16 @@ public class TaskConfig {
     public func getFullPath(storeFolder: String) -> String {
         return storeFolder + fileFolder
     }
+
+    // MARK: - TaskProviding conformance
+
+    public var taskCertManager: CertManager { certManager }
+
+    public func matchesRule(host: String, uri: String, target: String) -> Bool {
+        return ruleEngine.matching(host: host, uri: uri, target: target)
+    }
+
+    public var defaultStrategy: Strategy { ruleEngine.defaultStrategy }
 
     /// Create the file folder on disk if it doesn't already exist.
     public func createFileFolder(storeFolder: String) {

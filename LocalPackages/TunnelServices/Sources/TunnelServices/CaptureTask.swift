@@ -323,3 +323,17 @@ public class CaptureTask: ASModel {
 extension CaptureTask: GCDAsyncUdpSocketDelegate {
 
 }
+
+// MARK: - TaskProviding conformance
+
+extension CaptureTask: TaskProviding {
+    public var taskId: Int64 { id?.int64Value ?? 0 }
+    public var taskCertManager: CertManager { certManager }
+    public var sslEnabled: Bool { sslEnable.intValue == 1 }
+    public var localEnabled: Bool { localEnable.intValue == 1 }
+    public var wifiEnabled: Bool { wifiEnable.intValue == 1 }
+    public func matchesRule(host: String, uri: String, target: String) -> Bool {
+        return rule?.matching(host: host, uri: uri, target: target) ?? false
+    }
+    public var defaultStrategy: Strategy { rule?.defaultStrategy ?? .DIRECT }
+}
