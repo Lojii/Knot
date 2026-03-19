@@ -56,6 +56,10 @@ public enum PathManager {
         "\(taskDirectory(taskId, root: root))/state.db"
     }
 
+    public static func connectionDBPath(_ taskId: Int64, root: String? = nil) -> String {
+        "\(taskDirectory(taskId, root: root))/connection.db"
+    }
+
     // MARK: - Payloads
 
     public static func payloadsDirectory(_ taskId: Int64, root: String? = nil) -> String {

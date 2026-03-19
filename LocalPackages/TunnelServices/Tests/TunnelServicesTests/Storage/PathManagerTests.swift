@@ -37,6 +37,11 @@ final class PathManagerTests: XCTestCase {
         XCTAssertTrue(path.hasSuffix("/tasks/42/state.db"))
     }
 
+    func testConnectionDBPath() {
+        let path = PathManager.connectionDBPath(42, root: helper.tempDir)
+        XCTAssertTrue(path.hasSuffix("/tasks/42/connection.db"))
+    }
+
     func testRawPayloadPath() {
         let path = PathManager.rawPayloadPath(taskId: 1, ref: "123_0001_req.bin", root: helper.tempDir)
         XCTAssertTrue(path.hasSuffix("/tasks/1/payloads/raw/123_0001_req.bin"))
