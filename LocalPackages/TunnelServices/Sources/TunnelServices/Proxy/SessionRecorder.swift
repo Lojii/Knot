@@ -24,6 +24,7 @@ public class SessionRecorder {
     private var dbGroup: TaskDatabaseGroup?
     private var flowId: String?
     private var taskId: Int64 = 0
+    private var tcpRecord: TcpConnectionRecord?
 
     public init(task: CaptureTask) {
         self.task = task
@@ -118,7 +119,30 @@ public class SessionRecorder {
         try? session.saveToDB()
 
         // Dual-write: record connection timing
-        httpRecorder?.recordConnected(at: Date().timeIntervalSince1970)
+        let now = Date().timeIntervalSince1970
+        httpRecorder?.recordConnected(at: now)
+
+        // Dual-write: create TCP connection record in connection.db
+        if let fid = flowId, let group = dbGroup {
+            let srcIp = session.localAddress ?? ""
+            let dstIp = Session.getIPAddress(socketAddress: remoteAddress)
+            let dstPort = remoteAddress?.port ?? 0
+            var record = TcpConnectionRecord(
+                flowId: fid,
+                srcIp: srcIp,
+                srcPort: 0,
+                dstIp: dstIp,
+                dstPort: dstPort,
+                startedAt: session.startTime?.doubleValue ?? now,
+                state: "open",
+                establishedAt: now
+            )
+            record.tlsSni = session.host ?? ""
+            self.tcpRecord = record
+            group.connectionWriteQueue.async {
+                try? TcpConnectionDAO.insertOrUpdate(db: group.connection, record: record)
+            }
+        }
     }
 
     public func recordHandshakeComplete() {
@@ -126,6 +150,15 @@ public class SessionRecorder {
 
         // Dual-write: record TLS timing
         httpRecorder?.recordTLSDone(at: Date().timeIntervalSince1970)
+
+        // Dual-write: update TCP connection with TLS info in connection.db
+        if var record = tcpRecord, let group = dbGroup {
+            record.state = "established"
+            self.tcpRecord = record
+            group.connectionWriteQueue.async {
+                try? TcpConnectionDAO.insertOrUpdate(db: group.connection, record: record)
+            }
+        }
     }
 
     public func recordConnectionError(_ error: Error, host: String, port: Int) {
@@ -223,6 +256,19 @@ public class SessionRecorder {
             let flowRecord = recorder.buildFlowRecord()
             try? FlowDAO.insert(db: group.proto, record: flowRecord)
         }
+
+        // Dual-write: update TCP connection state to closed in connection.db
+        if var record = tcpRecord, let group = dbGroup {
+            record.state = "closed"
+            record.closedAt = Date().timeIntervalSince1970
+            record.bytesOut = Int64(session.uploadTraffic.intValue)
+            record.bytesIn = Int64(session.downloadFlow.intValue)
+            self.tcpRecord = record
+            group.connectionWriteQueue.async {
+                try? TcpConnectionDAO.insertOrUpdate(db: group.connection, record: record)
+            }
+        }
+
         // Release database group ref
         if taskId > 0 {
             DatabaseManager.shared.closeTask(taskId)
