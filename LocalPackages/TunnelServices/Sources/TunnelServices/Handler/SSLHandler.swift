@@ -71,9 +71,10 @@ class SSLHandler: ChannelInboundHandler,RemovableChannelHandler {
 //                _ = context.channel.close()
 //                return
 //            }
-            guard let rsaKey = proxyContext.task.rsakey,
-                  let x509CACert = proxyContext.task.x509CACert,
-                  let rsaSigningKey = proxyContext.task.rsaSigningKey else {
+            guard let certMgr = proxyContext.task.certManager,
+                  let rsaKey = certMgr.rsakey,
+                  let x509CACert = certMgr.x509CACert,
+                  let rsaSigningKey = certMgr.rsaSigningKey else {
                 AxLogger.log("证书为空！！！", level: .Error)
                 proxyContext.session.sstate = "failure"
                 proxyContext.session.note = "error:Certificate or key is nil"
@@ -87,7 +88,7 @@ class SSLHandler: ChannelInboundHandler,RemovableChannelHandler {
             }
             let host = request.host
             // 通过 CA 证书给域名动态签发证书 (pure Swift)
-            var niosslCert = proxyContext.task.certPool[host]
+            var niosslCert = certMgr.certPool[host]
             if niosslCert == nil {
                 do {
                     let x509Cert = try CertGenerator.generateCert(
@@ -95,7 +96,7 @@ class SSLHandler: ChannelInboundHandler,RemovableChannelHandler {
                     )
                     niosslCert = try CertGenerator.toNIOSSL(x509Cert)
                     if let c = niosslCert {
-                        proxyContext.task.certPool.set(c, forKey: host)
+                        certMgr.certPool.set(c, forKey: host)
                     }
                 } catch {
                     AxLogger.log("Failed to generate cert for \(host): \(error)", level: .Error)

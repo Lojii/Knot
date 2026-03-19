@@ -46,16 +46,17 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         }
 
         // Generate or retrieve cached certificate
-        guard let x509CACert = task.x509CACert,
-              let rsaSigningKey = task.rsaSigningKey,
-              let rsaKey = task.rsakey else {
+        guard let certMgr = task.certManager,
+              let x509CACert = certMgr.x509CACert,
+              let rsaSigningKey = certMgr.rsaSigningKey,
+              let rsaKey = certMgr.rsakey else {
             AxLogger.log("Certificates not loaded for \(host)", level: .Error)
             recorder.recordError("error:certificates not loaded")
             context.channel.close(mode: .all, promise: nil)
             return
         }
 
-        var niosslCert = task.certPool[host]
+        var niosslCert = certMgr.certPool[host]
         if niosslCert == nil {
             do {
                 let x509Cert = try CertGenerator.generateCert(
@@ -63,7 +64,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
                 )
                 niosslCert = try CertGenerator.toNIOSSL(x509Cert)
                 if let cert = niosslCert {
-                    task.certPool.set(cert, forKey: host)
+                    certMgr.certPool.set(cert, forKey: host)
                 }
             } catch {
                 AxLogger.log("Failed to generate cert for \(host): \(error)", level: .Error)

@@ -8,10 +8,6 @@
 
 import Foundation
 import NIO
-import NIOSSL
-import X509
-import Crypto
-import _CryptoExtras
 import CocoaAsyncSocket
 import SQLite
 
@@ -61,14 +57,8 @@ public class CaptureTask: ASModel {
     public var fileFolder:String = ""  // 保存文件的文件夹  以Task.id命名的文件夹
     
     public var rule:Rule!
-    // NIOSSL types (for TLS handlers)
-    public var cacert:NIOSSLCertificate!
-    public var cakey:NIOSSLPrivateKey!
-    public var rsakey:NIOSSLPrivateKey!
-    // swift-certificates types (for cert generation)
-    public var x509CACert: Certificate!
-    public var rsaSigningKey: _RSA.Signing.PrivateKey!
-    public var certPool: ThreadSafeCertPool!
+    // Certificate management (CA cert, private key, cert pool)
+    public var certManager: CertManager!
     public var ipc: AppGroupIPC?
     var udpSocket : GCDAsyncUdpSocket?
     
@@ -288,16 +278,7 @@ public class CaptureTask: ASModel {
     }
     
     func loadCACert(){
-        certPool = ThreadSafeCertPool()
-        let store = CertStore()
-        cacert = store.cacert
-        cakey = store.cakey
-        rsakey = store.rsakey
-        x509CACert = store.x509CACert
-        rsaSigningKey = store.rsaSigningKey
-        if !store.isValid {
-            AxLogger.log("CertStore: some certificates failed to load", level: .Error)
-        }
+        certManager = CertManager()
     }
     
     func addSender(){
