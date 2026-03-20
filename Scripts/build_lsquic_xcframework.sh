@@ -120,6 +120,7 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
         -DCMAKE_SYSTEM_NAME=Darwin \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+        -DBORINGSSL_PREFIX=lsquic_ \
         -DBUILD_SHARED_LIBS=OFF \
         2>&1 | tail -10
     cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -5
@@ -137,6 +138,7 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
         -DBORINGSSL_DIR="$BSSL_MACOS" \
         -DBORINGSSL_INCLUDE="$WORK_DIR/lsquic/third_party/boringssl/include" \
+        -DCMAKE_C_FLAGS="-DBORINGSSL_PREFIX=lsquic_" \
         -DLSQUIC_BIN=OFF \
         -DLSQUIC_TESTS=OFF \
         2>&1 | tail -10
