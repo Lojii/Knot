@@ -23,8 +23,26 @@ public final class ProtocolRegistry {
 
     static func buildDefault() -> [ProtocolNode] {
         return [
-            ProtocolNode(plugin: RootPlugin(id: "tcp", displayName: "TCP")),
-            ProtocolNode(plugin: RootPlugin(id: "udp", displayName: "UDP")),
+            // TCP root
+            ProtocolNode(plugin: RootPlugin(id: "tcp", displayName: "TCP"), children: [
+                ProtocolNode(plugin: HTTP1Plugin(), children: [
+                    ProtocolNode(plugin: WebSocketPlugin(), children: []),
+                ]),
+                ProtocolNode(plugin: TLSPlugin(), children: [
+                    ProtocolNode(plugin: HTTP1Plugin(), children: [
+                        ProtocolNode(plugin: WebSocketPlugin(), children: []),
+                    ]),
+                    ProtocolNode(plugin: HTTP2Plugin(), children: [
+                        ProtocolNode(plugin: GRPCPlugin(), children: []),
+                    ]),
+                ]),
+                ProtocolNode(plugin: SOCKS5Plugin(), children: []),
+            ]),
+
+            // UDP root
+            ProtocolNode(plugin: RootPlugin(id: "udp", displayName: "UDP"), children: [
+                ProtocolNode(plugin: DNSPlugin(), children: []),
+            ]),
         ]
     }
 }

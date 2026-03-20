@@ -31,11 +31,33 @@ final class ProtocolRegistryTests: XCTestCase {
     // MARK: - testTCPChildrenAccessor
 
     func testTCPChildrenAccessor() {
-        // Initially no children have been registered — verify accessor doesn't crash
-        // and returns an empty array.
+        // Verify accessor returns children without crashing.
         let children = ProtocolRegistry.shared.tcpChildren
         XCTAssertNotNil(children)
-        XCTAssertTrue(children.isEmpty)
+        XCTAssertFalse(children.isEmpty)
+    }
+
+    // MARK: - testTCPChildrenContainsHTTP1
+
+    func testTCPChildrenContainsHTTP1() {
+        let children = ProtocolRegistry.shared.tcpChildren
+        let ids = children.map { $0.plugin.id }
+        XCTAssertTrue(ids.contains("http1"), "TCP children should include http1")
+        XCTAssertTrue(ids.contains("tls"),   "TCP children should include tls")
+        XCTAssertTrue(ids.contains("socks5"), "TCP children should include socks5")
+    }
+
+    // MARK: - testTLSChildrenContainsHTTP1AndHTTP2
+
+    func testTLSChildrenContainsHTTP1AndHTTP2() {
+        let tcpChildren = ProtocolRegistry.shared.tcpChildren
+        guard let tlsNode = tcpChildren.first(where: { $0.plugin.id == "tls" }) else {
+            XCTFail("Expected a TLS node under TCP")
+            return
+        }
+        let tlsChildIds = tlsNode.children.map { $0.plugin.id }
+        XCTAssertTrue(tlsChildIds.contains("http1"), "TLS children should include http1")
+        XCTAssertTrue(tlsChildIds.contains("http2"), "TLS children should include http2")
     }
 
     // MARK: - testRootPluginNeverMatches
