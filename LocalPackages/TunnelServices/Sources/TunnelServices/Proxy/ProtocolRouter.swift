@@ -51,8 +51,8 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
             // Plain HTTP request
             configureHTTPPipeline(context: context)
         } else if isTLSClientHello(buffer) {
-            // Direct TLS connection (rare - usually comes via CONNECT)
-            configureTunnelPipeline(context: context)
+            // Direct TLS connection — extract SNI and MITM or tunnel
+            configureDirectTLSPipeline(context: context, buffer: buffer)
         } else {
             // Unknown protocol — still record the connection attempt
             configureRawPipeline(context: context, firstBytes: buffer)
@@ -83,9 +83,89 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
         _ = context.pipeline.addHandler(ConnectHandler(task: task, recorder: recorder), name: "https.connect")
     }
 
-    private func configureTunnelPipeline(context: ChannelHandlerContext) {
+    private func configureDirectTLSPipeline(context: ChannelHandlerContext, buffer: ByteBuffer) {
         let recorder = SessionRecorder(task: task)
-        _ = context.pipeline.addHandler(TunnelHandler(recorder: recorder, task: task), name: "tunnel")
+
+        // Extract SNI from ClientHello to get the target host
+        let sni = extractSNI(from: buffer)
+        let host = sni ?? "unknown"
+        let port = 443
+
+        recorder.session.host = host
+        recorder.session.schemes = "HTTPS"
+        recorder.recordRequestHead(
+            HTTPRequestHead(version: .http1_1, method: .CONNECT, uri: "\(host):\(port)"),
+            localAddress: context.channel.remoteAddress, isSSL: true
+        )
+
+        let shouldIntercept = task.sslEnable == 1 && !task.ruleEngine.matching(host: host, uri: "/", target: "")
+
+        if shouldIntercept && sni != nil {
+            // MITM: we have the host from SNI, generate dynamic cert
+            let mitmHandler = MITMHandler(task: task, recorder: recorder, host: host, port: port)
+            _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
+        } else {
+            // Tunnel passthrough with TLS sniff
+            recorder.session.schemes = "HTTPS(Tunnel)"
+            recorder.ensureHttpRecorder(
+                host: host, port: port,
+                protocolOverride: "HTTPS",
+                method: "DIRECT TLS", uri: host,
+                extraMetadata: ["encrypted": true, "decrypted": false]
+            )
+            _ = context.pipeline.addHandler(
+                TLSClientSniffHandler(recorder: recorder), name: "tls.sniff.client", position: .first
+            )
+            let tunnel = TunnelHandler(recorder: recorder, task: task, targetHost: host, targetPort: port)
+            _ = context.pipeline.addHandler(tunnel, name: "tunnel")
+        }
+    }
+
+    /// Extract SNI (Server Name Indication) from a TLS ClientHello.
+    private func extractSNI(from buffer: ByteBuffer) -> String? {
+        // TLS record: type(1) + version(2) + length(2)
+        // Handshake: type(1) + length(3)
+        // ClientHello: version(2) + random(32) + sessionId(var) + cipherSuites(var) + compression(var) + extensions
+        guard buffer.readableBytes >= 43 else { return nil }
+        let base = buffer.readerIndex
+
+        // Verify TLS handshake + ClientHello
+        guard buffer.getInteger(at: base, as: UInt8.self) == 22,      // Handshake
+              buffer.getInteger(at: base + 5, as: UInt8.self) == 1     // ClientHello
+        else { return nil }
+
+        var pos = base + 5 + 4 + 2 + 32 // skip record(5) + hs header(4) + version(2) + random(32)
+        guard pos < base + buffer.readableBytes else { return nil }
+
+        // Skip session ID
+        let sidLen = Int(buffer.getInteger(at: pos, as: UInt8.self) ?? 0)
+        pos += 1 + sidLen
+
+        // Skip cipher suites
+        guard pos + 2 <= base + buffer.readableBytes else { return nil }
+        let csLen = Int(buffer.getInteger(at: pos, as: UInt16.self) ?? 0)
+        pos += 2 + csLen
+
+        // Skip compression
+        guard pos + 1 <= base + buffer.readableBytes else { return nil }
+        let compLen = Int(buffer.getInteger(at: pos, as: UInt8.self) ?? 0)
+        pos += 1 + compLen
+
+        // Extensions
+        guard pos + 2 <= base + buffer.readableBytes else { return nil }
+        let extTotalLen = Int(buffer.getInteger(at: pos, as: UInt16.self) ?? 0)
+        pos += 2
+        let extEnd = pos + extTotalLen
+
+        while pos + 4 <= extEnd && pos + 4 <= base + buffer.readableBytes {
+            let extType = buffer.getInteger(at: pos, as: UInt16.self) ?? 0
+            let extLen = Int(buffer.getInteger(at: pos + 2, as: UInt16.self) ?? 0)
+            if extType == 0x0000 { // SNI
+                return TLSSniffUtils.parseSNI(buffer, offset: pos + 4, length: extLen)
+            }
+            pos += 4 + extLen
+        }
+        return nil
     }
 
     private func configureRawPipeline(context: ChannelHandlerContext, firstBytes: ByteBuffer) {
