@@ -44,6 +44,7 @@ SIM_SDK=$(xcrun --sdk iphonesimulator --show-sdk-path)
 if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
     # Step 3: Build for iOS device
     echo "--- Build for iOS device (aarch64-apple-ios) ---"
+    export IPHONEOS_DEPLOYMENT_TARGET=15.0
     export CFLAGS="-isysroot $IOS_SDK"
     export CARGO_TARGET_AARCH64_APPLE_IOS_LINKER=$(xcrun --sdk iphoneos --find clang)
     export CC_aarch64_apple_ios="$(xcrun --sdk iphoneos --find clang)"
