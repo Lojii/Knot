@@ -59,7 +59,8 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
 
     # Step 4: Build for iOS Simulator
     echo "--- Build for iOS Simulator (aarch64-apple-ios-sim) ---"
-    export CFLAGS="-isysroot $SIM_SDK"
+    unset CARGO_TARGET_AARCH64_APPLE_IOS_LINKER CC_aarch64_apple_ios AR_aarch64_apple_ios 2>/dev/null || true
+    export CFLAGS="-isysroot $SIM_SDK -target arm64-apple-ios15.0-simulator"
     export CARGO_TARGET_AARCH64_APPLE_IOS_SIM_LINKER=$(xcrun --sdk iphonesimulator --find clang)
     export CC_aarch64_apple_ios_sim="$(xcrun --sdk iphonesimulator --find clang)"
     export AR_aarch64_apple_ios_sim="$(xcrun --sdk iphonesimulator --find ar)"
