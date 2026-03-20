@@ -73,8 +73,10 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_SYSTEM_NAME=iOS \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
         -DBUILD_SHARED_LIBS=OFF \
-        2>&1 | tail -3
-    cmake --build . --config Release -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_MACOSX_BUNDLE=OFF \
+        2>&1 | tail -5
+    cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
     BSSL_IOS="$BUILD_DIR/boringssl-ios"
 
     # Step 3: Build lsquic for iOS device
@@ -107,8 +109,10 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_C_FLAGS="-target arm64-apple-ios15.0-simulator" \
         -DCMAKE_ASM_FLAGS="-target arm64-apple-ios15.0-simulator" \
         -DBUILD_SHARED_LIBS=OFF \
-        2>&1 | tail -3
-    cmake --build . --config Release -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_MACOSX_BUNDLE=OFF \
+        2>&1 | tail -5
+    cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
     BSSL_SIM_BUILD="$BUILD_DIR/boringssl-sim"
 
     # Step 5: Build lsquic for Simulator
@@ -135,13 +139,13 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
     mkdir -p "$BUILD_DIR/merged"
     libtool -static -o "$BUILD_DIR/merged/liblsquic-ios.a" \
         "$IOS_LIB" \
-        "$BSSL_IOS/ssl/libssl.a" \
-        "$BSSL_IOS/crypto/libcrypto.a"
+        "$BSSL_IOS/libssl.a" \
+        "$BSSL_IOS/libcrypto.a"
 
     libtool -static -o "$BUILD_DIR/merged/liblsquic-sim.a" \
         "$SIM_LIB" \
-        "$BSSL_SIM_BUILD/ssl/libssl.a" \
-        "$BSSL_SIM_BUILD/crypto/libcrypto.a"
+        "$BSSL_SIM_BUILD/libssl.a" \
+        "$BSSL_SIM_BUILD/libcrypto.a"
 fi
 
 if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
@@ -158,6 +162,8 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_C_FLAGS="-fvisibility=hidden" \
         -DCMAKE_CXX_FLAGS="-fvisibility=hidden -fvisibility-inlines-hidden" \
         -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_TESTING=OFF \
+        -DCMAKE_MACOSX_BUNDLE=OFF \
         2>&1 | tail -10
     cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -5
     BSSL_MACOS="$BUILD_DIR/boringssl-macos"
