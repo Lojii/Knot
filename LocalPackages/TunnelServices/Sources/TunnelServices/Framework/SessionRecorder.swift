@@ -23,6 +23,7 @@ public class SessionRecorder {
 
     // New storage system
     private var httpRecorder: HTTPRecorder?
+    private var _protocolRecorder: ProtocolRecorder?
     private var reqPayloadWriter: PayloadWriter?
     private var rspPayloadWriter: PayloadWriter?
     private var dbGroup: TaskDatabaseGroup?
@@ -305,6 +306,15 @@ public class SessionRecorder {
         )
     }
 
+    /// Set the protocol-specific recorder. Called by leaf plugins.
+    public func setProtocolRecorder(_ recorder: ProtocolRecorder) {
+        self._protocolRecorder = recorder
+        // Also set httpRecorder for backward compat
+        if let httpRec = recorder as? HTTPRecorder {
+            self.httpRecorder = httpRec
+        }
+    }
+
     // MARK: - Raw / Unknown Protocol Recording
 
     /// Record a connection with an unrecognized protocol. Creates a minimal FlowRecord
@@ -359,7 +369,7 @@ public class SessionRecorder {
         }
 
         // Build FlowRecord and insert into protocol.db
-        if let recorder = httpRecorder, let group = dbGroup {
+        if let recorder = _protocolRecorder ?? httpRecorder, let group = dbGroup {
             let flowRecord = recorder.buildFlowRecord()
             try? FlowDAO.insert(db: group.proto, record: flowRecord)
         }
