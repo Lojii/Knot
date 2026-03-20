@@ -53,18 +53,6 @@ public struct MatchContext {
     }
 }
 
-// MARK: - ProtocolNode (minimal stub; full definition lives in Task 3)
-
-/// A node in the protocol-detection tree.
-/// This stub exists so `ProtocolContext` can reference it before Task 3 is complete.
-public struct ProtocolNode {
-    public let plugin: any ProtocolPlugin
-
-    public init(plugin: any ProtocolPlugin) {
-        self.plugin = plugin
-    }
-}
-
 // MARK: - ProtocolContext
 
 /// Full context passed to a plugin when it is asked to build its NIO pipeline.
