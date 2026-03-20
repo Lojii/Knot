@@ -18,10 +18,14 @@ final class macOSCertificateService: CertificateServiceProtocol {
     // MARK: - CertificateServiceProtocol
 
     func installCertificate() async throws {
-        guard let certURL = MitmService.getCertPath() else {
+        guard let certDir = MitmService.getCertPath() else {
             throw CertError.certNotFound
         }
-        let certData = try Data(contentsOf: certURL)
+        let certFileURL = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER)
+        guard FileManager.default.fileExists(atPath: certFileURL.path) else {
+            throw CertError.certNotFound
+        }
+        let certData = try Data(contentsOf: certFileURL)
         guard let certRef = SecCertificateCreateWithData(nil, certData as CFData) else {
             throw CertError.invalidCertData
         }
@@ -53,17 +57,19 @@ final class macOSCertificateService: CertificateServiceProtocol {
     }
 
     func exportCertificate() -> Data {
-        guard let certURL = MitmService.getCertPath(),
-              let data = try? Data(contentsOf: certURL) else {
-            return Data()
-        }
-        return data
+        guard let certDir = MitmService.getCertPath() else { return Data() }
+        let certFileURL = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER)
+        return (try? Data(contentsOf: certFileURL)) ?? Data()
     }
 
     @discardableResult
     func checkTrustStatus() -> CertTrustStatus {
-        guard let certURL = MitmService.getCertPath(),
-              let certData = try? Data(contentsOf: certURL),
+        guard let certDir = MitmService.getCertPath() else {
+            trustStatus = .notInstalled
+            return trustStatus
+        }
+        let certFileURL = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER)
+        guard let certData = try? Data(contentsOf: certFileURL),
               let certRef = SecCertificateCreateWithData(nil, certData as CFData) else {
             trustStatus = .notInstalled
             return trustStatus

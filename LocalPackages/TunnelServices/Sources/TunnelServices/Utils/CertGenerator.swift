@@ -15,6 +15,59 @@ import NIOSSL
 
 public class CertGenerator {
 
+    /// Generate a self-signed CA root certificate and RSA private key.
+    /// Called once on first launch to create the MITM CA.
+    public static func generateCA() throws -> (caCert: Certificate, caKey: _RSA.Signing.PrivateKey, rsaKey: _RSA.Signing.PrivateKey) {
+        let caKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+        let rsaKey = try _RSA.Signing.PrivateKey(keySize: .bits2048)
+
+        let subject = try DistinguishedName {
+            CountryName(ProxyConfig.CertSubject.country)
+            OrganizationName(ProxyConfig.CertSubject.organization)
+            CommonName("Knot CA")
+        }
+
+        let extensions = try Certificate.Extensions {
+            Critical(BasicConstraints.isCertificateAuthority(maxPathLength: nil))
+            Critical(KeyUsage(keyCertSign: true, cRLSign: true))
+            SubjectKeyIdentifier(
+                keyIdentifier: ArraySlice(Crypto.SHA256.hash(data: caKey.publicKey.derRepresentation))
+            )
+        }
+
+        let now = Date()
+        let caCert = try Certificate(
+            version: .v3,
+            serialNumber: Certificate.SerialNumber(),
+            publicKey: Certificate.PublicKey(caKey.publicKey),
+            notValidBefore: now,
+            notValidAfter: now.addingTimeInterval(86400 * 365 * 10), // 10 years
+            issuer: subject,
+            subject: subject,
+            signatureAlgorithm: .sha256WithRSAEncryption,
+            extensions: extensions,
+            issuerPrivateKey: Certificate.PrivateKey(caKey)
+        )
+
+        return (caCert, caKey, rsaKey)
+    }
+
+    /// Serialize a certificate to PEM string.
+    public static func toPEM(_ cert: Certificate) throws -> String {
+        var serializer = DER.Serializer()
+        try cert.serialize(into: &serializer)
+        let derBytes = serializer.serializedBytes
+        let base64 = Data(derBytes).base64EncodedString(options: .lineLength64Characters)
+        return "-----BEGIN CERTIFICATE-----\n\(base64)\n-----END CERTIFICATE-----\n"
+    }
+
+    /// Serialize a certificate to DER Data.
+    public static func toDER(_ cert: Certificate) throws -> Data {
+        var serializer = DER.Serializer()
+        try cert.serialize(into: &serializer)
+        return Data(serializer.serializedBytes)
+    }
+
     /// Generate a dynamic TLS certificate for the given host, signed by the CA.
     /// This is the core of MITM - we create a fake cert that the proxy presents to the client.
     public static func generateCert(

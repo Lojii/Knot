@@ -33,11 +33,46 @@ public class CertStore {
         let keyPath = CertStore.filePath(in: certDir, name: ProxyConfig.CertFiles.caKey)
         let rsaPath = CertStore.filePath(in: certDir, name: ProxyConfig.CertFiles.rsaKey)
 
+        // Auto-generate CA on first launch if cert files don't exist
+        if !FileManager.default.fileExists(atPath: certPath) {
+            CertStore.generateAndSave(certDir: certDir)
+        }
+
         cacert = try? NIOSSLCertificate(file: certPath, format: .pem)
         cakey = try? NIOSSLPrivateKey(file: keyPath, format: .pem)
         rsakey = try? NIOSSLPrivateKey(file: rsaPath, format: .pem)
         x509CACert = try? CertGenerator.loadCertificate(fromPEMFile: certPath)
         rsaSigningKey = try? CertGenerator.loadRSAPrivateKey(fromPEMFile: rsaPath)
+    }
+
+    /// Generate CA cert + keys and save to cert directory. Called once on first launch.
+    private static func generateAndSave(certDir: URL) {
+        do {
+            let (caCert, caKey, rsaKey) = try CertGenerator.generateCA()
+
+            // Save CA cert as PEM
+            let certPEM = try CertGenerator.toPEM(caCert)
+            try certPEM.write(toFile: filePath(in: certDir, name: ProxyConfig.CertFiles.caCert),
+                              atomically: true, encoding: .utf8)
+
+            // Save CA cert as DER (for iOS profile install)
+            let certDER = try CertGenerator.toDER(caCert)
+            try certDER.write(to: certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER))
+
+            // Save CA private key as PEM
+            let caKeyPEM = caKey.pemRepresentation
+            try caKeyPEM.write(toFile: filePath(in: certDir, name: ProxyConfig.CertFiles.caKey),
+                               atomically: true, encoding: .utf8)
+
+            // Save RSA key as PEM (used for per-host dynamic cert generation)
+            let rsaKeyPEM = rsaKey.pemRepresentation
+            try rsaKeyPEM.write(toFile: filePath(in: certDir, name: ProxyConfig.CertFiles.rsaKey),
+                                atomically: true, encoding: .utf8)
+
+            AxLogger.log("CertStore: CA certificate generated and saved to \(certDir.path)", level: .Info)
+        } catch {
+            AxLogger.log("CertStore: failed to generate CA: \(error)", level: .Error)
+        }
     }
 
     // MARK: - Path Helpers
