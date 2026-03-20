@@ -41,7 +41,10 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
 
         let prefix = buffer.getString(at: buffer.readerIndex, length: 4) ?? ""
 
-        if prefix == "CONN" {
+        if isSOCKS5Greeting(buffer) {
+            // SOCKS5 proxy: first byte 0x05
+            configureSOCKS5Pipeline(context: context)
+        } else if prefix == "CONN" {
             // HTTPS: HTTP CONNECT method → tunnel setup
             configureHTTPSPipeline(context: context)
         } else if ProtocolRouter.httpMethods.contains(where: { prefix.hasPrefix($0.prefix(4)) }) {
@@ -98,7 +101,21 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
         )
     }
 
-    // MARK: - TLS Detection
+    private func configureSOCKS5Pipeline(context: ChannelHandlerContext) {
+        _ = context.pipeline.addHandler(
+            SOCKS5ServerHandler(task: task), name: "socks5", position: .first
+        )
+    }
+
+    // MARK: - Protocol Detection
+
+    private func isSOCKS5Greeting(_ buffer: ByteBuffer) -> Bool {
+        guard buffer.readableBytes >= 2 else { return false }
+        let version = buffer.getInteger(at: buffer.readerIndex, as: UInt8.self) ?? 0
+        let methodCount = buffer.getInteger(at: buffer.readerIndex + 1, as: UInt8.self) ?? 0
+        // SOCKS5: version=0x05, methodCount=1..255, total size = 2 + methodCount
+        return version == 0x05 && methodCount > 0 && buffer.readableBytes >= 2 + Int(methodCount)
+    }
 
     private func isTLSClientHello(_ buffer: ByteBuffer) -> Bool {
         guard buffer.readableBytes >= 3 else { return false }

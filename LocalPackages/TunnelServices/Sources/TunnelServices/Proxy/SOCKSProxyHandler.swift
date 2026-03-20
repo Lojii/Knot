@@ -180,15 +180,37 @@ public final class SOCKS5ServerHandler: ChannelInboundHandler, RemovableChannelH
         sendReply(context: context, reply: .succeeded)
         state = .relaying
 
-        // Remove SOCKS handler and add tunnel/protocol detection
+        // Remove SOCKS handler and set up tunnel with recording
         let recorder = SessionRecorder(task: task)
-        recorder.session.schemes = "SOCKS5"
         recorder.session.host = host
 
         _ = context.pipeline.removeHandler(self)
 
-        // Add protocol router for the connected stream
-        // The router will detect if it's HTTP, TLS, or raw TCP
+        let isLikelyTLS = (port == 443 || port == 8443)
+
+        if isLikelyTLS {
+            // HTTPS via SOCKS5 — sniff TLS handshake, record as HTTPS tunnel
+            recorder.session.schemes = "SOCKS5/HTTPS"
+            recorder.ensureHttpRecorder(
+                host: host, port: Int(port),
+                protocolOverride: "HTTPS",
+                method: "SOCKS5 CONNECT", uri: "\(host):\(port)",
+                extraMetadata: ["encrypted": true, "decrypted": false, "proxy": "SOCKS5"]
+            )
+            _ = context.pipeline.addHandler(
+                TLSClientSniffHandler(recorder: recorder), name: "tls.sniff.client", position: .first
+            )
+        } else {
+            // Non-TLS via SOCKS5 — record as TCP tunnel
+            recorder.session.schemes = "SOCKS5"
+            recorder.ensureHttpRecorder(
+                host: host, port: Int(port),
+                protocolOverride: "TCP",
+                method: "SOCKS5 CONNECT", uri: "\(host):\(port)",
+                extraMetadata: ["proxy": "SOCKS5"]
+            )
+        }
+
         let tunnel = TunnelHandler(recorder: recorder, task: task, targetHost: host, targetPort: Int(port))
         _ = context.pipeline.addHandler(tunnel, name: "socks.tunnel")
     }
