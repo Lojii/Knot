@@ -147,7 +147,7 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
 
     echo "--- Merge macOS libraries ---"
     mkdir -p "$WORK_DIR/merged"
-    libtool -static -o "$WORK_DIR/merged/liblsquic-macos.a" \
+    libtool -static -o "$WORK_DIR/merged/liblsquic.a" \
         "$MACOS_LIB" \
         "$BSSL_MACOS/libssl.a" \
         "$BSSL_MACOS/libcrypto.a"
@@ -183,7 +183,7 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
     XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-sim.a" -headers "$HEADER_ROOT")
 fi
 if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
-    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-macos.a" -headers "$HEADER_ROOT")
+    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic.a" -headers "$HEADER_ROOT")
 fi
 
 xcodebuild -create-xcframework \
