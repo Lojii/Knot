@@ -46,6 +46,17 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
                     log.info("startTunnel: tunnel configured, starting packet capture...")
                     self?.startPacketCapture()
                     self?.startNetworkMonitor()
+                    // Initialize QUIC MITM if enabled and task is active
+                    if ProxyConfig.HTTP3.enabled {
+                        let certPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caCert
+                        let keyPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caKey
+                        self?.captureEngine.setupQUICMITM(
+                            task: server.task,
+                            certPath: certPath,
+                            keyPath: keyPath
+                        )
+                        log.info("startTunnel: QUIC MITM initialized (backend: \(ProxyConfig.HTTP3.backend.rawValue))")
+                    }
                     log.info("startTunnel: all done, calling completionHandler(nil)")
                     completionHandler(nil)
                 }
@@ -145,6 +156,7 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
         log.info("stopTunnel called, reason=\(reason.rawValue)")
         pathMonitor.cancel()
         captureEngine.shutdown()
+        captureEngine.shutdownQUICMITM()
         mitmServer?.close(completionHandler)
     }
 
@@ -168,6 +180,27 @@ class MacPacketTunnelProvider: NEPacketTunnelProvider {
             let stats = captureEngine.statistics
             let json = "{\"packets\":\(stats.packets),\"tcp\":\(stats.tcp),\"udp\":\(stats.udp),\"icmp\":\(stats.icmp)}"
             completionHandler?(json.data(using: .utf8))
+        case "enable_h3":
+            ProxyConfig.HTTP3.enabled = true
+            if let task = mitmServer?.task {
+                let certPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caCert
+                let keyPath = MitmService.getStoreFolder() + ProxyConfig.CertFiles.caKey
+                captureEngine.setupQUICMITM(task: task, certPath: certPath, keyPath: keyPath)
+            }
+            completionHandler?("h3_enabled".data(using: .utf8))
+        case "disable_h3":
+            ProxyConfig.HTTP3.enabled = false
+            captureEngine.shutdownQUICMITM()
+            completionHandler?("h3_disabled".data(using: .utf8))
+        case "h3_backend_quiche":
+            ProxyConfig.HTTP3.backend = .quiche
+            completionHandler?("backend_quiche".data(using: .utf8))
+        case "h3_backend_lsquic":
+            ProxyConfig.HTTP3.backend = .lsquic
+            completionHandler?("backend_lsquic".data(using: .utf8))
+        case "h3_status":
+            let status = "{\"enabled\":\(ProxyConfig.HTTP3.enabled),\"backend\":\"\(ProxyConfig.HTTP3.backend.rawValue)\",\"sessions\":\(captureEngine.quicMITMSessionCount)}"
+            completionHandler?(status.data(using: .utf8))
         default:
             completionHandler?(nil)
         }
