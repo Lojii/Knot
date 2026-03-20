@@ -55,6 +55,14 @@ public class PacketCaptureEngine {
 
     private let udpForwarder = UDPForwarder()
     private var pcapWriter: PCAPWriter?
+
+    // QUIC MITM — all MITM access is serialized through quicMITMQueue.
+    // The managers' internal NSLock is retained for iOS compatibility but is effectively uncontended.
+    private var quicMITMManager: QUICMITMManager?
+    private var lsquicMITMManager: LsquicMITMManager?
+    private let quicMITMQueue = DispatchQueue(label: "com.knot.quic.mitm")
+    private var fallbackConnections = [Data: TimeInterval]()  // connId → expiry timestamp
+
     private var captureEnabled = true
     private var packetCount: UInt64 = 0
     private let statsLock = NSLock()
@@ -84,6 +92,138 @@ public class PacketCaptureEngine {
     public func shutdown() {
         udpForwarder.shutdown()
         stopPCAPRecording()
+    }
+
+    // MARK: - QUIC MITM Setup
+
+    /// Initialize the QUIC MITM manager. Call after MitmService is running.
+    public func setupQUICMITM(task: CaptureTask, certPath: String, keyPath: String) {
+        quicMITMQueue.sync {
+            switch ProxyConfig.HTTP3.backend {
+            case .quiche:
+                self.quicMITMManager = QUICMITMManager(task: task, certPath: certPath, keyPath: keyPath)
+                AxLogger.log("QUIC MITM: initialized quiche backend", level: .Info)
+            case .lsquic:
+                self.lsquicMITMManager = LsquicMITMManager(task: task, certPath: certPath, keyPath: keyPath)
+                AxLogger.log("QUIC MITM: initialized lsquic backend", level: .Info)
+            }
+        }
+    }
+
+    /// Shut down all QUIC MITM sessions.
+    public func shutdownQUICMITM() {
+        quicMITMQueue.sync {
+            quicMITMManager?.shutdown()
+            quicMITMManager = nil
+            lsquicMITMManager?.shutdown()
+            lsquicMITMManager = nil
+            fallbackConnections.removeAll()
+        }
+    }
+
+    /// Current active MITM session count.
+    public var quicMITMSessionCount: Int {
+        quicMITMManager?.activeSessions ?? lsquicMITMManager?.activeSessions ?? 0
+    }
+
+    // MARK: - QUIC MITM Helpers
+
+    private func isInFallback(_ connId: Data) -> Bool {
+        if let expiry = fallbackConnections[connId] {
+            if Date().timeIntervalSince1970 < expiry {
+                return true
+            }
+            fallbackConnections.removeValue(forKey: connId)
+        }
+        return false
+    }
+
+    private func addToFallback(_ connId: Data, reason: String) {
+        let expiry = Date().timeIntervalSince1970 + Double(ProxyConfig.HTTP3.idleTimeoutMs) / 1000.0
+        fallbackConnections[connId] = expiry
+        AxLogger.log("QUIC MITM fallback for \(connId.map { String(format: "%02x", $0) }.joined()): \(reason)", level: .Warning)
+    }
+
+    private func processQUICMITMOutbound(_ data: Data, packet: IPPacket, dstIP: String, dstPort: UInt16) {
+        guard let header = QUICDecoder.parseHeader(data) else {
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        let connId = header.dcid
+
+        if isInFallback(connId) {
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        let activeCount = quicMITMSessionCount
+        if activeCount >= ProxyConfig.HTTP3.maxSessions {
+            addToFallback(connId, reason: "session limit reached (\(activeCount)/\(ProxyConfig.HTTP3.maxSessions))")
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        if header.version == 0 {
+            addToFallback(connId, reason: "Version Negotiation packet")
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        let result: (toApp: [Data], toServer: [(Data, String, UInt16)])
+        if let manager = quicMITMManager {
+            result = manager.processOutbound(data, dstIP: dstIP, dstPort: dstPort)
+        } else if let manager = lsquicMITMManager {
+            result = manager.processOutbound(data, dstIP: dstIP, dstPort: dstPort)
+        } else {
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        if result.toApp.isEmpty && result.toServer.isEmpty {
+            addToFallback(connId, reason: "MITM session setup failed")
+            forwardUDPTransparently(packet: packet)
+            return
+        }
+
+        for pkt in result.toApp {
+            let responseData = IPPacketBuilder.buildUDPResponse(originalPacket: packet, payload: pkt)
+            delegate?.writePacket(responseData, protocolNumber: packet.version == 4 ? AF_INET : AF_INET6)
+        }
+
+        for (pkt, ip, port) in result.toServer {
+            udpForwarder.sendRaw(data: pkt, host: ip, port: port) { [weak self] responseData in
+                guard let self = self, let responseData = responseData else { return }
+                self.quicMITMQueue.async {
+                    self.processQUICMITMInbound(responseData, originalPacket: packet, srcIP: ip, srcPort: port)
+                }
+            }
+        }
+    }
+
+    private func processQUICMITMInbound(_ data: Data, originalPacket: IPPacket, srcIP: String, srcPort: UInt16) {
+        let toApp: [Data]
+        if let manager = quicMITMManager {
+            toApp = manager.processInbound(data, srcIP: srcIP, srcPort: srcPort)
+        } else if let manager = lsquicMITMManager {
+            toApp = manager.processInbound(data, srcIP: srcIP, srcPort: srcPort)
+        } else {
+            return
+        }
+
+        for pkt in toApp {
+            let responseData = IPPacketBuilder.buildUDPResponse(originalPacket: originalPacket, payload: pkt)
+            delegate?.writePacket(responseData, protocolNumber: originalPacket.version == 4 ? AF_INET : AF_INET6)
+        }
+    }
+
+    private func forwardUDPTransparently(packet: IPPacket) {
+        udpForwarder.forward(packet: packet) { [weak self] responseData in
+            guard let self = self, let responseData = responseData else { return }
+            let responsePacketData = IPPacketBuilder.buildUDPResponse(originalPacket: packet, payload: responseData)
+            self.processInboundPacket(responsePacketData)
+            self.delegate?.writePacket(responsePacketData, protocolNumber: packet.version == 4 ? AF_INET : AF_INET6)
+        }
     }
 
     // MARK: - Process Outbound Packet (device → internet)
@@ -216,6 +356,28 @@ public class PacketCaptureEngine {
             if let quic = QUICDecoder.parseHeader(appData) {
                 detail = QUICDecoder.format(quic)
             }
+
+            // Log + PCAP (duplicated here because we return early, skipping generic logging below)
+            let summary443 = IPPacketParser.format(packet)
+            let captured443 = CapturedPacket(
+                timestamp: Date(), direction: direction, ipPacket: packet,
+                decodedProtocol: decodedProtocol, summary: summary443, detail: detail
+            )
+            delegate?.didCapturePacket(captured443)
+            writeToPCAP(packet: packet, rawData: rawData, direction: direction)
+
+            if direction == .outbound {
+                if ProxyConfig.HTTP3.enabled {
+                    // MITM path — dispatched to serial queue for thread safety
+                    quicMITMQueue.async { [weak self] in
+                        self?.processQUICMITMOutbound(appData, packet: packet,
+                                                       dstIP: packet.destinationIP,
+                                                       dstPort: udp.destinationPort)
+                    }
+                }
+                // When HTTP3.enabled == false: drop packet → client falls back to TCP/HTTP2
+            }
+            return  // Exit processUDPPacket — skip generic forwarding for port 443
 
         case 5353: // mDNS
             decodedProtocol = "mDNS"

@@ -99,6 +99,51 @@ public class UDPForwarder {
         }
     }
 
+    /// Send raw UDP data to a specific host:port and call completion with the response.
+    /// Used by QUIC MITM to forward server-bound packets without an IPPacket.
+    public func sendRaw(data: Data, host: String, port: UInt16, completion: @escaping (Data?) -> Void) {
+        let key = "\(host):\(port)"
+        queue.async { [weak self] in
+            guard let self = self else { completion(nil); return }
+
+            // Get or create connection (same pool as forward())
+            let connection: NWConnection
+            if let existing = self.connections[key], existing.state == .ready {
+                connection = existing
+            } else {
+                self.connections[key]?.cancel()
+                let nwHost = NWEndpoint.Host(host)
+                let nwPort = NWEndpoint.Port(rawValue: port)!
+                let newConn = NWConnection(host: nwHost, port: nwPort, using: .udp)
+                newConn.stateUpdateHandler = { [weak self] state in
+                    if case .failed = state {
+                        self?.connections.removeValue(forKey: key)
+                    }
+                }
+                newConn.start(queue: self.queue)
+                self.connections[key] = newConn
+                connection = newConn
+            }
+
+            // Send and receive (no PendingExchange tracking needed)
+            connection.send(content: data, completion: .contentProcessed { error in
+                if let error = error {
+                    AxLogger.log("UDP sendRaw error to \(key): \(error)", level: .Error)
+                    completion(nil)
+                    return
+                }
+                connection.receiveMessage { content, _, _, error in
+                    if let error = error {
+                        AxLogger.log("UDP sendRaw receive error from \(key): \(error)", level: .Error)
+                        completion(nil)
+                        return
+                    }
+                    completion(content)
+                }
+            })
+        }
+    }
+
     /// Cancel all connections and clean up.
     public func shutdown() {
         queue.async { [weak self] in
