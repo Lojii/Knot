@@ -27,6 +27,11 @@ public class SessionRecorder {
     private var rspPayloadWriter: PayloadWriter?
     private var dbGroup: TaskDatabaseGroup?
     private var flowId: String?
+
+    /// Exposes the underlying `TaskDatabaseGroup` so that protocol-specific
+    /// recorders (GRPCRecorder, WebSocketRecorder, etc.) can write their own
+    /// records directly to the same task databases.
+    public var taskDatabaseGroup: TaskDatabaseGroup? { dbGroup }
     private var taskId: Int64 = 0
     private var tcpRecord: TcpConnectionRecord?
 
