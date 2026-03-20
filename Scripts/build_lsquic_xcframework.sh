@@ -150,10 +150,21 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
 
     echo "--- Merge macOS libraries ---"
     mkdir -p "$WORK_DIR/merged"
-    libtool -static -o "$WORK_DIR/merged/liblsquic.a" \
+    libtool -static -o "$WORK_DIR/merged/liblsquic-merged.a" \
         "$MACOS_LIB" \
         "$BSSL_MACOS/libssl.a" \
         "$BSSL_MACOS/libcrypto.a"
+
+    # Hide BoringSSL C++ symbols to avoid conflicts with swift-nio-ssl's CNIOBoringSSL.
+    # Extract all BoringSSL C++ symbols (ssl_st, ssl_ctx_st, ssl_session_st constructors/destructors)
+    # and make them local using nmedit.
+    echo "--- Hide BoringSSL C++ symbols ---"
+    nm "$WORK_DIR/merged/liblsquic-merged.a" | grep " T " | grep -E "ssl_st|ssl_ctx_st|ssl_session_st" | awk '{print $3}' | sort -u > "$WORK_DIR/merged/hide_symbols.txt"
+    if [ -s "$WORK_DIR/merged/hide_symbols.txt" ]; then
+        nmedit -R "$WORK_DIR/merged/hide_symbols.txt" "$WORK_DIR/merged/liblsquic-merged.a" -o "$WORK_DIR/merged/liblsquic.a"
+    else
+        cp "$WORK_DIR/merged/liblsquic-merged.a" "$WORK_DIR/merged/liblsquic.a"
+    fi
 fi
 
 # Step 7: Prepare headers
