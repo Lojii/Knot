@@ -121,6 +121,8 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_SYSTEM_NAME=Darwin \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
         -DBORINGSSL_PREFIX=lsquic_ \
+        -DCMAKE_C_FLAGS="-fvisibility=hidden" \
+        -DCMAKE_CXX_FLAGS="-fvisibility=hidden -fvisibility-inlines-hidden" \
         -DBUILD_SHARED_LIBS=OFF \
         2>&1 | tail -10
     cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -5
