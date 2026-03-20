@@ -159,7 +159,9 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
     # Extract all BoringSSL C++ symbols (ssl_st, ssl_ctx_st, ssl_session_st constructors/destructors)
     # and make them local using nmedit.
     echo "--- Hide BoringSSL C++ symbols ---"
-    nm "$WORK_DIR/merged/liblsquic-merged.a" | grep " T " | grep -E "ssl_st|ssl_ctx_st|ssl_session_st" | awk '{print $3}' | sort -u > "$WORK_DIR/merged/hide_symbols.txt"
+    # Only hide bare (non-namespaced) C++ constructors/destructors that conflict with swift-nio-ssl.
+    # Keep bssl::lsquic_:: namespaced symbols (they contain "lsquic_" in the mangled name).
+    nm "$WORK_DIR/merged/liblsquic-merged.a" | grep " T " | grep -E "__ZN(6ssl_st|10ssl_ctx_st|14ssl_session_st)" | grep -v "lsquic_" | awk '{print $3}' | sort -u > "$WORK_DIR/merged/hide_symbols.txt"
     if [ -s "$WORK_DIR/merged/hide_symbols.txt" ]; then
         nmedit -R "$WORK_DIR/merged/hide_symbols.txt" "$WORK_DIR/merged/liblsquic-merged.a" -o "$WORK_DIR/merged/liblsquic.a"
     else
