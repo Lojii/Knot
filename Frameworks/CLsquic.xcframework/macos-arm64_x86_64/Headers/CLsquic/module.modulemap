@@ -1,7 +1,0 @@
-module CLsquic {
-    header "lsquic.h"
-    header "lsquic_types.h"
-    header "lsxpack_header.h"
-    link "lsquic"
-    export *
-}
