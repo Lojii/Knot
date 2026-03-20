@@ -18,6 +18,7 @@
 
 import Foundation
 import NIO
+import NIOFoundationCompat
 
 #if canImport(SwiftQuiche)
 import SwiftQuiche
