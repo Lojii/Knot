@@ -211,31 +211,5 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
     }
 }
 
-// MARK: - Raw Passthrough Handler
-
-/// Keeps the connection open for unrecognized protocols.
-/// Records byte counts and calls recordClosed() when the connection ends.
-final class RawPassthroughHandler: ChannelInboundHandler, RemovableChannelHandler {
-    typealias InboundIn = ByteBuffer
-
-    private let recorder: SessionRecorder
-
-    init(recorder: SessionRecorder) {
-        self.recorder = recorder
-    }
-
-    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        let buffer = unwrapInboundIn(data)
-        recorder.addUpload(buffer.readableBytes)
-        // Data goes nowhere — no target server for unrecognized proxy protocol.
-        // The connection stays open until the client closes it.
-    }
-
-    func channelUnregistered(context: ChannelHandlerContext) {
-        recorder.recordClosed()
-    }
-
-    func errorCaught(context: ChannelHandlerContext, error: Error) {
-        context.close(promise: nil)
-    }
-}
+// RawPassthroughHandler has been extracted to:
+// Plugins/Raw/RawPassthroughHandler.swift
