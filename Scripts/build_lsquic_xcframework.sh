@@ -149,8 +149,8 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
     mkdir -p "$WORK_DIR/merged"
     libtool -static -o "$WORK_DIR/merged/liblsquic-macos.a" \
         "$MACOS_LIB" \
-        "$BSSL_MACOS/ssl/libssl.a" \
-        "$BSSL_MACOS/crypto/libcrypto.a"
+        "$BSSL_MACOS/libssl.a" \
+        "$BSSL_MACOS/libcrypto.a"
 fi
 
 # Step 7: Prepare headers
