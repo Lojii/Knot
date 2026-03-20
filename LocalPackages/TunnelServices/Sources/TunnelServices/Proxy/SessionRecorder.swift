@@ -52,7 +52,9 @@ public class SessionRecorder {
         // Initialize new storage system
         let tid = task.id
         self.taskId = tid
+        NSLog("[SessionRecorder] init: task.id=\(tid)")
         if tid > 0, let group = try? DatabaseManager.shared.openTask(tid) {
+            NSLog("[SessionRecorder] dbGroup opened for task \(tid)")
             self.dbGroup = group
             let fid = group.flowIdGenerator.next()
             self.flowId = fid
@@ -241,6 +243,7 @@ public class SessionRecorder {
 
     public func recordClosed() {
         session.endTime = Date().timeIntervalSince1970
+        NSLog("[SessionRecorder] recordClosed: taskId=\(taskId), dbGroup=\(dbGroup != nil), httpRecorder=\(httpRecorder != nil), flowId=\(flowId ?? "nil")")
 
         // Send real-time status to main app (uses session in-memory fields for URL construction)
         if !session.ignore {
