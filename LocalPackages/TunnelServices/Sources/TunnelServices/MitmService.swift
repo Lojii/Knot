@@ -66,12 +66,10 @@ public class MitmService: NSObject {
         
         self.task = task
         
-        let protocolDetector = ProtocolDetector(task: task ,matchers: [HttpMatcher(),HttpsMatcher(),SSLMatcher()])
-        
         localBootstrap = ServerBootstrap(group: master, childGroup: worker)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
-            .childChannelInitializer { channel in
-                channel.pipeline.addHandler(protocolDetector, name: "ProtocolDetector", position: .first)
+            .childChannelInitializer { [task] channel in
+                channel.pipeline.addHandler(ProtocolRouter(task: task), name: "ProtocolRouter", position: .first)
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
@@ -80,8 +78,8 @@ public class MitmService: NSObject {
         //
         wifiBootstrap = ServerBootstrap(group: master, childGroup: worker)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
-            .childChannelInitializer { channel in
-                channel.pipeline.addHandler(protocolDetector, name: "ProtocolDetector", position: .first)
+            .childChannelInitializer { [task] channel in
+                channel.pipeline.addHandler(ProtocolRouter(task: task), name: "ProtocolRouter", position: .first)
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
