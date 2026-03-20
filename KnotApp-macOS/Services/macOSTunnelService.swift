@@ -38,7 +38,14 @@ final class macOSTunnelService: NSObject, TunnelServiceProtocol {
             throw NSError(domain: "macOSTunnelService", code: -1,
                           userInfo: [NSLocalizedDescriptionKey: "代理服务初始化失败"])
         }
-        log.info("startCapture: MitmService prepared, task.localIP=\(server.task.localIP), localPort=\(server.task.localPort)")
+
+        // Apply user config to the task
+        server.task.localPort = config.localPort
+        server.task.localEnable = config.localEnabled ? 1 : 0
+        server.task.wifiPort = config.wifiPort
+        server.task.wifiEnable = config.wifiEnabled ? 1 : 0
+
+        log.info("startCapture: MitmService prepared, localPort=\(config.localPort), wifiPort=\(config.wifiPort)")
 
         mitmServer = server
 

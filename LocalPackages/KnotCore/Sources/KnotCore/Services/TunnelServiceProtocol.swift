@@ -15,8 +15,8 @@ public struct CaptureConfig: Sendable {
     public var ruleId: String?
 
     public init(
-        localPort: Int = 9090, localEnabled: Bool = true,
-        wifiPort: Int = 9091, wifiEnabled: Bool = false,
+        localPort: Int = 8034, localEnabled: Bool = true,
+        wifiPort: Int = 8034, wifiEnabled: Bool = false,
         ruleId: String? = nil
     ) {
         self.localPort = localPort; self.localEnabled = localEnabled

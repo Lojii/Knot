@@ -12,9 +12,9 @@ struct DashboardView: View {
     @State private var historyTasks: [CaptureTask] = []
 
     @State private var localEnabled = true
-    @State private var localPort = "9090"
+    @State private var localPort = "8034"
     @State private var wifiEnabled = false
-    @State private var wifiPort = "9091"
+    @State private var wifiPort = "8034"
     @State private var errorMessage: String?
 
     private var tunnelService: TunnelServiceProtocol? {
@@ -101,9 +101,9 @@ struct DashboardView: View {
         }
         log.info("startCapture: vpnStatus=\(String(describing: self.vpnStatus))")
         let config = CaptureConfig(
-            localPort: Int(localPort) ?? 9090,
+            localPort: Int(localPort) ?? ProxyConfig.LocalProxy.port,
             localEnabled: localEnabled,
-            wifiPort: Int(wifiPort) ?? 9091,
+            wifiPort: Int(wifiPort) ?? ProxyConfig.WiFiProxy.defaultPort,
             wifiEnabled: wifiEnabled
         )
         log.info("startCapture: config local=\(config.localPort) wifi=\(config.wifiPort)")
