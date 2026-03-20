@@ -85,7 +85,7 @@ fi
 
 # Step 5: Prepare headers
 echo "--- Prepare headers ---"
-HEADER_DIR="$WORK_DIR/headers"
+HEADER_DIR="$WORK_DIR/headers/CQuiche"
 mkdir -p "$HEADER_DIR"
 cp quiche/include/quiche.h "$HEADER_DIR/"
 
@@ -96,6 +96,7 @@ module CQuiche {
     export *
 }
 MAPEOF
+HEADER_ROOT="$WORK_DIR/headers"
 
 # Step 6: Create XCFramework
 echo "--- Create XCFramework ---"
@@ -105,11 +106,11 @@ rm -rf "$OUTPUT_DIR/Quiche.xcframework"  # cleanup old name
 
 XCFW_ARGS=()
 if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
-    XCFW_ARGS+=(-library "target/aarch64-apple-ios/release/libquiche.a" -headers "$HEADER_DIR")
-    XCFW_ARGS+=(-library "target/aarch64-apple-ios-sim/release/libquiche.a" -headers "$HEADER_DIR")
+    XCFW_ARGS+=(-library "target/aarch64-apple-ios/release/libquiche.a" -headers "$HEADER_ROOT")
+    XCFW_ARGS+=(-library "target/aarch64-apple-ios-sim/release/libquiche.a" -headers "$HEADER_ROOT")
 fi
 if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
-    XCFW_ARGS+=(-library "target/universal-macos/release/libquiche.a" -headers "$HEADER_DIR")
+    XCFW_ARGS+=(-library "target/universal-macos/release/libquiche.a" -headers "$HEADER_ROOT")
 fi
 
 xcodebuild -create-xcframework \

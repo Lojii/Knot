@@ -155,7 +155,7 @@ fi
 
 # Step 7: Prepare headers
 echo "--- Prepare headers ---"
-HEADER_DIR="$WORK_DIR/headers"
+HEADER_DIR="$WORK_DIR/headers/CLsquic"
 mkdir -p "$HEADER_DIR"
 cp include/lsquic.h "$HEADER_DIR/"
 cp include/lsquic_types.h "$HEADER_DIR/"
@@ -170,6 +170,7 @@ module CLsquic {
     export *
 }
 MAPEOF
+HEADER_ROOT="$WORK_DIR/headers"
 
 # Step 8: Create XCFramework
 echo "--- Create XCFramework ---"
@@ -178,11 +179,11 @@ rm -rf "$OUTPUT_DIR/CLsquic.xcframework"
 
 XCFW_ARGS=()
 if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
-    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-ios.a" -headers "$HEADER_DIR")
-    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-sim.a" -headers "$HEADER_DIR")
+    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-ios.a" -headers "$HEADER_ROOT")
+    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-sim.a" -headers "$HEADER_ROOT")
 fi
 if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
-    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-macos.a" -headers "$HEADER_DIR")
+    XCFW_ARGS+=(-library "$WORK_DIR/merged/liblsquic-macos.a" -headers "$HEADER_ROOT")
 fi
 
 xcodebuild -create-xcframework \
