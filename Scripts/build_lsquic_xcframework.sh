@@ -123,7 +123,7 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DBORINGSSL_PREFIX=lsquic_ \
         -DBUILD_SHARED_LIBS=OFF \
         2>&1 | tail -10
-    cmake --build . --config Release -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
+    cmake --build . --config Release --target ssl crypto -j$(sysctl -n hw.ncpu) 2>&1 | tail -5
     BSSL_MACOS="$WORK_DIR/lsquic/boringssl-build-macos"
     cd ..
 fi
