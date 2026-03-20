@@ -91,9 +91,11 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
         let peer = context.channel.remoteAddress?.description
         let local = context.channel.localAddress?.description
         recorder.recordRawConnection(peerAddress: peer, localAddress: local, firstBytes: data)
-        recorder.recordClosed()
-        // Close after recording
-        context.close(promise: nil)
+        // Keep connection open — add a handler that records any further data,
+        // then lets the client/server close naturally.
+        _ = context.pipeline.addHandler(
+            RawPassthroughHandler(recorder: recorder), name: "raw.passthrough"
+        )
     }
 
     // MARK: - TLS Detection
@@ -107,6 +109,35 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
     }
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        context.close(promise: nil)
+    }
+}
+
+// MARK: - Raw Passthrough Handler
+
+/// Keeps the connection open for unrecognized protocols.
+/// Records byte counts and calls recordClosed() when the connection ends.
+final class RawPassthroughHandler: ChannelInboundHandler, RemovableChannelHandler {
+    typealias InboundIn = ByteBuffer
+
+    private let recorder: SessionRecorder
+
+    init(recorder: SessionRecorder) {
+        self.recorder = recorder
+    }
+
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let buffer = unwrapInboundIn(data)
+        recorder.addUpload(buffer.readableBytes)
+        // Data goes nowhere — no target server for unrecognized proxy protocol.
+        // The connection stays open until the client closes it.
+    }
+
+    func channelUnregistered(context: ChannelHandlerContext) {
+        recorder.recordClosed()
+    }
+
+    func errorCaught(context: ChannelHandlerContext, error: Error) {
         context.close(promise: nil)
     }
 }
