@@ -156,7 +156,8 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         recorder.ensureHttpRecorder(
             host: host, port: port,
             protocolOverride: "HTTPS",
-            method: "CONNECT", uri: "\(host):\(port)"
+            method: "CONNECT", uri: "\(host):\(port)",
+            extraMetadata: ["encrypted": true, "decrypted": false]
         )
         // Sniff TLS handshake before tunneling
         _ = context.pipeline.addHandler(

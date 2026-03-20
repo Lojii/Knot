@@ -94,7 +94,8 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             recorder.ensureHttpRecorder(
                 host: request.host, port: request.port,
                 protocolOverride: "HTTPS",
-                method: "CONNECT", uri: head.uri
+                method: "CONNECT", uri: head.uri,
+                extraMetadata: ["encrypted": true, "decrypted": false]
             )
             // Add TLS sniff handler before TunnelHandler to extract ClientHello info
             _ = context.pipeline.addHandler(

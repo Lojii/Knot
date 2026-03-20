@@ -98,7 +98,11 @@ public class SessionRecorder {
         if let fid = flowId, httpRecorder == nil {
             let host = head.headers["Host"].first ?? ""
             let port = isSSL ? 443 : 80
-            httpRecorder = HTTPRecorder(flowId: fid, host: host, port: port)
+            httpRecorder = HTTPRecorder(
+                flowId: fid, host: host, port: port,
+                protocolOverride: isSSL ? "HTTPS" : nil,
+                extraMetadata: isSSL ? ["encrypted": false, "decrypted": true] : [:]
+            )
         }
         httpRecorder?.recordRequestHead(
             method: "\(head.method)",
@@ -283,11 +287,12 @@ public class SessionRecorder {
 
     /// Ensure httpRecorder is initialized for connections that bypass normal HTTP decoding
     /// (e.g. HTTPS tunnel passthrough). This allows recordClosed() to write a FlowRecord.
-    public func ensureHttpRecorder(host: String, port: Int, protocolOverride: String, method: String, uri: String) {
+    public func ensureHttpRecorder(host: String, port: Int, protocolOverride: String, method: String, uri: String, extraMetadata: [String: Any] = [:]) {
         guard let fid = flowId, httpRecorder == nil else { return }
         httpRecorder = HTTPRecorder(
             flowId: fid, host: host, port: port,
-            protocolOverride: protocolOverride
+            protocolOverride: protocolOverride,
+            extraMetadata: extraMetadata
         )
         httpRecorder?.recordRequestHead(
             method: method, uri: uri, httpVersion: "",
