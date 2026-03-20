@@ -35,7 +35,53 @@ else
     cd "$QUICHE_SRC"
 fi
 
-# No cargo clean needed — each platform uses a different --target, so builds don't conflict.
+# Patch: quiche's build.rs maps aarch64 → iphoneos for all iOS targets,
+# but aarch64-apple-ios-sim needs iphonesimulator SDK.
+# Fix: change the aarch64 entry to detect sim target via env var.
+BUILDRS="$QUICHE_SRC/quiche/src/build.rs"
+if ! grep -q 'iphonesimulator' "$BUILDRS" 2>/dev/null; then
+    echo "--- Patching build.rs for aarch64 iOS Simulator ---"
+    # Replace the single aarch64/iphoneos entry with runtime detection
+    python3 -c "
+import re, sys
+with open('$BUILDRS', 'r') as f:
+    content = f.read()
+# Find and replace the iOS cmake params constant
+old = '''const CMAKE_PARAMS_IOS: &[(&str, &[(&str, &str)])] = &[
+    (\"aarch64\", &[
+        (\"CMAKE_OSX_ARCHITECTURES\", \"arm64\"),
+        (\"CMAKE_OSX_SYSROOT\", \"iphoneos\"),
+    ]),
+    (\"x86_64\", &[
+        (\"CMAKE_OSX_ARCHITECTURES\", \"x86_64\"),
+        (\"CMAKE_OSX_SYSROOT\", \"iphonesimulator\"),
+    ]),
+];'''
+new = '''const CMAKE_PARAMS_IOS: &[(&str, &[(&str, &str)])] = &[
+    (\"aarch64\", &[
+        (\"CMAKE_OSX_ARCHITECTURES\", \"arm64\"),
+        (\"CMAKE_OSX_SYSROOT\", \"iphoneos\"),
+    ]),
+    (\"aarch64-sim\", &[
+        (\"CMAKE_OSX_ARCHITECTURES\", \"arm64\"),
+        (\"CMAKE_OSX_SYSROOT\", \"iphonesimulator\"),
+    ]),
+    (\"x86_64\", &[
+        (\"CMAKE_OSX_ARCHITECTURES\", \"x86_64\"),
+        (\"CMAKE_OSX_SYSROOT\", \"iphonesimulator\"),
+    ]),
+];'''
+content = content.replace(old, new)
+# Also patch the arch matching to use 'aarch64-sim' for simulator targets
+content = content.replace(
+    'if *ios_arch == arch {',
+    'if *ios_arch == arch || (*ios_arch == \"aarch64-sim\" && std::env::var(\"TARGET\").unwrap_or_default().contains(\"ios-sim\")) {'
+)
+with open('$BUILDRS', 'w') as f:
+    f.write(content)
+print('Patched successfully')
+"
+fi
 
 # Step 2: Set up iOS SDK paths
 IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
