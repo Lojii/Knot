@@ -17,6 +17,11 @@ public final class ProtocolRegistry {
         roots.first(where: { $0.plugin.id == "tcp" })?.children ?? []
     }
 
+    /// Convenience accessor for children of the UDP root.
+    public var udpChildren: [ProtocolNode] {
+        roots.first(where: { $0.plugin.id == "udp" })?.children ?? []
+    }
+
     private init() {
         self.roots = ProtocolRegistry.buildDefault()
     }

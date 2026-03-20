@@ -60,6 +60,8 @@ public class MitmService: NSObject {
     
     var compelete:((Result<Int, Error>) -> Void)?
     var closed:(() -> Void)?
+
+    private var udpReceiver: UDPReceiver?
     
     public init(task:CaptureTask) {
         super.init()
@@ -180,7 +182,18 @@ public class MitmService: NSObject {
                 })
             }
         }
-        
+
+        // Start UDP receiver for forwarded UDP datagrams from the Helper.
+        let receiver = UDPReceiver()
+        udpReceiver = receiver
+        DispatchQueue.global().async {
+            do {
+                try receiver.start(group: self.worker, task: self.task, port: ProxyConfig.LocalProxy.port)
+            } catch {
+                AxLogger.log("[MitmService] UDPReceiver failed to start: \(error)", level: .Error)
+            }
+        }
+
     }
     
     public func openWifiServer(ip: String, port: Int,_ callback: ((Result<Int, Error>) -> Void)?){
@@ -334,9 +347,12 @@ public class MitmService: NSObject {
             callback()
         }
         
+        udpReceiver?.stop()
+        udpReceiver = nil
+
         closeLocalServer()
         closeWifiServer()
-        
+
         master.shutdownGracefully { (error) in
             if let e = error {
                 AxLogger.log("master thread of eventloop close error:\(e.localizedDescription)", level: .Error)
