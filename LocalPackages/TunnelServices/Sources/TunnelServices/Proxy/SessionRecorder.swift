@@ -239,6 +239,44 @@ public class SessionRecorder {
         _downloadBytes += Int64(bytes)
     }
 
+    // MARK: - Raw / Unknown Protocol Recording
+
+    /// Record a connection with an unrecognized protocol. Creates a minimal FlowRecord
+    /// so it appears in the capture UI even though we can't decode the content.
+    public func recordRawConnection(peerAddress: String?, localAddress: String?, firstBytes: Data) {
+        let peer = peerAddress ?? "unknown"
+        _localAddress = localAddress ?? ""
+        session.host = peer
+        session.localAddress = _localAddress
+        session.schemes = "RAW"
+        session.methods = "RAW"
+        session.uri = "/"
+        session.reqLine = "Unknown protocol"
+        session.connectTime = Date().timeIntervalSince1970
+
+        // Initialize httpRecorder with minimal info so recordClosed() can write to DB
+        let hexPreview = firstBytes.prefix(32).map { String(format: "%02x", $0) }.joined(separator: " ")
+        if let fid = flowId, httpRecorder == nil {
+            httpRecorder = HTTPRecorder(
+                flowId: fid, host: peer, port: 0,
+                protocolOverride: "RAW",
+                extraMetadata: ["firstBytes": hexPreview]
+            )
+            httpRecorder?.recordRequestHead(
+                method: "RAW", uri: "[\(firstBytes.count) bytes]", httpVersion: "",
+                headers: []
+            )
+        }
+
+        // Write first bytes as request payload
+        if !firstBytes.isEmpty {
+            var buf = ByteBufferAllocator().buffer(capacity: firstBytes.count)
+            buf.writeBytes(firstBytes)
+            recordRequestBody(buf)
+            addUpload(firstBytes.count)
+        }
+    }
+
     // MARK: - Lifecycle
 
     public func recordClosed() {

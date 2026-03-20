@@ -51,9 +51,8 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
             // Direct TLS connection (rare - usually comes via CONNECT)
             configureTunnelPipeline(context: context)
         } else {
-            AxLogger.log("Unsupported protocol, closing connection", level: .Error)
-            context.close(promise: nil)
-            return
+            // Unknown protocol — still record the connection attempt
+            configureRawPipeline(context: context, firstBytes: buffer)
         }
 
         // Forward the data to the newly configured pipeline
@@ -84,6 +83,17 @@ public final class ProtocolRouter: ChannelInboundHandler, RemovableChannelHandle
     private func configureTunnelPipeline(context: ChannelHandlerContext) {
         let recorder = SessionRecorder(task: task)
         _ = context.pipeline.addHandler(TunnelHandler(recorder: recorder, task: task), name: "tunnel")
+    }
+
+    private func configureRawPipeline(context: ChannelHandlerContext, firstBytes: ByteBuffer) {
+        let recorder = SessionRecorder(task: task)
+        let data = Data(buffer: firstBytes)
+        let peer = context.channel.remoteAddress?.description
+        let local = context.channel.localAddress?.description
+        recorder.recordRawConnection(peerAddress: peer, localAddress: local, firstBytes: data)
+        recorder.recordClosed()
+        // Close after recording
+        context.close(promise: nil)
     }
 
     // MARK: - TLS Detection
