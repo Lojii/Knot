@@ -121,9 +121,8 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_SYSTEM_NAME=Darwin \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
         -DBORINGSSL_PREFIX=lsquic_ \
-        -DBORINGSSL_PREFIX_SYMBOLS=../third_party/boringssl/util/SYMBOLS.txt \
         -DBUILD_SHARED_LIBS=OFF \
-        2>&1 | tail -3
+        2>&1 | tail -10
     cmake --build . --config Release -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
     BSSL_MACOS="$WORK_DIR/lsquic/boringssl-build-macos"
     cd ..
