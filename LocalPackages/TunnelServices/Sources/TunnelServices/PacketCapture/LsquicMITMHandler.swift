@@ -30,6 +30,8 @@ public class LsquicMITMSession {
     private var clientEngine: LsquicEngine?
     private var serverEngine: LsquicEngine?
     private var established = false
+    private var clientOutPackets = [Data]()
+    private var serverOutPackets = [Data]()
 
     public init(connectionId: Data, serverName: String, serverPort: UInt16, task: CaptureTask) {
         self.connectionId = connectionId
@@ -53,6 +55,10 @@ public class LsquicMITMSession {
             AxLogger.log("lsquic MITM: connected from client for \(sni)", level: .Info)
         }
         guard clientEngine?.start(certPath: certPath, keyPath: keyPath) == true else { return false }
+        clientEngine?.onPacketsOut = { [weak self] data, _ in
+            self?.clientOutPackets.append(data)
+            return data.count
+        }
 
         // Client engine (connects to real server)
         serverEngine = LsquicEngine(isServer: false)
@@ -63,25 +69,38 @@ public class LsquicMITMSession {
             self?.handleServerData(streamId: streamId, data: data)
         }
         guard serverEngine?.start() == true else { return false }
+        serverEngine?.onPacketsOut = { [weak self] data, _ in
+            self?.serverOutPackets.append(data)
+            return data.count
+        }
 
         return true
     }
 
     public func processClientPacket(_ data: Data) -> [Data] {
+        clientOutPackets.removeAll(keepingCapacity: true)
+        serverOutPackets.removeAll(keepingCapacity: true)
         var localAddr = makeIPv4Addr(ip: "127.0.0.1", port: 0)
         var peerAddr = makeIPv4Addr(ip: "0.0.0.0", port: serverPort)
         clientEngine?.packetIn(data, localAddr: localAddr, peerAddr: peerAddr)
         clientEngine?.processConns()
-        // Collect outgoing packets via onPacketsOut callback
-        return []
+        return clientOutPackets
+    }
+
+    public func pendingServerPackets() -> [Data] {
+        let packets = serverOutPackets
+        serverOutPackets.removeAll(keepingCapacity: true)
+        return packets
     }
 
     public func processServerPacket(_ data: Data) -> [Data] {
+        clientOutPackets.removeAll(keepingCapacity: true)
+        serverOutPackets.removeAll(keepingCapacity: true)
         var localAddr = makeIPv4Addr(ip: "127.0.0.1", port: 0)
         var peerAddr = makeIPv4Addr(ip: "0.0.0.0", port: serverPort)
         serverEngine?.packetIn(data, localAddr: localAddr, peerAddr: peerAddr)
         serverEngine?.processConns()
-        return []
+        return clientOutPackets  // Decrypted response → back to app
     }
 
     // MARK: - HTTP/3 Event Handlers
@@ -180,7 +199,9 @@ public class LsquicMITMManager {
         lock.unlock()
 
         let toApp = session.processClientPacket(data)
-        return (toApp, [])
+        let serverPackets = session.pendingServerPackets()
+        let toServer = serverPackets.map { ($0, dstIP, dstPort) }
+        return (toApp, toServer)
     }
 
     public func processInbound(_ data: Data, srcIP: String, srcPort: UInt16) -> [Data] {
