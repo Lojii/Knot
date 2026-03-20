@@ -69,7 +69,12 @@ public class MitmService: NSObject {
         localBootstrap = ServerBootstrap(group: master, childGroup: worker)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { [task] channel in
-                channel.pipeline.addHandler(ProtocolRouter(task: task), name: "ProtocolRouter", position: .first)
+                let recorder = SessionRecorder(task: task)
+                let tcpChildren = ProtocolRegistry.shared.tcpChildren
+                return channel.pipeline.addHandler(
+                    ProtocolDispatcher(task: task, nodes: tcpChildren, recorder: recorder),
+                    name: "dispatcher", position: .first
+                )
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
@@ -79,7 +84,12 @@ public class MitmService: NSObject {
         wifiBootstrap = ServerBootstrap(group: master, childGroup: worker)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { [task] channel in
-                channel.pipeline.addHandler(ProtocolRouter(task: task), name: "ProtocolRouter", position: .first)
+                let recorder = SessionRecorder(task: task)
+                let tcpChildren = ProtocolRegistry.shared.tcpChildren
+                return channel.pipeline.addHandler(
+                    ProtocolDispatcher(task: task, nodes: tcpChildren, recorder: recorder),
+                    name: "dispatcher", position: .first
+                )
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)

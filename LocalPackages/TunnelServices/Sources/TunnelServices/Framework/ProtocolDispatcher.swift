@@ -49,7 +49,7 @@ public final class ProtocolDispatcher: ChannelInboundHandler, RemovableChannelHa
             return
         }
 
-        // 1. Proxy-enabled check — mirrors the existing ProtocolRouter guard.
+        // 1. Proxy-enabled check (formerly in ProtocolRouter).
         if let local = context.channel.localAddress?.description {
             let isLocal = local.contains(ProxyConfig.LocalProxy.host)
             if (isLocal && task.localEnable == 0) || (!isLocal && task.wifiEnable == 0) {

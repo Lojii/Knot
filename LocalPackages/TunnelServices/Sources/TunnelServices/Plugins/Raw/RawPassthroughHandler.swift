@@ -7,7 +7,7 @@ import NIO
 /// Records incoming byte counts and calls `recordClosed()` when the channel
 /// is finally unregistered from the event loop.
 ///
-/// Extracted from `ProtocolRouter.swift` (lines 218-241) so it can be reused
+/// Originally extracted from the former `ProtocolRouter` so it can be reused
 /// by `RawPlugin` and tested independently.
 public final class RawPassthroughHandler: ChannelInboundHandler, RemovableChannelHandler {
     public typealias InboundIn = ByteBuffer

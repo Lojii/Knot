@@ -41,7 +41,7 @@ public final class TLSPlugin: ProtocolPlugin {
 
     /// Builds the TLS pipeline.
     ///
-    /// Mirrors `ProtocolRouter.configureDirectTLSPipeline(_:buffer:)`:
+    /// Replaces the former `ProtocolRouter.configureDirectTLSPipeline(_:buffer:)`:
     /// - Extracts SNI from the ClientHello.
     /// - Sets `recorder.session.host` and `recorder.session.schemes`.
     /// - Adds `MITMHandler` when interception is enabled and SNI is available.
@@ -100,7 +100,7 @@ public final class TLSPlugin: ProtocolPlugin {
     // MARK: - SNI Extraction
 
     /// Extract the SNI hostname from a TLS ClientHello byte buffer.
-    /// Mirrors `ProtocolRouter.extractSNI(from:)`.
+    /// Replaces the former `ProtocolRouter.extractSNI(from:)`.
     private func extractSNI(from buffer: ByteBuffer) -> String? {
         guard buffer.readableBytes >= 43 else { return nil }
         let base = buffer.readerIndex

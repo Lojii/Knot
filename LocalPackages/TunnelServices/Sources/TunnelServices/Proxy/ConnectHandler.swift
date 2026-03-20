@@ -74,13 +74,11 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         context.pipeline.removeHandler(name: "https.responseEncoder", promise: nil)
         context.pipeline.removeHandler(name: "https.pipelining", promise: nil)
         context.pipeline.removeHandler(name: "https.connect", promise: nil)
-        // Don't remove ProtocolRouter - it already removed itself
-
         // Decision: intercept TLS or tunnel raw bytes?
         let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore
 
         if shouldIntercept {
-            // Add MITMHandler for TLS interception
+            // Add MITMHandler for TLS interception (handled by TLSPlugin in the tree)
             let mitmHandler = MITMHandler(
                 task: task,
                 recorder: recorder,
@@ -89,25 +87,12 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             )
             _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
         } else {
-            // Raw tunnel - no TLS interception, but sniff TLS handshake for metadata
-            recorder.session.schemes = "HTTPS(Tunnel)"
-            recorder.ensureHttpRecorder(
-                host: request.host, port: request.port,
-                protocolOverride: "HTTPS",
-                method: "CONNECT", uri: head.uri,
-                extraMetadata: ["encrypted": true, "decrypted": false]
+            // Re-detect inner protocol via ProtocolDispatcher
+            let tcpChildren = ProtocolRegistry.shared.tcpChildren
+            let dispatcher = ProtocolDispatcher(
+                task: task, nodes: tcpChildren, recorder: recorder
             )
-            // Add TLS sniff handler before TunnelHandler to extract ClientHello info
-            _ = context.pipeline.addHandler(
-                TLSClientSniffHandler(recorder: recorder), name: "tls.sniff.client", position: .first
-            )
-            let tunnel = TunnelHandler(
-                recorder: recorder,
-                task: task,
-                targetHost: request.host,
-                targetPort: request.port
-            )
-            _ = context.pipeline.addHandler(tunnel, name: "tunnel")
+            _ = context.pipeline.addHandler(dispatcher, name: "dispatcher")
         }
     }
 

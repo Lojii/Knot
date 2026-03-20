@@ -28,7 +28,7 @@ private enum SOCKS5 {
 
 // MARK: - SOCKS5 Server Handler
 
-/// Handles the SOCKS5 handshake and then delegates to ProtocolRouter or TunnelHandler.
+/// Handles the SOCKS5 handshake and then delegates to ProtocolDispatcher or TunnelHandler.
 public final class SOCKS5ServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     public typealias InboundIn = ByteBuffer
     public typealias OutboundOut = ByteBuffer

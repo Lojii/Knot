@@ -72,10 +72,11 @@ public class ProxyServer {
         let bootstrap = ServerBootstrap(group: masterGroup, childGroup: workerGroup)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
-                channel.pipeline.addHandler(
-                    ProtocolRouter(task: task),
-                    name: "router",
-                    position: .first
+                let recorder = SessionRecorder(task: task)
+                let tcpChildren = ProtocolRegistry.shared.tcpChildren
+                return channel.pipeline.addHandler(
+                    ProtocolDispatcher(task: task, nodes: tcpChildren, recorder: recorder),
+                    name: "dispatcher", position: .first
                 )
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
