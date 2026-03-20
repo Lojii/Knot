@@ -90,9 +90,10 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_SYSTEM_NAME=iOS \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
         -DBORINGSSL_DIR="$BSSL_IOS" \
+        -DBORINGSSL_INCLUDE="$LSQUIC_SRC/third_party/boringssl/include" \
         -DLSQUIC_BIN=OFF \
         -DLSQUIC_TESTS=OFF \
-        2>&1 | tail -3
+        2>&1 | tail -5
     cmake --build . --config Release --target lsquic -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
     IOS_LIB="$BUILD_DIR/lsquic-ios/src/liblsquic/liblsquic.a"
 
@@ -128,6 +129,7 @@ if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_C_FLAGS="-target arm64-apple-ios15.0-simulator" \
         -DCMAKE_ASM_FLAGS="-target arm64-apple-ios15.0-simulator" \
         -DBORINGSSL_DIR="$BSSL_SIM_BUILD" \
+        -DBORINGSSL_INCLUDE="$LSQUIC_SRC/third_party/boringssl/include" \
         -DLSQUIC_BIN=OFF \
         -DLSQUIC_TESTS=OFF \
         2>&1 | tail -3
