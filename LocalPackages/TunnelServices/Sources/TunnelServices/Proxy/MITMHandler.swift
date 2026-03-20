@@ -50,9 +50,9 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
               let x509CACert = certMgr.x509CACert,
               let rsaSigningKey = certMgr.rsaSigningKey,
               let rsaKey = certMgr.rsakey else {
-            AxLogger.log("Certificates not loaded for \(host)", level: .Error)
-            recorder.recordError("error:certificates not loaded")
-            context.channel.close(mode: .all, promise: nil)
+            AxLogger.log("Certificates not loaded for \(host), falling back to tunnel", level: .Warning)
+            // Fallback to tunnel passthrough instead of closing
+            fallbackToTunnel(context: context, buffer: buffer)
             return
         }
 
@@ -147,6 +147,27 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         }.flatMap {
             context.pipeline.addHandler(captureHandler, name: "mitm.http.capture")
         }
+    }
+
+    /// Fallback: when MITM can't proceed (no certs), switch to tunnel passthrough.
+    /// Records the connection as HTTPS(Tunnel) so it still appears in the UI.
+    private func fallbackToTunnel(context: ChannelHandlerContext, buffer: ByteBuffer) {
+        recorder.session.schemes = "HTTPS(Tunnel)"
+        recorder.ensureHttpRecorder(
+            host: host, port: port,
+            protocolOverride: "HTTPS",
+            method: "CONNECT", uri: "\(host):\(port)"
+        )
+        let tunnel = TunnelHandler(
+            recorder: recorder,
+            task: task,
+            targetHost: host,
+            targetPort: port
+        )
+        _ = context.pipeline.addHandler(tunnel, name: "tunnel", position: .first)
+        // Forward the buffered ClientHello to start the tunnel
+        context.fireChannelRead(wrapInboundOut(buffer))
+        _ = context.pipeline.removeHandler(name: "mitm")
     }
 
     private func isTLSClientHello(_ buffer: ByteBuffer) -> Bool {

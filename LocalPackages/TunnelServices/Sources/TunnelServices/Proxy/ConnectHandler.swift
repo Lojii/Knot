@@ -89,7 +89,13 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             )
             _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
         } else {
-            // Raw tunnel - no TLS interception
+            // Raw tunnel - no TLS interception, but still record metadata
+            recorder.session.schemes = "HTTPS(Tunnel)"
+            recorder.ensureHttpRecorder(
+                host: request.host, port: request.port,
+                protocolOverride: "HTTPS",
+                method: "CONNECT", uri: head.uri
+            )
             let tunnel = TunnelHandler(
                 recorder: recorder,
                 task: task,
@@ -97,7 +103,6 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
                 targetPort: request.port
             )
             _ = context.pipeline.addHandler(tunnel, name: "tunnel", position: .first)
-            recorder.session.note = "no cert config !"
         }
     }
 

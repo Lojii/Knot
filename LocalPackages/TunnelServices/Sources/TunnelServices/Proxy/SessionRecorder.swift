@@ -239,6 +239,22 @@ public class SessionRecorder {
         _downloadBytes += Int64(bytes)
     }
 
+    // MARK: - Ensure Recorder for Non-HTTP Paths
+
+    /// Ensure httpRecorder is initialized for connections that bypass normal HTTP decoding
+    /// (e.g. HTTPS tunnel passthrough). This allows recordClosed() to write a FlowRecord.
+    public func ensureHttpRecorder(host: String, port: Int, protocolOverride: String, method: String, uri: String) {
+        guard let fid = flowId, httpRecorder == nil else { return }
+        httpRecorder = HTTPRecorder(
+            flowId: fid, host: host, port: port,
+            protocolOverride: protocolOverride
+        )
+        httpRecorder?.recordRequestHead(
+            method: method, uri: uri, httpVersion: "",
+            headers: []
+        )
+    }
+
     // MARK: - Raw / Unknown Protocol Recording
 
     /// Record a connection with an unrecognized protocol. Creates a minimal FlowRecord
