@@ -1,5 +1,0 @@
-module CQuiche {
-    header "quiche.h"
-    link "CQuiche"
-    export *
-}
