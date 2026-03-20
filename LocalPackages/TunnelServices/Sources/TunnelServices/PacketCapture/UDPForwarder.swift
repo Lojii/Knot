@@ -102,11 +102,11 @@ public class UDPForwarder {
     /// Send raw UDP data to a specific host:port and call completion with the response.
     /// Used by QUIC MITM to forward server-bound packets without an IPPacket.
     public func sendRaw(data: Data, host: String, port: UInt16, completion: @escaping (Data?) -> Void) {
-        let key = "\(host):\(port)"
+        let key = "raw:\(host):\(port)"
         queue.async { [weak self] in
             guard let self = self else { completion(nil); return }
 
-            // Get or create connection (same pool as forward())
+            // Get or create connection (distinct namespace from forward() via "raw:" prefix)
             let connection: NWConnection
             if let existing = self.connections[key], existing.state == .ready {
                 connection = existing
@@ -125,14 +125,17 @@ public class UDPForwarder {
                 connection = newConn
             }
 
-            // Send and receive (no PendingExchange tracking needed)
+            // Send and receive with timeout (no PendingExchange tracking needed)
+            var completed = false
             connection.send(content: data, completion: .contentProcessed { error in
                 if let error = error {
                     AxLogger.log("UDP sendRaw error to \(key): \(error)", level: .Error)
-                    completion(nil)
+                    if !completed { completed = true; completion(nil) }
                     return
                 }
                 connection.receiveMessage { content, _, _, error in
+                    guard !completed else { return }
+                    completed = true
                     if let error = error {
                         AxLogger.log("UDP sendRaw receive error from \(key): \(error)", level: .Error)
                         completion(nil)
@@ -141,6 +144,13 @@ public class UDPForwarder {
                     completion(content)
                 }
             })
+
+            // Timeout: if no response within 5 seconds, call completion(nil)
+            self.queue.asyncAfter(deadline: .now() + 5) {
+                guard !completed else { return }
+                completed = true
+                completion(nil)
+            }
         }
     }
 

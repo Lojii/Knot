@@ -201,6 +201,10 @@ public class PacketCaptureEngine {
         }
     }
 
+    /// Process inbound QUIC packets through the MITM manager and write decrypted responses back to the client.
+    /// Note: These packets are NOT routed through processInboundPacket() for capture logging, because
+    /// the MITM manager's SessionRecorder already records the decrypted HTTP/3 content at the application layer.
+    /// Engine-level PCAP captures the encrypted QUIC packets in processUDPPacket's writeToPCAP call.
     private func processQUICMITMInbound(_ data: Data, originalPacket: IPPacket, srcIP: String, srcPort: UInt16) {
         let toApp: [Data]
         if let manager = quicMITMManager {
