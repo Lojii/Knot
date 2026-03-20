@@ -35,8 +35,7 @@ else
     cd "$QUICHE_SRC"
 fi
 
-# Clean previous build artifacts (source stays cached)
-cargo clean 2>/dev/null || true
+# No cargo clean needed — each platform uses a different --target, so builds don't conflict.
 
 # Step 2: Set up iOS SDK paths
 IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
