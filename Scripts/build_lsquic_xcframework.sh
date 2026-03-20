@@ -17,10 +17,14 @@ OUTPUT_DIR="$PROJECT_ROOT/Frameworks"
 
 echo "=== Building lsquic XCFramework ==="
 
-# Step 1: Clone lsquic with submodules (includes BoringSSL)
+# Step 1: Clone lsquic with submodules
 echo "--- Clone lsquic ---"
 git clone --depth 1 --recursive https://github.com/litespeedtech/lsquic.git "$WORK_DIR/lsquic" 2>&1 | tail -3
 cd "$WORK_DIR/lsquic"
+
+# Step 1b: Clone BoringSSL (not a submodule of lsquic)
+echo "--- Clone BoringSSL ---"
+git clone --depth 1 https://boringssl.googlesource.com/boringssl "$WORK_DIR/lsquic/third_party/boringssl" 2>&1 | tail -3
 
 if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "all" ]]; then
     IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
