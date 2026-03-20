@@ -39,7 +39,7 @@ fi
 # but aarch64-apple-ios-sim needs iphonesimulator SDK.
 # Fix: change the aarch64 entry to detect sim target via env var.
 BUILDRS="$QUICHE_SRC/quiche/src/build.rs"
-if ! grep -q 'iphonesimulator' "$BUILDRS" 2>/dev/null; then
+if ! grep -q 'aarch64-sim' "$BUILDRS" 2>/dev/null; then
     echo "--- Patching build.rs for aarch64 iOS Simulator ---"
     # Replace the single aarch64/iphoneos entry with runtime detection
     python3 -c "
