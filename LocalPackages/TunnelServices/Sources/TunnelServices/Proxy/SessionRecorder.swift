@@ -239,6 +239,46 @@ public class SessionRecorder {
         _downloadBytes += Int64(bytes)
     }
 
+    // MARK: - TLS Handshake Sniffing (for tunnel passthrough)
+
+    /// Record TLS ClientHello metadata extracted by TLSClientSniffHandler.
+    public func recordTLSClientInfo(version: String, recordVersion: String,
+                                    cipherSuites: [UInt16], sni: String?, alpn: [String]?) {
+        // Update host from SNI if available (more accurate than CONNECT host)
+        if let sni = sni, !sni.isEmpty {
+            session.host = sni
+            httpRecorder?.updateHost(sni)
+        }
+
+        var tlsMeta: [String: Any] = [
+            "tlsClientVersion": version,
+            "tlsRecordVersion": recordVersion,
+            "tlsCipherSuitesCount": cipherSuites.count,
+            "tlsCipherSuites": cipherSuites.prefix(20).map { String(format: "0x%04X", $0) },
+        ]
+        if let sni = sni { tlsMeta["tlsSNI"] = sni }
+        if let alpn = alpn { tlsMeta["tlsALPN"] = alpn }
+
+        httpRecorder?.mergeMetadata(tlsMeta)
+    }
+
+    /// Record TLS ServerHello metadata extracted by TLSServerSniffHandler.
+    public func recordTLSServerInfo(version: String, selectedCipher: UInt16) {
+        httpRecorder?.mergeMetadata([
+            "tlsServerVersion": version,
+            "tlsSelectedCipher": String(format: "0x%04X", selectedCipher),
+        ])
+    }
+
+    /// Record certificate chain subjects from ServerHello Certificate message.
+    public func recordTLSCertificateChain(subjects: [String]) {
+        guard !subjects.isEmpty else { return }
+        httpRecorder?.mergeMetadata([
+            "tlsCertChain": subjects,
+            "tlsCertSubject": subjects.first ?? "",
+        ])
+    }
+
     // MARK: - Ensure Recorder for Non-HTTP Paths
 
     /// Ensure httpRecorder is initialized for connections that bypass normal HTTP decoding

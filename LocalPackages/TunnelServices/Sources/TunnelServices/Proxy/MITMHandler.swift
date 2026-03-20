@@ -158,13 +158,17 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             protocolOverride: "HTTPS",
             method: "CONNECT", uri: "\(host):\(port)"
         )
+        // Sniff TLS handshake before tunneling
+        _ = context.pipeline.addHandler(
+            TLSClientSniffHandler(recorder: recorder), name: "tls.sniff.client", position: .first
+        )
         let tunnel = TunnelHandler(
             recorder: recorder,
             task: task,
             targetHost: host,
             targetPort: port
         )
-        _ = context.pipeline.addHandler(tunnel, name: "tunnel", position: .first)
+        _ = context.pipeline.addHandler(tunnel, name: "tunnel")
         // Forward the buffered ClientHello to start the tunnel
         context.fireChannelRead(wrapInboundOut(buffer))
         _ = context.pipeline.removeHandler(name: "mitm")

@@ -89,12 +89,16 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             )
             _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
         } else {
-            // Raw tunnel - no TLS interception, but still record metadata
+            // Raw tunnel - no TLS interception, but sniff TLS handshake for metadata
             recorder.session.schemes = "HTTPS(Tunnel)"
             recorder.ensureHttpRecorder(
                 host: request.host, port: request.port,
                 protocolOverride: "HTTPS",
                 method: "CONNECT", uri: head.uri
+            )
+            // Add TLS sniff handler before TunnelHandler to extract ClientHello info
+            _ = context.pipeline.addHandler(
+                TLSClientSniffHandler(recorder: recorder), name: "tls.sniff.client", position: .first
             )
             let tunnel = TunnelHandler(
                 recorder: recorder,
@@ -102,7 +106,7 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
                 targetHost: request.host,
                 targetPort: request.port
             )
-            _ = context.pipeline.addHandler(tunnel, name: "tunnel", position: .first)
+            _ = context.pipeline.addHandler(tunnel, name: "tunnel")
         }
     }
 

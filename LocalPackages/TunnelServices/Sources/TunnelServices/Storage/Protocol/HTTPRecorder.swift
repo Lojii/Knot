@@ -55,6 +55,20 @@ public class HTTPRecorder: ProtocolRecorder {
         self.startedAt = Date().timeIntervalSince1970
     }
 
+    // MARK: - Mutable Helpers
+
+    /// Update host after initial creation (e.g. when SNI is extracted from TLS handshake).
+    public func updateHost(_ newHost: String) {
+        // host is let — use a mutable override
+        _hostOverride = newHost
+    }
+    private var _hostOverride: String?
+
+    /// Merge additional metadata (e.g. TLS handshake info).
+    public func mergeMetadata(_ meta: [String: Any]) {
+        extraMetadata.merge(meta) { _, new in new }
+    }
+
     // MARK: - Recording Methods
 
     public func recordRequestHead(method: String, uri: String, httpVersion: String, headers: [(String, String)]) {
@@ -85,7 +99,8 @@ public class HTTPRecorder: ProtocolRecorder {
     // MARK: - ProtocolRecorder
 
     public func buildFlowRecord() -> FlowRecord {
-        var record = FlowRecord(flowId: flowId, protocolName: protocolOverride ?? Self.protocolName, host: host, port: port, startedAt: startedAt)
+        let effectiveHost = _hostOverride ?? host
+        var record = FlowRecord(flowId: flowId, protocolName: protocolOverride ?? Self.protocolName, host: effectiveHost, port: port, startedAt: startedAt)
 
         record.endedAt = endedAt
         if let ended = endedAt {

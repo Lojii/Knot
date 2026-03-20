@@ -49,11 +49,15 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelInitializer { [weak self] channel in
                 guard let self = self else { return channel.eventLoop.makeSucceededVoidFuture() }
+                // Add TLS server sniff handler to extract ServerHello + Certificate
+                let serverSniff = TLSServerSniffHandler(recorder: self.recorder)
                 let relay = TunnelRelayHandler(
                     recorder: self.recorder,
                     peerChannel: context.channel
                 )
-                return channel.pipeline.addHandler(relay, name: "tunnel.relay")
+                return channel.pipeline.addHandler(serverSniff, name: "tls.sniff.server").flatMap {
+                    channel.pipeline.addHandler(relay, name: "tunnel.relay")
+                }
             }
 
         let future = bootstrap.connect(host: targetHost, port: targetPort)
