@@ -137,9 +137,10 @@ if [[ "$PLATFORM" == "macos" || "$PLATFORM" == "all" ]]; then
         -DCMAKE_SYSTEM_NAME=Darwin \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
         -DBORINGSSL_DIR="$BSSL_MACOS" \
+        -DBORINGSSL_INCLUDE="$WORK_DIR/lsquic/third_party/boringssl/include" \
         -DLSQUIC_BIN=OFF \
         -DLSQUIC_TESTS=OFF \
-        2>&1 | tail -3
+        2>&1 | tail -10
     cmake --build . --config Release --target lsquic -j$(sysctl -n hw.ncpu) 2>&1 | tail -3
     MACOS_LIB="$WORK_DIR/lsquic/build-macos/src/liblsquic/liblsquic.a"
     cd ..
