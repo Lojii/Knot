@@ -16,6 +16,13 @@ public let TaskDidChangedNotification = AppNotification.taskDidChanged
 public let TaskValueDidChanged = AppNotification.taskValueDidChanged
 public let TaskConfigDidChanged = AppNotification.taskConfigDidChanged
 
+/// Protocol for dashboard push interface.
+/// Implemented by DashboardServer (Task 2) to receive real-time flow data.
+public protocol DashboardPushable: AnyObject {
+    var hasClients: Bool { get }
+    func pushFlow(_ flowData: [String: Any])
+}
+
 public class CaptureTask: NSObject {
 
     // MARK: - Persisted properties (mapped to catalog.db capture_task table)
@@ -77,6 +84,10 @@ public class CaptureTask: NSObject {
     /// Set by the app layer (UI / system extension) before starting capture.
     /// When false, all HTTPS connections use tunnel passthrough (no MITM attempt).
     public var isCACertTrusted: Bool = false
+
+    /// Dashboard server for real-time push (set by ProxyServer).
+    /// Weak reference — ProxyServer owns the DashboardServer.
+    public weak var dashboardServer: DashboardPushable?
 }
 
 // MARK: - MITM Failed Host Tracker
@@ -113,6 +124,11 @@ public final class MITMFailedHostTracker {
     /// Clear all entries (e.g., when user installs CA cert).
     public func clear() {
         lock.withLock { hosts.removeAll() }
+    }
+
+    /// Number of hosts currently in the failed tracker.
+    public var count: Int {
+        lock.withLock { hosts.count }
     }
 }
 

@@ -134,6 +134,19 @@ public enum ProxyConfig {
         public static let maxPendingRequests: Int = 16
     }
 
+    // MARK: - Dashboard (Real-Time)
+
+    public enum Dashboard {
+        /// HTTP+WebSocket port for real-time dashboard
+        public static var port: Int = 9090
+        /// Enable dashboard server
+        public static var enabled: Bool = true
+        /// System metrics push interval (ms)
+        public static var metricsIntervalMs: Int = 2000
+        /// Stats summary push interval (ms)
+        public static var statsIntervalMs: Int = 1000
+    }
+
     // MARK: - Database
 
     public enum Database {

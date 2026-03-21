@@ -257,4 +257,13 @@ public final class OutboundConnectionPool {
         defer { lock.unlock() }
         return pool[key]?.count ?? 0
     }
+
+    /// Returns per-key connection counts for dashboard metrics.
+    public func perKeyBreakdown() -> [(key: String, count: Int)] {
+        lock.lock()
+        defer { lock.unlock() }
+        return pool.map { (key, entries) in
+            ("\(key.host):\(key.port):\(key.isSSL ? "ssl" : "tcp")", entries.count)
+        }
+    }
 }
