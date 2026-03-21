@@ -43,6 +43,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     private var isWebSocketUpgrade = false
 
     // Keep-alive state
+    private var _keepAliveIndex: Int = 0
     private var responseRelayHandler: ResponseRelayHandler?
     private weak var _channel: Channel?       // weak ref for idle timeout scheduling
     private var idleTimeoutTask: Scheduled<Void>?
@@ -125,6 +126,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             } else {
                 // Reusing existing connection — update request version on relay handler
                 responseRelayHandler?.requestVersion = currentRequestVersion
+                _keepAliveIndex += 1
+                recorder.markConnectionReuse(.keepAlive, requestIndex: _keepAliveIndex)
+                recorder.addProtoFlag(.pipelining)
             }
 
             enqueueOrSend(.head(head))
@@ -170,6 +174,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 AxLogger.log("[HTTPCapture] Reusing pooled connection to \(req.host):\(req.port)", level: .Info)
                 self.clientChannel = result.channel
                 self.pooledCreatedAt = result.createdAt
+                recorder.markConnectionReuse(.pooled, poolKey: "\(req.host):\(req.port):\(req.ssl)")
 
                 // Swap the ResponseRelayHandler in the pooled channel's pipeline.
                 // Remove old relay handler (if present) and add the new one.
@@ -454,6 +459,11 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
                     )
                 }
                 return
+            }
+
+            // Record keep-alive flag before closing (recordClosed persists to DB)
+            if shouldKeepAlive() {
+                recorder.addProtoFlag(.keepAlive)
             }
 
             // Finalize this cycle's recorder
