@@ -15,10 +15,15 @@ public class ProxyServer {
     private let workerGroup: MultiThreadedEventLoopGroup
     private(set) var localChannel: Channel?
     private var wifiChannel: Channel?
+    private(set) var udpChannel: Channel?
 
     /// The port the local server is actually bound to (useful when binding to port 0).
     public var localBoundPort: Int? {
         localChannel?.localAddress?.port
+    }
+
+    public var udpBoundPort: Int? {
+        udpChannel?.localAddress?.port
     }
 
     public init(
@@ -115,6 +120,38 @@ public class ProxyServer {
         AxLogger.log("\(isWifi ? "Wifi" : "Local") Server started on \(channel.localAddress?.description ?? "unknown")", level: .Info)
         callback(.success(()))
 
+        // Start QUIC/UDP proxy if HTTP3 is enabled
+        if !isWifi && ProxyConfig.HTTP3.enabled && task.sslEnable == 1 {
+            let certPath: String
+            let keyPath: String
+            if let certDir = CertStore.certDirectoryURL() {
+                certPath = CertStore.filePath(in: certDir, name: ProxyConfig.CertFiles.caCert)
+                keyPath = CertStore.filePath(in: certDir, name: ProxyConfig.CertFiles.caKey)
+            } else {
+                certPath = ""
+                keyPath = ""
+            }
+
+            let mitmManager = QUICMITMManager(task: task, certPath: certPath, keyPath: keyPath)
+
+            // Pin all QUIC work to a single event loop to avoid NSLock contention
+            let quicEventLoop = self.workerGroup.next()
+            let udpBootstrap = DatagramBootstrap(group: quicEventLoop)
+                .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
+                .channelInitializer { channel in
+                    channel.pipeline.addHandler(
+                        QUICProxyHandler(mitmManager: mitmManager)
+                    )
+                }
+
+            if let udpCh = try? udpBootstrap.bind(host: host, port: ProxyConfig.HTTP3.udpPort).wait() {
+                self.udpChannel = udpCh
+                AxLogger.log("[ProxyServer] QUIC UDP proxy bound on \(host):\(udpCh.localAddress?.port ?? 0)", level: .Info)
+            } else {
+                AxLogger.log("[ProxyServer] Failed to bind QUIC UDP port", level: .Error)
+            }
+        }
+
         // Block until channel closes
         try? channel.closeFuture.wait()
 
@@ -129,6 +166,9 @@ public class ProxyServer {
     // MARK: - Shutdown
 
     public func stop(completionHandler: (() -> Void)? = nil) {
+        udpChannel?.close(mode: .all, promise: nil)
+        udpChannel = nil
+
         localChannel?.close(mode: .input, promise: nil)
         wifiChannel?.close(mode: .input, promise: nil)
 
