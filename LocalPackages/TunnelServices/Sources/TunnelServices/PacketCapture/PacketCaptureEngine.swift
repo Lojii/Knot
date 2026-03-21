@@ -208,7 +208,11 @@ public class PacketCaptureEngine {
     private func processQUICMITMInbound(_ data: Data, originalPacket: IPPacket, srcIP: String, srcPort: UInt16) {
         let toApp: [Data]
         if let manager = quicMITMManager {
-            toApp = manager.processInbound(data, srcIP: srcIP, srcPort: srcPort)
+            let result = manager.processInbound(data, srcIP: srcIP, srcPort: srcPort)
+            toApp = result.toApp
+            // result.toServer contains MITM↔server handshake continuation packets.
+            // In a full implementation these would be forwarded to the real server;
+            // currently the outbound path handles most of the MITM↔server traffic.
         } else if let manager = lsquicMITMManager {
             toApp = manager.processInbound(data, srcIP: srcIP, srcPort: srcPort)
         } else {

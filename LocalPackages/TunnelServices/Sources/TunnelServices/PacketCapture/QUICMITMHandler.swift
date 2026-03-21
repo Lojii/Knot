@@ -38,6 +38,20 @@ public class QUICMITMSession {
     // Client-side (Proxy → Real Server) quiche connection
     var serverConn: QUICConnection?
 
+    /// The SCID used by the MITM's server-side (accepts from app) connection.
+    /// After handshake, the client uses this as DCID in short header packets.
+    private(set) var clientFacingSCID: Data?
+
+    /// The SCID used by the MITM's client-side (connects to real server) connection.
+    /// Server response packets will have this as their DCID.
+    private(set) var serverSCID: Data?
+
+    // Stored addresses for recv calls (quiche dereferences these)
+    private var clientLocalAddr: sockaddr_in = makeIPv4Addr(ip: "127.0.0.1", port: 0)
+    private var clientPeerAddr: sockaddr_in = makeIPv4Addr(ip: "0.0.0.0", port: 0)
+    private var serverLocalAddr: sockaddr_in = makeIPv4Addr(ip: "127.0.0.1", port: 0)
+    private var serverPeerAddr: sockaddr_in = makeIPv4Addr(ip: "0.0.0.0", port: 0)
+
     // HTTP/3 connections
     var clientH3: HTTP3Connection?
     var serverH3: HTTP3Connection?
@@ -73,12 +87,21 @@ public class QUICMITMSession {
         clientConfig.applyDefaults()
         clientConfig.verifyPeer(false)  // We're the MITM, skip verification
 
-        // Create connections with dummy sockaddr (quiche needs them but we handle UDP ourselves)
-        let scid = generateConnectionId()
+        // Create connections with dummy sockaddr (quiche needs them for recv calls)
+        let serverSideSCID = generateConnectionId()  // MITM's server-side own SCID
+        let clientSideSCID = generateConnectionId()   // MITM's client-side own SCID
+        self.clientFacingSCID = serverSideSCID
+        self.serverSCID = clientSideSCID
         let localAddr = makeIPv4Addr(ip: "127.0.0.1", port: 0)
         let peerAddr = makeIPv4Addr(ip: "0.0.0.0", port: serverPort)
-        clientConn = QUICConnection(scid: connectionId, odcid: nil, localAddr: localAddr, peerAddr: peerAddr, config: serverConfig)
-        serverConn = QUICConnection(serverName: serverName, scid: scid, localAddr: localAddr, peerAddr: peerAddr, config: clientConfig)
+        clientLocalAddr = localAddr
+        clientPeerAddr = peerAddr
+        serverLocalAddr = localAddr
+        serverPeerAddr = peerAddr
+        // Server-side connection (accepts from App): SCID=server-chosen, ODCID=client's initial DCID
+        clientConn = QUICConnection(scid: serverSideSCID, odcid: connectionId, localAddr: localAddr, peerAddr: peerAddr, config: serverConfig)
+        // Client-side connection (connects to real server)
+        serverConn = QUICConnection(serverName: serverName, scid: clientSideSCID, localAddr: localAddr, peerAddr: peerAddr, config: clientConfig)
 
         guard clientConn != nil && serverConn != nil else {
             AxLogger.log("QUIC MITM: Failed to create connections for \(serverName)", level: .Error)
@@ -91,9 +114,10 @@ public class QUICMITMSession {
     // MARK: - Process Packets
 
     /// Process an incoming QUIC packet from the App.
-    public func processClientPacket(_ data: Data) -> [Data] {
-        guard let conn = clientConn else { return [] }
-        let _ = conn.recv(data)
+    /// Returns (toApp, toServer): packets to send to the client and packets to send to the real server.
+    public func processClientPacket(_ data: Data) -> (toApp: [Data], toServer: [Data]) {
+        guard let conn = clientConn else { return ([], []) }
+        let _ = conn.recv(data, from: clientPeerAddr, to: clientLocalAddr)
 
         // Check if connection is established → setup HTTP/3
         if conn.isEstablished && clientH3 == nil {
@@ -102,23 +126,33 @@ public class QUICMITMSession {
             AxLogger.log("QUIC MITM: HTTP/3 established with client for \(serverName)", level: .Info)
         }
 
-        // Poll HTTP/3 events from client
+        // Poll HTTP/3 events from client (may forward requests to serverConn)
         if let h3 = clientH3 {
             pollClientEvents(h3, conn: conn)
         }
 
-        // Generate response packets
-        var outPackets = [Data]()
+        // Drain clientConn outbound → these go to the App
+        var toApp = [Data]()
         while let packet = conn.send() {
-            outPackets.append(packet)
+            toApp.append(packet)
         }
-        return outPackets
+
+        // Drain serverConn outbound → these go to the real server
+        var toServer = [Data]()
+        if let sConn = serverConn {
+            while let packet = sConn.send() {
+                toServer.append(packet)
+            }
+        }
+
+        return (toApp, toServer)
     }
 
     /// Process a response QUIC packet from the real server.
-    public func processServerPacket(_ data: Data) -> [Data] {
-        guard let conn = serverConn else { return [] }
-        let _ = conn.recv(data)
+    /// Returns (toApp, toServer): packets to send to the client and packets to send back to the server.
+    public func processServerPacket(_ data: Data) -> (toApp: [Data], toServer: [Data]) {
+        guard let conn = serverConn else { return ([], []) }
+        let _ = conn.recv(data, from: serverPeerAddr, to: serverLocalAddr)
 
         if conn.isEstablished && serverH3 == nil {
             let h3Config = HTTP3Config()
@@ -126,17 +160,26 @@ public class QUICMITMSession {
             AxLogger.log("QUIC MITM: HTTP/3 established with server \(serverName)", level: .Info)
         }
 
-        // Poll HTTP/3 events from server (responses)
+        // Poll HTTP/3 events from server (may forward responses to clientConn)
         if let h3 = serverH3 {
             pollServerEvents(h3, conn: conn)
         }
 
-        // Generate outbound packets to server
-        var outPackets = [Data]()
+        // Drain serverConn outbound → these go back to the real server (handshake cont.)
+        var toServer = [Data]()
         while let packet = conn.send() {
-            outPackets.append(packet)
+            toServer.append(packet)
         }
-        return outPackets
+
+        // Drain clientConn outbound → these go to the App (forwarded responses)
+        var toApp = [Data]()
+        if let cConn = clientConn {
+            while let packet = cConn.send() {
+                toApp.append(packet)
+            }
+        }
+
+        return (toApp, toServer)
     }
 
     // MARK: - HTTP/3 Event Processing
@@ -304,6 +347,25 @@ public class QUICMITMManager {
     private let keyPath: String
     private let lock = NSLock()
 
+    /// Look up a session by exact DCID match, or by prefix match for short headers
+    /// where the DCID length is not known from the packet.
+    private func findSession(dcid: Data, isShortHeader: Bool) -> QUICMITMSession? {
+        // Try exact match first
+        if let session = sessions[dcid] { return session }
+
+        // For short headers, the DCID length is a heuristic (8 bytes by default).
+        // The actual DCID may be longer (e.g. 16 bytes). Try prefix matching.
+        if isShortHeader {
+            for (key, session) in sessions {
+                if key.count > dcid.count && key.prefix(dcid.count) == dcid {
+                    return session
+                }
+            }
+        }
+
+        return nil
+    }
+
     public init(task: CaptureTask, certPath: String, keyPath: String) {
         self.task = task
         self.certPath = certPath
@@ -322,7 +384,7 @@ public class QUICMITMManager {
 
         lock.lock()
         let session: QUICMITMSession
-        if let existing = sessions[connId] {
+        if let existing = findSession(dcid: connId, isShortHeader: !header.isLongHeader) {
             session = existing
         } else {
             // New session
@@ -335,49 +397,70 @@ public class QUICMITMManager {
                 return ([], [])
             }
             sessions[connId] = newSession
+            // Also index by the MITM's connection IDs for session lookup
+            if let clientFacingSCID = newSession.clientFacingSCID {
+                sessions[clientFacingSCID] = newSession
+            }
+            if let serverSCID = newSession.serverSCID {
+                sessions[serverSCID] = newSession
+            }
             session = newSession
             AxLogger.log("QUIC MITM: New session for \(sni):\(dstPort)", level: .Info)
         }
         lock.unlock()
 
-        // Process through MITM
-        let toApp = session.processClientPacket(data)
+        // Process through MITM — returns (toApp, toServer)
+        let result = session.processClientPacket(data)
 
-        // Generate initial handshake packets for the real server
-        var toServer = [(Data, String, UInt16)]()
-        if let serverConn = session.serverConn {
-            while let packet = serverConn.send() {
-                toServer.append((packet, dstIP, dstPort))
-            }
+        // Wrap toServer packets with destination info
+        var toServer = result.toServer.map { (pkt: Data) -> (Data, String, UInt16) in
+            (pkt, dstIP, dstPort)
         }
 
         // Clean up closed sessions
         if session.isClosed {
             lock.lock()
             sessions.removeValue(forKey: connId)
+            if let clientFacingSCID = session.clientFacingSCID {
+                sessions.removeValue(forKey: clientFacingSCID)
+            }
+            if let serverSCID = session.serverSCID {
+                sessions.removeValue(forKey: serverSCID)
+            }
             lock.unlock()
         }
 
-        return (toApp, toServer)
+        return (result.toApp, toServer)
     }
 
     /// Process an inbound QUIC packet (Internet → App).
-    public func processInbound(_ data: Data, srcIP: String, srcPort: UInt16) -> [Data] {
-        guard let header = QUICDecoder.parseHeader(data) else { return [] }
+    /// Returns (toApp, toServer): packets for the client app, and packets to send back to the server.
+    public func processInbound(_ data: Data, srcIP: String, srcPort: UInt16) -> (toApp: [Data], toServer: [(Data, String, UInt16)]) {
+        guard let header = QUICDecoder.parseHeader(data) else { return ([], []) }
 
         lock.lock()
-        guard let session = sessions[header.dcid] else {
+        guard let session = findSession(dcid: header.dcid, isShortHeader: !header.isLongHeader) else {
             lock.unlock()
-            return []
+            return ([], [])
         }
         lock.unlock()
 
-        return session.processServerPacket(data)
+        let result = session.processServerPacket(data)
+        let toServer = result.toServer.map { (pkt: Data) -> (Data, String, UInt16) in
+            (pkt, srcIP, srcPort)
+        }
+        return (result.toApp, toServer)
     }
 
     public var activeSessions: Int {
         lock.lock(); defer { lock.unlock() }
-        return sessions.count
+        // Each session may be indexed by up to 2 keys (connId + serverSCID)
+        // Deduplicate by counting unique object identities
+        var unique = Set<ObjectIdentifier>()
+        for session in sessions.values {
+            unique.insert(ObjectIdentifier(session))
+        }
+        return unique.count
     }
 
     public func shutdown() {
@@ -392,7 +475,7 @@ public class QUICMITMManager {
 public class QUICMITMManager {
     public init(task: CaptureTask, certPath: String, keyPath: String) {}
     public func processOutbound(_ data: Data, dstIP: String, dstPort: UInt16) -> (toApp: [Data], toServer: [(Data, String, UInt16)]) { ([], []) }
-    public func processInbound(_ data: Data, srcIP: String, srcPort: UInt16) -> [Data] { [] }
+    public func processInbound(_ data: Data, srcIP: String, srcPort: UInt16) -> (toApp: [Data], toServer: [(Data, String, UInt16)]) { ([], []) }
     public var activeSessions: Int { 0 }
     public func shutdown() {}
 }
