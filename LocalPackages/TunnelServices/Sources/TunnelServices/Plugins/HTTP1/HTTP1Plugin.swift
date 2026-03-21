@@ -41,6 +41,12 @@ public final class HTTP1Plugin: ProtocolPlugin {
                 pipeline.addHandler(HTTPServerPipelineHandler(), name: "http1.pipelining")
             }
             .flatMap {
+                // ConnectHandler intercepts CONNECT requests for HTTPS tunneling;
+                // non-CONNECT requests pass through to HTTPCaptureHandler.
+                let connectHandler = ConnectHandler(task: context.task, recorder: context.recorder)
+                return pipeline.addHandler(connectHandler, name: "http1.connect")
+            }
+            .flatMap {
                 pipeline.addHandler(
                     HTTPCaptureHandler(recorder: context.recorder, isSSL: isSSL),
                     name: "http1.captureHandler"

@@ -32,6 +32,7 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let buffer = unwrapInboundIn(data)
         recorder.addUpload(buffer.readableBytes)
+        AxLogger.log("[Tunnel] channelRead \(targetHost):\(targetPort), bytes=\(buffer.readableBytes), connected=\(connected), hasChannel=\(clientChannel != nil)", level: .Warning)
 
         if clientChannel == nil && !targetHost.isEmpty {
             connectToServer(context: context)
@@ -60,15 +61,18 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
                 }
             }
 
+        AxLogger.log("[Tunnel] connecting to \(targetHost):\(targetPort)...", level: .Warning)
         let future = bootstrap.connect(host: targetHost, port: targetPort)
         future.whenComplete { [weak self] result in
             switch result {
             case .success(let channel):
+                AxLogger.log("[Tunnel] connected to \(self?.targetHost ?? ""):\(self?.targetPort ?? 0), pending=\(self?.pendingData.count ?? 0)", level: .Warning)
                 self?.clientChannel = channel
                 self?.connected = true
                 self?.recorder.recordConnected(remoteAddress: channel.remoteAddress)
                 self?.flushPending()
             case .failure(let error):
+                AxLogger.log("[Tunnel] connect FAILED to \(self?.targetHost ?? ""):\(self?.targetPort ?? 0): \(error)", level: .Error)
                 self?.recorder.recordError("\(self?.targetHost ?? "") connect error: \(error)")
                 self?.recorder.session.sstate = "failure"
                 context.channel.close(promise: nil)
@@ -90,6 +94,8 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        AxLogger.log("[Tunnel] Error for \(targetHost):\(targetPort): \(error)", level: .Error)
+        recorder.recordError("Tunnel error for \(targetHost): \(error)")
         clientChannel?.close(mode: .all, promise: nil)
         context.close(promise: nil)
     }
@@ -109,6 +115,7 @@ final class TunnelRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let buffer = unwrapInboundIn(data)
+        AxLogger.log("[TunnelRelay] server → client, bytes=\(buffer.readableBytes)", level: .Warning)
         recorder.addDownload(buffer.readableBytes)
         peerChannel?.writeAndFlush(buffer, promise: nil)
     }
@@ -118,6 +125,7 @@ final class TunnelRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
+        AxLogger.log("[TunnelRelay] Error relaying from server: \(error)", level: .Error)
         peerChannel?.close(mode: .all, promise: nil)
         context.close(promise: nil)
     }

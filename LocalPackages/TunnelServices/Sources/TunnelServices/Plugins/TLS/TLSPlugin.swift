@@ -64,13 +64,15 @@ public final class TLSPlugin: ProtocolPlugin {
             localAddress: channel.remoteAddress, isSSL: true
         )
 
+        // TODO: Rule matching will be rewritten (whitelist/blacklist/pattern modes).
+        // For now, capture all traffic when sslEnable is on.
         let shouldIntercept = task.sslEnable == 1
-            && !task.ruleEngine.matching(host: host, uri: "/", target: "")
+        AxLogger.log("[TLSPlugin] host=\(host) sslEnable=\(task.sslEnable) sni=\(sni ?? "nil") → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
 
         if shouldIntercept && sni != nil {
             // MITM path — generate a dynamic cert and decrypt the stream.
             let mitmHandler = MITMHandler(task: task, recorder: recorder, host: host, port: port)
-            return channel.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
+            return channel.pipeline.addHandler(mitmHandler, name: "mitm")
         } else {
             // Tunnel passthrough with passive TLS sniffing.
             recorder.session.schemes = "HTTPS(Tunnel)"
@@ -82,8 +84,7 @@ public final class TLSPlugin: ProtocolPlugin {
             )
             return channel.pipeline.addHandler(
                 TLSClientSniffHandler(recorder: recorder),
-                name: "tls.sniff.client",
-                position: .first
+                name: "tls.sniff.client"
             ).flatMap {
                 let tunnel = TunnelHandler(recorder: recorder, task: task,
                                            targetHost: host, targetPort: port)

@@ -32,18 +32,31 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
 
         switch part {
         case .head(let head):
-            requestHead = head
+            if head.method == .CONNECT {
+                requestHead = head
+            } else {
+                // Not a CONNECT request — pass through to the next handler (HTTPCaptureHandler)
+                context.fireChannelRead(data)
+            }
 
         case .body:
-            break  // CONNECT has no body
+            if requestHead != nil {
+                break  // CONNECT has no body
+            } else {
+                context.fireChannelRead(data)
+            }
 
         case .end:
-            guard let head = requestHead else { return }
-            handleConnect(context: context, head: head)
+            if let head = requestHead {
+                handleConnect(context: context, head: head)
+            } else {
+                context.fireChannelRead(data)
+            }
         }
     }
 
     private func handleConnect(context: ChannelHandlerContext, head: HTTPRequestHead) {
+        AxLogger.log("[CONNECT] received CONNECT \(head.uri)", level: .Warning)
         let request = NetRequest(head)
         request.ssl = true
 
@@ -52,13 +65,9 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         recorder.session.host = request.host
         recorder.session.schemes = "Https"
 
-        // Apply rule matching
-        recorder.session.ignore = task.ruleEngine.matching(
-            host: recorder.session.host ?? "", uri: head.uri, target: recorder.session.target ?? ""
-        )
-        if task.ruleEngine.defaultStrategy == .COPY {
-            recorder.session.ignore = !recorder.session.ignore
-        }
+        // TODO: Rule matching will be rewritten (whitelist/blacklist/pattern modes).
+        // For now, capture all traffic.
+        recorder.session.ignore = false
 
         // Send 200 Connection Established
         let response = HTTPResponseHead(
@@ -70,12 +79,19 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
 
         // Remove all HTTP handlers from pipeline (we're switching to raw bytes or TLS)
-        context.pipeline.removeHandler(name: "https.requestDecoder", promise: nil)
-        context.pipeline.removeHandler(name: "https.responseEncoder", promise: nil)
-        context.pipeline.removeHandler(name: "https.pipelining", promise: nil)
+        // Try both naming conventions (http1.* from HTTP1Plugin, https.* from legacy)
+        for prefix in ["http1", "https"] {
+            context.pipeline.removeHandler(name: "\(prefix).requestDecoder", promise: nil)
+            context.pipeline.removeHandler(name: "\(prefix).responseEncoder", promise: nil)
+            context.pipeline.removeHandler(name: "\(prefix).pipelining", promise: nil)
+            context.pipeline.removeHandler(name: "\(prefix).captureHandler", promise: nil)
+        }
+        context.pipeline.removeHandler(name: "http1.connect", promise: nil)
         context.pipeline.removeHandler(name: "https.connect", promise: nil)
         // Decision: intercept TLS or tunnel raw bytes?
         let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore
+
+        AxLogger.log("[CONNECT] \(request.host):\(request.port) sslEnable=\(task.sslEnable) ignore=\(recorder.session.ignore) → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
 
         if shouldIntercept {
             // Add MITMHandler for TLS interception (handled by TLSPlugin in the tree)

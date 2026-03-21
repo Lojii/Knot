@@ -163,6 +163,7 @@ public final class ProtocolDispatcher: ChannelInboundHandler, RemovableChannelHa
 
     private func dispatch(to node: ProtocolNode, context: ChannelHandlerContext) {
         detectionComplete = true
+        AxLogger.log("[ProtocolDispatcher] detected protocol: \(node.plugin.id) (\(node.plugin.displayName)), remote=\(context.channel.remoteAddress?.description ?? "?")", level: .Warning)
 
         let protoCtx = ProtocolContext(
             channel:       context.channel,

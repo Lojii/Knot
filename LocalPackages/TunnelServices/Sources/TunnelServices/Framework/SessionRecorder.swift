@@ -89,13 +89,10 @@ public class SessionRecorder {
         session.reqEncoding = head.headers["Content-Encoding"].first ?? ""
         session.reqType = head.headers["Content-Type"].first ?? ""
 
+        // TODO: Rule matching will be rewritten (whitelist/blacklist/pattern modes).
+        // For now, capture all traffic.
         if !isSSL {
-            session.ignore = task.ruleEngine.matching(
-                host: session.host, uri: head.uri, target: session.target
-            )
-            if task.ruleEngine.defaultStrategy == .COPY {
-                session.ignore = !session.ignore
-            }
+            session.ignore = false
         }
 
         session.connectTime = Date().timeIntervalSince1970

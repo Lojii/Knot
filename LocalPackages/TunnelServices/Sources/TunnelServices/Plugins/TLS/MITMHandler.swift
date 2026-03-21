@@ -37,6 +37,8 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         handshakeTimeout?.cancel()
         let buffer = unwrapInboundIn(data)
 
+        AxLogger.log("[MITM] channelRead for \(host):\(port), bytes=\(buffer.readableBytes)", level: .Warning)
+
         // Validate TLS ClientHello
         guard isTLSClientHello(buffer) else {
             AxLogger.log("Expected TLS ClientHello but got non-TLS data for \(host)", level: .Error)
@@ -81,6 +83,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         }
 
         // Create TLS server context — advertise both h2 and http/1.1
+        AxLogger.log("[MITM] Setting up TLS context for \(host), cert ready", level: .Warning)
         let tlsConfig = TLSConfiguration.forServer(
             certificateChain: [.certificate(cert)],
             privateKey: .privateKey(rsaKey),
@@ -95,11 +98,14 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             return
         }
 
+        AxLogger.log("[MITM] TLS handshake starting with client for \(host)", level: .Warning)
+
         // Set up handshake timeout
         let handshakeTimeoutTask = context.channel.eventLoop.scheduleTask(
             in: .seconds(ProxyConfig.SSL.handshakeTimeout)
         ) { [weak self] in
-            self?.recorder.recordError("error:MITM handshake timeout for \(self?.host ?? "")")
+            AxLogger.log("[MITM] Handshake TIMEOUT for \(self?.host ?? "") — client may not trust our CA certificate", level: .Warning)
+            self?.recorder.recordError("error:MITM handshake timeout for \(self?.host ?? "") — CA certificate may not be installed on device")
             context.channel.close(mode: .all, promise: nil)
         }
 
@@ -107,6 +113,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         let alpnHandler = ApplicationProtocolNegotiationHandler { [weak self] result -> EventLoopFuture<Void> in
             handshakeTimeoutTask.cancel()
             guard let self = self else { return context.eventLoop.makeSucceededVoidFuture() }
+            AxLogger.log("[MITM] TLS handshake SUCCEEDED for \(self.host), ALPN result: \(result)", level: .Warning)
             self.recorder.recordHandshakeComplete()
 
             // Check ALPN result to decide HTTP version
@@ -114,9 +121,10 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             case .negotiated("h2"):
                 // HTTP/2 (gRPC, standard H2 traffic)
                 self.recorder.session.schemes = "H2"
-                AxLogger.log("ALPN negotiated h2 for \(self.host)", level: .Info)
+                AxLogger.log("[MITM] ALPN negotiated h2 for \(self.host)", level: .Warning)
                 return HTTP2CaptureBuilder.addPipeline(
-                    context: context, recorder: self.recorder
+                    context: context, recorder: self.recorder,
+                    targetHost: self.host, targetPort: self.port
                 )
             default:
                 // HTTP/1.1 (default)
@@ -136,7 +144,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     private func addHTTPCapturePipeline(context: ChannelHandlerContext) -> EventLoopFuture<Void> {
-        let captureHandler = HTTPCaptureHandler(recorder: recorder, isSSL: true)
+        let captureHandler = HTTPCaptureHandler(recorder: recorder, isSSL: true, targetPort: port)
         return context.pipeline.addHandler(
             ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .dropBytes)),
             name: "mitm.http.requestDecoder"
@@ -184,7 +192,20 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
-        recorder.recordError("MITMHandler error: \(error)")
+        let errorDesc = "\(error)"
+        // Detect SSL handshake failures — typically caused by untrusted CA certificate
+        if errorDesc.contains("ALERT_CERTIFICATE_UNKNOWN")
+            || errorDesc.contains("ALERT_BAD_CERTIFICATE")
+            || errorDesc.contains("ALERT_UNKNOWN_CA")
+            || errorDesc.contains("sslError")
+            || errorDesc.contains("CERTIFICATE_VERIFY_FAILED")
+            || error is NIOSSLError {
+            AxLogger.log("[MITM] TLS handshake FAILED for \(host): \(error) — client rejected our certificate. Is the CA certificate installed and trusted on the device?", level: .Error)
+            recorder.recordError("error:TLS handshake failed for \(host) — CA certificate not trusted by client: \(error)")
+        } else {
+            AxLogger.log("[MITM] Error for \(host): \(error)", level: .Error)
+            recorder.recordError("MITMHandler error for \(host): \(error)")
+        }
         context.channel.close(mode: .all, promise: nil)
     }
 }

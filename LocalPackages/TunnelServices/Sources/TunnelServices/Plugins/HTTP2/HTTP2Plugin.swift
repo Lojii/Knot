@@ -22,7 +22,9 @@ public final class HTTP2Plugin: ProtocolPlugin {
     /// calls `HTTP2CaptureBuilder.addPipeline` once a live
     /// `ChannelHandlerContext` is available.
     public func buildPipeline(context: ProtocolContext) -> EventLoopFuture<Void> {
-        let bridge = HTTP2PipelineBridge(recorder: context.recorder)
+        let host = context.metadata.innerHost ?? context.metadata.sni ?? "unknown"
+        let port = context.metadata.innerPort ?? 443
+        let bridge = HTTP2PipelineBridge(recorder: context.recorder, targetHost: host, targetPort: port)
         return context.channel.pipeline.addHandler(bridge, name: "http2.bridge")
     }
 
@@ -41,10 +43,14 @@ final class HTTP2PipelineBridge: ChannelInboundHandler, RemovableChannelHandler 
     typealias InboundOut = ByteBuffer
 
     private let recorder: SessionRecorder
+    private let targetHost: String
+    private let targetPort: Int
     private var installed = false
 
-    init(recorder: SessionRecorder) {
+    init(recorder: SessionRecorder, targetHost: String, targetPort: Int) {
         self.recorder = recorder
+        self.targetHost = targetHost
+        self.targetPort = targetPort
     }
 
     func channelActive(context: ChannelHandlerContext) {
@@ -53,7 +59,10 @@ final class HTTP2PipelineBridge: ChannelInboundHandler, RemovableChannelHandler 
             return
         }
         installed = true
-        HTTP2CaptureBuilder.addPipeline(context: context, recorder: recorder).whenComplete { _ in
+        HTTP2CaptureBuilder.addPipeline(
+            context: context, recorder: recorder,
+            targetHost: targetHost, targetPort: targetPort
+        ).whenComplete { _ in
             context.pipeline.removeHandler(name: "http2.bridge", promise: nil)
         }
         context.fireChannelActive()
