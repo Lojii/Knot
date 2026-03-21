@@ -12,7 +12,6 @@ public enum CatalogSchema {
                 stopped_at REAL,
                 status INTEGER NOT NULL DEFAULT 0,
                 rule_id INTEGER,
-                ssl_enabled INTEGER NOT NULL DEFAULT 0,
                 local_ip TEXT NOT NULL DEFAULT '127.0.0.1',
                 local_port INTEGER NOT NULL DEFAULT 8080,
                 local_enabled INTEGER NOT NULL DEFAULT 0,
@@ -55,5 +54,46 @@ public enum CatalogSchema {
         try db.execute("""
             CREATE INDEX IF NOT EXISTS idx_breakpoint_enabled ON breakpoint(enabled)
             """)
+
+        // Migrate: drop capture_task if it still has the removed ssl_enabled column
+        migrateDropSSLEnabled(db)
+    }
+
+    /// Drop and recreate capture_task if it has the legacy ssl_enabled column.
+    private static func migrateDropSSLEnabled(_ db: Connection) {
+        do {
+            let columns = try db.prepare("PRAGMA table_info(capture_task)")
+            let hasSSLEnabled = columns.contains { row in
+                (row[1] as? String) == "ssl_enabled"
+            }
+            if hasSSLEnabled {
+                AxLogger.log("[CatalogSchema] Migrating: dropping capture_task (ssl_enabled removed)", level: .Warning)
+                try db.execute("DROP TABLE IF EXISTS capture_task")
+                try db.execute("""
+                    CREATE TABLE IF NOT EXISTS capture_task (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL DEFAULT '',
+                        created_at REAL NOT NULL,
+                        started_at REAL,
+                        stopped_at REAL,
+                        status INTEGER NOT NULL DEFAULT 0,
+                        rule_id INTEGER,
+                        local_ip TEXT NOT NULL DEFAULT '127.0.0.1',
+                        local_port INTEGER NOT NULL DEFAULT 8080,
+                        local_enabled INTEGER NOT NULL DEFAULT 0,
+                        wifi_ip TEXT NOT NULL DEFAULT '',
+                        wifi_port INTEGER NOT NULL DEFAULT 0,
+                        wifi_enabled INTEGER NOT NULL DEFAULT 0,
+                        flow_count INTEGER NOT NULL DEFAULT 0,
+                        upload_bytes INTEGER NOT NULL DEFAULT 0,
+                        download_bytes INTEGER NOT NULL DEFAULT 0,
+                        note TEXT NOT NULL DEFAULT '',
+                        extra TEXT NOT NULL DEFAULT ''
+                    )
+                    """)
+            }
+        } catch {
+            AxLogger.log("[CatalogSchema] migration check failed: \(error)", level: .Error)
+        }
     }
 }

@@ -3,7 +3,7 @@
 //  TunnelServices
 //
 //  Unwrap plugin that detects a TLS ClientHello (content type 0x16) and
-//  either MITM-intercepts the stream (when sslEnable is on) or falls back
+//  either MITM-intercepts the stream (when isCACertTrusted) or falls back
 //  to tunnel passthrough with passive sniffing.
 //
 
@@ -14,7 +14,7 @@ import NIOHTTP1
 // MARK: - TLSPlugin
 
 /// Detects TLS ClientHello and configures the appropriate pipeline:
-/// - MITM path when `task.sslEnable == 1` and the host is not rule-ignored.
+/// - MITM path when `task.isCACertTrusted` and the host is not rule-ignored.
 /// - Tunnel passthrough + passive TLS sniff otherwise.
 ///
 /// This is an *unwrap* plugin: `createRecorder` returns `nil` because TLS
@@ -66,7 +66,7 @@ public final class TLSPlugin: ProtocolPlugin {
 
         // MITM if CA is trusted. Future: rule engine controls per-host interception.
         let shouldIntercept = task.isCACertTrusted
-        AxLogger.log("[TLSPlugin] host=\(host) sslEnable=\(task.sslEnable) sni=\(sni ?? "nil") → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
+        AxLogger.log("[TLSPlugin] host=\(host) caTrusted=\(task.isCACertTrusted) sni=\(sni ?? "nil") → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
 
         if shouldIntercept && sni != nil {
             // MITM path — generate a dynamic cert and decrypt the stream.

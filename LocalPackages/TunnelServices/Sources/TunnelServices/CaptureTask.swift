@@ -46,8 +46,7 @@ public class CaptureTask: NSObject {
     public var ruleName: String = ""
     public var ruleId: Int64?
     //
-    /// Deprecated: use isCACertTrusted instead. Kept for DB compatibility.
-    public var sslEnable: Int = 1
+    // sslEnable removed — use isCACertTrusted instead
     public var creatTime: TimeInterval?
     public var startTime: TimeInterval?
     public var stopTime: TimeInterval?

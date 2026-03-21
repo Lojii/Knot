@@ -98,10 +98,10 @@ public enum CatalogDAO {
     public static func insertFullTask(db: Connection, task: CaptureTask) throws -> Int64 {
         try db.run("""
             INSERT INTO capture_task
-                (name, created_at, started_at, stopped_at, status, rule_id, ssl_enabled,
+                (name, created_at, started_at, stopped_at, status, rule_id,
                  local_ip, local_port, local_enabled, wifi_ip, wifi_port, wifi_enabled,
                  flow_count, upload_bytes, download_bytes, note, extra)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             task.ruleName,
             task.creatTime ?? Date().timeIntervalSince1970,
@@ -109,7 +109,6 @@ public enum CatalogDAO {
             task.stopTime,
             Int64(task.numberOfUse),
             task.ruleId.map { Int64($0) },
-            Int64(task.sslEnable),
             task.localIP,
             Int64(task.localPort),
             Int64(task.localEnable),
@@ -130,7 +129,7 @@ public enum CatalogDAO {
         try db.run("""
             UPDATE capture_task SET
                 name = ?, started_at = ?, stopped_at = ?, status = ?, rule_id = ?,
-                ssl_enabled = ?, local_ip = ?, local_port = ?, local_enabled = ?,
+                local_ip = ?, local_port = ?, local_enabled = ?,
                 wifi_ip = ?, wifi_port = ?, wifi_enabled = ?,
                 flow_count = ?, upload_bytes = ?, download_bytes = ?,
                 note = ?, extra = ?
@@ -141,7 +140,6 @@ public enum CatalogDAO {
             task.stopTime,
             Int64(task.numberOfUse),
             task.ruleId.map { Int64($0) },
-            Int64(task.sslEnable),
             task.localIP,
             Int64(task.localPort),
             Int64(task.localEnable),
@@ -162,7 +160,7 @@ public enum CatalogDAO {
         do {
             let stmt = try db.prepare("""
                 SELECT id, name, created_at, started_at, stopped_at, status, rule_id,
-                       ssl_enabled, local_ip, local_port, local_enabled,
+                       local_ip, local_port, local_enabled,
                        wifi_ip, wifi_port, wifi_enabled,
                        flow_count, upload_bytes, download_bytes, note, extra
                 FROM capture_task ORDER BY id DESC LIMIT 1
@@ -176,18 +174,17 @@ public enum CatalogDAO {
                 task.stopTime = row[4] as? Double
                 task.numberOfUse = Int(row[5] as? Int64 ?? 0)
                 task.ruleId = row[6] as? Int64
-                task.sslEnable = Int(row[7] as? Int64 ?? 1)
-                task.localIP = row[8] as? String ?? ProxyConfig.LocalProxy.host
-                task.localPort = Int(row[9] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
-                task.localEnable = Int(row[10] as? Int64 ?? 1)
-                task.wifiIP = row[11] as? String ?? ""
-                task.wifiPort = Int(row[12] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
-                task.wifiEnable = Int(row[13] as? Int64 ?? 1)
-                task.interceptCount = row[14] as? Int64 ?? 0
-                task.uploadTraffic = row[15] as? Int64 ?? 0
-                task.downloadFlow = row[16] as? Int64 ?? 0
-                task.note = row[17] as? String ?? ""
-                task.extra = row[18] as? String ?? ""
+                task.localIP = row[7] as? String ?? ProxyConfig.LocalProxy.host
+                task.localPort = Int(row[8] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
+                task.localEnable = Int(row[9] as? Int64 ?? 1)
+                task.wifiIP = row[10] as? String ?? ""
+                task.wifiPort = Int(row[11] as? Int64 ?? Int64(ProxyConfig.LocalProxy.port))
+                task.wifiEnable = Int(row[12] as? Int64 ?? 1)
+                task.interceptCount = row[13] as? Int64 ?? 0
+                task.uploadTraffic = row[14] as? Int64 ?? 0
+                task.downloadFlow = row[15] as? Int64 ?? 0
+                task.note = row[16] as? String ?? ""
+                task.extra = row[17] as? String ?? ""
                 return task
             }
         } catch {
