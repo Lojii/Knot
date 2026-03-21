@@ -42,36 +42,72 @@ Dashboard traffic never touches the proxy. Zero loop risk.
 
 ### Embedding in ProxyServer
 
-Same process, same `EventLoopGroup`, separate `ServerBootstrap`:
+Same process, same `EventLoopGroup`, separate `ServerBootstrap`.
+
+**Start location:** Dashboard must be started BEFORE the TCP bootstrap's blocking `closeFuture.wait()`. In `ProxyServer.start(task:callback:)`, the dashboard is started inside the `DispatchQueue.global().async` block, before `startServer()` is called:
 
 ```swift
-// In ProxyServer.start(), after TCP bootstrap:
-let dashboard = DashboardServer(task: task, group: workerGroup)
-try dashboard.start(port: ProxyConfig.Dashboard.port)
-self.dashboardServer = dashboard
+DispatchQueue.global().async {
+    // Start dashboard first (non-blocking bind)
+    let dashboard = DashboardServer(task: task, group: self.workerGroup)
+    try? dashboard.start(port: ProxyConfig.Dashboard.port)
+    self.dashboardServer = dashboard
+    task.dashboardServer = dashboard
+
+    // Then start TCP server (blocks on closeFuture.wait())
+    self.startServer(host: host, port: port, task: task, ...)
+}
 ```
+
+**Shutdown ordering:** `DashboardServer.stop()` must be called BEFORE `ProxyServer.stop()` shuts down EventLoopGroups, to allow clean WebSocket close frames.
 
 ### NIO Pipeline
 
+Uses `configureHTTPServerPipeline(withServerUpgrade:)` for correct WebSocket upgrade:
+
+```swift
+let upgrader = NIOWebSocketServerUpgrader(
+    shouldUpgrade: { channel, head in
+        // Accept all upgrade requests to /ws
+        channel.eventLoop.makeSucceededFuture(HTTPHeaders())
+    },
+    upgradePipelineHandler: { channel, req in
+        channel.pipeline.addHandler(DashboardWebSocketHandler(server: self))
+    }
+)
+
+channel.pipeline.configureHTTPServerPipeline(
+    withServerUpgrade: .init(upgraders: [upgrader], completionHandler: { ctx in })
+).flatMap {
+    channel.pipeline.addHandler(DashboardHTTPHandler(server: self))
+}
 ```
-ServerBootstrap (:9090)
-  └─ childChannelInitializer:
-      ├─ HTTPRequestDecoder
-      ├─ HTTPResponseEncoder
-      └─ DashboardHTTPHandler
-           ├─ GET /          → self-contained HTML page
-           ├─ GET /api/stats → JSON summary
-           └─ Upgrade: websocket → NIOWebSocketServerUpgrader
-                └─ DashboardWebSocketHandler
-```
+
+`DashboardHTTPHandler` handles non-upgrade HTTP requests (GET /, GET /api/stats). WebSocket upgrade is handled by NIO's built-in upgrader which installs `DashboardWebSocketHandler`.
 
 ### Push Condition
 
 ```swift
-public var hasClients: Bool { !wsConnections.isEmpty }
+// Thread-safe: use NIOLockedValueBox since hasClients is read from
+// multiple EventLoops (SessionRecorder runs on worker ELs)
+private let _clientCount = NIOLockedValueBox<Int>(0)
+public var hasClients: Bool { _clientCount.withLockedValue { $0 > 0 } }
 ```
 
 SessionRecorder calls `dashboard.pushFlow()` only when `hasClients == true`. Zero overhead when no dashboard is open.
+
+### Push Timing
+
+`pushFlow()` is called at the top of `SessionRecorder.recordClosed()`, BEFORE the async DB write block. It reads synchronously-populated fields (host, method, uri, status, bytes, duration, protoFlags, connReuse) which are already finalized at this point. The push itself dispatches to the dashboard's EventLoop:
+
+```swift
+public func pushFlow(_ record: FlowRecord) {
+    guard hasClients else { return }
+    dashboardEventLoop.execute {
+        // Serialize JSON and broadcast to all WS connections
+    }
+}
+```
 
 ### WebSocket Protocol
 
@@ -149,7 +185,20 @@ SessionRecorder calls `dashboard.pushFlow()` only when `hasClients == true`. Zer
 - QUIC sessions — `QUICMITMManager.activeSessions` (if enabled)
 
 ### Collection
-DashboardServer runs a `scheduleRepeatedTask` every 2 seconds. Only collects when `hasClients == true`.
+DashboardServer runs a `scheduleRepeatedTask` every 2 seconds. Only collects when `hasClients == true`. Syscalls (`mach_task_basic_info`, `task_threads`) are dispatched to `DispatchQueue.global()` to avoid blocking the EventLoop:
+
+```swift
+DispatchQueue.global().async {
+    let metrics = MetricsCollector.collect(task: self.task)
+    self.dashboardEventLoop.execute {
+        self.broadcastMetrics(metrics)
+    }
+}
+```
+
+### Required New APIs
+- `OutboundConnectionPool.perKeyBreakdown() -> [(key: String, count: Int)]` — per-host pool counts
+- `MITMFailedHostTracker.count: Int` — number of failed hosts
 
 ---
 
@@ -242,10 +291,15 @@ Puppeteer detects `browser.on('disconnected')` → calls swift test.
 - HTTP status 2xx or 3xx
 - Or response has body where original had 0 bytes
 
+### Retester is an XCTest
+`RetestFailedFlows.swift` is an XCTest case. Puppeteer invokes it via `swift test --filter RetestFailedFlows`. Not a standalone binary.
+
 ### Skip Conditions
-- Host is localhost/127.0.0.1
+- Host is localhost/127.0.0.1 or private IP (10.x, 192.168.x, 172.16-31.x)
 - Original error is DNS resolution failure
 - Original error is certificate-related (MITM issue, not server issue)
+- Method is POST/PUT with body (retesting may cause side effects)
+- Protocol is RAW/unknown (cannot meaningfully replay)
 
 ---
 
@@ -322,9 +376,11 @@ public enum Dashboard {
 
 ### Modified Files
 - `Sources/TunnelServices/Config/ProxyConfig.swift` — Add `Dashboard` config
-- `Sources/TunnelServices/Proxy/ProxyServer.swift` — Start/stop DashboardServer
+- `Sources/TunnelServices/Proxy/ProxyServer.swift` — Start/stop DashboardServer (before TCP bootstrap)
 - `Sources/TunnelServices/Framework/SessionRecorder.swift` — Push flow on recordClosed
 - `Sources/TunnelServices/CaptureTask.swift` — Hold `dashboardServer` reference
+- `Sources/TunnelServices/Proxy/OutboundConnectionPool.swift` — Add `perKeyBreakdown()` method
+- `Sources/TunnelServices/CaptureTask.swift` — Add `MITMFailedHostTracker.count` property
 
 ---
 
