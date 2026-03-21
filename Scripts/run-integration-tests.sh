@@ -56,14 +56,23 @@ swift test \
 TEST_EXIT=$?
 set -e
 
+# Find JUnit XML (swift test may create results.xml or results-swift-testing.xml)
+JUNIT_XML=""
+for f in "$REPORT_DIR"/results*.xml; do
+    [[ -f "$f" ]] && JUNIT_XML="$f" && break
+done
+
 # Generate HTML report
-if [[ -f "$REPORT_DIR/results.xml" ]]; then
+if [[ -n "$JUNIT_XML" ]]; then
+    echo "JUnit XML: $JUNIT_XML"
     swift "$SCRIPT_DIR/generate-test-report.swift" \
-        "$REPORT_DIR/results.xml" \
+        "$JUNIT_XML" \
         "$REPORT_DIR/test-output.log" \
         "$REPORT_DIR/integration-test-report.html"
 
     [[ "$NO_OPEN" != "true" ]] && open "$REPORT_DIR/integration-test-report.html" 2>/dev/null || true
+else
+    echo "Warning: No JUnit XML found in $REPORT_DIR"
 fi
 
 echo ""
