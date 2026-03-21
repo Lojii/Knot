@@ -78,6 +78,9 @@ public enum ProxyConfig {
 
         /// QUIC idle timeout in milliseconds.
         public static let idleTimeoutMs: UInt64 = 30_000
+
+        /// UDP port for QUIC transparent proxy mode.
+        public static var udpPort: Int = 8443
     }
 
     // MARK: - SSL/TLS
