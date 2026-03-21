@@ -316,11 +316,17 @@ public class SessionRecorder {
     // MARK: - Traffic Counting
 
     public func addUpload(_ bytes: Int) {
-        _uploadBytes += Int64(bytes)
+        let b = Int64(bytes)
+        _uploadBytes += b
+        // Forward to protocol recorder so FlowRecord.uploadBytes includes header estimates
+        httpRecorder?.addUpload(bytes: b)
     }
 
     public func addDownload(_ bytes: Int) {
-        _downloadBytes += Int64(bytes)
+        let b = Int64(bytes)
+        _downloadBytes += b
+        // Forward to protocol recorder so FlowRecord.downloadBytes includes header estimates
+        httpRecorder?.addDownload(bytes: b)
     }
 
     // MARK: - TLS Handshake Sniffing (for tunnel passthrough)

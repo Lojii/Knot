@@ -257,7 +257,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 }
             }
         } else {
-            channelInitializer = { [weak self] channel -> EventLoopFuture<Void> in
+            channelInitializer = { channel -> EventLoopFuture<Void> in
                 return channel.pipeline.addHTTPClientHandlers().flatMap {
                     channel.pipeline.addHandler(
                         NIOHTTPResponseDecompressor(limit: .ratio(10)),
@@ -265,9 +265,6 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                     )
                 }.flatMap {
                     channel.pipeline.addHandler(responseHandler, name: "client.responseRelay")
-                }.map {
-                    self?.connected = true
-                    self?.flushPendingParts()
                 }
             }
         }
@@ -281,8 +278,14 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             case .success(let channel):
                 self?.clientChannel = channel
                 self?.recorder.recordConnected(remoteAddress: channel.remoteAddress)
-                // Note: for non-SSL, connected=true and flushPendingParts() are already
-                // called in the channelInitializer callback above. Don't duplicate here.
+                // For non-SSL: the channel is now active and pipeline is ready.
+                // Mark connected and flush queued request parts.
+                // For SSL: connected=true and flush happen later in the ALPN handler
+                // after TLS handshake completes.
+                if !req.ssl {
+                    self?.connected = true
+                    self?.flushPendingParts()
+                }
             case .failure(let error):
                 self?.recorder.recordConnectionError(error, host: req.host, port: req.port)
                 self?.serverChannel?.close(promise: nil)
