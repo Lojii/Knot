@@ -66,6 +66,7 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
         clientChannel: Channel
     ) {
         guard let request = upgradeRequest, let serverCh = serverChannel else { return }
+        recorder.addProtoFlag(.wsFrameMasked)
 
         AxLogger.log("WebSocket upgrade for \(request.headers["Host"].first ?? "unknown")", level: .Info)
 
