@@ -91,10 +91,16 @@ public final class QUICProxyHandler: ChannelInboundHandler {
             dstPort = 443
         }
 
-        // Record client address keyed by DCID hex prefix (first 8 bytes)
+        // Record client address keyed by DCID hex prefix (first 8 bytes).
+        // Also index by the SCID (from long headers) so that MITM response packets
+        // — which use the client's SCID as their DCID — can be routed back.
         if let header = QUICDecoder.parseHeader(packetData), !header.dcid.isEmpty {
             let dcidKey = header.dcid.prefix(8).map { String(format: "%02x", $0) }.joined()
             clientAddresses.set(clientAddr, forKey: dcidKey)
+            if let scid = header.scid, !scid.isEmpty {
+                let scidKey = scid.prefix(8).map { String(format: "%02x", $0) }.joined()
+                clientAddresses.set(clientAddr, forKey: scidKey)
+            }
         }
 
         // Process through MITM
