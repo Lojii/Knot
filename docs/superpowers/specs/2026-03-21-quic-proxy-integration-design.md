@@ -33,12 +33,14 @@ Client → UDP → ProxyServer (DatagramBootstrap :8443) → QUICProxyHandler �
 1. Client sends QUIC Initial packet (UDP) to proxy's UDP port
 2. `QUICProxyHandler.channelRead` receives `AddressedEnvelope<ByteBuffer>`
 3. Extract target from SNI in QUIC Initial (or use default target for testing)
-4. Call `QUICMITMManager.processOutbound(data, dstIP, dstPort)` → `(toApp, toServer)`
+4. Call `QUICMITMManager.processOutbound(data, dstIP: targetIP, dstPort: targetPort)` → `(toApp: [Data], toServer: [(Data, String, UInt16)])`
 5. `toApp` packets: write back to client via client DatagramChannel
-6. `toServer` packets: forward to real server via per-session outbound DatagramChannel
+6. `toServer` packets: unpack tuples `(data, ip, port)`, forward each to real server via outbound DatagramChannel using the IP:port from the tuple (not the SNI-resolved address — the manager may use a different address)
 7. `QUICServerForwarder.channelRead` on outbound channel receives server response
-8. Call `QUICMITMManager.processInbound(data, srcIP, srcPort)` → `toApp`
+8. Call `QUICMITMManager.processInbound(data, srcIP, srcPort)` → `(toApp, toServer)`
 9. `toApp` packets: write back to client via client DatagramChannel
+10. `toServer` packets: write back to real server via same outbound channel (handshake continuation)
+11. Repeat steps 8-10 until `toServer` is empty (convergence loop)
 
 ---
 
@@ -100,15 +102,17 @@ final class QUICServerForwarder: ChannelInboundHandler {
 }
 ```
 
-Receives server responses → calls `mitmManager.processInbound()` → writes decrypted packets back to client via `clientChannel`.
+Receives server responses → calls `mitmManager.processInbound()` → writes `toApp` packets back to client via `clientChannel`, and writes `toServer` packets back to the real server via the same outbound channel (handshake continuation). Loops until `toServer` is empty to ensure convergence.
+
+**Threading:** All `QUICMITMManager` calls are pinned to a single NIO event loop via `eventLoop.execute {}`. The manager uses `NSLock` internally which must not be called concurrently from multiple event loops. The `QUICProxyHandler` and all `QUICServerForwarder` instances are created on the same event loop to avoid lock contention.
 
 ### ProxyConfig Extension
 
+Add `udpPort` to the existing `ProxyConfig.HTTP3` enum (not a new namespace):
+
 ```swift
-public enum QUIC {
-    /// UDP port for QUIC proxy (transparent mode)
-    public static var udpPort: Int = 8443
-}
+// In ProxyConfig.HTTP3:
+public static var udpPort: Int = 8443  // UDP port for QUIC proxy
 ```
 
 ### ProxyServer Extension
@@ -121,20 +125,24 @@ if ProxyConfig.HTTP3.enabled && task.sslEnable == 1 {
     let keyPath = task.certManager.keyPath     // CA key PEM
     let mitmManager = QUICMITMManager(task: task, certPath: certPath, keyPath: keyPath)
 
-    let udpBootstrap = DatagramBootstrap(group: workerGroup)
+    // Pin all QUIC work to a single event loop to avoid NSLock contention
+    let quicEventLoop = workerGroup.next()
+
+    let udpBootstrap = DatagramBootstrap(group: quicEventLoop)
         .channelInitializer { channel in
             channel.pipeline.addHandler(
                 QUICProxyHandler(task: task, mitmManager: mitmManager)
             )
         }
 
-    let udpChannel = try udpBootstrap.bind(host: host, port: ProxyConfig.QUIC.udpPort).wait()
+    let udpChannel = try udpBootstrap.bind(host: host, port: ProxyConfig.HTTP3.udpPort).wait()
     self.udpChannel = udpChannel
-    task.connectionPool.startEviction(on: workerGroup.next())  // reuse existing pool eviction
 }
 ```
 
-Stop method extended to close `udpChannel`.
+Stop method extended to close `udpChannel` with `.close(mode: .all, promise: nil)` (DatagramChannels do not support half-closure).
+
+**DNS resolution:** SNI → IP resolution MUST NOT block the event loop. Use `DispatchQueue.global().async` + `EventLoopPromise` to perform `getaddrinfo` off the event loop, or maintain a local DNS cache populated asynchronously.
 
 ---
 
@@ -169,6 +177,7 @@ Phase 1 already validates `QUICMITMManager` correctness (37 tests). Phase 2 test
 | `testUDPProxy_MultiSession` | 3 clients with different connection IDs → 3 independent sessions |
 | `testUDPProxy_OutboundChannelCreation` | First packet creates outbound channel; second packet to same server reuses it |
 | `testUDPProxy_FlowRecording` | After H3 request, FlowDAO/QuicConnectionDAO have records |
+| `testUDPProxy_HandshakeContinuation` | Verify processInbound → toServer relay loop works (handshake requires multiple round trips through MITM) |
 
 ### Test infrastructure extensions:
 
