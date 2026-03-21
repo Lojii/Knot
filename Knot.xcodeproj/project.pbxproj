@@ -23,6 +23,10 @@
 		B36ABCEB2F6B8B930078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCEA2F6B8B930078D8B0 /* TunnelServices */; };
 		B36ABCEC2F6B8BCD0078D8B0 /* Http in Resources */ = {isa = PBXBuildFile; fileRef = 5634538722BCD2E70076219D /* Http */; };
 		B36ABCED2F6B8BD10078D8B0 /* Http in Resources */ = {isa = PBXBuildFile; fileRef = 5634538722BCD2E70076219D /* Http */; };
+		B36ABFA92F6E1FDD0078D8B0 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56162E8A2255CCB100D24F87 /* NetworkExtension.framework */; };
+		B36ABFB32F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B36ABFBB2F6E20670078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABFBA2F6E20670078D8B0 /* TunnelServices */; };
+		B36ABFBC2F6E20670078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABFBD2F6E20670078D8B0 /* TunnelServices */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,6 +86,13 @@
 			remoteGlobalIDString = B36ABCBB2F6B89570078D8B0;
 			remoteInfo = "SystemExtension-macOS";
 		};
+		B36ABFB12F6E1FDD0078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABFA72F6E1FDD0078D8B0;
+			remoteInfo = KnotHelperExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -103,6 +114,17 @@
 			dstSubfolderSpec = 16;
 			files = (
 				B36ABCC72F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension in Embed System Extensions */,
+			);
+			name = "Embed System Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFB82F6E1FDD0078D8B0 /* Embed System Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				B36ABFB32F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension in Embed System Extensions */,
 			);
 			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -286,6 +308,8 @@
 		B36ABC8C2F6B88350078D8B0 /* KnotApp-macOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KnotApp-macOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "PacketTunnel-iOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = "com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KnotHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.KingMap.KnotHelper.Extension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -303,6 +327,13 @@
 			);
 			target = B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */;
 		};
+		B36ABFB42F6E1FDD0078D8B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -314,6 +345,8 @@
 		B36ABC8F2F6B88350078D8B0 /* KnotApp-macOSUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-macOSUITests"; sourceTree = "<group>"; };
 		B36ABCAB2F6B88AD0078D8B0 /* PacketTunnel-iOS */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B36ABCB32F6B88AD0078D8B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "PacketTunnel-iOS"; sourceTree = "<group>"; };
 		B36ABCBE2F6B89570078D8B0 /* SystemExtension-macOS */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B36ABCC82F6B89570078D8B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "SystemExtension-macOS"; sourceTree = "<group>"; };
+		B36ABF982F6E1F7D0078D8B0 /* KnotHelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KnotHelper; sourceTree = "<group>"; };
+		B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B36ABFB42F6E1FDD0078D8B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = KnotHelperExtension; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -382,6 +415,23 @@
 				B36ABCBD2F6B89570078D8B0 /* NetworkExtension.framework in Frameworks */,
 				B36ABCEB2F6B8B930078D8B0 /* TunnelServices in Frameworks */,
 				B36ABCE92F6B8B930078D8B0 /* KnotCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABF942F6E1F7D0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABFBC2F6E20670078D8B0 /* TunnelServices in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA52F6E1FDD0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABFBB2F6E20670078D8B0 /* TunnelServices in Frameworks */,
+				B36ABFA92F6E1FDD0078D8B0 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -575,6 +625,8 @@
 				B36ABC8F2F6B88350078D8B0 /* KnotApp-macOSUITests */,
 				B36ABCAB2F6B88AD0078D8B0 /* PacketTunnel-iOS */,
 				B36ABCBE2F6B89570078D8B0 /* SystemExtension-macOS */,
+				B36ABF982F6E1F7D0078D8B0 /* KnotHelper */,
+				B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */,
 				153E207521EC26B500B82536 /* Products */,
 				153E211A21EC274100B82536 /* Frameworks */,
 			);
@@ -591,6 +643,8 @@
 				B36ABC8C2F6B88350078D8B0 /* KnotApp-macOSUITests.xctest */,
 				B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */,
 				B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */,
+				B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */,
+				B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -881,6 +935,54 @@
 			productReference = B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */;
 			productType = "com.apple.product-type.system-extension";
 		};
+		B36ABF962F6E1F7D0078D8B0 /* KnotHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABFA32F6E1F7E0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelper" */;
+			buildPhases = (
+				B36ABF932F6E1F7D0078D8B0 /* Sources */,
+				B36ABF942F6E1F7D0078D8B0 /* Frameworks */,
+				B36ABF952F6E1F7D0078D8B0 /* Resources */,
+				B36ABFB82F6E1FDD0078D8B0 /* Embed System Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABFB22F6E1FDD0078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABF982F6E1F7D0078D8B0 /* KnotHelper */,
+			);
+			name = KnotHelper;
+			packageProductDependencies = (
+				B36ABFBD2F6E20670078D8B0 /* TunnelServices */,
+			);
+			productName = KnotHelper;
+			productReference = B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABFB52F6E1FDD0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelperExtension" */;
+			buildPhases = (
+				B36ABFA42F6E1FDD0078D8B0 /* Sources */,
+				B36ABFA52F6E1FDD0078D8B0 /* Frameworks */,
+				B36ABFA62F6E1FDD0078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */,
+			);
+			name = KnotHelperExtension;
+			packageProductDependencies = (
+				B36ABFBA2F6E20670078D8B0 /* TunnelServices */,
+			);
+			productName = KnotHelperExtension;
+			productReference = B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */;
+			productType = "com.apple.product-type.system-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -917,6 +1019,12 @@
 						CreatedOnToolsVersion = 26.2;
 					};
 					B36ABCBB2F6B89570078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABF962F6E1F7D0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABFA72F6E1FDD0078D8B0 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -967,6 +1075,8 @@
 				B36ABC8B2F6B88350078D8B0 /* KnotApp-macOSUITests */,
 				B36ABCA82F6B88AD0078D8B0 /* PacketTunnel-iOS */,
 				B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */,
+				B36ABF962F6E1F7D0078D8B0 /* KnotHelper */,
+				B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -1047,6 +1157,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B36ABF952F6E1F7D0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA62F6E1FDD0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -1106,6 +1230,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B36ABF932F6E1F7D0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA42F6E1FDD0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1138,6 +1276,11 @@
 			isa = PBXTargetDependency;
 			target = B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */;
 			targetProxy = B36ABCC52F6B89570078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABFB22F6E1FDD0078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */;
+			targetProxy = B36ABFB12F6E1FDD0078D8B0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1798,6 +1941,170 @@
 			};
 			name = Release;
 		};
+		B36ABF9F2F6E1F7E0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelper/KnotHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABFA02F6E1F7E0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelper/KnotHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B36ABFB62F6E1FDD0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelperExtension/KnotHelperExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KnotHelperExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KnotHelperExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper.Extension;
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABFB72F6E1FDD0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelperExtension/KnotHelperExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KnotHelperExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KnotHelperExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper.Extension;
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1878,6 +2185,24 @@
 			buildConfigurations = (
 				B36ABCCA2F6B89570078D8B0 /* Debug */,
 				B36ABCCB2F6B89570078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABFA32F6E1F7E0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABF9F2F6E1F7E0078D8B0 /* Debug */,
+				B36ABFA02F6E1F7E0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABFB52F6E1FDD0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelperExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABFB62F6E1FDD0078D8B0 /* Debug */,
+				B36ABFB72F6E1FDD0078D8B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -2045,6 +2370,16 @@
 			productName = KnotCore;
 		};
 		B36ABCEA2F6B8B930078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABFBA2F6E20670078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABFBD2F6E20670078D8B0 /* TunnelServices */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
 			productName = TunnelServices;
