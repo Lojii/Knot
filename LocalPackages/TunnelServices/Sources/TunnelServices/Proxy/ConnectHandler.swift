@@ -103,14 +103,19 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         AxLogger.log("[CONNECT] removed self from pipeline", level: .Warning)
 
         // Decision: intercept TLS or tunnel raw bytes?
-        // Skip MITM if the host previously failed MITM handshake (client rejected cert).
+        // 1. Check if CA cert is trusted by the system (proactive, cached)
+        // 2. Check if this host previously failed MITM (reactive fallback)
+        // 3. Only MITM if sslEnable=1, not ignored, CA trusted, and host not failed
+        let caTrusted = task.isCACertTrusted
         let mitmFailed = task.mitmFailedHosts.shouldTunnel(request.host)
-        let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore && !mitmFailed
+        let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore && caTrusted && !mitmFailed
 
-        if mitmFailed {
-            AxLogger.log("[CONNECT] \(request.host):\(request.port) → Tunnel (MITM previously failed, auto-fallback)", level: .Warning)
+        if !caTrusted && task.sslEnable == 1 {
+            AxLogger.log("[CONNECT] \(request.host):\(request.port) → Tunnel (CA certificate not trusted by system)", level: .Warning)
+        } else if mitmFailed {
+            AxLogger.log("[CONNECT] \(request.host):\(request.port) → Tunnel (MITM previously failed for this host)", level: .Warning)
         } else {
-            AxLogger.log("[CONNECT] \(request.host):\(request.port) sslEnable=\(task.sslEnable) ignore=\(recorder.session.ignore) → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
+            AxLogger.log("[CONNECT] \(request.host):\(request.port) sslEnable=\(task.sslEnable) caTrusted=\(caTrusted) → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
         }
 
         if shouldIntercept {
