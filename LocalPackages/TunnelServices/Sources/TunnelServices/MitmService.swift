@@ -183,6 +183,9 @@ public class MitmService: NSObject {
             }
         }
 
+        // Start connection pool eviction timer on the worker event loop.
+        task.connectionPool.startEviction(on: worker.next())
+
         // Start UDP receiver for forwarded UDP datagrams from the Helper.
         let receiver = UDPReceiver()
         udpReceiver = receiver
@@ -349,6 +352,9 @@ public class MitmService: NSObject {
         
         udpReceiver?.stop()
         udpReceiver = nil
+
+        // Drain the outbound connection pool.
+        task.connectionPool.closeAll()
 
         closeLocalServer()
         closeWifiServer()

@@ -8,6 +8,7 @@
 
 import Foundation
 import NIO
+import NIOConcurrencyHelpers
 import CocoaAsyncSocket
 import SQLite
 
@@ -62,6 +63,9 @@ public class CaptureTask: NSObject {
     public var certManager: CertManager!
     public var ipc: AppGroupIPC?
     var udpSocket: GCDAsyncUdpSocket?
+
+    /// Outbound connection pool for reusing TCP connections across client sessions.
+    public lazy var connectionPool = OutboundConnectionPool()
 
     // MARK: - Persistence helpers
 

@@ -47,6 +47,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     private weak var _channel: Channel?       // weak ref for idle timeout scheduling
     private var idleTimeoutTask: Scheduled<Void>?
     private var responseCompleted = false      // tracks whether current cycle completed normally
+    private var lastCompletedRequest: NetRequest?  // saved for pool checkin after resetForNextRequest clears request
 
     public init(recorder: SessionRecorder, isSSL: Bool, targetPort: Int? = nil) {
         self.recorder = recorder
@@ -117,7 +118,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 clientChannel = nil
                 connected = false
                 responseRelayHandler = nil
-                connectToServer(context: context)
+                connectToServer(context: context, reuseFromPool: true)
             }
 
             enqueueOrSend(.head(head))
@@ -134,7 +135,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
 
     // MARK: - Server Connection
 
-    private func connectToServer(context: ChannelHandlerContext) {
+    private func connectToServer(context: ChannelHandlerContext, reuseFromPool: Bool = false) {
         guard let req = request, let eventLoop = serverChannel?.eventLoop else { return }
 
         let responseHandler = ResponseRelayHandler(
@@ -152,6 +153,36 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             if keepAlive {
                 self.resetForNextRequest()
                 self.scheduleIdleTimeout()
+            }
+        }
+
+        // Try to reuse a pooled connection before creating a new one.
+        if reuseFromPool {
+            let poolKey = ConnectionPoolKey(host: req.host, port: req.port, isSSL: req.ssl)
+            if let pooled = recorder.task.connectionPool.checkout(key: poolKey) {
+                AxLogger.log("[HTTPCapture] Reusing pooled connection to \(req.host):\(req.port)", level: .Info)
+                self.clientChannel = pooled
+
+                // Swap the ResponseRelayHandler in the pooled channel's pipeline.
+                // Remove old relay handler (if present) and add the new one.
+                pooled.pipeline.removeHandler(name: "client.responseRelay").whenComplete { [weak self] _ in
+                    pooled.pipeline.addHandler(responseHandler, name: "client.responseRelay").whenComplete { [weak self] result in
+                        guard let self = self else { return }
+                        switch result {
+                        case .success:
+                            self.connected = true
+                            self.recorder.recordConnected(remoteAddress: pooled.remoteAddress)
+                            self.flushPendingParts()
+                        case .failure:
+                            // Pipeline swap failed; fall back to new connection
+                            AxLogger.log("[HTTPCapture] Pooled channel pipeline swap failed, creating new connection", level: .Warning)
+                            self.clientChannel = nil
+                            self.connected = false
+                            self.connectToServer(context: context, reuseFromPool: false)
+                        }
+                    }
+                }
+                return
             }
         }
 
@@ -246,6 +277,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         self.recorder = newRecorder
         responseRelayHandler?.swapRecorder(newRecorder)
 
+        // Save last request info for pool checkin on disconnect
+        lastCompletedRequest = request
+
         // Clear per-request state
         request = nil
         wsInterceptor = nil
@@ -314,7 +348,16 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     public func channelUnregistered(context: ChannelHandlerContext) {
         idleTimeoutTask?.cancel()
         idleTimeoutTask = nil
-        clientChannel?.close(mode: .all, promise: nil)
+
+        // If the last response completed normally and the outbound channel is still
+        // active, return it to the connection pool for reuse by future clients.
+        if responseCompleted, let outbound = clientChannel, outbound.isActive, let req = request ?? lastCompletedRequest {
+            let poolKey = ConnectionPoolKey(host: req.host, port: req.port, isSSL: req.ssl)
+            recorder.task.connectionPool.checkin(key: poolKey, channel: outbound)
+        } else {
+            clientChannel?.close(mode: .all, promise: nil)
+        }
+
         // Fallback: if the response didn't complete normally, close the current recorder
         if !responseCompleted {
             recorder.recordClosed()
