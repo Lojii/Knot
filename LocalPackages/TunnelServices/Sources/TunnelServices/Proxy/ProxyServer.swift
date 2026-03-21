@@ -121,7 +121,7 @@ public class ProxyServer {
         callback(.success(()))
 
         // Start QUIC/UDP proxy if HTTP3 is enabled
-        if !isWifi && ProxyConfig.HTTP3.enabled && task.sslEnable == 1 {
+        if !isWifi && ProxyConfig.HTTP3.enabled && task.isCACertTrusted {
             let certPath: String
             let keyPath: String
             if let certDir = CertStore.certDirectoryURL() {

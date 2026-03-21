@@ -64,9 +64,8 @@ public final class TLSPlugin: ProtocolPlugin {
             localAddress: channel.remoteAddress, isSSL: true
         )
 
-        // TODO: Rule matching will be rewritten (whitelist/blacklist/pattern modes).
-        // For now, capture all traffic when sslEnable is on.
-        let shouldIntercept = task.sslEnable == 1
+        // MITM if CA is trusted. Future: rule engine controls per-host interception.
+        let shouldIntercept = task.isCACertTrusted
         AxLogger.log("[TLSPlugin] host=\(host) sslEnable=\(task.sslEnable) sni=\(sni ?? "nil") → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
 
         if shouldIntercept && sni != nil {

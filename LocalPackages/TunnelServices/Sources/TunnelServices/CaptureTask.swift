@@ -46,6 +46,7 @@ public class CaptureTask: NSObject {
     public var ruleName: String = ""
     public var ruleId: Int64?
     //
+    /// Deprecated: use isCACertTrusted instead. Kept for DB compatibility.
     public var sslEnable: Int = 1
     public var creatTime: TimeInterval?
     public var startTime: TimeInterval?
@@ -403,7 +404,7 @@ extension CaptureTask: GCDAsyncUdpSocketDelegate {
 extension CaptureTask: TaskProviding {
     public var taskId: Int64 { id }
     public var taskCertManager: CertManager { certManager }
-    public var sslEnabled: Bool { sslEnable == 1 }
+    public var sslEnabled: Bool { isCACertTrusted }
     public var localEnabled: Bool { localEnable == 1 }
     public var wifiEnabled: Bool { wifiEnable == 1 }
     public func matchesRule(host: String, uri: String, target: String) -> Bool {
