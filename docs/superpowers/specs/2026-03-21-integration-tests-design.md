@@ -6,6 +6,61 @@
 
 ---
 
+## Important Technical Constraints
+
+### CaptureTask Construction
+
+`CaptureTask.newTask()` depends on `DatabaseManager.shared` and `UserDefaults`. Tests MUST construct `CaptureTask()` manually (empty init) and set fields directly:
+
+```swift
+let task = CaptureTask()
+task.id = 1
+task.localIP = "127.0.0.1"
+task.localPort = 0  // will be set after bind
+task.sslEnable = 1
+task.certManager = testCertManager
+task.ruleEngine = RuleEngine(config: "")
+task.fileFolder = tempDir
+```
+
+Do NOT use `newTask()`, `save()`, or `update()` — they touch the shared singleton.
+
+### ProxyServer Blocking Start
+
+`ProxyServer.startServer()` calls `closeFuture.wait()` which blocks. `TestProxyLauncher.start()` must dispatch the proxy start to a background thread and use a semaphore or promise to return the bound port:
+
+```swift
+func start() throws -> Int {
+    let portPromise = eventLoopGroup.next().makePromise(of: Int.self)
+    DispatchQueue.global().async {
+        self.proxyServer.start(task: self.task) { port in
+            portPromise.succeed(port)
+        }
+    }
+    return try portPromise.futureResult.wait()
+}
+```
+
+### CertGenerator Signing Key
+
+`CertGenerator.generateCert` signs leaf certs with `rsaKey`. If this key differs from `caKey`, the chain won't validate normally. The test CA must use the same key for CA and leaf signing. If this causes TLS failures, the test NIO client can configure `certificateVerification: .none` as a fallback, but the preferred fix is ensuring the signing key matches.
+
+### WebSocket Client Complexity
+
+NIO does not provide a client-side WebSocket handshake implementation. `TestNIOClient.webSocketConnect()` must implement the full HTTP/1.1 Upgrade handshake (~200-300 lines):
+- Send `GET / HTTP/1.1` with `Connection: Upgrade`, `Upgrade: websocket`, `Sec-WebSocket-Key`
+- Handle `101 Switching Protocols`
+- Install `WebSocketFrameEncoder` + `WebSocketFrameDecoder`
+- All through the CONNECT tunnel for WSS
+
+### Out of Scope
+
+- SOCKS5 integration tests (protocol exists but not priority)
+- DNS/QUIC integration tests (UDP-based, separate architecture)
+- These can be added in future iterations.
+
+---
+
 ## Test Infrastructure (3 Core Components)
 
 ### TestEchoServer
@@ -257,13 +312,13 @@ Tests/TunnelServicesTests/Integration/
 | `testConnectHandler_NonCONNECT_PassThrough` | Plain GET → ConnectHandler passes through, HTTPCaptureHandler handles it |
 | `testConnectHandler_InvalidHost` | CONNECT to unreachable host → `status=failed`, `error_message` non-empty |
 
-### Connection Pool
+### Connection Pool (direct eviction calls, no wall-clock waits)
 
 | Test | Assertions |
 |------|-----------|
-| `testPool_IdleEviction` | Checkin → wait >30s → pool count == 0 |
-| `testPool_MaxPerKey` | >6 connections to same host → pool count <= 6 |
-| `testPool_TTLExpiration` | Connection used >5min → evicted on next cycle |
+| `testPool_IdleEviction` | Checkin → close the channel → call `evictExpired()` directly → pool count == 0 |
+| `testPool_MaxPerKey` | Checkin 7 channels to same host → pool count == 6, 7th channel closed |
+| `testPool_TotalCapacity` | Fill pool to 32 across different hosts → next checkin is rejected |
 
 ### Error Recovery
 
@@ -323,6 +378,27 @@ struct StressResult {
 
 Uses `mach_task_basic_info.resident_size` (RSS). Baseline sampled before test, peak tracked during test (sampled every 100 requests).
 
+### Cleanup Strategy
+
+All test classes use `addTeardownBlock` in `setUp` to ensure cleanup even on assertion failures or crashes:
+
+```swift
+override func setUp() {
+    super.setUp()
+    launcher = try! TestProxyLauncher(sslEnabled: true, withCA: true)
+    proxyPort = try! launcher.start()
+    addTeardownBlock { [weak self] in
+        self?.launcher?.stop()  // Stops proxy, closes DBs, removes temp dir
+    }
+}
+```
+
+This prevents leaked ports, event loop groups, and temp directories.
+
+### Memory Measurement Note
+
+`mach_task_basic_info.resident_size` measures process-wide RSS (includes test framework overhead). Memory thresholds are empirical and may need tuning per machine. The baseline measurement before each stress test accounts for framework overhead. Thresholds should be treated as sanity checks (catching obvious leaks) rather than precise measurements.
+
 ### Heavy Test Opt-In
 
 ```swift
@@ -381,7 +457,7 @@ A single self-contained HTML file (inline CSS/JS, no external dependencies) that
    - Table of flow count vs expected
 5. **Raw Output** — collapsible full test log
 
-**Report generator:** A Swift script or inline in the shell script that parses `swift test` output (which uses XCTest's standard format: `Test Case '-[...testName]' passed/failed (X.XXX seconds)`) and stress test `print()` output (structured as `[STRESS_METRIC] key=value`).
+**Report generator:** The shell script uses `swift test --xunit-output build/test-reports/results.xml` to produce JUnit XML (machine-parseable, toolchain-independent). A companion Swift script (`generate-test-report.swift`) reads the JUnit XML + the stress metric lines from stdout to produce the HTML report. This avoids fragile stdout format parsing — JUnit XML is the standard and is stable across Swift toolchain versions.
 
 ### Stress Metric Output Convention
 
