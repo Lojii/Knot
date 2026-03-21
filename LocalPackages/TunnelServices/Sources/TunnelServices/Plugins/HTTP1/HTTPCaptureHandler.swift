@@ -111,15 +111,13 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 }
             }
 
-            // Start connecting to the real server (or reuse existing connection)
+            // Start connecting to the real server (or reuse existing connection).
+            // Recorder swap into ResponseRelayHandler is done by resetForNextRequest().
             if clientChannel == nil || !(clientChannel?.isActive ?? false) {
                 clientChannel = nil
                 connected = false
                 responseRelayHandler = nil
                 connectToServer(context: context)
-            } else {
-                // Reuse existing connection — swap recorder in ResponseRelayHandler
-                responseRelayHandler?.swapRecorder(recorder)
             }
 
             enqueueOrSend(.head(head))
@@ -146,17 +144,14 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         )
         self.responseRelayHandler = responseHandler
 
-        // Set up keep-alive callback
+        // Set up keep-alive callback.
+        // Non-keep-alive closing is handled by ResponseRelayHandler itself.
         responseHandler.onResponseComplete = { [weak self] keepAlive in
             guard let self = self else { return }
             self.responseCompleted = true
             if keepAlive {
                 self.resetForNextRequest()
                 self.scheduleIdleTimeout()
-            } else {
-                // Not keep-alive: close both channels
-                self.clientChannel?.close(mode: .all, promise: nil)
-                self.serverChannel?.close(mode: .all, promise: nil)
             }
         }
 
@@ -246,9 +241,10 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     /// Creates a new SessionRecorder and swaps it into the ResponseRelayHandler.
     /// The outbound clientChannel is kept open.
     private func resetForNextRequest() {
-        // Create new recorder for the next cycle
+        // Create new recorder for the next cycle and swap into ResponseRelayHandler
         let newRecorder = SessionRecorder(task: recorder.task)
         self.recorder = newRecorder
+        responseRelayHandler?.swapRecorder(newRecorder)
 
         // Clear per-request state
         request = nil
@@ -349,7 +345,6 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     private var wsInterceptor: WebSocketUpgradeInterceptor?
 
     // Keep-alive state
-    private var requestVersion: HTTPVersion = .init(major: 1, minor: 1)
     private var responseHead: HTTPResponseHead?
     var onResponseComplete: ((Bool) -> Void)?
 
@@ -388,13 +383,11 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
         case .end(let trailers):
             recorder.recordResponseEnd()
-            // Finalize this cycle's recorder
-            recorder.recordClosed()
 
-            // If this was a 101 upgrade, switch to WebSocket
+            // If this was a 101 upgrade, switch to WebSocket (don't close recorder —
+            // WebSocket handler will manage its own recording lifecycle)
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
-                // Trigger WebSocket pipeline transformation
                 if let interceptor = wsInterceptor {
                     interceptor.performWebSocketUpgrade(
                         context: context,
@@ -404,14 +397,17 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
                 return
             }
 
-            let keepAlive = shouldKeepAlive()
+            // Finalize this cycle's recorder
+            recorder.recordClosed()
 
+            let keepAlive = shouldKeepAlive()
             serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
 
             // Notify HTTPCaptureHandler about cycle completion
             onResponseComplete?(keepAlive)
 
             if !keepAlive {
+                serverChannel?.close(mode: .all, promise: nil)
                 context.channel.close(mode: .all, promise: nil)
             }
         }
