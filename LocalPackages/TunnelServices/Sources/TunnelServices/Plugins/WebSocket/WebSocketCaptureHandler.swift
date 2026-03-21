@@ -239,13 +239,23 @@ final class WebSocketForwarder: ChannelInboundHandler, RemovableChannelHandler {
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let frame = unwrapInboundIn(data)
 
-        // Create a new frame without the mask (proxies should unmask before forwarding)
-        var forwardData = frame.unmaskedData
-        let forwardFrame = WebSocketFrame(
-            fin: frame.fin,
-            opcode: frame.opcode,
-            data: forwardData
-        )
+        // RFC 6455 Section 5.1: Client→Server frames MUST be masked.
+        // Proxy→Server: must mask (proxy acts as client to server)
+        // Proxy→Client: must NOT mask (proxy acts as server to client)
+        let forwardData = frame.unmaskedData
+
+        let forwardFrame: WebSocketFrame
+        if direction == .clientToServer {
+            // Proxy → Server: must mask (proxy is client to server per RFC 6455)
+            let maskKey = WebSocketMaskingKey([
+                UInt8.random(in: 0...255), UInt8.random(in: 0...255),
+                UInt8.random(in: 0...255), UInt8.random(in: 0...255)
+            ])!
+            forwardFrame = WebSocketFrame(fin: frame.fin, opcode: frame.opcode, maskKey: maskKey, data: forwardData)
+        } else {
+            // Proxy → Client: must NOT mask (proxy is server to client)
+            forwardFrame = WebSocketFrame(fin: frame.fin, opcode: frame.opcode, data: forwardData)
+        }
 
         peerChannel?.writeAndFlush(forwardFrame, promise: nil)
 
