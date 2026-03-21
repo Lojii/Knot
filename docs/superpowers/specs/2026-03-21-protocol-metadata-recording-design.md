@@ -2,7 +2,7 @@
 
 **Goal:** Record detailed protocol feature usage, connection reuse status, push promise forwarding state, and full TLS certificate chains for every captured flow — supporting UI display, debugging, and aggregate statistical queries.
 
-**Approach:** Add 4 indexed columns to the `flow` table for high-frequency queries, extend the existing `metadata` JSON for detailed info, and store certificate chains as PEM files using the existing payload-ref pattern.
+**Approach:** Add 4 columns to the `flow` table for high-frequency queries (indexed where effective), extend the existing `metadata` JSON for detailed info, and store certificate chains as PEM files using the existing payload-ref pattern.
 
 ---
 
@@ -17,11 +17,14 @@ ALTER TABLE flow ADD COLUMN push_status INTEGER;
 ALTER TABLE flow ADD COLUMN cert_chain_ref TEXT;
 ```
 
-Indexes for aggregate queries:
+Index for aggregate queries:
 
 ```sql
 CREATE INDEX IF NOT EXISTS idx_flow_conn_reuse ON flow(conn_reuse);
-CREATE INDEX IF NOT EXISTS idx_flow_proto_flags ON flow(proto_flags);
+-- Note: no index on proto_flags — B-tree indexes do not accelerate
+-- bitmask queries (proto_flags & 0x0004). Full scan is acceptable
+-- for aggregate statistics. If specific flags become hot query paths,
+-- add partial indexes (e.g. CREATE INDEX ... WHERE proto_flags & 0x0004).
 ```
 
 ### `conn_reuse` — Connection Reuse Type
@@ -60,6 +63,25 @@ CREATE INDEX IF NOT EXISTS idx_flow_proto_flags ON flow(proto_flags);
 ### `cert_chain_ref` — Certificate Chain File Reference
 
 File path relative to task folder, pointing to a PEM file containing the full certificate chain. NULL for non-TLS or tunnel-passthrough flows.
+
+### Schema Versioning
+
+The current `ProtocolSchema` has no versioning. Introduce `PRAGMA user_version` for migration tracking:
+
+```swift
+// ProtocolSchema.swift
+static let currentVersion = 2  // bump from implicit 0/1
+
+static func migrateIfNeeded(db: Connection) throws {
+    let version = try db.scalar("PRAGMA user_version") as! Int64
+    if version < 2 {
+        try migrateToV2(db: db)
+        try db.run("PRAGMA user_version = 2")
+    }
+}
+```
+
+Called once at database open time in `TaskDatabaseGroup` or `DatabaseManager`. Existing databases have `user_version = 0` by default, so the migration runs exactly once on upgrade.
 
 ### Extended `metadata` JSON Fields
 
@@ -122,22 +144,10 @@ After TLS handshake completion (in `recordHandshakeComplete` / `recordTLSCertifi
 ```swift
 public final class CertExportService {
 
-    public enum ExportFormat {
-        case pem        // Original PEM text (full chain in one file)
-        case derFiles   // Split into individual DER-encoded Data per certificate
-    }
-
     public struct CertExportResult {
         public let flowId: String
-        public let format: ExportFormat
-        public let pemText: String?       // Set for .pem format
-        public let derFiles: [DERFile]?   // Set for .derFiles format
-    }
-
-    public struct DERFile {
-        public let subject: String     // "CN=example.com"
-        public let data: Data          // DER encoding
-        public let filename: String    // "example.com.der"
+        public let pemText: String
+        public let summary: [[String: String]]  // Per-cert summary info
     }
 
     public enum CertExportError: Error {
@@ -152,17 +162,19 @@ public final class CertExportService {
         certificates: [NIOSSLCertificate]
     ) throws -> (ref: String, summary: [[String: String]])
 
-    /// Export certificate chain for a flow.
+    /// Export certificate chain for a flow (PEM format).
+    /// DER/PKCS#12 formats can be added later when needed.
     public func exportCertChain(
-        certChainRef: String,
-        format: ExportFormat
+        certChainRef: String
     ) -> Result<CertExportResult, CertExportError>
 }
 ```
 
 Certificate summary extraction uses the existing swift-certificates (`X509`) dependency to parse DER into structured fields (subject, issuer, serial, SHA-256 fingerprint, validity dates).
 
-PKCS#12 export is not implemented in this iteration. The enum can be extended later.
+The `certChainSummary` in metadata is an intentional denormalization: the same info exists in the PEM file, but storing summaries in JSON avoids parsing PEM for every UI display.
+
+DER export and PKCS#12 export are not implemented in this iteration. The format enum can be extended when concrete use cases arise. Start with PEM-only.
 
 ---
 
@@ -173,10 +185,12 @@ PKCS#12 export is not implemented in this iteration. The enum can be extended la
 | Timing | Fields Set |
 |--------|-----------|
 | `connectToServer` — pool checkout succeeds | `conn_reuse = 2`, metadata `connReusePoolKey` |
-| `connectToServer` — reuses existing clientChannel | `conn_reuse = 1`, metadata `keepAliveRequestIndex++` |
+| `channelRead(.head)` — detects existing active clientChannel | `conn_reuse = 1`, metadata `keepAliveRequestIndex` |
 | `connectToServer` — new connection | `conn_reuse = 0` |
 | `shouldKeepAlive()` returns true | `proto_flags \|= 0x0001` |
 | `resetForNextRequest` called (2nd+ request) | `proto_flags \|= 0x0002` |
+
+Note: `keepAliveRequestIndex` counter lives in `HTTPCaptureHandler` (which persists across keep-alive cycles), not in `SessionRecorder` (which is recreated per cycle). The handler passes the current index to each new recorder via `markConnectionReuse(.keepAlive)`.
 
 ### H2StreamCaptureHandler / H2ResponseRelayHandler (HTTP/2)
 
@@ -194,7 +208,7 @@ PKCS#12 export is not implemented in this iteration. The enum can be extended la
 | `tryForwardPushPromise` fails | `push_status = 2` |
 | Metadata supplement | `h2PushParentStreamId`, `alpnNegotiated` |
 
-### WebSocketForwarder (WebSocket)
+### WebSocketForwarder (in WebSocketCaptureHandler.swift)
 
 | Timing | Fields Set |
 |--------|-----------|
@@ -204,8 +218,8 @@ PKCS#12 export is not implemented in this iteration. The enum can be extended la
 
 | Timing | Fields Set |
 |--------|-----------|
-| Enters MITM path | `proto_flags \|= 0x0040` |
-| Enters tunnel passthrough path | `proto_flags \|= 0x0080` |
+| `MITMHandler.channelRead` — MITM begins (cert generated, handshake starting) | `proto_flags \|= 0x0040` |
+| `TLSPlugin.buildPipeline` — enters tunnel passthrough path | `proto_flags \|= 0x0080` |
 | ALPN callback succeeds (handshake complete) | `proto_flags \|= 0x0100`, metadata `alpnNegotiated` |
 | `errorCaught` detects certificate error | `proto_flags \|= 0x0200`, metadata `tlsHandshakeError` |
 | Handshake timeout fires | `proto_flags \|= 0x0400` |
@@ -282,7 +296,20 @@ public var h2StreamId: Int? { _h2StreamId }
 public var connReusePoolKey: String? { _connReusePoolKey }
 ```
 
-All setters are simple in-memory operations. Persistence happens in `recordClosed()`.
+All setters are simple in-memory operations except `recordCertificateChain`, which buffers the raw `[NIOSSLCertificate]` references in memory. The actual PEM file write and summary extraction are deferred to `recordClosed()`, keeping the EventLoop free of blocking I/O during the TLS handshake path.
+
+### NIOSSLCertificate to PEM Conversion
+
+`NIOSSLCertificate` exposes DER bytes via its internal BoringSSL handle. The conversion path:
+
+```swift
+// NIOSSL provides toDERBytes() on NIOSSLCertificate
+let derBytes: [UInt8] = try cert.toDERBytes()
+let base64 = Data(derBytes).base64EncodedString(options: .lineLength64Characters)
+let pem = "-----BEGIN CERTIFICATE-----\n\(base64)\n-----END CERTIFICATE-----"
+```
+
+If `toDERBytes()` is unavailable in the project's NIOSSL version, fall back to the BoringSSL C shim (`i2d_X509`). The implementation should verify API availability at build time.
 
 ---
 
@@ -310,7 +337,7 @@ static func migrateToV2(db: Connection) throws {
     try db.run(flowTable.addColumn(pushStatusCol))
     try db.run(flowTable.addColumn(certChainRefCol))
     try db.run(flowTable.createIndex(connReuseCol, ifNotExists: true))
-    try db.run(flowTable.createIndex(protoFlagsCol, ifNotExists: true))
+    // No index on proto_flags: B-tree indexes don't accelerate bitmask queries.
 }
 ```
 
@@ -398,7 +425,6 @@ All source paths relative to `LocalPackages/TunnelServices/Sources/TunnelService
 - `Framework/SessionRecorder.swift` — New types (ProtoFlag, ConnectionReuseType, PushForwardStatus), new methods and properties
 - `Plugins/HTTP1/HTTPCaptureHandler.swift` — Call `markConnectionReuse`, `addProtoFlag`
 - `Plugins/HTTP2/HTTP2CaptureHandler.swift` — Call `addProtoFlag`, `markPushStatus`, `setH2StreamId`
-- `Plugins/WebSocket/WebSocketCaptureHandler.swift` — Call `addProtoFlag(.wsFrameMasked)`
-- `Plugins/TLS/MITMHandler.swift` — Call `addProtoFlag`, `recordCertificateChain`
-- `Plugins/TLS/TLSPlugin.swift` — Call `addProtoFlag(.tlsTunnel)` or `addProtoFlag(.tlsMITM)`
-- `Proxy/ConnectHandler.swift` — Call `addProtoFlag(.tlsMITM)` on intercept path
+- `Plugins/WebSocket/WebSocketCaptureHandler.swift` — `WebSocketForwarder` calls `addProtoFlag(.wsFrameMasked)`
+- `Plugins/TLS/MITMHandler.swift` — Call `addProtoFlag(.tlsMITM)`, `addProtoFlag(.tlsHandshakeOK/Fail/Timeout)`, `recordCertificateChain`
+- `Plugins/TLS/TLSPlugin.swift` — Call `addProtoFlag(.tlsTunnel)` on passthrough path
