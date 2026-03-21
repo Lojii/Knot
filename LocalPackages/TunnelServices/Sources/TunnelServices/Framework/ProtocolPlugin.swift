@@ -29,6 +29,11 @@ public struct ProtocolMetadata {
     public static let empty = ProtocolMetadata()
 
     public init() {}
+
+    public init(innerHost: String?, innerPort: Int?) {
+        self.innerHost = innerHost
+        self.innerPort = innerPort
+    }
 }
 
 // MARK: - MatchContext

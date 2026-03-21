@@ -35,10 +35,16 @@ public final class ProtocolDispatcher: ChannelInboundHandler, RemovableChannelHa
     ///   - task:     The active capture task (used for proxy-enabled checks and recording).
     ///   - nodes:    Ordered list of protocol nodes to evaluate (e.g. `tcpChildren`).
     ///   - recorder: Session recorder used for error / closed events.
-    public init(task: CaptureTask, nodes: [ProtocolNode], recorder: SessionRecorder) {
+    /// Metadata from the outer protocol (e.g., CONNECT target host/port).
+    /// Propagated to ProtocolContext so inner plugins can use it.
+    private let outerMetadata: ProtocolMetadata
+
+    public init(task: CaptureTask, nodes: [ProtocolNode], recorder: SessionRecorder,
+                metadata: ProtocolMetadata = .empty) {
         self.task     = task
         self.nodes    = nodes
         self.recorder = recorder
+        self.outerMetadata = metadata
     }
 
     // MARK: - ChannelInboundHandler
@@ -170,6 +176,7 @@ public final class ProtocolDispatcher: ChannelInboundHandler, RemovableChannelHa
             task:          task,
             recorder:      recorder,
             childNodes:    node.children,
+            metadata:      outerMetadata,
             initialBuffer: pendingBuffer
         )
 

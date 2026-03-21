@@ -112,10 +112,13 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             )
             _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
         } else {
-            // Re-detect inner protocol via ProtocolDispatcher
+            // Re-detect inner protocol via ProtocolDispatcher.
+            // Pass the CONNECT target as metadata so TLSPlugin knows the
+            // destination even if SNI extraction fails.
             let tcpChildren = ProtocolRegistry.shared.tcpChildren
             let dispatcher = ProtocolDispatcher(
-                task: task, nodes: tcpChildren, recorder: recorder
+                task: task, nodes: tcpChildren, recorder: recorder,
+                metadata: ProtocolMetadata(innerHost: request.host, innerPort: request.port)
             )
             _ = context.pipeline.addHandler(dispatcher, name: "dispatcher")
         }
