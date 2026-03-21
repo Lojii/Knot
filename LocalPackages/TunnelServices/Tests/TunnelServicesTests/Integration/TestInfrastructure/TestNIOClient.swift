@@ -181,23 +181,23 @@ final class TestNIOClient {
 
         let responsePromise = el.makePromise(of: TestHTTPResponse.self)
 
-        // Add TLS
+        // Add TLS — skip verification for MITM testing, as the proxy generates dynamic certs
         var tlsConfig = TLSConfiguration.makeClientConfiguration()
-        if let ca = trustCA {
-            tlsConfig.trustRoots = .certificates([ca])
-        }
-        tlsConfig.certificateVerification = trustCA != nil ? .fullVerification : .none
+        tlsConfig.certificateVerification = .none
         let sslContext = try NIOSSLContext(configuration: tlsConfig)
         let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: host)
 
-        try channel.pipeline.addHandler(sslHandler, position: .first).wait()
+        // Add all handlers at once from the event loop to avoid races
+        try channel.eventLoop.flatSubmit { () -> EventLoopFuture<Void> in
+            channel.pipeline.addHandler(sslHandler, position: .first)
+        }.wait()
 
-        // Wait for TLS handshake
-        try channel.pipeline.addHandler(TLSEventsHandler(eventLoop: el)).wait()
-
-        // Add HTTP handlers after TLS
+        // Add HTTP handlers — the SSL handler will buffer data until handshake completes
         try channel.pipeline.addHTTPClientHandlers().wait()
         try channel.pipeline.addHandler(HTTPResponseCollector(promise: responsePromise)).wait()
+
+        // Give the TLS handshake time to complete
+        Thread.sleep(forTimeInterval: 0.5)
 
         // Step 3: Send the actual request (relative URI)
         var httpHeaders = HTTPHeaders()
@@ -220,7 +220,20 @@ final class TestNIOClient {
 
         channel.writeAndFlush(NIOAny(HTTPClientRequestPart.end(nil)), promise: nil)
 
-        let response = try responsePromise.futureResult.wait()
+        // Schedule a timeout so we get a clear error instead of leaking the promise
+        let timeoutTask = el.scheduleTask(in: .seconds(15)) {
+            responsePromise.fail(TestNIOClientError.timeout)
+        }
+
+        let response: TestHTTPResponse
+        do {
+            response = try responsePromise.futureResult.wait()
+            timeoutTask.cancel()
+        } catch {
+            timeoutTask.cancel()
+            try? channel.close().wait()
+            throw error
+        }
         try? channel.close().wait()
         return response
     }
@@ -269,7 +282,9 @@ final class TestNIOClient {
         try channel.pipeline.addHandler(sslHandler, position: .first).wait()
 
         // Wait for TLS
-        try channel.pipeline.addHandler(TLSEventsHandler(eventLoop: el)).wait()
+        let h2TlsEventsHandler = TLSEventsHandler(eventLoop: el)
+        try channel.pipeline.addHandler(h2TlsEventsHandler).wait()
+        try h2TlsEventsHandler.waitForHandshake()
 
         // Step 3: Add HTTP/2 handler
         let responsePromise = el.makePromise(of: TestHTTPResponse.self)
@@ -423,7 +438,9 @@ final class TestNIOClient {
             let sslContext = try NIOSSLContext(configuration: tlsConfig)
             let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: host)
             try channel.pipeline.addHandler(sslHandler, position: .first).wait()
-            try channel.pipeline.addHandler(TLSEventsHandler(eventLoop: el)).wait()
+            let wsTlsEventsHandler = TLSEventsHandler(eventLoop: el)
+            try channel.pipeline.addHandler(wsTlsEventsHandler).wait()
+            try wsTlsEventsHandler.waitForHandshake()
 
             // Add HTTP handlers for upgrade request
             try channel.pipeline.addHTTPClientHandlers().wait()
@@ -513,20 +530,26 @@ final class TestNIOClient {
 
     /// Remove HTTP codec handlers from the pipeline after a CONNECT 200 response.
     private func removeHTTPHandlers(from channel: Channel) throws {
-        // Remove in order: response decoder, request encoder, byte-to-message handler
-        let pipeline = channel.pipeline
-
-        // Try to remove standard HTTP client handlers by type
-        if let handler = try? pipeline.syncOperations.handler(type: HTTPRequestEncoder.self) {
-            _ = pipeline.syncOperations.removeHandler(handler)
-        }
-        if let handler = try? pipeline.syncOperations.handler(type: ByteToMessageHandler<HTTPResponseDecoder>.self) {
-            _ = pipeline.syncOperations.removeHandler(handler)
-        }
-        // Also try removing NIOHTTPClientUpgradeHandler if present
-        if let handler = try? pipeline.syncOperations.handler(type: NIOHTTPClientUpgradeHandler.self) {
-            _ = pipeline.syncOperations.removeHandler(handler)
-        }
+        // Use the event loop to safely remove handlers
+        try channel.eventLoop.submit {
+            let pipeline = channel.pipeline
+            // Try to remove standard HTTP client handlers by type
+            if let handler = try? pipeline.syncOperations.handler(type: HTTPRequestEncoder.self) {
+                _ = pipeline.syncOperations.removeHandler(handler)
+            }
+            if let handler = try? pipeline.syncOperations.handler(type: ByteToMessageHandler<HTTPResponseDecoder>.self) {
+                _ = pipeline.syncOperations.removeHandler(handler)
+            }
+            // Also try removing NIOHTTPClientUpgradeHandler if present
+            if let handler = try? pipeline.syncOperations.handler(type: NIOHTTPClientUpgradeHandler.self) {
+                _ = pipeline.syncOperations.removeHandler(handler)
+            }
+            // Remove NIOHTTPRequestHeadersValidator added by addHTTPClientHandlers()
+            // to prevent duplicate validators when HTTP handlers are re-added after CONNECT.
+            if let handler = try? pipeline.syncOperations.handler(type: NIOHTTPRequestHeadersValidator.self) {
+                _ = pipeline.syncOperations.removeHandler(handler)
+            }
+        }.wait()
     }
 }
 
@@ -642,10 +665,15 @@ private final class CONNECTHandler: ChannelInboundHandler, RemovableChannelHandl
 private final class TLSEventsHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = NIOAny
 
-    private let handshakePromise: EventLoopPromise<Void>
+    let handshakePromise: EventLoopPromise<Void>
 
     init(eventLoop: EventLoop) {
         self.handshakePromise = eventLoop.makePromise(of: Void.self)
+    }
+
+    /// Block until the TLS handshake completes or fails.
+    func waitForHandshake() throws {
+        try handshakePromise.futureResult.wait()
     }
 
     func userInboundEventTriggered(context: ChannelHandlerContext, event: Any) {

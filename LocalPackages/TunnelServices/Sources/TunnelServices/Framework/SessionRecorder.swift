@@ -457,18 +457,20 @@ public class SessionRecorder {
             let tid = taskId
             // Capture all state needed by the async block before it runs.
             // SessionRecorder fields are read here (on EventLoop), written in async.
+            // Use strong self capture to ensure the SessionRecorder stays alive
+            // until the FlowRecord is written — its proto_flags, certChainRef, etc.
+            // are needed by buildFlowRecord.
             let certChainRef = _certChainRef
-            let certChainSummary = _certChainSummary
 
-            group.protoWriteQueue.async { [weak self] in
+            group.protoWriteQueue.async { [self] in
                 // Write cert chain PEM if buffered certs exist and not already done
                 if certChainRef == nil, let certs = bufferedCerts, let fid = fid, tid > 0 {
                     let taskDir = PathManager.taskDirectory(tid)
                     let certService = CertExportService(fileFolder: taskDir)
                     do {
                         let (ref, summary) = try certService.saveCertChain(flowId: fid, certificates: certs)
-                        self?._certChainRef = ref
-                        self?._certChainSummary = summary
+                        self._certChainRef = ref
+                        self._certChainSummary = summary
                     } catch {
                         NSLog("[SessionRecorder] cert chain save failed: \(error)")
                     }

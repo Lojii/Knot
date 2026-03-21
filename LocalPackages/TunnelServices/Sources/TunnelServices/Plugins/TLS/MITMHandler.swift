@@ -52,6 +52,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         guard let certMgr = task.certManager,
               let x509CACert = certMgr.x509CACert,
               let rsaSigningKey = certMgr.rsaSigningKey,
+              let caSigningKey = certMgr.caSigningKey,
               let rsaKey = certMgr.rsakey else {
             AxLogger.log("Certificates not loaded for \(host), falling back to tunnel", level: .Warning)
             // Fallback to tunnel passthrough instead of closing
@@ -63,7 +64,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         if niosslCert == nil {
             do {
                 let x509Cert = try CertGenerator.generateCert(
-                    host: host, rsaKey: rsaSigningKey, caKey: rsaSigningKey, caCert: x509CACert
+                    host: host, rsaKey: rsaSigningKey, caKey: caSigningKey, caCert: x509CACert
                 )
                 niosslCert = try CertGenerator.toNIOSSL(x509Cert)
                 if let cert = niosslCert {
@@ -84,9 +85,14 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         }
 
         // Create TLS server context — advertise both h2 and http/1.1
+        // Include CA cert in chain so clients can verify the leaf cert
         AxLogger.log("[MITM] Setting up TLS context for \(host), cert ready", level: .Warning)
+        var certChain: [NIOSSLCertificateSource] = [.certificate(cert)]
+        if let caNIOSSL = certMgr.cacert {
+            certChain.append(.certificate(caNIOSSL))
+        }
         let tlsConfig = TLSConfiguration.forServer(
-            certificateChain: [.certificate(cert)],
+            certificateChain: certChain,
             privateKey: .privateKey(rsaKey),
             applicationProtocols: ["h2", "http/1.1"]
         )
@@ -111,13 +117,19 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             context.channel.close(mode: .all, promise: nil)
         }
 
+        // Capture properties needed by the ALPN callback so MITMHandler can be safely removed
+        let capturedRecorder = self.recorder
+        let capturedHost = self.host
+        let capturedPort = self.port
+        let capturedPipeline = context.pipeline
+        let capturedChannel = context.channel
+
         // ALPN handler: after TLS handshake, add HTTP/1.1 or HTTP/2 pipeline
-        let alpnHandler = ApplicationProtocolNegotiationHandler { [weak self] result -> EventLoopFuture<Void> in
+        let alpnHandler = ApplicationProtocolNegotiationHandler { result, channel -> EventLoopFuture<Void> in
             handshakeTimeoutTask.cancel()
-            guard let self = self else { return context.eventLoop.makeSucceededVoidFuture() }
-            AxLogger.log("[MITM] TLS handshake SUCCEEDED for \(self.host), ALPN result: \(result)", level: .Warning)
-            self.recorder.recordHandshakeComplete()
-            self.recorder.addProtoFlag(.tlsHandshakeOK)
+            AxLogger.log("[MITM] TLS handshake SUCCEEDED for \(capturedHost), ALPN result: \(result)", level: .Warning)
+            capturedRecorder.recordHandshakeComplete()
+            capturedRecorder.addProtoFlag(.tlsHandshakeOK)
 
             // Buffer the MITM-generated cert chain for PEM storage in recordClosed()
             if let leafCert = niosslCert {
@@ -125,22 +137,30 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
                 if let caNIOSSL = try? CertGenerator.toNIOSSL(x509CACert) {
                     chain.append(caNIOSSL)
                 }
-                self.recorder.bufferCertificateChain(chain)
+                capturedRecorder.bufferCertificateChain(chain)
             }
 
             // Check ALPN result to decide HTTP version
             switch result {
             case .negotiated("h2"):
                 // HTTP/2 (gRPC, standard H2 traffic)
-                self.recorder.session.schemes = "H2"
-                AxLogger.log("[MITM] ALPN negotiated h2 for \(self.host)", level: .Warning)
+                capturedRecorder.session.schemes = "H2"
+                AxLogger.log("[MITM] ALPN negotiated h2 for \(capturedHost)", level: .Warning)
                 return HTTP2CaptureBuilder.addPipeline(
-                    context: context, recorder: self.recorder,
-                    targetHost: self.host, targetPort: self.port
+                    pipeline: capturedPipeline, channel: capturedChannel,
+                    recorder: capturedRecorder,
+                    targetHost: capturedHost, targetPort: capturedPort
                 )
             default:
-                // HTTP/1.1 (default)
-                return self.addHTTPCapturePipeline(context: context)
+                // HTTP/1.1 (default) — use NIO's configureHTTPServerPipeline() which
+                // adds requestDecoder + responseEncoder + pipeliningHandler atomically
+                // via syncOperations, then append the capture handler.
+                let pipeline = channel.pipeline
+                let captureHandler = HTTPCaptureHandler(recorder: capturedRecorder, isSSL: true, targetPort: capturedPort)
+                let future = pipeline.configureHTTPServerPipeline(withPipeliningAssistance: true).flatMap {
+                    pipeline.addHandler(captureHandler, name: "mitm.http.capture")
+                }
+                return future
             }
         }
 
@@ -153,20 +173,6 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
 
         // Remove ourselves
         _ = context.pipeline.removeHandler(name: "mitm")
-    }
-
-    private func addHTTPCapturePipeline(context: ChannelHandlerContext) -> EventLoopFuture<Void> {
-        let captureHandler = HTTPCaptureHandler(recorder: recorder, isSSL: true, targetPort: port)
-        return context.pipeline.addHandler(
-            ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .dropBytes)),
-            name: "mitm.http.requestDecoder"
-        ).flatMap {
-            context.pipeline.addHandler(HTTPResponseEncoder(), name: "mitm.http.responseEncoder")
-        }.flatMap {
-            context.pipeline.addHandler(HTTPServerPipelineHandler(), name: "mitm.http.pipelining")
-        }.flatMap {
-            context.pipeline.addHandler(captureHandler, name: "mitm.http.capture")
-        }
     }
 
     /// Fallback: when MITM can't proceed (no certs), switch to tunnel passthrough.

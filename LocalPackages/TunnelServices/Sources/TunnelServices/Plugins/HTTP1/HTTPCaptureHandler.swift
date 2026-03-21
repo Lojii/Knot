@@ -217,7 +217,13 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         if req.ssl {
             channelInitializer = { [weak self] channel -> EventLoopFuture<Void> in
                 AxLogger.log("[HTTPCapture] Setting up outbound TLS to \(req.host):\(req.port)", level: .Warning)
-                let tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["http/1.1"])
+                var tlsConfig = TLSConfiguration.makeClientConfiguration()
+                tlsConfig.applicationProtocols = ["http/1.1"]
+                // MITM proxy re-establishes a fresh TLS session to the upstream server.
+                // Skip certificate verification — the proxy's job is to intercept traffic,
+                // not to enforce trust on behalf of the client (the client already trusts
+                // the proxy's CA certificate).
+                tlsConfig.certificateVerification = .none
                 guard let sslContext = try? NIOSSLContext(configuration: tlsConfig) else {
                     AxLogger.log("[HTTPCapture] Failed to create outbound SSL context for \(req.host)", level: .Error)
                     return channel.eventLoop.makeFailedFuture(
