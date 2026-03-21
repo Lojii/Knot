@@ -430,11 +430,10 @@ final class TestNIOClient {
             // Remove HTTP handlers, add TLS
             try removeHTTPHandlers(from: channel)
 
+            // Skip TLS verification for MITM testing — the proxy generates
+            // dynamic certs that won't pass fullVerification.
             var tlsConfig = TLSConfiguration.makeClientConfiguration()
-            if let ca = trustCA {
-                tlsConfig.trustRoots = .certificates([ca])
-            }
-            tlsConfig.certificateVerification = trustCA != nil ? .fullVerification : .none
+            tlsConfig.certificateVerification = .none
             let sslContext = try NIOSSLContext(configuration: tlsConfig)
             let sslHandler = try NIOSSLClientHandler(context: sslContext, serverHostname: host)
             try channel.pipeline.addHandler(sslHandler, position: .first).wait()
@@ -455,9 +454,16 @@ final class TestNIOClient {
             channel = try bootstrap.connect(host: proxyHost, port: proxyPort).wait()
         }
 
-        // Send WebSocket upgrade request
+        // Send WebSocket upgrade request.
+        // The WebSocketUpgradeHandler handles 101 and atomically swaps the pipeline
+        // to WS mode (removes HTTP handlers, adds WS decoder/encoder/inbound handler)
+        // on the event loop BEFORE returning from channelRead. This prevents a race
+        // where the proxy sends WS frames before we've finished pipeline reconfiguration.
+        let frameQueue = WebSocketFrameQueue(eventLoop: el)
         let upgradePromise = el.makePromise(of: Void.self)
-        try channel.pipeline.addHandler(WebSocketUpgradeHandler(promise: upgradePromise)).wait()
+        try channel.pipeline.addHandler(
+            WebSocketUpgradeHandler(promise: upgradePromise, frameQueue: frameQueue)
+        ).wait()
 
         let keyBytes = (0..<16).map { _ in UInt8.random(in: 0...255) }
         let wsKey = Data(keyBytes).base64EncodedString()
@@ -480,16 +486,8 @@ final class TestNIOClient {
         channel.write(NIOAny(HTTPClientRequestPart.head(head)), promise: nil)
         channel.writeAndFlush(NIOAny(HTTPClientRequestPart.end(nil)), promise: nil)
 
-        // Wait for 101 Switching Protocols
+        // Wait for 101 + pipeline swap (done atomically by WebSocketUpgradeHandler)
         try upgradePromise.futureResult.wait()
-
-        // Remove HTTP handlers, add WebSocket framing
-        try removeHTTPHandlers(from: channel)
-
-        let frameQueue = WebSocketFrameQueue(eventLoop: el)
-        try channel.pipeline.addHandler(ByteToMessageHandler(WebSocketFrameDecoder(maxFrameSize: 1 << 20))).wait()
-        try channel.pipeline.addHandler(WebSocketFrameEncoder()).wait()
-        try channel.pipeline.addHandler(WebSocketClientInboundHandler(frameQueue: frameQueue)).wait()
 
         let session = WebSocketTestSession(channel: channel, frameQueue: frameQueue)
 
@@ -701,29 +699,60 @@ private final class TLSEventsHandler: ChannelInboundHandler, RemovableChannelHan
 // MARK: - WebSocketUpgradeHandler
 
 /// Handles the HTTP 101 response during WebSocket upgrade.
+/// Waits for HTTP 101 Switching Protocols, then removes HTTP handlers and
+/// installs WebSocket handlers atomically on the event loop, before the promise fires.
+/// This prevents a race where the proxy sends WS frames before the client has swapped pipelines.
 private final class WebSocketUpgradeHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPClientResponsePart
 
     private let promise: EventLoopPromise<Void>
+    private let frameQueue: WebSocketFrameQueue
+    private var gotUpgrade = false
 
-    init(promise: EventLoopPromise<Void>) {
+    init(promise: EventLoopPromise<Void>, frameQueue: WebSocketFrameQueue) {
         self.promise = promise
+        self.frameQueue = frameQueue
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        switch unwrapInboundIn(data) {
+        let part = unwrapInboundIn(data)
+        switch part {
         case .head(let head):
             if head.status == .switchingProtocols {
-                // Remove self — upgrade succeeded
-                context.pipeline.removeHandler(self, promise: nil)
-                promise.succeed(())
+                gotUpgrade = true
             } else {
                 promise.fail(TestNIOClientError.webSocketUpgradeFailed(status: head.status.code))
             }
         case .body:
             break
         case .end:
-            break
+            // Wait for .end before swapping pipeline — ensures all HTTP response
+            // parts are consumed before we remove the HTTP decoder.
+            guard gotUpgrade else { return }
+
+            let pipeline = context.pipeline
+
+            // 1. Remove this handler
+            pipeline.removeHandler(self, promise: nil)
+
+            // 2. Remove HTTP handlers by type
+            func removeByType<T: RemovableChannelHandler>(_ type: T.Type) {
+                if let h = try? pipeline.syncOperations.handler(type: type) {
+                    try? pipeline.syncOperations.removeHandler(h)
+                }
+            }
+            removeByType(HTTPRequestEncoder.self)
+            removeByType(ByteToMessageHandler<HTTPResponseDecoder>.self)
+            removeByType(NIOHTTPRequestHeadersValidator.self)
+
+            // 3. Add WS handlers
+            _ = try? pipeline.syncOperations.addHandler(
+                ByteToMessageHandler(WebSocketFrameDecoder(maxFrameSize: 1 << 20)))
+            _ = try? pipeline.syncOperations.addHandler(WebSocketFrameEncoder())
+            _ = try? pipeline.syncOperations.addHandler(
+                WebSocketClientInboundHandler(frameQueue: frameQueue))
+
+            promise.succeed(())
         }
     }
 

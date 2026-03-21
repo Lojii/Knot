@@ -102,7 +102,7 @@ public class CertGenerator {
             subject: subject,
             signatureAlgorithm: .sha256WithRSAEncryption,
             extensions: extensions,
-            issuerPrivateKey: Certificate.PrivateKey(rsaKey)
+            issuerPrivateKey: Certificate.PrivateKey(caKey)
         )
 
         return cert

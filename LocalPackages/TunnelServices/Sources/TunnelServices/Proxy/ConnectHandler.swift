@@ -79,15 +79,24 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
 
         // Remove all HTTP handlers from pipeline (we're switching to raw bytes or TLS)
-        // Try both naming conventions (http1.* from HTTP1Plugin, https.* from legacy)
-        for prefix in ["http1", "https"] {
-            context.pipeline.removeHandler(name: "\(prefix).requestDecoder", promise: nil)
-            context.pipeline.removeHandler(name: "\(prefix).responseEncoder", promise: nil)
-            context.pipeline.removeHandler(name: "\(prefix).pipelining", promise: nil)
-            context.pipeline.removeHandler(name: "\(prefix).captureHandler", promise: nil)
+        // Use syncOperations for reliable synchronous removal
+        let pipeline = context.pipeline
+        let handlerNames = [
+            "http1.requestDecoder", "http1.responseEncoder", "http1.pipelining",
+            "http1.captureHandler",
+            "https.requestDecoder", "https.responseEncoder", "https.pipelining",
+            "https.captureHandler",
+            "dispatcher"
+        ]
+        for name in handlerNames {
+            if let ctx = try? pipeline.syncOperations.context(name: name) {
+                pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
+            }
         }
-        context.pipeline.removeHandler(name: "http1.connect", promise: nil)
-        context.pipeline.removeHandler(name: "https.connect", promise: nil)
+
+        // Remove ConnectHandler itself from the pipeline
+        context.pipeline.removeHandler(context: context, promise: nil)
+
         // Decision: intercept TLS or tunnel raw bytes?
         let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore
 

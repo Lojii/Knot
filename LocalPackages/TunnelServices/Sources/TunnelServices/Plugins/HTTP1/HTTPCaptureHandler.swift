@@ -485,13 +485,23 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
             // happens before the next event loop turn, the client's WS frame won't
             // arrive until the pipeline is ready.
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
+                // Pause reading from the outbound channel (real server) to prevent
+                // WS frames from arriving before we've reconfigured the pipeline.
+                _ = context.channel.setOption(ChannelOptions.autoRead, value: false)
+
+                // Write 101 .end to the client
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
+
+                // Reconfigure both pipelines to WebSocket mode
                 if let interceptor = wsInterceptor {
                     interceptor.performWebSocketUpgrade(
                         context: context,
                         clientChannel: context.channel
                     )
                 }
+
+                // Resume reading from outbound — now both pipelines are in WS mode
+                _ = context.channel.setOption(ChannelOptions.autoRead, value: true)
                 return
             }
 

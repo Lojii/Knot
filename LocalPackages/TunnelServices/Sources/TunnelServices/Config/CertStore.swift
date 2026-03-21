@@ -18,14 +18,16 @@ public class CertStore {
     public let rsakey: NIOSSLPrivateKey?
     public let x509CACert: Certificate?
     public let rsaSigningKey: _RSA.Signing.PrivateKey?
+    /// The CA private key as swift-crypto type (for signing leaf certs in CertGenerator).
+    public let caSigningKey: _RSA.Signing.PrivateKey?
 
     public var isValid: Bool {
-        cacert != nil && cakey != nil && rsakey != nil && x509CACert != nil && rsaSigningKey != nil
+        cacert != nil && cakey != nil && rsakey != nil && x509CACert != nil && rsaSigningKey != nil && caSigningKey != nil
     }
 
     public init() {
         guard let certDir = CertStore.certDirectoryURL() else {
-            cacert = nil; cakey = nil; rsakey = nil; x509CACert = nil; rsaSigningKey = nil
+            cacert = nil; cakey = nil; rsakey = nil; x509CACert = nil; rsaSigningKey = nil; caSigningKey = nil
             return
         }
 
@@ -43,6 +45,7 @@ public class CertStore {
         rsakey = try? NIOSSLPrivateKey(file: rsaPath, format: .pem)
         x509CACert = try? CertGenerator.loadCertificate(fromPEMFile: certPath)
         rsaSigningKey = try? CertGenerator.loadRSAPrivateKey(fromPEMFile: rsaPath)
+        caSigningKey = try? CertGenerator.loadRSAPrivateKey(fromPEMFile: keyPath)
     }
 
     /// Generate CA cert + keys and save to cert directory. Called once on first launch.

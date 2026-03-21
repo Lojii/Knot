@@ -31,12 +31,48 @@ public enum HTTP2CaptureBuilder {
         targetHost: String,
         targetPort: Int = 443
     ) -> EventLoopFuture<Void> {
+        return addPipeline(
+            pipeline: context.pipeline,
+            channel: context.channel,
+            eventLoop: context.eventLoop,
+            recorder: recorder,
+            targetHost: targetHost,
+            targetPort: targetPort
+        )
+    }
+
+    /// Overload that accepts a pipeline + channel directly (for use when the originating handler context is detached).
+    public static func addPipeline(
+        pipeline: ChannelPipeline,
+        channel: Channel,
+        recorder: SessionRecorder,
+        targetHost: String,
+        targetPort: Int = 443
+    ) -> EventLoopFuture<Void> {
+        return addPipeline(
+            pipeline: pipeline,
+            channel: channel,
+            eventLoop: channel.eventLoop,
+            recorder: recorder,
+            targetHost: targetHost,
+            targetPort: targetPort
+        )
+    }
+
+    private static func addPipeline(
+        pipeline: ChannelPipeline,
+        channel: Channel,
+        eventLoop: EventLoop,
+        recorder: SessionRecorder,
+        targetHost: String,
+        targetPort: Int = 443
+    ) -> EventLoopFuture<Void> {
         // Shared H2 connection to the real server
         let serverConn = H2ServerConnection(host: targetHost, port: targetPort, task: recorder.task)
 
         let clientMultiplexer = HTTP2StreamMultiplexer(
             mode: .server,
-            channel: context.channel
+            channel: channel
         ) { stream -> EventLoopFuture<Void> in
             let streamRecorder = SessionRecorder(task: recorder.task)
             streamRecorder.session.schemes = "H2"
@@ -57,28 +93,28 @@ public enum HTTP2CaptureBuilder {
 
         // Pass client-side references to server connection for push promise forwarding
         serverConn.clientMultiplexer = clientMultiplexer
-        serverConn.clientH2Channel = context.channel
+        serverConn.clientH2Channel = channel
 
         // Set up client-side H2 pipeline
-        let pipeline = context.pipeline.addHandler(
+        let pipelineFuture = pipeline.addHandler(
             NIOHTTP2Handler(mode: .server),
             name: "h2.handler"
         ).flatMap {
-            context.pipeline.addHandler(clientMultiplexer, name: "h2.multiplexer")
+            pipeline.addHandler(clientMultiplexer, name: "h2.multiplexer")
         }
 
         // Initiate server H2 connection in parallel
-        serverConn.connect(on: context.eventLoop).whenFailure { error in
+        serverConn.connect(on: eventLoop).whenFailure { error in
             AxLogger.log("[H2ServerConn] Failed to connect to \(targetHost):\(targetPort): \(error)", level: .Error)
             recorder.recordError("H2 server connection failed: \(error)")
         }
 
         // Close server connection when client disconnects
-        context.channel.closeFuture.whenComplete { _ in
+        channel.closeFuture.whenComplete { _ in
             serverConn.close()
         }
 
-        return pipeline
+        return pipelineFuture
     }
 }
 
@@ -150,7 +186,9 @@ final class H2ServerConnection {
 
         let bootstrap = ClientBootstrap(group: eventLoop)
             .channelInitializer { [weak self] channel in
-                let tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["h2"])
+                var tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["h2"])
+                // MITM proxy does not verify upstream server certificates
+                tlsConfig.certificateVerification = .none
                 guard let sslCtx = try? NIOSSLContext(configuration: tlsConfig),
                       let sslHandler = try? NIOSSLClientHandler(context: sslCtx, serverHostname: sniName) else {
                     return channel.eventLoop.makeFailedFuture(
