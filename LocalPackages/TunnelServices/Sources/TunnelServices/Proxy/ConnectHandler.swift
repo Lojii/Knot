@@ -88,14 +88,19 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             "https.captureHandler",
             "dispatcher"
         ]
+        var removedHandlers = [String]()
         for name in handlerNames {
             if let ctx = try? pipeline.syncOperations.context(name: name) {
                 pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
+                removedHandlers.append(name)
             }
         }
+        AxLogger.log("[CONNECT] removed handlers: \(removedHandlers.joined(separator: ", "))", level: .Warning)
 
-        // Remove ConnectHandler itself from the pipeline
+        // Also remove http1.connect (ourselves) by name, since context may be stale
+        // after removing other handlers
         context.pipeline.removeHandler(context: context, promise: nil)
+        AxLogger.log("[CONNECT] removed self from pipeline", level: .Warning)
 
         // Decision: intercept TLS or tunnel raw bytes?
         let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore
@@ -115,12 +120,14 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             // Re-detect inner protocol via ProtocolDispatcher.
             // Pass the CONNECT target as metadata so TLSPlugin knows the
             // destination even if SNI extraction fails.
+            AxLogger.log("[CONNECT] Tunnel path: adding ProtocolDispatcher with innerHost=\(request.host) innerPort=\(request.port)", level: .Warning)
             let tcpChildren = ProtocolRegistry.shared.tcpChildren
             let dispatcher = ProtocolDispatcher(
                 task: task, nodes: tcpChildren, recorder: recorder,
                 metadata: ProtocolMetadata(innerHost: request.host, innerPort: request.port)
             )
             _ = context.pipeline.addHandler(dispatcher, name: "dispatcher")
+            AxLogger.log("[CONNECT] ProtocolDispatcher added, waiting for client data", level: .Warning)
         }
     }
 

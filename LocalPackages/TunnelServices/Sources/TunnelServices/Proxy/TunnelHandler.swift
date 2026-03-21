@@ -28,6 +28,7 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
         self.task = task
         self.targetHost = targetHost
         self.targetPort = targetPort
+        AxLogger.log("[Tunnel] init: target=\(targetHost):\(targetPort)", level: .Warning)
     }
 
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -85,7 +86,11 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     private func flushPending() {
-        guard let channel = clientChannel, channel.isActive else { return }
+        guard let channel = clientChannel, channel.isActive else {
+            AxLogger.log("[Tunnel] flushPending: channel nil or inactive, pending=\(pendingData.count)", level: .Warning)
+            return
+        }
+        AxLogger.log("[Tunnel] flushPending: flushing \(pendingData.count) buffers to \(targetHost):\(targetPort)", level: .Warning)
         for buf in pendingData {
             channel.writeAndFlush(buf, promise: nil)
         }
@@ -93,6 +98,7 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     public func channelUnregistered(context: ChannelHandlerContext) {
+        AxLogger.log("[Tunnel] channelUnregistered for \(targetHost):\(targetPort), connected=\(connected)", level: .Warning)
         clientChannel?.close(mode: .all, promise: nil)
         recorder.recordClosed()
     }
@@ -125,6 +131,7 @@ final class TunnelRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     func channelUnregistered(context: ChannelHandlerContext) {
+        AxLogger.log("[TunnelRelay] server channel unregistered, closing peer", level: .Warning)
         peerChannel?.close(mode: .all, promise: nil)
     }
 

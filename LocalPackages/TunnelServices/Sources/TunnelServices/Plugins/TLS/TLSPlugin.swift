@@ -75,6 +75,7 @@ public final class TLSPlugin: ProtocolPlugin {
             return channel.pipeline.addHandler(mitmHandler, name: "mitm")
         } else {
             // Tunnel passthrough with passive TLS sniffing.
+            AxLogger.log("[TLSPlugin] Tunnel path: host=\(host) port=\(port) sni=\(sni ?? "nil") innerHost=\(context.metadata.innerHost ?? "nil")", level: .Warning)
             recorder.addProtoFlag(.tlsTunnel)
             recorder.session.schemes = "HTTPS(Tunnel)"
             recorder.ensureHttpRecorder(
