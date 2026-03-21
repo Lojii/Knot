@@ -1,0 +1,14 @@
+{
+  "name": "knot-browser-test",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node browser-test.js --auto",
+    "manual": "node browser-test.js --manual",
+    "auto-then-manual": "node browser-test.js --auto --then-manual"
+  },
+  "dependencies": {
+    "puppeteer": "^22.0.0",
+    "ws": "^8.0.0"
+  }
+}
