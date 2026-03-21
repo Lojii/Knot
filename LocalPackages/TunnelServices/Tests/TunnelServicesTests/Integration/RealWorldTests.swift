@@ -538,9 +538,9 @@ final class RealWorldWebSocketTests: XCTestCase {
         )
     }
 
-    // MARK: - WSS echo.websocket.events
+    // MARK: - WSS echo.websocket.org (primary)
 
-    func testRealWorld_WSS_echo_websocket_events() throws {
+    func testRealWorld_WSS_echo_websocket_org_primary() throws {
         let launcher = try TestProxyLauncher(sslEnabled: true, withCA: true)
         let proxyPort = try launcher.start()
         let client = TestNIOClient(proxyPort: proxyPort)
@@ -551,7 +551,7 @@ final class RealWorldWebSocketTests: XCTestCase {
 
         do {
             try client.webSocketSession(
-                host: "echo.websocket.events", port: 443, path: "/",
+                host: "echo.websocket.org", port: 443, path: "/",
                 tls: true, trustCA: launcher.caCertificate
             ) { session in
                 try session.send("hello from proxy test")
@@ -573,7 +573,7 @@ final class RealWorldWebSocketTests: XCTestCase {
             }
         } catch {
             // Public WebSocket echo servers are unreliable — skip gracefully
-            print("[REAL_WORLD] WSS echo.websocket.events unavailable: \(error)")
+            print("[REAL_WORLD] WSS echo.websocket.org unavailable: \(error)")
             throw XCTSkip("WebSocket echo server unreachable: \(error)")
         }
 
