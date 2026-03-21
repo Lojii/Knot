@@ -64,6 +64,12 @@ public struct FlowRecord {
     public var isModified: Bool = false
     public var tags: String = ""
 
+    // Protocol metadata (indexed columns for aggregate queries)
+    public var connReuse: Int = 0       // 0=new, 1=keep-alive, 2=pool
+    public var protoFlags: Int = 0      // ProtoFlag bitmask
+    public var pushStatus: Int? = nil   // PushForwardStatus raw value
+    public var certChainRef: String? = nil  // PEM file path
+
     public init(flowId: String, protocolName: String, host: String, port: Int, startedAt: TimeInterval) {
         self.flowId = flowId
         self.protocolName = protocolName

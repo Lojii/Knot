@@ -54,6 +54,7 @@ public class TaskDatabaseGroup {
         // Create schemas
         try TransportSchema.create(transport)
         try ProtocolSchema.create(proto)
+        try ProtocolSchema.migrateIfNeeded(proto)
         try DecodedSchema.create(decoded)
         try StateSchema.create(state)
         try ConnectionSchema.create(connection)

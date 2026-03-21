@@ -60,4 +60,19 @@ public enum ProtocolSchema {
             CREATE INDEX IF NOT EXISTS idx_flow_search_key4 ON flow(search_key4)
             """)
     }
+
+    static let schemaVersion: Int64 = 2
+
+    /// Migrate from v1 (original) to v2 (protocol metadata columns).
+    public static func migrateIfNeeded(_ db: Connection) throws {
+        let version = try db.scalar("PRAGMA user_version") as! Int64
+        if version < schemaVersion {
+            try db.run("ALTER TABLE flow ADD COLUMN conn_reuse INTEGER DEFAULT 0")
+            try db.run("ALTER TABLE flow ADD COLUMN proto_flags INTEGER DEFAULT 0")
+            try db.run("ALTER TABLE flow ADD COLUMN push_status INTEGER")
+            try db.run("ALTER TABLE flow ADD COLUMN cert_chain_ref TEXT")
+            try db.run("CREATE INDEX IF NOT EXISTS idx_flow_conn_reuse ON flow(conn_reuse)")
+            try db.run("PRAGMA user_version = \(schemaVersion)")
+        }
+    }
 }
