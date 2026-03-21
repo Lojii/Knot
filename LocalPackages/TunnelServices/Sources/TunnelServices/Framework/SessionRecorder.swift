@@ -9,6 +9,7 @@
 import Foundation
 import NIOHTTP1
 import NIO
+import NIOSSL
 
 // MARK: - Protocol Metadata Types
 
@@ -77,6 +78,7 @@ public class SessionRecorder {
     private var _keepAliveRequestIndex: Int = 0
     private var _h2StreamId: Int? = nil
     private var _bufferedCerts: [Any]? = nil
+    private var _certChainSummary: [[String: String]]? = nil
 
     // MARK: - Protocol Metadata Public API
 
@@ -84,6 +86,7 @@ public class SessionRecorder {
     public var protoFlags: Int { _protoFlags.rawValue }
     public var pushStatus: Int? { _pushStatus?.rawValue }
     public var certChainRef: String? { _certChainRef }
+    public var certChainSummary: [[String: String]]? { _certChainSummary }
     public var connReusePoolKey: String? { _connReusePoolKey }
     public var keepAliveRequestIndex: Int { _keepAliveRequestIndex }
     public var h2StreamId: Int? { _h2StreamId }
@@ -439,10 +442,27 @@ public class SessionRecorder {
             )
         }
 
-        // Build FlowRecord and insert into protocol.db
+        // Write buffered certificate chain to PEM file
+        if let certs = _bufferedCerts as? [NIOSSLCertificate],
+           let fid = flowId,
+           taskId > 0 {
+            let taskDir = PathManager.taskDirectory(taskId)
+            let certService = CertExportService(fileFolder: taskDir)
+            do {
+                let (ref, summary) = try certService.saveCertChain(flowId: fid, certificates: certs)
+                _certChainRef = ref
+                _certChainSummary = summary
+            } catch {
+                NSLog("[SessionRecorder] cert chain save failed: \(error)")
+            }
+        }
+
+        // Build FlowRecord and insert into protocol.db (off EventLoop via write queue)
         if let recorder = _protocolRecorder ?? httpRecorder, let group = dbGroup {
-            let flowRecord = recorder.buildFlowRecord()
-            try? FlowDAO.insert(db: group.proto, record: flowRecord)
+            let flowRecord = recorder.buildFlowRecord(sessionRecorder: self)
+            group.protoWriteQueue.async {
+                try? FlowDAO.insert(db: group.proto, record: flowRecord)
+            }
         }
 
         // Update TCP connection state to closed in connection.db

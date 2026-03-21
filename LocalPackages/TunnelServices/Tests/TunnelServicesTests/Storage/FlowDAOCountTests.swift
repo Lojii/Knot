@@ -10,6 +10,7 @@ final class FlowDAOCountTests: XCTestCase {
         helper = StorageTestHelper()
         db = try! helper.createTempDB(name: "protocol.db")
         try! ProtocolSchema.create(db)
+        try! ProtocolSchema.migrateIfNeeded(db)
         // Seed: 5 HTTP, 3 DNS, 2 WS
         for i in 0..<5 {
             var r = FlowRecord(flowId: "http_\(i)", protocolName: "HTTP", host: "h", port: 80, startedAt: Double(i))

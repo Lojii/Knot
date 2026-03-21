@@ -67,12 +67,32 @@ public enum ProtocolSchema {
     public static func migrateIfNeeded(_ db: Connection) throws {
         let version = try db.scalar("PRAGMA user_version") as! Int64
         if version < schemaVersion {
-            try db.run("ALTER TABLE flow ADD COLUMN conn_reuse INTEGER DEFAULT 0")
-            try db.run("ALTER TABLE flow ADD COLUMN proto_flags INTEGER DEFAULT 0")
-            try db.run("ALTER TABLE flow ADD COLUMN push_status INTEGER")
-            try db.run("ALTER TABLE flow ADD COLUMN cert_chain_ref TEXT")
+            // Use addColumnIfNotExists to be safe against partial migrations
+            // (e.g., crash between ALTER and PRAGMA update) or future CREATE TABLE
+            // that already includes these columns.
+            let existingColumns = try columnNames(db: db, table: "flow")
+            let newColumns: [(name: String, definition: String)] = [
+                ("conn_reuse", "INTEGER DEFAULT 0"),
+                ("proto_flags", "INTEGER DEFAULT 0"),
+                ("push_status", "INTEGER"),
+                ("cert_chain_ref", "TEXT"),
+            ]
+            for col in newColumns where !existingColumns.contains(col.name) {
+                try db.run("ALTER TABLE flow ADD COLUMN \(col.name) \(col.definition)")
+            }
             try db.run("CREATE INDEX IF NOT EXISTS idx_flow_conn_reuse ON flow(conn_reuse)")
             try db.run("PRAGMA user_version = \(schemaVersion)")
         }
+    }
+
+    /// Query existing column names for a table.
+    private static func columnNames(db: Connection, table: String) throws -> Set<String> {
+        var names = Set<String>()
+        for row in try db.prepare("PRAGMA table_info(\(table))") {
+            if let name = row[1] as? String {
+                names.insert(name)
+            }
+        }
+        return names
     }
 }

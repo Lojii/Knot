@@ -22,7 +22,8 @@ public class PayloadWriter {
         self.flushThreshold = flushThreshold
         self.buffer = Data(capacity: flushThreshold)
 
-        // Create empty file on disk
+        // Ensure directory exists, then create empty file on disk
+        try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         FileManager.default.createFile(atPath: path, contents: nil)
         self.fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
     }

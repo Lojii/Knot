@@ -5,5 +5,11 @@ import Foundation
 public protocol ProtocolRecorder: AnyObject {
     static var protocolName: String { get }
     static var searchKeyMapping: SearchKeyMapping { get }
-    func buildFlowRecord() -> FlowRecord
+    func buildFlowRecord(sessionRecorder: SessionRecorder?) -> FlowRecord
+}
+
+extension ProtocolRecorder {
+    public func buildFlowRecord() -> FlowRecord {
+        buildFlowRecord(sessionRecorder: nil)
+    }
 }

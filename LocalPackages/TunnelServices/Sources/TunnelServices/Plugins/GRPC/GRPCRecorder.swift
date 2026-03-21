@@ -132,7 +132,7 @@ public class GRPCRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord() -> FlowRecord {
+    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
         var record = FlowRecord(flowId: flowId, protocolName: Self.protocolName,
                                 host: host, port: port, startedAt: startedAt)
 

@@ -98,7 +98,7 @@ public class HTTPRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord() -> FlowRecord {
+    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
         let effectiveHost = _hostOverride ?? host
         var record = FlowRecord(flowId: flowId, protocolName: protocolOverride ?? Self.protocolName, host: effectiveHost, port: port, startedAt: startedAt)
 
@@ -145,6 +145,27 @@ public class HTTPRecorder: ProtocolRecorder {
         // Payload refs
         record.reqPayloadRef = reqPayloadRef
         record.rspPayloadRef = rspPayloadRef
+
+        // Merge protocol metadata from SessionRecorder
+        if let sr = sessionRecorder {
+            record.connReuse = sr.connReuse
+            record.protoFlags = sr.protoFlags
+            record.pushStatus = sr.pushStatus
+            record.certChainRef = sr.certChainRef
+
+            if let poolKey = sr.connReusePoolKey {
+                record.metadata["connReusePoolKey"] = poolKey
+            }
+            if sr.keepAliveRequestIndex > 0 {
+                record.metadata["keepAliveRequestIndex"] = sr.keepAliveRequestIndex
+            }
+            if let streamId = sr.h2StreamId {
+                record.metadata["h2StreamId"] = streamId
+            }
+            if let summary = sr.certChainSummary {
+                record.metadata["certChainSummary"] = summary
+            }
+        }
 
         return record
     }

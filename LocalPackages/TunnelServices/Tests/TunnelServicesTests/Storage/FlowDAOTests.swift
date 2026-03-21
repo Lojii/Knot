@@ -10,6 +10,7 @@ final class FlowDAOTests: XCTestCase {
         helper = StorageTestHelper()
         db = try! helper.createTempDB(name: "protocol.db")
         try! ProtocolSchema.create(db)
+        try! ProtocolSchema.migrateIfNeeded(db)
     }
     override func tearDown() { helper = nil }
 

@@ -119,6 +119,15 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             self.recorder.recordHandshakeComplete()
             self.recorder.addProtoFlag(.tlsHandshakeOK)
 
+            // Buffer the MITM-generated cert chain for PEM storage in recordClosed()
+            if let leafCert = niosslCert {
+                var chain: [NIOSSLCertificate] = [leafCert]
+                if let caNIOSSL = try? CertGenerator.toNIOSSL(x509CACert) {
+                    chain.append(caNIOSSL)
+                }
+                self.recorder.bufferCertificateChain(chain)
+            }
+
             // Check ALPN result to decide HTTP version
             switch result {
             case .negotiated("h2"):

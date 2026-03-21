@@ -20,6 +20,7 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
     private var clientChannel: Channel?
     private var pendingData = [ByteBuffer]()
     private var connected = false
+    private var connecting = false
 
     public init(recorder: SessionRecorder, task: CaptureTask,
                 targetHost: String = "", targetPort: Int = 0) {
@@ -34,7 +35,8 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
         recorder.addUpload(buffer.readableBytes)
         AxLogger.log("[Tunnel] channelRead \(targetHost):\(targetPort), bytes=\(buffer.readableBytes), connected=\(connected), hasChannel=\(clientChannel != nil)", level: .Warning)
 
-        if clientChannel == nil && !targetHost.isEmpty {
+        if clientChannel == nil && !connecting && !targetHost.isEmpty {
+            connecting = true
             connectToServer(context: context)
         }
 

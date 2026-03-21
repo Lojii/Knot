@@ -99,6 +99,9 @@ final class H2ServerConnection {
     private var connectFailed = false
     private var pendingStreams: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
                                   promise: EventLoopPromise<Channel>)] = []
+    /// Guards ready/pendingStreams/multiplexer which are accessed from both
+    /// the client EventLoop (createStream) and server EventLoop (connect callback).
+    private let _stateLock = NIOLock()
 
     /// Push promise tracking: maps server pushedStreamID → server parentStreamID.
     /// Populated by PushPromiseTracker on the server-side pipeline.
@@ -187,24 +190,32 @@ final class H2ServerConnection {
         AxLogger.log("[H2ServerConn] connecting to \(host):\(port)...", level: .Warning)
 
         return bootstrap.connect(host: host, port: port).map { [weak self] channel in
-            AxLogger.log("[H2ServerConn] connected to \(self?.host ?? ""):\(self?.port ?? 0)", level: .Warning)
-            self?.channel = channel
-            self?.ready = true
-            self?.flushPendingStreams()
+            guard let self = self else { return }
+            AxLogger.log("[H2ServerConn] connected to \(self.host):\(self.port)", level: .Warning)
+            self._stateLock.withLock {
+                self.channel = channel
+                self.ready = true
+            }
+            self.flushPendingStreams()
         }
     }
 
     /// Creates a new H2 stream on the shared server connection.
+    /// Thread-safe: may be called from any EventLoop.
     func createStream(
         initializer: @Sendable @escaping (Channel) -> EventLoopFuture<Void>,
         promise: EventLoopPromise<Channel>
     ) {
+        _stateLock.lock()
         if ready, let mux = multiplexer {
+            _stateLock.unlock()
             mux.createStreamChannel(promise: promise, initializer)
         } else if connectFailed {
+            _stateLock.unlock()
             promise.fail(ServerChannelError(errCode: -2, localizedDescription: "H2 server connection failed"))
         } else {
             pendingStreams.append((initializer, promise))
+            _stateLock.unlock()
         }
     }
 

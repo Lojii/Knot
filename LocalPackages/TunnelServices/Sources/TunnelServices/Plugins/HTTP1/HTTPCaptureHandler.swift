@@ -91,16 +91,27 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 }
             }
 
-            // Remove proxy-specific headers
-            head.headers = NetRequest.removeProxyHead(heads: head.headers)
-
-            // Detect WebSocket upgrade
-            let connection = head.headers["Connection"].first?.lowercased() ?? ""
-            let upgrade = head.headers["Upgrade"].first?.lowercased() ?? ""
-            if connection.contains("upgrade") && upgrade == "websocket" {
+            // Detect WebSocket upgrade BEFORE stripping hop-by-hop headers,
+            // because Connection and Upgrade are hop-by-hop headers that get removed.
+            let connectionRaw = head.headers["Connection"].first?.lowercased() ?? ""
+            let upgradeRaw = head.headers["Upgrade"].first?.lowercased() ?? ""
+            if connectionRaw.contains("upgrade") && upgradeRaw == "websocket" {
                 isWebSocketUpgrade = true
                 wsInterceptor = WebSocketUpgradeInterceptor(recorder: recorder, task: recorder.task, isSSL: isSSL)
                 recorder.session.schemes = isSSL ? "WSS" : "WS"
+            }
+
+            // Remove proxy-specific hop-by-hop headers.
+            // For WebSocket upgrades, preserve Connection and Upgrade headers
+            // since the server needs them to complete the 101 handshake.
+            if isWebSocketUpgrade {
+                // Only strip proxy-specific headers, keep Connection + Upgrade
+                head.headers.remove(name: "Proxy-Authenticate")
+                head.headers.remove(name: "Proxy-Authorization")
+                head.headers.remove(name: "Proxy-Connection")
+                head.headers.remove(name: "Expect")
+            } else {
+                head.headers = NetRequest.removeProxyHead(heads: head.headers)
             }
 
             // Record
@@ -270,10 +281,8 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             case .success(let channel):
                 self?.clientChannel = channel
                 self?.recorder.recordConnected(remoteAddress: channel.remoteAddress)
-                if !req.ssl {
-                    self?.connected = true
-                    self?.flushPendingParts()
-                }
+                // Note: for non-SSL, connected=true and flushPendingParts() are already
+                // called in the channelInitializer callback above. Don't duplicate here.
             case .failure(let error):
                 self?.recorder.recordConnectionError(error, host: req.host, port: req.port)
                 self?.serverChannel?.close(promise: nil)
@@ -367,6 +376,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         // If the last response completed normally and the outbound channel is still
         // active, return it to the connection pool for reuse by future clients.
         if responseCompleted, let outbound = clientChannel, outbound.isActive, let req = request ?? lastCompletedRequest {
+            // Strip the ResponseRelayHandler before returning to pool,
+            // so the next user doesn't find a stale handler in the pipeline.
+            outbound.pipeline.removeHandler(name: "client.responseRelay", promise: nil)
             let poolKey = ConnectionPoolKey(host: req.host, port: req.port, isSSL: req.ssl)
             recorder.task.connectionPool.checkin(key: poolKey, channel: outbound, createdAt: pooledCreatedAt)
         } else {
@@ -461,15 +473,14 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
                 return
             }
 
-            // Record keep-alive flag before closing (recordClosed persists to DB)
-            if shouldKeepAlive() {
+            // Compute keep-alive once before recordClosed (which persists to DB)
+            let keepAlive = shouldKeepAlive()
+            if keepAlive {
                 recorder.addProtoFlag(.keepAlive)
             }
 
             // Finalize this cycle's recorder
             recorder.recordClosed()
-
-            let keepAlive = shouldKeepAlive()
             serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
 
             // Notify HTTPCaptureHandler about cycle completion

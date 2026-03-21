@@ -10,6 +10,7 @@ final class FlowDAOSearchTests: XCTestCase {
         helper = StorageTestHelper()
         db = try! helper.createTempDB(name: "protocol.db")
         try! ProtocolSchema.create(db)
+        try! ProtocolSchema.migrateIfNeeded(db)
         for i in 0..<5 {
             var r = FlowRecord(flowId: "f_\(i)", protocolName: "HTTP",
                                host: "api.example.com", port: 443, startedAt: Double(i))

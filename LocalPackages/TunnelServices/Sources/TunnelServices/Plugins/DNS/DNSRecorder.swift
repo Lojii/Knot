@@ -58,7 +58,7 @@ public class DNSRecorder: ProtocolRecorder {
         self.endedAt = Date().timeIntervalSince1970
     }
 
-    public func buildFlowRecord() -> FlowRecord {
+    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
         let firstAnswer = (answers.first?["data"] as? String) ?? ""
         let summaryAnswer = firstAnswer.isEmpty
             ? responseCode

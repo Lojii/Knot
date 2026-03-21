@@ -28,10 +28,11 @@ public class BatchWriter {
 
     /// Enqueue a row for batch insert. Called from any thread, dispatched to serial queue.
     public func enqueue(_ row: PacketRow) {
-        queue.async { [self] in
-            pendingRows.append(row)
-            if pendingRows.count >= batchSize {
-                flush()
+        queue.async { [weak self] in
+            guard let self = self else { return }
+            self.pendingRows.append(row)
+            if self.pendingRows.count >= self.batchSize {
+                self.flush()
             }
         }
     }

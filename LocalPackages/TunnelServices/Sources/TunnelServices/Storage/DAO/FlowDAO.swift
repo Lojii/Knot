@@ -26,7 +26,8 @@ public enum FlowDAO {
                 status, error_message, summary,
                 search_key1, search_key2, search_key3, search_key4,
                 metadata, req_payload_ref, rsp_payload_ref,
-                is_intercepted, is_modified, tags
+                is_intercepted, is_modified, tags,
+                conn_reuse, proto_flags, push_status, cert_chain_ref
             ) VALUES (
                 ?, ?, ?, ?, ?,
                 ?, ?,
@@ -35,7 +36,8 @@ public enum FlowDAO {
                 ?, ?, ?,
                 ?, ?, ?, ?,
                 ?, ?, ?,
-                ?, ?, ?
+                ?, ?, ?,
+                ?, ?, ?, ?
             )
             """,
             record.flowId,
@@ -64,7 +66,11 @@ public enum FlowDAO {
             record.rspPayloadRef,
             record.isIntercepted ? 1 : 0,
             record.isModified ? 1 : 0,
-            record.tags
+            record.tags,
+            record.connReuse,
+            record.protoFlags,
+            record.pushStatus,
+            record.certChainRef
         )
     }
 
@@ -201,6 +207,16 @@ public enum FlowDAO {
             guard i >= 0 else { return 0 }
             return row[i] as? Int64 ?? 0
         }
+        func optInt64(_ name: String) -> Int64? {
+            let i = idx(name)
+            guard i >= 0 else { return nil }
+            return row[i] as? Int64
+        }
+        func optStr(_ name: String) -> String? {
+            let i = idx(name)
+            guard i >= 0 else { return nil }
+            return row[i] as? String
+        }
 
         let flowId = str("flow_id")
         let protocolName = str("protocol")
@@ -248,6 +264,11 @@ public enum FlowDAO {
         record.isIntercepted = int64("is_intercepted") != 0
         record.isModified = int64("is_modified") != 0
         record.tags = str("tags")
+
+        record.connReuse = Int(int64("conn_reuse"))
+        record.protoFlags = Int(int64("proto_flags"))
+        record.pushStatus = optInt64("push_status").map { Int($0) }
+        record.certChainRef = optStr("cert_chain_ref")
 
         return record
     }

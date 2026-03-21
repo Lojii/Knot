@@ -181,7 +181,7 @@ public class WebSocketRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord() -> FlowRecord {
+    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
         let protocolName = isSecure ? "WSS" : "WS"
         var record = FlowRecord(flowId: flowId, protocolName: protocolName, host: host,
                                 port: port, startedAt: startedAt)
