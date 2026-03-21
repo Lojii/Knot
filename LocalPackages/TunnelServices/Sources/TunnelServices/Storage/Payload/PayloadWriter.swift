@@ -28,6 +28,13 @@ public class PayloadWriter {
         self.fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
     }
 
+    deinit {
+        // Safety net: flush remaining buffer and close file handle
+        // in case close() was never called (e.g. connection dropped mid-request).
+        try? flush()
+        fileHandle.closeFile()
+    }
+
     /// Append raw Data to the writer
     public func append(_ data: Data) throws {
         buffer.append(data)

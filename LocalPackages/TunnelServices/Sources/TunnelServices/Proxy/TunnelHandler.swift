@@ -64,6 +64,8 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
             }
 
         AxLogger.log("[Tunnel] connecting to \(targetHost):\(targetPort)...", level: .Warning)
+        // Capture channel (not context) to avoid holding ChannelHandlerContext outside handler
+        let inboundChannel = context.channel
         let future = bootstrap.connect(host: targetHost, port: targetPort)
         future.whenComplete { [weak self] result in
             switch result {
@@ -77,7 +79,7 @@ public final class TunnelHandler: ChannelInboundHandler, RemovableChannelHandler
                 AxLogger.log("[Tunnel] connect FAILED to \(self?.targetHost ?? ""):\(self?.targetPort ?? 0): \(error)", level: .Error)
                 self?.recorder.recordError("\(self?.targetHost ?? "") connect error: \(error)")
                 self?.recorder.session.sstate = "failure"
-                context.channel.close(promise: nil)
+                inboundChannel.close(promise: nil)
             }
         }
     }

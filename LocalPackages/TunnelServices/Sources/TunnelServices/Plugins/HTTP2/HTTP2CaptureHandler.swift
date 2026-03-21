@@ -189,7 +189,8 @@ final class H2ServerConnection {
 
         AxLogger.log("[H2ServerConn] connecting to \(host):\(port)...", level: .Warning)
 
-        return bootstrap.connect(host: host, port: port).map { [weak self] channel in
+        let future = bootstrap.connect(host: host, port: port)
+        future.whenSuccess { [weak self] channel in
             guard let self = self else { return }
             AxLogger.log("[H2ServerConn] connected to \(self.host):\(self.port)", level: .Warning)
             self._stateLock.withLock {
@@ -197,6 +198,29 @@ final class H2ServerConnection {
                 self.ready = true
             }
             self.flushPendingStreams()
+        }
+        future.whenFailure { [weak self] error in
+            guard let self = self else { return }
+            AxLogger.log("[H2ServerConn] connect FAILED to \(self.host):\(self.port): \(error)", level: .Error)
+            self._stateLock.withLock {
+                self.connectFailed = true
+            }
+            self.failPendingStreams(error: error)
+        }
+        return future.map { _ in }
+    }
+
+    /// Fail all pending stream promises (connection failed).
+    private func failPendingStreams(error: Error) {
+        let pending: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
+                        promise: EventLoopPromise<Channel>)]
+        _stateLock.lock()
+        pending = self.pendingStreams
+        self.pendingStreams.removeAll()
+        _stateLock.unlock()
+
+        for (_, promise) in pending {
+            promise.fail(error)
         }
     }
 
@@ -224,11 +248,20 @@ final class H2ServerConnection {
     }
 
     private func flushPendingStreams() {
-        guard let mux = multiplexer else { return }
-        for (initializer, promise) in pendingStreams {
+        // Drain pendingStreams under the lock, then iterate outside it
+        // to avoid holding the lock during multiplexer calls.
+        let pending: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
+                        promise: EventLoopPromise<Channel>)]
+        _stateLock.lock()
+        pending = self.pendingStreams
+        self.pendingStreams.removeAll()
+        let mux = self.multiplexer
+        _stateLock.unlock()
+
+        guard let mux = mux else { return }
+        for (initializer, promise) in pending {
             mux.createStreamChannel(promise: promise, initializer)
         }
-        pendingStreams.removeAll()
     }
 }
 
@@ -487,7 +520,14 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
     private var request: NetRequest?
     private var connected = false
     private var pendingParts = [HTTPClientRequestPart]()
-    fileprivate var responseCompleted = false
+    /// Accessed from both client EventLoop (channelUnregistered) and server EventLoop
+    /// (H2ResponseRelayHandler sets it on response .end). Use lock for thread safety.
+    private let _responseCompletedLock = NIOLock()
+    private var _responseCompleted = false
+    fileprivate var responseCompleted: Bool {
+        get { _responseCompletedLock.withLock { _responseCompleted } }
+        set { _responseCompletedLock.withLock { _responseCompleted = newValue } }
+    }
 
     init(recorder: SessionRecorder, serverConnection: H2ServerConnection) {
         self.recorder = recorder

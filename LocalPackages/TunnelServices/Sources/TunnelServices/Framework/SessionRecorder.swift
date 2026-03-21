@@ -442,25 +442,33 @@ public class SessionRecorder {
             )
         }
 
-        // Write buffered certificate chain to PEM file
-        if let certs = _bufferedCerts as? [NIOSSLCertificate],
-           let fid = flowId,
-           taskId > 0 {
-            let taskDir = PathManager.taskDirectory(taskId)
-            let certService = CertExportService(fileFolder: taskDir)
-            do {
-                let (ref, summary) = try certService.saveCertChain(flowId: fid, certificates: certs)
-                _certChainRef = ref
-                _certChainSummary = summary
-            } catch {
-                NSLog("[SessionRecorder] cert chain save failed: \(error)")
-            }
-        }
-
-        // Build FlowRecord and insert into protocol.db (off EventLoop via write queue)
+        // Build FlowRecord and insert into protocol.db (off EventLoop via write queue).
+        // Certificate chain export (file I/O) also runs on the write queue to avoid
+        // blocking the NIO EventLoop.
         if let recorder = _protocolRecorder ?? httpRecorder, let group = dbGroup {
-            let flowRecord = recorder.buildFlowRecord(sessionRecorder: self)
-            group.protoWriteQueue.async {
+            let bufferedCerts = _bufferedCerts as? [NIOSSLCertificate]
+            let fid = flowId
+            let tid = taskId
+            // Capture all state needed by the async block before it runs.
+            // SessionRecorder fields are read here (on EventLoop), written in async.
+            let certChainRef = _certChainRef
+            let certChainSummary = _certChainSummary
+
+            group.protoWriteQueue.async { [weak self] in
+                // Write cert chain PEM if buffered certs exist and not already done
+                if certChainRef == nil, let certs = bufferedCerts, let fid = fid, tid > 0 {
+                    let taskDir = PathManager.taskDirectory(tid)
+                    let certService = CertExportService(fileFolder: taskDir)
+                    do {
+                        let (ref, summary) = try certService.saveCertChain(flowId: fid, certificates: certs)
+                        self?._certChainRef = ref
+                        self?._certChainSummary = summary
+                    } catch {
+                        NSLog("[SessionRecorder] cert chain save failed: \(error)")
+                    }
+                }
+                // Now build and insert the FlowRecord (picks up certChainRef/Summary)
+                let flowRecord = recorder.buildFlowRecord(sessionRecorder: self)
                 try? FlowDAO.insert(db: group.proto, record: flowRecord)
             }
         }

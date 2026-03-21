@@ -142,6 +142,8 @@ final class WebSocketFrameLogger: ChannelInboundHandler, RemovableChannelHandler
         case serverToClient = "←"
     }
 
+    private static let isoFormatter = ISO8601DateFormatter()
+
     private let recorder: SessionRecorder
     private let direction: Direction
     private var frameCount = 0
@@ -172,7 +174,7 @@ final class WebSocketFrameLogger: ChannelInboundHandler, RemovableChannelHandler
     }
 
     private func formatFrame(_ frame: WebSocketFrame) -> String {
-        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let timestamp = Self.isoFormatter.string(from: Date())
         let opcode = opcodeString(frame.opcode)
         let length = frame.data.readableBytes
         let fin = frame.fin ? "FIN" : "..."
