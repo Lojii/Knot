@@ -298,6 +298,8 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
 
         switch part {
         case .head(let head):
+            recorder.addProtoFlag(.h2ServerPush)
+            recorder.markPushStatus(.captureOnly)
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
             // On first head, try to forward PUSH_PROMISE + response headers to client
@@ -326,6 +328,7 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         guard let conn = serverConnection,
               let clientH2 = conn.clientH2Channel, clientH2.isActive else {
             AxLogger.log("[H2PushRelay] No client H2 channel, capture-only", level: .Warning)
+            recorder.markPushStatus(.failed)
             return
         }
 
@@ -342,6 +345,7 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         guard let serverPushedID = pushStreamID,
               let serverParentID = tracker.parentStreamID(forPushed: serverPushedID) else {
             AxLogger.log("[H2PushRelay] Cannot resolve parent stream for push, capture-only", level: .Warning)
+            recorder.markPushStatus(.failed)
             return
         }
 
@@ -350,6 +354,7 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         // Map server parent stream → client parent stream
         guard let clientParentChannel = conn.clientChannel(forServerStream: serverParentID) else {
             AxLogger.log("[H2PushRelay] No client stream found for server parent \(serverParentID), capture-only", level: .Warning)
+            recorder.markPushStatus(.failed)
             return
         }
 
@@ -383,6 +388,7 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         clientH2.writeAndFlush(headersFrame, promise: nil)
 
         pushPromiseSent = true
+        recorder.markPushStatus(.forwarded)
         AxLogger.log("[H2PushRelay] Forwarded PUSH_PROMISE to client: parent=\(clientParentStreamID) pushed=\(clientPushID)", level: .Info)
     }
 
@@ -492,6 +498,7 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
 
             if request == nil {
                 request = NetRequest(head)
+                recorder.addProtoFlag(.h2Multiplexing)
                 request?.ssl = true
                 request?.port = serverConnection.port
                 AxLogger.log("[H2Capture] request: \(head.method) \(head.uri) host=\(request?.host ?? "?") port=\(serverConnection.port)", level: .Warning)
@@ -554,6 +561,7 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
                 if let clientCh = self?.clientStreamChannel,
                    let serverStreamID = try? stream.syncOptions?.getOption(HTTP2StreamChannelOptions.streamID) {
                     self?.serverConnection.registerStreamMapping(serverStreamID: serverStreamID, clientChannel: clientCh)
+                    self?.recorder.setH2StreamId(Int(Int32(serverStreamID)))
                 }
                 self?.flushPending()
             case .failure(let error):
@@ -579,6 +587,7 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
     }
 
     func channelWritabilityChanged(context: ChannelHandlerContext) {
+        recorder.addProtoFlag(.h2FlowControl)
         // When client stream's write buffer fills up, stop reading from server stream
         if let serverCh = serverStreamChannel {
             _ = serverCh.setOption(ChannelOptions.autoRead, value: context.channel.isWritable)
