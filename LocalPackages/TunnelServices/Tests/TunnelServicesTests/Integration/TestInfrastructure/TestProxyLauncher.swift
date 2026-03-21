@@ -34,6 +34,9 @@ final class TestProxyLauncher {
     /// File folder path for this test task's artifacts.
     var taskFileFolder: String { task?.fileFolder ?? tempDir }
 
+    /// The task ID (set after start()).
+    var taskId: Int64 { task?.id ?? 0 }
+
     /// The outbound connection pool from the running task.
     var connectionPool: OutboundConnectionPool? { task?.connectionPool }
 
@@ -100,7 +103,8 @@ final class TestProxyLauncher {
                 cakey: nioCAKey,
                 rsakey: nioRSAKey,
                 x509CACert: caCert,
-                rsaSigningKey: rsaKey
+                rsaSigningKey: rsaKey,
+                caSigningKey: caKey
             )
 
             self.caCertificate = nioCACert
