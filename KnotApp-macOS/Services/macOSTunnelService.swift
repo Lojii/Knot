@@ -20,6 +20,7 @@ final class macOSTunnelService: NSObject, TunnelServiceProtocol {
     let state = TunnelServiceState()
     private var mitmServer: MitmService?
     private let startDate = Date()
+    private let ipc = AppGroupIPC(groupIdentifier: "group.Lojii.NIO1901")
 
     override init() {
         super.init()
@@ -59,6 +60,7 @@ final class macOSTunnelService: NSObject, TunnelServiceProtocol {
                     log.info("startCapture: proxy server started successfully")
                     Task { @MainActor in
                         self?.state.status = .connected(since: Date())
+                        self?.ipc.passMessage("running", identifier: "app.status")
                     }
                     continuation.resume()
                 case .failure(let error):
@@ -87,6 +89,7 @@ final class macOSTunnelService: NSObject, TunnelServiceProtocol {
         mitmServer = nil
 
         await MainActor.run { state.status = .disconnected }
+        ipc.passMessage("stopped", identifier: "app.status")
         log.info("stopCapture: done")
     }
 
