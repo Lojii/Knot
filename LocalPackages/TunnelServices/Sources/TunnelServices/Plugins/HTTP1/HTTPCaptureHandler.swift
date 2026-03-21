@@ -7,11 +7,16 @@
 //
 //  Flow:
 //  1. Receives HTTP request from client (via proxy pipeline)
-//  2. Opens connection to real server
+//  2. Opens connection to real server (or reuses existing one for keep-alive)
 //  3. Forwards request to server
 //  4. Receives response from server
 //  5. Records both request and response via SessionRecorder
 //  6. Relays response back to client
+//
+//  Supports HTTP/1.1 keep-alive and pipelining:
+//  - Outbound connection is reused across requests to the same server
+//  - Each request/response cycle gets its own SessionRecorder
+//  - Idle timeout closes keep-alive connections after inactivity
 //
 
 import Foundation
@@ -26,8 +31,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     public typealias InboundIn = HTTPServerRequestPart
     public typealias OutboundOut = HTTPServerResponsePart
 
-    private let recorder: SessionRecorder
+    private var recorder: SessionRecorder
     private let isSSL: Bool
+    private let targetPort: Int?
     private var clientChannel: Channel?      // outbound connection to real server
     private var serverChannel: Channel?      // inbound connection from client
     private var pendingRequestParts = [Any]()
@@ -36,9 +42,16 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     private var wsInterceptor: WebSocketUpgradeInterceptor?
     private var isWebSocketUpgrade = false
 
-    public init(recorder: SessionRecorder, isSSL: Bool) {
+    // Keep-alive state
+    private var responseRelayHandler: ResponseRelayHandler?
+    private weak var _channel: Channel?       // weak ref for idle timeout scheduling
+    private var idleTimeoutTask: Scheduled<Void>?
+    private var responseCompleted = false      // tracks whether current cycle completed normally
+
+    public init(recorder: SessionRecorder, isSSL: Bool, targetPort: Int? = nil) {
         self.recorder = recorder
         self.isSSL = isSSL
+        self.targetPort = targetPort
     }
 
     // MARK: - Inbound (from client)
@@ -46,16 +59,31 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         if serverChannel == nil {
             serverChannel = context.channel
+            _channel = context.channel
         }
 
         let part = unwrapInboundIn(data)
 
         switch part {
         case .head(var head):
+            // Cancel idle timeout on new request
+            idleTimeoutTask?.cancel()
+            idleTimeoutTask = nil
+            responseCompleted = false
+
             // Extract request info and prepare for forwarding
-            if request == nil {
-                request = NetRequest(head)
-                if isSSL { request?.ssl = true }
+            AxLogger.log("[HTTPCapture] request: \(head.method) \(head.uri) isSSL=\(isSSL)", level: .Warning)
+            request = NetRequest(head)
+            if isSSL {
+                request?.ssl = true
+                // NetRequest defaults port to 80 because ssl wasn't set during init.
+                // Use the original port from CONNECT request if available,
+                // otherwise default to 443 for SSL.
+                if let tp = targetPort {
+                    request?.port = tp
+                } else if request?.port == 80 {
+                    request?.port = 443
+                }
             }
 
             // Remove proxy-specific headers
@@ -83,9 +111,15 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 }
             }
 
-            // Start connecting to the real server
-            if clientChannel == nil {
+            // Start connecting to the real server (or reuse existing connection)
+            if clientChannel == nil || !(clientChannel?.isActive ?? false) {
+                clientChannel = nil
+                connected = false
+                responseRelayHandler = nil
                 connectToServer(context: context)
+            } else {
+                // Reuse existing connection — swap recorder in ResponseRelayHandler
+                responseRelayHandler?.swapRecorder(recorder)
             }
 
             enqueueOrSend(.head(head))
@@ -98,8 +132,6 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             recorder.recordRequestEnd()
             enqueueOrSend(.end(trailers))
         }
-
-        context.fireChannelRead(data)
     }
 
     // MARK: - Server Connection
@@ -112,19 +144,37 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             serverChannel: serverChannel,
             wsInterceptor: wsInterceptor
         )
+        self.responseRelayHandler = responseHandler
+
+        // Set up keep-alive callback
+        responseHandler.onResponseComplete = { [weak self] keepAlive in
+            guard let self = self else { return }
+            self.responseCompleted = true
+            if keepAlive {
+                self.resetForNextRequest()
+                self.scheduleIdleTimeout()
+            } else {
+                // Not keep-alive: close both channels
+                self.clientChannel?.close(mode: .all, promise: nil)
+                self.serverChannel?.close(mode: .all, promise: nil)
+            }
+        }
 
         var channelInitializer: ((Channel) -> EventLoopFuture<Void>)
 
         if req.ssl {
             channelInitializer = { [weak self] channel -> EventLoopFuture<Void> in
+                AxLogger.log("[HTTPCapture] Setting up outbound TLS to \(req.host):\(req.port)", level: .Warning)
                 let tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["http/1.1"])
                 guard let sslContext = try? NIOSSLContext(configuration: tlsConfig) else {
+                    AxLogger.log("[HTTPCapture] Failed to create outbound SSL context for \(req.host)", level: .Error)
                     return channel.eventLoop.makeFailedFuture(
                         ServerChannelError(errCode: -1, localizedDescription: "SSL context failed")
                     )
                 }
                 let sniName = req.host.isIPAddress() ? nil : req.host
                 guard let sslHandler = try? NIOSSLClientHandler(context: sslContext, serverHostname: sniName) else {
+                    AxLogger.log("[HTTPCapture] Failed to create outbound SSL handler for \(req.host)", level: .Error)
                     return channel.eventLoop.makeFailedFuture(
                         ServerChannelError(errCode: -1, localizedDescription: "SSL handler failed")
                     )
@@ -145,9 +195,8 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                         )
                     }.flatMap {
                         channel.pipeline.addHandler(responseHandler, name: "client.responseRelay")
-                    }.flatMap { _ -> EventLoopFuture<Void> in
+                    }.map { _ in
                         self?.flushPendingParts()
-                        return channel.pipeline.removeHandler(name: "xxxxxxxxxxxxx")  // dummy to complete chain
                     }
                 }
 
@@ -188,6 +237,37 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 self?.recorder.recordConnectionError(error, host: req.host, port: req.port)
                 self?.serverChannel?.close(promise: nil)
             }
+        }
+    }
+
+    // MARK: - Keep-Alive Cycle Management
+
+    /// Reset per-request state for the next request on a keep-alive connection.
+    /// Creates a new SessionRecorder and swaps it into the ResponseRelayHandler.
+    /// The outbound clientChannel is kept open.
+    private func resetForNextRequest() {
+        // Create new recorder for the next cycle
+        let newRecorder = SessionRecorder(task: recorder.task)
+        self.recorder = newRecorder
+
+        // Clear per-request state
+        request = nil
+        wsInterceptor = nil
+        isWebSocketUpgrade = false
+        pendingRequestParts.removeAll()
+    }
+
+    /// Schedule an idle timeout. If no new request arrives within the timeout,
+    /// close the keep-alive connection.
+    private func scheduleIdleTimeout() {
+        idleTimeoutTask?.cancel()
+        guard let channel = _channel, channel.isActive else { return }
+        let timeout = TimeAmount.seconds(ProxyConfig.Connection.keepAliveIdleTimeout)
+        idleTimeoutTask = channel.eventLoop.scheduleTask(in: timeout) { [weak self] in
+            guard let self = self else { return }
+            AxLogger.log("[HTTPCapture] Keep-alive idle timeout, closing connection", level: .Info)
+            self.clientChannel?.close(mode: .all, promise: nil)
+            self.serverChannel?.close(mode: .all, promise: nil)
         }
     }
 
@@ -236,11 +316,20 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     }
 
     public func channelUnregistered(context: ChannelHandlerContext) {
+        idleTimeoutTask?.cancel()
+        idleTimeoutTask = nil
         clientChannel?.close(mode: .all, promise: nil)
-        recorder.recordClosed()
+        // Fallback: if the response didn't complete normally, close the current recorder
+        if !responseCompleted {
+            recorder.recordClosed()
+        }
     }
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        AxLogger.log("[HTTPCapture] Error for \(request?.host ?? "unknown"): \(error)", level: .Error)
+        recorder.recordError("HTTPCapture error for \(request?.host ?? "unknown"): \(error)")
+        idleTimeoutTask?.cancel()
+        idleTimeoutTask = nil
         clientChannel?.close(mode: .all, promise: nil)
         context.close(mode: .all, promise: nil)
     }
@@ -251,12 +340,18 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
 /// Receives HTTP responses from the real server and relays them back to the client.
 /// Also records response data via SessionRecorder.
 /// Detects 101 Switching Protocols to trigger WebSocket upgrade.
+/// Supports keep-alive: checks Connection header and HTTP version to decide whether to close.
 final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPClientResponsePart
 
-    private let recorder: SessionRecorder
+    private var recorder: SessionRecorder
     private weak var serverChannel: Channel?
     private var wsInterceptor: WebSocketUpgradeInterceptor?
+
+    // Keep-alive state
+    private var requestVersion: HTTPVersion = .init(major: 1, minor: 1)
+    private var responseHead: HTTPResponseHead?
+    var onResponseComplete: ((Bool) -> Void)?
 
     init(recorder: SessionRecorder, serverChannel: Channel?,
          wsInterceptor: WebSocketUpgradeInterceptor? = nil) {
@@ -265,11 +360,18 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
         self.wsInterceptor = wsInterceptor
     }
 
+    /// Swap the recorder for a new request/response cycle on a keep-alive connection.
+    func swapRecorder(_ newRecorder: SessionRecorder) {
+        self.recorder = newRecorder
+        self.responseHead = nil
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let part = unwrapInboundIn(data)
 
         switch part {
         case .head(let head):
+            responseHead = head
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
             serverChannel?.writeAndFlush(HTTPServerResponsePart.head(head), promise: nil)
@@ -286,12 +388,14 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
         case .end(let trailers):
             recorder.recordResponseEnd()
+            // Finalize this cycle's recorder
+            recorder.recordClosed()
 
             // If this was a 101 upgrade, switch to WebSocket
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
                 // Trigger WebSocket pipeline transformation
-                if let serverCh = serverChannel, let interceptor = wsInterceptor {
+                if let interceptor = wsInterceptor {
                     interceptor.performWebSocketUpgrade(
                         context: context,
                         clientChannel: context.channel
@@ -300,12 +404,34 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
                 return
             }
 
-            let promise = serverChannel?.eventLoop.makePromise(of: Void.self)
-            serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: promise)
-            promise?.futureResult.whenComplete { [weak self] _ in
-                self?.serverChannel?.close(mode: .all, promise: nil)
+            let keepAlive = shouldKeepAlive()
+
+            serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
+
+            // Notify HTTPCaptureHandler about cycle completion
+            onResponseComplete?(keepAlive)
+
+            if !keepAlive {
+                context.channel.close(mode: .all, promise: nil)
             }
-            context.channel.close(mode: .all, promise: nil)
+        }
+    }
+
+    /// Determine whether the connection should be kept alive based on HTTP version
+    /// and Connection header semantics.
+    /// - HTTP/1.1: keep-alive by default unless "Connection: close"
+    /// - HTTP/1.0: close by default unless "Connection: keep-alive"
+    private func shouldKeepAlive() -> Bool {
+        guard let head = responseHead else { return false }
+
+        let connectionHeader = head.headers["Connection"].joined(separator: ",").lowercased()
+
+        if head.version.major == 1 && head.version.minor >= 1 {
+            // HTTP/1.1: keep-alive by default
+            return !connectionHeader.contains("close")
+        } else {
+            // HTTP/1.0: close by default
+            return connectionHeader.contains("keep-alive")
         }
     }
 
@@ -314,6 +440,13 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
+        // uncleanShutdown is normal — many servers close TCP without TLS close_notify
+        if let sslError = error as? NIOSSLError, case .uncleanShutdown = sslError {
+            AxLogger.log("[ResponseRelay] server closed without TLS close_notify (normal)", level: .Info)
+        } else {
+            AxLogger.log("[ResponseRelay] Error from upstream server: \(error)", level: .Error)
+            recorder.recordError("ResponseRelay error: \(error)")
+        }
         serverChannel?.close(mode: .all, promise: nil)
         context.channel.close(mode: .all, promise: nil)
     }

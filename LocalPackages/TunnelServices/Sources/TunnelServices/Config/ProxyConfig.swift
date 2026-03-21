@@ -120,6 +120,17 @@ public enum ProxyConfig {
         public static let organization = "Company"
     }
 
+    // MARK: - Connection (Keep-Alive / Pipelining)
+
+    public enum Connection {
+        /// Idle timeout for keep-alive connections (seconds).
+        public static let keepAliveIdleTimeout: Int64 = 30
+        /// Maximum lifetime for a single connection (seconds).
+        public static let maxConnectionLifetime: Int64 = 300
+        /// Maximum queued pipelined requests per connection.
+        public static let maxPendingRequests: Int = 16
+    }
+
     // MARK: - Database
 
     public enum Database {
