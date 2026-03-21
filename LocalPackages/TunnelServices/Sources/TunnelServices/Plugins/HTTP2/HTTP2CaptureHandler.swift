@@ -11,7 +11,9 @@ import Foundation
 import NIO
 import NIOHTTP1
 import NIOHTTP2
+import NIOHPACK
 import NIOSSL
+import NIOConcurrencyHelpers
 
 // MARK: - HTTP/2 Pipeline Builder
 
@@ -53,8 +55,9 @@ public enum HTTP2CaptureBuilder {
             }
         }
 
-        // Pass client-side multiplexer to server connection for push promise forwarding
+        // Pass client-side references to server connection for push promise forwarding
         serverConn.clientMultiplexer = clientMultiplexer
+        serverConn.clientH2Channel = context.channel
 
         // Set up client-side H2 pipeline
         let pipeline = context.pipeline.addHandler(
@@ -88,6 +91,8 @@ final class H2ServerConnection {
     let port: Int
     let task: CaptureTask
     weak var clientMultiplexer: HTTP2StreamMultiplexer?
+    /// The client-side H2 connection channel — used to write raw H2 frames (e.g. PUSH_PROMISE).
+    weak var clientH2Channel: Channel?
     private var channel: Channel?
     private var multiplexer: HTTP2StreamMultiplexer?
     private var ready = false
@@ -95,10 +100,46 @@ final class H2ServerConnection {
     private var pendingStreams: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
                                   promise: EventLoopPromise<Channel>)] = []
 
+    /// Push promise tracking: maps server pushedStreamID → server parentStreamID.
+    /// Populated by PushPromiseTracker on the server-side pipeline.
+    let pushPromiseTracker = PushPromiseTracker()
+
+    /// Maps server stream ID → client stream channel, so push relay can find
+    /// the original client stream to send PUSH_PROMISE on.
+    private let _streamMapLock = NIOLock()
+    private var _serverToClientStream: [HTTP2StreamID: Channel] = [:]
+
+    /// Next push stream ID for client-facing push promises (even numbers, starting at 2).
+    private let _nextPushIDLock = NIOLock()
+    private var _nextPushStreamID: Int32 = 2
+
     init(host: String, port: Int, task: CaptureTask) {
         self.host = host
         self.port = port
         self.task = task
+    }
+
+    /// Register a mapping from server stream to client stream channel.
+    func registerStreamMapping(serverStreamID: HTTP2StreamID, clientChannel: Channel) {
+        _streamMapLock.withLock {
+            _serverToClientStream[serverStreamID] = clientChannel
+        }
+    }
+
+    /// Look up the client stream channel that corresponds to a server stream.
+    func clientChannel(forServerStream serverStreamID: HTTP2StreamID) -> Channel? {
+        _streamMapLock.withLock {
+            _serverToClientStream[serverStreamID]
+        }
+    }
+
+    /// Allocate the next even-numbered push stream ID for client-facing push promises.
+    func allocatePushStreamID() -> HTTP2StreamID {
+        _nextPushIDLock.withLock {
+            let id = _nextPushStreamID
+            _nextPushStreamID += 2
+            return HTTP2StreamID(id)
+        }
     }
 
     func connect(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
@@ -115,8 +156,9 @@ final class H2ServerConnection {
                 }
 
                 let h2Handler = NIOHTTP2Handler(mode: .client)
+                let pushTracker = self?.pushPromiseTracker ?? PushPromiseTracker()
                 let mux = HTTP2StreamMultiplexer(mode: .client, channel: channel) { [weak self] serverPushStream in
-                    guard let self = self, let clientMux = self.clientMultiplexer else {
+                    guard let self = self else {
                         return serverPushStream.eventLoop.makeSucceededVoidFuture()
                     }
                     let pushRecorder = SessionRecorder(task: self.task)
@@ -127,7 +169,7 @@ final class H2ServerConnection {
                         name: "h2push.codec"
                     ).flatMap {
                         serverPushStream.pipeline.addHandler(
-                            H2PushRelayHandler(recorder: pushRecorder, clientMultiplexer: clientMux),
+                            H2PushRelayHandler(recorder: pushRecorder, serverConnection: self),
                             name: "h2push.relay"
                         )
                     }
@@ -136,6 +178,9 @@ final class H2ServerConnection {
 
                 return channel.pipeline.addHandler(sslHandler, name: "h2out.ssl")
                     .flatMap { channel.pipeline.addHandler(h2Handler, name: "h2out.h2") }
+                    // PushPromiseTracker sits between NIOHTTP2Handler and multiplexer
+                    // to intercept PUSH_PROMISE frames and record parent stream mappings.
+                    .flatMap { channel.pipeline.addHandler(pushTracker, name: "h2out.pushTracker") }
                     .flatMap { channel.pipeline.addHandler(mux, name: "h2out.mux") }
             }
 
@@ -178,24 +223,74 @@ final class H2ServerConnection {
 
 // MARK: - H2 Push Relay
 
+// MARK: - Push Promise Tracker
+
+/// Sits between NIOHTTP2Handler and HTTP2StreamMultiplexer on the server-side pipeline.
+/// Intercepts PUSH_PROMISE frames to record the parent→pushed stream mapping,
+/// which the multiplexer callback doesn't expose.
+final class PushPromiseTracker: ChannelInboundHandler, RemovableChannelHandler {
+    typealias InboundIn = HTTP2Frame
+    typealias InboundOut = HTTP2Frame
+
+    private let lock = NIOLock()
+    /// Maps server pushedStreamID → server parentStreamID.
+    private var mapping: [HTTP2StreamID: HTTP2StreamID] = [:]
+    /// Push promise request headers (from PUSH_PROMISE frame).
+    private var pushHeaders: [HTTP2StreamID: HPACKHeaders] = [:]
+
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let frame = unwrapInboundIn(data)
+        if case .pushPromise(let pp) = frame.payload {
+            lock.withLock {
+                mapping[pp.pushedStreamID] = frame.streamID
+                pushHeaders[pp.pushedStreamID] = pp.headers
+            }
+            AxLogger.log("[PushTracker] PUSH_PROMISE: parent=\(frame.streamID) pushed=\(pp.pushedStreamID)", level: .Info)
+        }
+        // Always forward to multiplexer
+        context.fireChannelRead(data)
+    }
+
+    /// Get the parent stream ID for a pushed stream.
+    func parentStreamID(forPushed pushed: HTTP2StreamID) -> HTTP2StreamID? {
+        lock.withLock { mapping[pushed] }
+    }
+
+    /// Get the push request headers (from PUSH_PROMISE) for a pushed stream.
+    func requestHeaders(forPushed pushed: HTTP2StreamID) -> HPACKHeaders? {
+        lock.withLock { pushHeaders[pushed] }
+    }
+}
+
+// MARK: - H2 Push Relay
+
 /// Handles server push promises received on the upstream H2 connection.
-/// Captures the pushed response via SessionRecorder for inspection in the UI.
+/// Captures the pushed response via SessionRecorder AND forwards it to the client
+/// by writing raw HTTP2Frame objects (PUSH_PROMISE + HEADERS + DATA) on the
+/// client H2 connection channel.
 ///
-/// NOTE: Push responses are captured but NOT forwarded to the client.
-/// NIOHTTP2's HTTP2StreamMultiplexer in server mode does not expose an API for
-/// sending PUSH_PROMISE frames. Creating a regular server-initiated stream would
-/// cause most HTTP/2 clients to respond with PROTOCOL_ERROR or REFUSED_STREAM.
-/// Capture-only is the correct approach here — the pushed data still appears
-/// in the traffic list for inspection.
+/// Flow:
+/// 1. PushPromiseTracker records server parentStreamID for this push stream
+/// 2. H2ServerConnection maps server parentStreamID → client stream channel
+/// 3. We allocate a new even push stream ID for the client side
+/// 4. Write PUSH_PROMISE frame on client H2 channel (referencing original client stream)
+/// 5. Write HEADERS + DATA frames on client H2 channel (on the new push stream)
 final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPClientResponsePart
 
     private let recorder: SessionRecorder
+    private weak var serverConnection: H2ServerConnection?
 
-    init(recorder: SessionRecorder, clientMultiplexer: HTTP2StreamMultiplexer?) {
+    /// The client-side push stream ID allocated for this push.
+    private var clientPushStreamID: HTTP2StreamID?
+    /// Whether we successfully sent PUSH_PROMISE to the client.
+    private var pushPromiseSent = false
+    /// The server-side stream ID of this push stream (captured from first frame context).
+    private var serverPushStreamID: HTTP2StreamID?
+
+    init(recorder: SessionRecorder, serverConnection: H2ServerConnection) {
         self.recorder = recorder
-        // clientMultiplexer intentionally unused — see class doc.
-        // Parameter kept for API compatibility; will be removed in a future cleanup.
+        self.serverConnection = serverConnection
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -205,19 +300,150 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         case .head(let head):
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
+            // On first head, try to forward PUSH_PROMISE + response headers to client
+            tryForwardPushPromise(context: context, responseHead: head)
 
         case .body(let body):
             recorder.recordResponseBody(body)
             recorder.addDownload(body.readableBytes)
+            forwardData(body, endStream: false)
 
-        case .end:
+        case .end(let trailers):
             recorder.recordResponseEnd()
+            if let trailers = trailers {
+                // Forward trailers as HEADERS with endStream
+                forwardTrailers(trailers)
+            } else {
+                forwardEndStream()
+            }
             recorder.recordClosed()
         }
     }
 
+    // MARK: - Push Forwarding
+
+    private func tryForwardPushPromise(context: ChannelHandlerContext, responseHead: HTTPResponseHead) {
+        guard let conn = serverConnection,
+              let clientH2 = conn.clientH2Channel, clientH2.isActive else {
+            AxLogger.log("[H2PushRelay] No client H2 channel, capture-only", level: .Warning)
+            return
+        }
+
+        // Resolve which server stream channel is ours (the push stream)
+        // The stream ID is accessible from the channel via HTTP2StreamChannel internals.
+        // We use the push promise tracker to find our parent stream.
+        let tracker = conn.pushPromiseTracker
+
+        // Try to find our server push stream ID by scanning tracker for recent mappings.
+        // Since we're called from the push stream's pipeline, we need the stream ID.
+        // Extract it from channel if possible, otherwise use tracker scan.
+        let pushStreamID = extractStreamID(from: context.channel)
+
+        guard let serverPushedID = pushStreamID,
+              let serverParentID = tracker.parentStreamID(forPushed: serverPushedID) else {
+            AxLogger.log("[H2PushRelay] Cannot resolve parent stream for push, capture-only", level: .Warning)
+            return
+        }
+
+        self.serverPushStreamID = serverPushedID
+
+        // Map server parent stream → client parent stream
+        guard let clientParentChannel = conn.clientChannel(forServerStream: serverParentID) else {
+            AxLogger.log("[H2PushRelay] No client stream found for server parent \(serverParentID), capture-only", level: .Warning)
+            return
+        }
+
+        // Get the original push request headers from PUSH_PROMISE
+        let requestHeaders = tracker.requestHeaders(forPushed: serverPushedID)
+            ?? synthesizePushRequestHeaders(from: responseHead)
+
+        // Allocate a client-side push stream ID
+        let clientPushID = conn.allocatePushStreamID()
+        self.clientPushStreamID = clientPushID
+
+        // Get the client parent stream ID
+        let clientParentStreamID = extractStreamID(from: clientParentChannel) ?? HTTP2StreamID(1)
+
+        // 1. Write PUSH_PROMISE frame on the client H2 connection channel
+        let pushPromise = HTTP2Frame.FramePayload.PushPromise(
+            pushedStreamID: clientPushID,
+            headers: requestHeaders
+        )
+        let pushFrame = HTTP2Frame(streamID: clientParentStreamID, payload: .pushPromise(pushPromise))
+        clientH2.write(pushFrame, promise: nil)
+
+        // 2. Write response HEADERS on the pushed stream
+        var responseHPACK = HPACKHeaders()
+        responseHPACK.add(name: ":status", value: "\(responseHead.status.code)")
+        for (name, value) in responseHead.headers {
+            responseHPACK.add(name: name.lowercased(), value: value)
+        }
+        let headersPayload = HTTP2Frame.FramePayload.Headers(headers: responseHPACK)
+        let headersFrame = HTTP2Frame(streamID: clientPushID, payload: .headers(headersPayload))
+        clientH2.writeAndFlush(headersFrame, promise: nil)
+
+        pushPromiseSent = true
+        AxLogger.log("[H2PushRelay] Forwarded PUSH_PROMISE to client: parent=\(clientParentStreamID) pushed=\(clientPushID)", level: .Info)
+    }
+
+    private func forwardData(_ body: ByteBuffer, endStream: Bool) {
+        guard pushPromiseSent, let pushID = clientPushStreamID,
+              let clientH2 = serverConnection?.clientH2Channel, clientH2.isActive else { return }
+
+        let dataPayload = HTTP2Frame.FramePayload.Data(data: .byteBuffer(body), endStream: endStream)
+        let dataFrame = HTTP2Frame(streamID: pushID, payload: .data(dataPayload))
+        clientH2.writeAndFlush(dataFrame, promise: nil)
+    }
+
+    private func forwardTrailers(_ trailers: HTTPHeaders) {
+        guard pushPromiseSent, let pushID = clientPushStreamID,
+              let clientH2 = serverConnection?.clientH2Channel, clientH2.isActive else { return }
+
+        var hpack = HPACKHeaders()
+        for (name, value) in trailers {
+            hpack.add(name: name.lowercased(), value: value)
+        }
+        let headersPayload = HTTP2Frame.FramePayload.Headers(headers: hpack, endStream: true)
+        let headersFrame = HTTP2Frame(streamID: pushID, payload: .headers(headersPayload))
+        clientH2.writeAndFlush(headersFrame, promise: nil)
+    }
+
+    private func forwardEndStream() {
+        guard pushPromiseSent, let pushID = clientPushStreamID,
+              let clientH2 = serverConnection?.clientH2Channel, clientH2.isActive else { return }
+
+        let emptyBuf = clientH2.allocator.buffer(capacity: 0)
+        let dataPayload = HTTP2Frame.FramePayload.Data(data: .byteBuffer(emptyBuf), endStream: true)
+        let endFrame = HTTP2Frame(streamID: pushID, payload: .data(dataPayload))
+        clientH2.writeAndFlush(endFrame, promise: nil)
+    }
+
+    // MARK: - Helpers
+
+    /// Try to extract the HTTP2 stream ID from a stream channel.
+    /// HTTP2StreamChannel stores streamID internally; we access it via the channel option.
+    private func extractStreamID(from channel: Channel) -> HTTP2StreamID? {
+        // NIOHTTP2 exposes stream ID via channel option
+        try? channel.syncOptions?.getOption(HTTP2StreamChannelOptions.streamID)
+    }
+
+    /// Synthesize push request headers when the original PUSH_PROMISE headers were not captured.
+    private func synthesizePushRequestHeaders(from responseHead: HTTPResponseHead) -> HPACKHeaders {
+        var headers = HPACKHeaders()
+        headers.add(name: ":method", value: "GET")
+        headers.add(name: ":scheme", value: "https")
+        if let host = serverConnection?.host {
+            headers.add(name: ":authority", value: host)
+        }
+        headers.add(name: ":path", value: "/")
+        return headers
+    }
+
+    // MARK: - Lifecycle
+
     func channelUnregistered(context: ChannelHandlerContext) {
-        // Push stream closed — nothing to clean up (capture-only).
+        // Push stream closed on server side — nothing extra to close on client
+        // (the pushed stream is managed by the H2 connection, not a stream channel we own).
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
@@ -324,6 +550,11 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
                 self?.serverStreamChannel = stream
                 self?.connected = true
                 self?.recorder.recordConnected(remoteAddress: stream.remoteAddress)
+                // Register mapping: server stream → client stream (for push promise forwarding)
+                if let clientCh = self?.clientStreamChannel,
+                   let serverStreamID = try? stream.syncOptions?.getOption(HTTP2StreamChannelOptions.streamID) {
+                    self?.serverConnection.registerStreamMapping(serverStreamID: serverStreamID, clientChannel: clientCh)
+                }
                 self?.flushPending()
             case .failure(let error):
                 AxLogger.log("[H2Capture] server stream creation FAILED: \(error)", level: .Error)
