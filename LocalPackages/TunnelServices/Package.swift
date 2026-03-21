@@ -72,7 +72,10 @@ let package = Package(
         ),
         .testTarget(
             name: "TunnelServicesTests",
-            dependencies: ["TunnelServices"],
+            dependencies: [
+                "TunnelServices",
+                .product(name: "NIOEmbedded", package: "swift-nio"),
+            ],
             path: "Tests/TunnelServicesTests"
         ),
     ]
