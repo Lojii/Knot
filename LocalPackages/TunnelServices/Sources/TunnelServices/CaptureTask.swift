@@ -67,6 +67,54 @@ public class CaptureTask: NSObject {
     /// Outbound connection pool for reusing TCP connections across client sessions.
     public lazy var connectionPool = OutboundConnectionPool()
 
+    /// Hosts where MITM TLS handshake failed (client rejected our CA cert).
+    /// When a host is in this set, ConnectHandler skips MITM and uses tunnel passthrough.
+    /// This allows automatic fallback: first connection to a host fails (handshake error),
+    /// subsequent connections to the same host work via transparent tunnel.
+    public let mitmFailedHosts = MITMFailedHostTracker()
+}
+
+// MARK: - MITM Failed Host Tracker
+
+/// Thread-safe tracker for hosts where MITM TLS handshake failed.
+/// Entries expire after 5 minutes to allow retrying if the user installs the CA cert.
+public final class MITMFailedHostTracker {
+    private var hosts: [String: TimeInterval] = [:]  // host → expiry timestamp
+    private let lock = NIOLock()
+    private static let ttl: TimeInterval = 300  // 5 minutes
+
+    public init() {}
+
+    /// Mark a host as MITM-failed.
+    public func add(_ host: String) {
+        lock.withLock {
+            hosts[host] = Date().timeIntervalSince1970 + MITMFailedHostTracker.ttl
+        }
+        AxLogger.log("[MITMFallback] added \(host) — will tunnel for next 5 min", level: .Warning)
+    }
+
+    /// Check if a host should skip MITM and use tunnel instead.
+    public func shouldTunnel(_ host: String) -> Bool {
+        lock.withLock {
+            guard let expiry = hosts[host] else { return false }
+            if Date().timeIntervalSince1970 > expiry {
+                hosts.removeValue(forKey: host)
+                return false  // expired, retry MITM
+            }
+            return true
+        }
+    }
+
+    /// Clear all entries (e.g., when user installs CA cert).
+    public func clear() {
+        lock.withLock { hosts.removeAll() }
+    }
+}
+
+// MARK: - CaptureTask Persistence & Lifecycle
+
+extension CaptureTask {
+
     // MARK: - Persistence helpers
 
     /// Save a new task to catalog.db. Sets self.id from the inserted row.

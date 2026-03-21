@@ -103,9 +103,15 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         AxLogger.log("[CONNECT] removed self from pipeline", level: .Warning)
 
         // Decision: intercept TLS or tunnel raw bytes?
-        let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore
+        // Skip MITM if the host previously failed MITM handshake (client rejected cert).
+        let mitmFailed = task.mitmFailedHosts.shouldTunnel(request.host)
+        let shouldIntercept = task.sslEnable == 1 && !recorder.session.ignore && !mitmFailed
 
-        AxLogger.log("[CONNECT] \(request.host):\(request.port) sslEnable=\(task.sslEnable) ignore=\(recorder.session.ignore) → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
+        if mitmFailed {
+            AxLogger.log("[CONNECT] \(request.host):\(request.port) → Tunnel (MITM previously failed, auto-fallback)", level: .Warning)
+        } else {
+            AxLogger.log("[CONNECT] \(request.host):\(request.port) sslEnable=\(task.sslEnable) ignore=\(recorder.session.ignore) → \(shouldIntercept ? "MITM" : "Tunnel")", level: .Warning)
+        }
 
         if shouldIntercept {
             // Add MITMHandler for TLS interception (handled by TLSPlugin in the tree)

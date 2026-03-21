@@ -111,9 +111,11 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         let handshakeTimeoutTask = context.channel.eventLoop.scheduleTask(
             in: .seconds(ProxyConfig.SSL.handshakeTimeout)
         ) { [weak self] in
-            AxLogger.log("[MITM] Handshake TIMEOUT for \(self?.host ?? "") — client may not trust our CA certificate", level: .Warning)
+            AxLogger.log("[MITM] Handshake TIMEOUT for \(self?.host ?? "") — client may not trust our CA certificate. Will auto-tunnel next time.", level: .Warning)
             self?.recorder.addProtoFlag(.tlsHandshakeTimeout)
             self?.recorder.recordError("error:MITM handshake timeout for \(self?.host ?? "") — CA certificate may not be installed on device")
+            // Add to MITM failed tracker — next connection to this host will use tunnel
+            if let host = self?.host { self?.task.mitmFailedHosts.add(host) }
             context.channel.close(mode: .all, promise: nil)
         }
 
@@ -218,9 +220,11 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             || errorDesc.contains("sslError")
             || errorDesc.contains("CERTIFICATE_VERIFY_FAILED")
             || error is NIOSSLError {
-            AxLogger.log("[MITM] TLS handshake FAILED for \(host): \(error) — client rejected our certificate. Is the CA certificate installed and trusted on the device?", level: .Error)
+            AxLogger.log("[MITM] TLS handshake FAILED for \(host): \(error) — client rejected our certificate. Will auto-tunnel next time.", level: .Error)
             recorder.addProtoFlag(.tlsHandshakeFail)
             recorder.recordError("error:TLS handshake failed for \(host) — CA certificate not trusted by client: \(error)")
+            // Add to MITM failed tracker — next connection to this host will use tunnel
+            task.mitmFailedHosts.add(host)
         } else {
             AxLogger.log("[MITM] Error for \(host): \(error)", level: .Error)
             recorder.recordError("MITMHandler error for \(host): \(error)")
