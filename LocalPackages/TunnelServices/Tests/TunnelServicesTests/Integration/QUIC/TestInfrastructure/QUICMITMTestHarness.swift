@@ -43,7 +43,7 @@ class QUICMITMTestHarness {
         task.localIP = "127.0.0.1"
         task.localPort = 0
         task.localEnable = 1
-        task.sslEnable = 1
+        task.isCACertTrusted = true
         task.ruleEngine = RuleEngine(config: "")
         task.fileFolder = tempDir
 

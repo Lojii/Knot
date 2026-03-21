@@ -22,9 +22,9 @@ final class RealWorldHTTP1Tests: XCTestCase {
     private var launcher: TestProxyLauncher!
     private var client: TestNIOClient!
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )
@@ -257,9 +257,9 @@ final class RealWorldHTTPSMITMTests: XCTestCase {
     private var launcher: TestProxyLauncher!
     private var client: TestNIOClient!
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )
@@ -373,9 +373,9 @@ final class RealWorldHTTPSTunnelTests: XCTestCase {
     private var launcher: TestProxyLauncher!
     private var client: TestNIOClient!
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )
@@ -435,9 +435,9 @@ final class RealWorldH2Tests: XCTestCase {
     private var launcher: TestProxyLauncher!
     private var client: TestNIOClient!
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )
@@ -530,9 +530,9 @@ final class RealWorldH2Tests: XCTestCase {
 
 final class RealWorldWebSocketTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )
@@ -627,9 +627,9 @@ final class RealWorldWebSocketTests: XCTestCase {
 
 final class RealWorldEdgeCaseTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        try! XCTSkipIf(
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(
             ProcessInfo.processInfo.environment["RUN_REAL_WORLD_TESTS"] == nil,
             "Real-world tests skipped. Set RUN_REAL_WORLD_TESTS=1 to run."
         )

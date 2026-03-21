@@ -17,7 +17,7 @@ final class TestProxyLauncher {
 
     // MARK: - Configuration
 
-    let sslEnabled: Bool
+    // sslEnabled removed — MITM decision is now based on isCACertTrusted (set from withCA)
     let withCA: Bool
 
     // MARK: - Exposed State for Assertions
@@ -55,10 +55,9 @@ final class TestProxyLauncher {
     /// Creates a TestProxyLauncher with a fresh temp directory.
     ///
     /// - Parameters:
-    ///   - sslEnabled: Whether the proxy should perform MITM SSL interception.
-    ///   - withCA: Whether to generate a test CA certificate.
+    ///   - sslEnabled: Ignored (kept for call-site compatibility). MITM is controlled by withCA.
+    ///   - withCA: Whether to generate a test CA certificate. When true, isCACertTrusted=true → MITM.
     init(sslEnabled: Bool = true, withCA: Bool = true) throws {
-        self.sslEnabled = sslEnabled
         self.withCA = withCA
 
         // Create a unique temp directory for all test artifacts
@@ -127,7 +126,7 @@ final class TestProxyLauncher {
         task.localPort = 0  // OS assigns an ephemeral port
         task.localEnable = 1
         task.wifiEnable = 0
-        task.sslEnable = sslEnabled ? 1 : 0
+        task.isCACertTrusted = withCA
         task.ruleEngine = RuleEngine(config: "")
         task.certManager = certManager
         task.creatTime = Date().timeIntervalSince1970
