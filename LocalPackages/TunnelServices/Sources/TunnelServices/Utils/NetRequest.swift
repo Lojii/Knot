@@ -64,11 +64,33 @@ class NetRequest {
         }
     }
     
-    public static func removeProxyHead(heads:HTTPHeaders) -> HTTPHeaders{
+    /// Strip hop-by-hop headers before forwarding to the real server.
+    /// Per RFC 7230 Section 6.1, these headers are meaningful only for a single
+    /// transport-level connection and must not be forwarded by proxies.
+    public static func removeProxyHead(heads: HTTPHeaders) -> HTTPHeaders {
         var h = heads
-        h.remove(name: "Proxy-Authenticate")
-        h.remove(name: "Proxy-Connection")
-        h.remove(name: "Expect")
+
+        // Collect any custom hop-by-hop headers nominated via Connection header
+        let nominated = h["Connection"]
+            .flatMap { $0.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } }
+
+        // RFC 7230 Section 6.1: standard hop-by-hop headers
+        for name in [
+            "Proxy-Authenticate", "Proxy-Authorization", "Proxy-Connection",
+            "TE", "Trailer", "Transfer-Encoding", "Upgrade",
+            "Keep-Alive", "Expect"
+        ] {
+            h.remove(name: name)
+        }
+
+        // Remove nominated hop-by-hop headers
+        for name in nominated {
+            h.remove(name: name)
+        }
+
+        // Remove Connection header itself (will be set fresh by NIO's HTTP encoder)
+        h.remove(name: "Connection")
+
         return h
     }
     
