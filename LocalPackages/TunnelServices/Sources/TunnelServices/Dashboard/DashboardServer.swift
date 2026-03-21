@@ -19,6 +19,8 @@ public final class DashboardServer: DashboardPushable, @unchecked Sendable {
 
     private let group: EventLoopGroup
     private var serverChannel: Channel?
+    private weak var task: CaptureTask?
+    private var metricsTask: RepeatedTask?
 
     /// Thread-safe storage for active WebSocket client channels.
     private let wsConnections = NIOLockedValueBox<[ObjectIdentifier: Channel]>([:])
@@ -53,7 +55,9 @@ public final class DashboardServer: DashboardPushable, @unchecked Sendable {
     // MARK: Lifecycle
 
     /// Bind the dashboard HTTP+WS server on the given port.
-    public func start(port: Int = 9090) throws {
+    /// Optionally accepts a CaptureTask to enable periodic system metrics push.
+    public func start(port: Int = 9090, task: CaptureTask? = nil) throws {
+        self.task = task
         let server = self
 
         let bootstrap = ServerBootstrap(group: group)
@@ -91,10 +95,37 @@ public final class DashboardServer: DashboardPushable, @unchecked Sendable {
         self.serverChannel = channel
         let boundPort = channel.localAddress?.port ?? port
         print("[Dashboard] Server listening on http://127.0.0.1:\(boundPort)")
+
+        // Start periodic metrics push (collected off-EventLoop via DispatchQueue)
+        let startTime = Date().timeIntervalSince1970
+        let intervalMs = ProxyConfig.Dashboard.metricsIntervalMs
+        self.metricsTask = channel.eventLoop.scheduleRepeatedTask(
+            initialDelay: .milliseconds(Int64(intervalMs)),
+            delay: .milliseconds(Int64(intervalMs))
+        ) { [weak self] _ in
+            guard let self = self, self.hasClients, let task = self.task else { return }
+            DispatchQueue.global().async { [weak self] in
+                guard let self = self else { return }
+                let metrics = MetricsCollector.collect(task: task, startTime: startTime)
+                let data: [String: Any] = [
+                    "memory": ["rss_mb": metrics.rssMB, "rss_bytes": metrics.rssBytes],
+                    "cpu": ["usage_percent": metrics.cpuPercent, "thread_count": metrics.threadCount],
+                    "connections": [
+                        "pool_total": metrics.poolTotal,
+                        "pool_breakdown": metrics.poolBreakdown.map { ["key": $0.key, "count": $0.count] },
+                        "mitm_failed_hosts": metrics.mitmFailedHosts
+                    ],
+                    "totals": ["uptime_s": metrics.uptimeSeconds]
+                ]
+                self.pushMetrics(data)
+            }
+        }
     }
 
     /// Gracefully stop the dashboard server.
     public func stop() {
+        metricsTask?.cancel()
+        metricsTask = nil
         try? serverChannel?.close().wait()
         serverChannel = nil
     }

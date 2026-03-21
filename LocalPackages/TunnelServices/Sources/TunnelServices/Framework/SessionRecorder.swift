@@ -439,6 +439,24 @@ public class SessionRecorder {
         session.endTime = Date().timeIntervalSince1970
         NSLog("[SessionRecorder] recordClosed: taskId=\(taskId), dbGroup=\(dbGroup != nil), httpRecorder=\(httpRecorder != nil), flowId=\(flowId ?? "nil")")
 
+        // Push to real-time dashboard (if any client connected)
+        if let dashboard = task.dashboardServer, dashboard.hasClients {
+            let flowData: [String: Any] = [
+                "flowId": flowId ?? "",
+                "host": session.host,
+                "method": session.methods,
+                "uri": session.uri,
+                "protocol": session.schemes,
+                "statusCode": Int(session.state) ?? 0,
+                "uploadBytes": _uploadBytes,
+                "downloadBytes": _downloadBytes,
+                "protoFlags": _protoFlags.rawValue,
+                "connReuse": _connReuse.rawValue,
+                "timestamp": Date().timeIntervalSince1970
+            ]
+            dashboard.pushFlow(flowData)
+        }
+
         // Send real-time status to main app (uses session in-memory fields for URL construction)
         if !session.ignore {
             task.sendInfo(

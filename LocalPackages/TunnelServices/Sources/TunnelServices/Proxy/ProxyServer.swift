@@ -16,6 +16,7 @@ public class ProxyServer {
     private(set) var localChannel: Channel?
     private var wifiChannel: Channel?
     private(set) var udpChannel: Channel?
+    private var dashboardServer: DashboardServer?
 
     /// The port the local server is actually bound to (useful when binding to port 0).
     public var localBoundPort: Int? {
@@ -44,6 +45,19 @@ public class ProxyServer {
 
         if task.localEnable == 1 {
             DispatchQueue.global().async {
+                // Start real-time dashboard server (if enabled)
+                if ProxyConfig.Dashboard.enabled {
+                    let dashboard = DashboardServer(group: self.workerGroup)
+                    do {
+                        try dashboard.start(port: ProxyConfig.Dashboard.port, task: task)
+                        self.dashboardServer = dashboard
+                        task.dashboardServer = dashboard
+                        AxLogger.log("[ProxyServer] Dashboard: http://127.0.0.1:\(ProxyConfig.Dashboard.port)", level: .Info)
+                    } catch {
+                        AxLogger.log("[ProxyServer] Dashboard failed: \(error)", level: .Error)
+                    }
+                }
+
                 self.startServer(
                     host: task.localIP,
                     port: task.localPort,
@@ -166,6 +180,9 @@ public class ProxyServer {
     // MARK: - Shutdown
 
     public func stop(completionHandler: (() -> Void)? = nil) {
+        dashboardServer?.stop()
+        dashboardServer = nil
+
         udpChannel?.close(mode: .all, promise: nil)
         udpChannel = nil
 
