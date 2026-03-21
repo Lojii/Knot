@@ -1,8 +1,10 @@
 # QUIC/HTTP3 Packet Capture Testing Design (Phase 1)
 
-**Goal:** Test the existing QUIC MITM packet capture code (QUICMITMHandler, LsquicMITMHandler, QUICDecoder, QuicDAO) that has never been tested. Both quiche and lsquic backends are tested via parameterized test cases.
+**Goal:** Test the existing QUIC MITM packet capture code (QUICMITMHandler, QUICDecoder, QuicDAO) that has never been tested. The quiche backend is fully tested; the lsquic backend is a stub (`LsquicEngine.start()` never assigns `engine`, all methods no-op) and is tested only at the unit level (DAO, decoder, config) until the implementation is completed.
 
 **Approach:** Build in-memory test infrastructure (TestQUICServer, TestQUICClient, QUICMITMTestHarness) using SwiftQuiche to route QUIC packets through the MITM handlers without real UDP sockets or NetworkExtension. Unit tests cover QUICDecoder, DAO, and config. Real-network tests (opt-in) validate against live H3 servers.
+
+**Known limitation:** `LsquicEngine.start()` is a stub — the `engine` property is never assigned, so all packet processing methods (`packetIn`, `processConns`, etc.) no-op. Lsquic integration tests (MITM handshake, H3 request) are skipped with a note. When lsquic implementation is completed, these tests can be unskipped.
 
 **Phase 2 (future):** Integrate H3 support into ProxyServer (UDP listener + QUIC protocol detection + MITM pipeline).
 
@@ -51,6 +53,8 @@ Server behavior:
 - After handshake: polls H3 streams for requests
 - Returns echo response: status 200, body = request body (or "OK" for GET)
 - Configured with a real TLS certificate (from `CertGenerator.generateCA()`)
+
+**Implementation risk:** `QUICConnection.recv()` currently passes nil `from`/`to` addresses in `quiche_recv_info`. If quiche rejects this (path validation failure), the wrapper must be extended to accept address parameters. Verify early in implementation.
 
 ### TestQUICClient
 
@@ -108,13 +112,15 @@ class QUICMITMTestHarness {
 }
 ```
 
-Round-trip loop:
+Round-trip loop (matching real `QUICMITMManager` API):
 1. `client.pendingOutbound()` → client packets
-2. For each: `mitmManager.processOutbound(packet, clientAddr, serverAddr)` → `(toClient, toServer)`
-3. Feed `toClient` back to client, `toServer` to server
+2. For each: `manager.processOutbound(data, dstIP: serverIP, dstPort: serverPort)` → `(toApp: [Data], toServer: [(Data, String, UInt16)])`
+3. Feed `toApp` back to client via `client.receive()`; feed `toServer` packets (extract `Data` from tuples) to `server.receive()`
 4. `server.pendingOutbound()` → server packets
-5. For each: `mitmManager.processInbound(packet, serverAddr, clientAddr)` → `toClient`
-6. Feed `toClient` to client
+5. For each: `manager.processInbound(data, srcIP: serverIP, srcPort: serverPort)` → `[Data]` (toApp)
+6. Feed result to `client.receive()`
+
+Note: `SockAddr` in the test infrastructure is just a `(ip: String, port: UInt16)` pair, matching the manager API.
 
 ### Backend Parameterization
 
@@ -145,7 +151,9 @@ func testMITMHandshake_lsquic() throws { try runHandshakeTest(backend: .lsquic) 
 | `testExtractSNI_Valid` | Initial packet with ClientHello + SNI extension | Returns correct domain string |
 | `testExtractSNI_NoSNI` | Initial without SNI | Returns nil |
 | `testExtractSNI_NotInitial` | Handshake packet | Returns nil |
-| `testParseVersionNegotiation` | Version Negotiation packet | `packetType=versionNegotiation`, `version=0` |
+| `testParseVersionNegotiation` | Version Negotiation packet (version=0) | `packetType=.unknown`, `version=0` (QUICDecoder maps version 0 to `.unknown`) |
+| `testIsQUIC_Valid` | Various valid QUIC packet bytes | `QUICDecoder.isQUIC()` returns true |
+| `testIsQUIC_Invalid` | Non-QUIC bytes (HTTP, TLS, random) | `QUICDecoder.isQUIC()` returns false |
 | `testFormat_HumanReadable` | Parsed header | `format()` contains "Initial" or "Handshake" |
 
 Test data: manually constructed `Data([...])` following RFC 9000 header format. Only headers needed, not encrypted payloads.
@@ -161,7 +169,8 @@ Uses `StorageTestHelper` + in-memory SQLite, following existing DAO test pattern
 | `testInsertAndFindStream` | Insert QuicStreamRecord → find → fields match |
 | `testConnectionWithStreams` | 1 connection + 3 streams → query association correct |
 | `testIs0RTT` | Insert with `is0rtt=true` → read back, verify true |
-| `testQueryByState` | Insert 3 records with different states → filter works |
+| `testStreamUpdateProtocolFlowId` | Insert stream → `updateProtocolFlowId()` → verify updated |
+| `testStreamFindByProtocolFlowId` | Insert stream with protocolFlowId → `findByProtocolFlowId()` → found |
 
 ### QUICConfigTests
 
@@ -189,11 +198,13 @@ Each test is run twice (once per backend).
 
 ### Fallback Tests
 
+Note: Fallback logic (session limit, version-zero check) lives in `PacketCaptureEngine.processQUICMITMOutbound()`, not in the MITM managers. The harness implements a thin fallback wrapper that mirrors the engine's logic for testability.
+
 | Test | Scenario | Assertions |
 |------|----------|-----------|
-| `testMITM_Fallback_NoCert` | Initialize MITM without valid cert | Packets transparently forwarded, `fallbackCount > 0` |
-| `testMITM_SessionLimit` | Create 21 connections (limit=20) | First 20 succeed, 21st enters fallback |
-| `testMITM_VersionZero` | Send packet with QUIC version=0 | Enters fallback immediately |
+| `testMITM_Fallback_NoCert` | Initialize MITM without valid cert → manager.processOutbound returns empty | Harness detects empty response, marks as fallback |
+| `testMITM_SessionLimit` | Harness enforces maxSessions=20, create 21 connections | First 20 get MITM, 21st returns empty (fallback) |
+| `testMITM_VersionZero` | Packet with QUIC version=0 → harness checks version before calling manager | Harness rejects, does not call manager |
 
 ---
 
@@ -246,7 +257,7 @@ Requires `RUN_REAL_WORLD_TESTS=1` + network access.
 
 ## Dependencies
 
-No new source code dependencies. Tests use:
+No new source code dependencies. `QUICMITMManager` requires a `CaptureTask` for `SessionRecorder` — reuse `TestProxyLauncher`'s task construction pattern (manual init, no singletons). Tests use:
 - `SwiftQuiche` (already in Package.swift) — for TestQUICServer/Client
 - `@testable import TunnelServices` — for MITM handlers, DAO, decoder
 - `StorageTestHelper` — for in-memory DB tests
