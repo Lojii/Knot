@@ -51,6 +51,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     private var lastCompletedRequest: NetRequest?  // saved for pool checkin after resetForNextRequest clears request
     private var pooledCreatedAt: NIODeadline?  // original TCP creation time from pool checkout, for TTL preservation
     private var currentRequestVersion: HTTPVersion = .http1_1
+    /// Set by ResponseRelayHandler when server closes without TLS close_notify.
+    /// Prevents returning the outbound connection to the pool.
+    var serverHadSSLError = false
 
     public init(recorder: SessionRecorder, isSSL: Bool, targetPort: Int? = nil) {
         self.recorder = recorder
@@ -169,8 +172,10 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         )
         self.responseRelayHandler = responseHandler
 
-        // Set up keep-alive callback.
-        // Non-keep-alive closing is handled by ResponseRelayHandler itself.
+        // Set up callbacks.
+        responseHandler.onSSLError = { [weak self] in
+            self?.serverHadSSLError = true
+        }
         responseHandler.onResponseComplete = { [weak self] keepAlive in
             guard let self = self else { return }
             self.responseCompleted = true
@@ -384,9 +389,10 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         idleTimeoutTask?.cancel()
         idleTimeoutTask = nil
 
-        // If the last response completed normally and the outbound channel is still
-        // active, return it to the connection pool for reuse by future clients.
-        if responseCompleted, let outbound = clientChannel, outbound.isActive, let req = request ?? lastCompletedRequest {
+        // If the last response completed normally, the outbound channel is still
+        // active, and there was no SSL error, return it to the pool.
+        // Connections with uncleanShutdown are NOT pooled — the SSL session is broken.
+        if responseCompleted, !serverHadSSLError, let outbound = clientChannel, outbound.isActive, let req = request ?? lastCompletedRequest {
             // Strip the ResponseRelayHandler before returning to pool,
             // so the next user doesn't find a stale handler in the pipeline.
             outbound.pipeline.removeHandler(name: "client.responseRelay", promise: nil)
@@ -431,6 +437,8 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     /// to determine keep-alive behavior (take the minimum of both).
     var requestVersion: HTTPVersion
     var onResponseComplete: ((Bool) -> Void)?
+    /// Called when server closes with SSL error (uncleanShutdown). Prevents pool reuse.
+    var onSSLError: (() -> Void)?
 
     init(recorder: SessionRecorder, serverChannel: Channel?,
          requestVersion: HTTPVersion = .http1_1,
@@ -536,13 +544,21 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        // uncleanShutdown is normal — many servers close TCP without TLS close_notify
+        // uncleanShutdown is normal — many servers close TCP without TLS close_notify.
+        // Treat it as a graceful close: let NIO's channelInactive handle cleanup.
+        // Do NOT force-close both channels — the response may still be in the pipeline.
         if let sslError = error as? NIOSSLError, case .uncleanShutdown = sslError {
             AxLogger.log("[ResponseRelay] server closed without TLS close_notify (normal)", level: .Info)
-        } else {
-            AxLogger.log("[ResponseRelay] Error from upstream server: \(error)", level: .Error)
-            recorder.recordError("ResponseRelay error: \(error)")
+            // Mark as SSL error so the connection is NOT returned to the pool.
+            onSSLError?()
+            // Just close the outbound (server) side. The inbound side stays open
+            // for any response data still being processed by NIO.
+            context.channel.close(mode: .all, promise: nil)
+            return
         }
+
+        AxLogger.log("[ResponseRelay] Error from upstream server: \(error)", level: .Error)
+        recorder.recordError("ResponseRelay error: \(error)")
         serverChannel?.close(mode: .all, promise: nil)
         context.channel.close(mode: .all, promise: nil)
     }
