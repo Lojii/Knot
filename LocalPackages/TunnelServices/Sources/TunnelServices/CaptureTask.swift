@@ -8,7 +8,6 @@
 
 import Foundation
 import NIO
-import Security
 import NIOConcurrencyHelpers
 import CocoaAsyncSocket
 import SQLite
@@ -74,62 +73,10 @@ public class CaptureTask: NSObject {
     /// subsequent connections to the same host work via transparent tunnel.
     public let mitmFailedHosts = MITMFailedHostTracker()
 
-    /// Cached result of CA certificate trust check.
-    /// nil = not yet checked, true = trusted, false = not trusted.
-    /// When false, all HTTPS connections use tunnel passthrough.
-    private var _caTrustChecked = false
-    private var _caTrusted = false
-
-    /// Check whether the proxy's CA certificate is trusted by the system.
-    /// Result is cached after first check. Returns true if trusted (MITM OK),
-    /// false if not trusted (should tunnel).
-    public var isCACertTrusted: Bool {
-        if _caTrustChecked { return _caTrusted }
-        _caTrustChecked = true
-        _caTrusted = evaluateCATrust()
-        if !_caTrusted {
-            AxLogger.log("[CaptureTask] CA certificate NOT trusted by system — all HTTPS will use tunnel passthrough", level: .Warning)
-        } else {
-            AxLogger.log("[CaptureTask] CA certificate is trusted by system — MITM enabled", level: .Info)
-        }
-        return _caTrusted
-    }
-
-    /// Reset the cached trust check (e.g., after user installs CA cert).
-    public func resetCATrustCheck() {
-        _caTrustChecked = false
-        _caTrusted = false
-        mitmFailedHosts.clear()
-    }
-
-    private func evaluateCATrust() -> Bool {
-        guard let cm = certManager, cm.isValid else {
-            AxLogger.log("[CaptureTask] certManager is nil or invalid — CA not trusted", level: .Warning)
-            return false
-        }
-
-        // Try to get the CA cert as SecCertificate via DER bytes
-        guard let x509CA = cm.x509CACert else { return false }
-        do {
-            let derBytes = try CertGenerator.toDER(x509CA)
-            guard let secCert = SecCertificateCreateWithData(nil, derBytes as CFData) else {
-                return false
-            }
-
-            // Evaluate trust against system trust store
-            var trust: SecTrust?
-            let policy = SecPolicyCreateBasicX509()
-            let status = SecTrustCreateWithCertificates(secCert, policy, &trust)
-            guard status == errSecSuccess, let t = trust else { return false }
-
-            var error: CFError?
-            let result = SecTrustEvaluateWithError(t, &error)
-            return result
-        } catch {
-            AxLogger.log("[CaptureTask] CA trust evaluation failed: \(error)", level: .Warning)
-            return false
-        }
-    }
+    /// Whether the CA certificate is installed and trusted on the client device.
+    /// Set by the app layer (UI / system extension) before starting capture.
+    /// When false, all HTTPS connections use tunnel passthrough (no MITM attempt).
+    public var isCACertTrusted: Bool = false
 }
 
 // MARK: - MITM Failed Host Tracker
