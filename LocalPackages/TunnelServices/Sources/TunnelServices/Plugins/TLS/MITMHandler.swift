@@ -38,6 +38,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         let buffer = unwrapInboundIn(data)
 
         AxLogger.log("[MITM] channelRead for \(host):\(port), bytes=\(buffer.readableBytes)", level: .Warning)
+        recorder.addProtoFlag(.tlsMITM)
 
         // Validate TLS ClientHello
         guard isTLSClientHello(buffer) else {
@@ -105,6 +106,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             in: .seconds(ProxyConfig.SSL.handshakeTimeout)
         ) { [weak self] in
             AxLogger.log("[MITM] Handshake TIMEOUT for \(self?.host ?? "") — client may not trust our CA certificate", level: .Warning)
+            self?.recorder.addProtoFlag(.tlsHandshakeTimeout)
             self?.recorder.recordError("error:MITM handshake timeout for \(self?.host ?? "") — CA certificate may not be installed on device")
             context.channel.close(mode: .all, promise: nil)
         }
@@ -115,6 +117,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             guard let self = self else { return context.eventLoop.makeSucceededVoidFuture() }
             AxLogger.log("[MITM] TLS handshake SUCCEEDED for \(self.host), ALPN result: \(result)", level: .Warning)
             self.recorder.recordHandshakeComplete()
+            self.recorder.addProtoFlag(.tlsHandshakeOK)
 
             // Check ALPN result to decide HTTP version
             switch result {
@@ -201,6 +204,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
             || errorDesc.contains("CERTIFICATE_VERIFY_FAILED")
             || error is NIOSSLError {
             AxLogger.log("[MITM] TLS handshake FAILED for \(host): \(error) — client rejected our certificate. Is the CA certificate installed and trusted on the device?", level: .Error)
+            recorder.addProtoFlag(.tlsHandshakeFail)
             recorder.recordError("error:TLS handshake failed for \(host) — CA certificate not trusted by client: \(error)")
         } else {
             AxLogger.log("[MITM] Error for \(host): \(error)", level: .Error)
