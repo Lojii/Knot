@@ -2,8 +2,8 @@
 //  HTTP2CaptureHandler.swift
 //  TunnelServices
 //
-//  HTTP/2 capture pipeline.
-//  Translates HTTP/2 frames to HTTP/1.1 parts for capture and forwarding.
+//  HTTP/2 capture pipeline with full H2 proxy support.
+//  Client ←H2→ Proxy ←H2→ Server (single shared connection, multiplexed streams).
 //  Delegates gRPC-specific parsing to GRPCDecoder when content-type matches.
 //
 
@@ -17,14 +17,21 @@ import NIOSSL
 
 /// Builds an HTTP/2 capture pipeline for the MITMHandler.
 ///
-/// Strategy: HTTP/2 → HTTP/1.1 translation via NIO codec.
-/// Each HTTP/2 stream is handled independently with its own SessionRecorder.
+/// Architecture:
+/// - Client side: NIOHTTP2Handler(server) → HTTP2StreamMultiplexer(server) → per-stream capture
+/// - Server side: Single shared H2 connection → NIOHTTP2Handler(client) → HTTP2StreamMultiplexer(client)
+/// - Each client H2 stream maps to a server H2 stream via H2ServerConnection
 public enum HTTP2CaptureBuilder {
 
     public static func addPipeline(
         context: ChannelHandlerContext,
-        recorder: SessionRecorder
+        recorder: SessionRecorder,
+        targetHost: String,
+        targetPort: Int = 443
     ) -> EventLoopFuture<Void> {
+        // Shared H2 connection to the real server
+        let serverConn = H2ServerConnection(host: targetHost, port: targetPort)
+
         let multiplexer = HTTP2StreamMultiplexer(
             mode: .server,
             channel: context.channel
@@ -37,43 +44,145 @@ public enum HTTP2CaptureBuilder {
                 name: "h2.toHTTP1"
             ).flatMap {
                 stream.pipeline.addHandler(
-                    H2StreamCaptureHandler(recorder: streamRecorder),
+                    H2StreamCaptureHandler(
+                        recorder: streamRecorder,
+                        serverConnection: serverConn
+                    ),
                     name: "h2.capture"
                 )
             }
         }
 
-        return context.pipeline.addHandler(
+        // Set up client-side H2 pipeline
+        let pipeline = context.pipeline.addHandler(
             NIOHTTP2Handler(mode: .server),
             name: "h2.handler"
         ).flatMap {
             context.pipeline.addHandler(multiplexer, name: "h2.multiplexer")
         }
+
+        // Initiate server H2 connection in parallel
+        serverConn.connect(on: context.eventLoop).whenFailure { error in
+            AxLogger.log("[H2ServerConn] Failed to connect to \(targetHost):\(targetPort): \(error)", level: .Error)
+            recorder.recordError("H2 server connection failed: \(error)")
+        }
+
+        // Close server connection when client disconnects
+        context.channel.closeFuture.whenComplete { _ in
+            serverConn.close()
+        }
+
+        return pipeline
     }
 }
 
-// MARK: - HTTP/2 Stream Capture
+// MARK: - H2 Server Connection
 
-/// Captures a single HTTP/2 stream (translated to HTTP/1.1 parts).
-/// Detects gRPC by content-type and delegates body parsing to GRPCDecoder.
+/// Manages a single shared HTTP/2 connection to the upstream server.
+/// All client H2 streams are multiplexed over this one connection.
+final class H2ServerConnection {
+    let host: String
+    let port: Int
+    private var channel: Channel?
+    private var multiplexer: HTTP2StreamMultiplexer?
+    private var ready = false
+    private var connectFailed = false
+    private var pendingStreams: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
+                                  promise: EventLoopPromise<Channel>)] = []
+
+    init(host: String, port: Int) {
+        self.host = host
+        self.port = port
+    }
+
+    func connect(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
+        let sniName = host.isIPAddress() ? nil : host
+
+        let bootstrap = ClientBootstrap(group: eventLoop)
+            .channelInitializer { [weak self] channel in
+                let tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["h2"])
+                guard let sslCtx = try? NIOSSLContext(configuration: tlsConfig),
+                      let sslHandler = try? NIOSSLClientHandler(context: sslCtx, serverHostname: sniName) else {
+                    return channel.eventLoop.makeFailedFuture(
+                        ServerChannelError(errCode: -1, localizedDescription: "H2 outbound SSL setup failed")
+                    )
+                }
+
+                let h2Handler = NIOHTTP2Handler(mode: .client)
+                let mux = HTTP2StreamMultiplexer(mode: .client, channel: channel) { stream in
+                    // Server-initiated streams (push promises) — not handled
+                    stream.eventLoop.makeSucceededVoidFuture()
+                }
+                self?.multiplexer = mux
+
+                return channel.pipeline.addHandler(sslHandler, name: "h2out.ssl")
+                    .flatMap { channel.pipeline.addHandler(h2Handler, name: "h2out.h2") }
+                    .flatMap { channel.pipeline.addHandler(mux, name: "h2out.mux") }
+            }
+
+        AxLogger.log("[H2ServerConn] connecting to \(host):\(port)...", level: .Warning)
+
+        return bootstrap.connect(host: host, port: port).map { [weak self] channel in
+            AxLogger.log("[H2ServerConn] connected to \(self?.host ?? ""):\(self?.port ?? 0)", level: .Warning)
+            self?.channel = channel
+            self?.ready = true
+            self?.flushPendingStreams()
+        }
+    }
+
+    /// Creates a new H2 stream on the shared server connection.
+    func createStream(
+        initializer: @Sendable @escaping (Channel) -> EventLoopFuture<Void>,
+        promise: EventLoopPromise<Channel>
+    ) {
+        if ready, let mux = multiplexer {
+            mux.createStreamChannel(promise: promise, initializer)
+        } else if connectFailed {
+            promise.fail(ServerChannelError(errCode: -2, localizedDescription: "H2 server connection failed"))
+        } else {
+            pendingStreams.append((initializer, promise))
+        }
+    }
+
+    func close() {
+        channel?.close(mode: .all, promise: nil)
+    }
+
+    private func flushPendingStreams() {
+        guard let mux = multiplexer else { return }
+        for (initializer, promise) in pendingStreams {
+            mux.createStreamChannel(promise: promise, initializer)
+        }
+        pendingStreams.removeAll()
+    }
+}
+
+// MARK: - H2 Stream Capture
+
+/// Captures a single HTTP/2 stream.
+/// Records request/response via SessionRecorder, then forwards to a corresponding
+/// server H2 stream via H2ServerConnection.
 final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 
     private let recorder: SessionRecorder
+    private let serverConnection: H2ServerConnection
     private var isGRPC = false
-    private var clientChannel: Channel?
+    private var serverStreamChannel: Channel?
+    private var clientStreamChannel: Channel?
     private var request: NetRequest?
     private var connected = false
     private var pendingParts = [HTTPClientRequestPart]()
-    private var serverChannel: Channel?
+    fileprivate var responseCompleted = false
 
-    init(recorder: SessionRecorder) {
+    init(recorder: SessionRecorder, serverConnection: H2ServerConnection) {
         self.recorder = recorder
+        self.serverConnection = serverConnection
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        serverChannel = context.channel
+        clientStreamChannel = context.channel
         let part = unwrapInboundIn(data)
 
         switch part {
@@ -88,13 +197,15 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
             if request == nil {
                 request = NetRequest(head)
                 request?.ssl = true
+                request?.port = serverConnection.port
+                AxLogger.log("[H2Capture] request: \(head.method) \(head.uri) host=\(request?.host ?? "?") port=\(serverConnection.port)", level: .Warning)
             }
 
             head.headers = NetRequest.removeProxyHead(heads: head.headers)
             recorder.recordRequestHead(head, localAddress: context.channel.remoteAddress, isSSL: true)
 
-            if clientChannel == nil {
-                connectToServer(context: context)
+            if serverStreamChannel == nil {
+                createServerStream(context: context)
             }
             enqueue(.head(head))
 
@@ -113,54 +224,47 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
         }
     }
 
-    // MARK: - Server Connection
+    // MARK: - Server Stream
 
-    private func connectToServer(context: ChannelHandlerContext) {
-        guard let req = request else { return }
-
+    private func createServerStream(context: ChannelHandlerContext) {
         let responseHandler = H2ResponseRelayHandler(
             recorder: recorder,
-            serverChannel: context.channel,
+            clientStreamChannel: context.channel,
+            captureHandler: self,
             isGRPC: isGRPC
         )
 
-        let bootstrap = ClientBootstrap(group: context.eventLoop)
-            .channelInitializer { channel in
-                let tlsConfig = TLSConfiguration.forClient(applicationProtocols: ["http/1.1"])
-                guard let sslCtx = try? NIOSSLContext(configuration: tlsConfig) else {
-                    return channel.eventLoop.makeFailedFuture(
-                        ServerChannelError(errCode: -1, localizedDescription: "SSL context failed")
-                    )
+        let promise = context.eventLoop.makePromise(of: Channel.self)
+        serverConnection.createStream(
+            initializer: { stream in
+                stream.pipeline.addHandler(
+                    HTTP2FramePayloadToHTTP1ClientCodec(httpProtocol: .https),
+                    name: "h2out.stream.codec"
+                ).flatMap {
+                    stream.pipeline.addHandler(responseHandler, name: "h2out.stream.relay")
                 }
-                let sniName = req.host.isIPAddress() ? nil : req.host
-                guard let sslHandler = try? NIOSSLClientHandler(context: sslCtx, serverHostname: sniName) else {
-                    return channel.eventLoop.makeFailedFuture(
-                        ServerChannelError(errCode: -1, localizedDescription: "SSL handler failed")
-                    )
-                }
-                return channel.pipeline.addHandler(sslHandler, name: "h2out.ssl").flatMap {
-                    channel.pipeline.addHTTPClientHandlers()
-                }.flatMap {
-                    channel.pipeline.addHandler(responseHandler, name: "h2out.response")
-                }
-            }
+            },
+            promise: promise
+        )
 
-        bootstrap.connect(host: req.host, port: req.port).whenComplete { [weak self] result in
+        promise.futureResult.whenComplete { [weak self] result in
             switch result {
-            case .success(let channel):
-                self?.clientChannel = channel
+            case .success(let stream):
+                AxLogger.log("[H2Capture] server stream created for \(self?.request?.host ?? "")", level: .Warning)
+                self?.serverStreamChannel = stream
                 self?.connected = true
-                self?.recorder.recordConnected(remoteAddress: channel.remoteAddress)
+                self?.recorder.recordConnected(remoteAddress: stream.remoteAddress)
                 self?.flushPending()
             case .failure(let error):
-                self?.recorder.recordConnectionError(error, host: req.host, port: req.port)
+                AxLogger.log("[H2Capture] server stream creation FAILED: \(error)", level: .Error)
+                self?.recorder.recordError("H2 stream creation failed: \(error)")
                 context.close(promise: nil)
             }
         }
     }
 
     private func enqueue(_ part: HTTPClientRequestPart) {
-        if connected, let ch = clientChannel, ch.isActive {
+        if connected, let ch = serverStreamChannel, ch.isActive {
             ch.writeAndFlush(part, promise: nil)
         } else {
             pendingParts.append(part)
@@ -168,35 +272,53 @@ final class H2StreamCaptureHandler: ChannelInboundHandler, RemovableChannelHandl
     }
 
     private func flushPending() {
-        guard let ch = clientChannel, ch.isActive else { return }
+        guard let ch = serverStreamChannel, ch.isActive else { return }
         for p in pendingParts { ch.writeAndFlush(p, promise: nil) }
         pendingParts.removeAll()
     }
 
+    func channelWritabilityChanged(context: ChannelHandlerContext) {
+        // When client stream's write buffer fills up, stop reading from server stream
+        if let serverCh = serverStreamChannel {
+            _ = serverCh.setOption(ChannelOptions.autoRead, value: context.channel.isWritable)
+        }
+        context.fireChannelWritabilityChanged()
+    }
+
     func channelUnregistered(context: ChannelHandlerContext) {
-        clientChannel?.close(promise: nil)
-        recorder.recordClosed()
+        serverStreamChannel?.close(promise: nil)
+        // recordClosed() is called in H2ResponseRelayHandler when the response completes.
+        // Only call here as fallback if response never arrived (e.g. connection dropped).
+        if !responseCompleted {
+            recorder.recordClosed()
+        }
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        clientChannel?.close(promise: nil)
+        AxLogger.log("[H2Capture] Error for \(request?.host ?? "unknown"): \(error)", level: .Error)
+        recorder.recordError("H2Capture error: \(error)")
+        serverStreamChannel?.close(promise: nil)
         context.close(promise: nil)
     }
 }
 
 // MARK: - HTTP/2 Response Relay
 
-/// Relays HTTP/1.1 responses from the real server back through the HTTP/2 stream.
+/// Lives in the outbound H2 stream channel.
+/// Receives HTTP/2 responses (as HTTP/1.1 parts via codec) and relays back to client stream.
 final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPClientResponsePart
 
     private let recorder: SessionRecorder
-    private weak var serverChannel: Channel?
+    private weak var clientStreamChannel: Channel?
+    private weak var captureHandler: H2StreamCaptureHandler?
     private let isGRPC: Bool
 
-    init(recorder: SessionRecorder, serverChannel: Channel, isGRPC: Bool) {
+    init(recorder: SessionRecorder, clientStreamChannel: Channel,
+         captureHandler: H2StreamCaptureHandler, isGRPC: Bool) {
         self.recorder = recorder
-        self.serverChannel = serverChannel
+        self.clientStreamChannel = clientStreamChannel
+        self.captureHandler = captureHandler
         self.isGRPC = isGRPC
     }
 
@@ -207,7 +329,7 @@ final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandl
         case .head(let head):
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
-            serverChannel?.writeAndFlush(HTTPServerResponsePart.head(head), promise: nil)
+            clientStreamChannel?.writeAndFlush(HTTPServerResponsePart.head(head), promise: nil)
 
         case .body(let body):
             if isGRPC {
@@ -216,25 +338,41 @@ final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandl
                 recorder.recordResponseBody(body)
             }
             recorder.addDownload(body.readableBytes)
-            serverChannel?.writeAndFlush(HTTPServerResponsePart.body(.byteBuffer(body)), promise: nil)
+            clientStreamChannel?.writeAndFlush(HTTPServerResponsePart.body(.byteBuffer(body)), promise: nil)
 
         case .end(let trailers):
             if isGRPC {
                 GRPCDecoder.logTrailers(trailers, recorder: recorder)
             }
             recorder.recordResponseEnd()
-            serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
-            serverChannel?.close(promise: nil)
-            context.close(promise: nil)
+            clientStreamChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
+            // Response complete — flush recorded data to storage without closing the stream.
+            // H2 streams are managed by the multiplexer; don't force-close them.
+            captureHandler?.responseCompleted = true
+            recorder.recordClosed()
         }
     }
 
+    func channelWritabilityChanged(context: ChannelHandlerContext) {
+        // When server stream's write buffer fills up, stop reading from client stream
+        if let clientCh = clientStreamChannel {
+            _ = clientCh.setOption(ChannelOptions.autoRead, value: context.channel.isWritable)
+        }
+        context.fireChannelWritabilityChanged()
+    }
+
     func channelUnregistered(context: ChannelHandlerContext) {
-        serverChannel?.close(promise: nil)
+        clientStreamChannel?.close(promise: nil)
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        serverChannel?.close(promise: nil)
+        if let sslError = error as? NIOSSLError, case .uncleanShutdown = sslError {
+            AxLogger.log("[H2ResponseRelay] server closed without TLS close_notify (normal)", level: .Info)
+        } else {
+            AxLogger.log("[H2ResponseRelay] Error from upstream: \(error)", level: .Error)
+            recorder.recordError("H2ResponseRelay error: \(error)")
+        }
+        clientStreamChannel?.close(promise: nil)
         context.close(promise: nil)
     }
 }
