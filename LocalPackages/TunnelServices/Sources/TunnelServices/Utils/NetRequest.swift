@@ -74,7 +74,9 @@ class NetRequest {
         let nominated = h["Connection"]
             .flatMap { $0.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } }
 
-        // RFC 7230 Section 6.1: standard hop-by-hop headers
+        // RFC 7230 Section 6.1: standard hop-by-hop headers.
+        // Note: Transfer-Encoding is safe to strip here because NIO's HTTP encoder
+        // handles re-chunking automatically when encoding the forwarded request.
         for name in [
             "Proxy-Authenticate", "Proxy-Authorization", "Proxy-Connection",
             "TE", "Trailer", "Transfer-Encoding", "Upgrade",

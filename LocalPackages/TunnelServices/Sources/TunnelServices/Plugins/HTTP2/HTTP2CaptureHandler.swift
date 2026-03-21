@@ -179,20 +179,23 @@ final class H2ServerConnection {
 // MARK: - H2 Push Relay
 
 /// Handles server push promises received on the upstream H2 connection.
-/// Captures the pushed response via SessionRecorder and forwards it to the
-/// client through a new stream on the client-side multiplexer.
+/// Captures the pushed response via SessionRecorder for inspection in the UI.
+///
+/// NOTE: Push responses are captured but NOT forwarded to the client.
+/// NIOHTTP2's HTTP2StreamMultiplexer in server mode does not expose an API for
+/// sending PUSH_PROMISE frames. Creating a regular server-initiated stream would
+/// cause most HTTP/2 clients to respond with PROTOCOL_ERROR or REFUSED_STREAM.
+/// Capture-only is the correct approach here — the pushed data still appears
+/// in the traffic list for inspection.
 final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPClientResponsePart
 
     private let recorder: SessionRecorder
-    private weak var clientMultiplexer: HTTP2StreamMultiplexer?
-    private var clientPushChannel: Channel?
-    private var pendingParts = [HTTPServerResponsePart]()
-    private var connected = false
 
     init(recorder: SessionRecorder, clientMultiplexer: HTTP2StreamMultiplexer?) {
         self.recorder = recorder
-        self.clientMultiplexer = clientMultiplexer
+        // clientMultiplexer intentionally unused — see class doc.
+        // Parameter kept for API compatibility; will be removed in a future cleanup.
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -202,67 +205,25 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
         case .head(let head):
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
-            if clientPushChannel == nil {
-                createClientPushStream()
-            }
-            enqueue(.head(head))
 
         case .body(let body):
             recorder.recordResponseBody(body)
             recorder.addDownload(body.readableBytes)
-            enqueue(.body(.byteBuffer(body)))
 
-        case .end(let trailers):
+        case .end:
             recorder.recordResponseEnd()
-            enqueue(.end(trailers))
             recorder.recordClosed()
         }
     }
 
     func channelUnregistered(context: ChannelHandlerContext) {
-        clientPushChannel?.close(promise: nil)
+        // Push stream closed — nothing to clean up (capture-only).
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
         AxLogger.log("[H2PushRelay] Error from upstream push stream: \(error)", level: .Error)
         recorder.recordError("H2PushRelay error: \(error)")
-        clientPushChannel?.close(promise: nil)
         context.close(promise: nil)
-    }
-
-    // MARK: - Private
-
-    private func createClientPushStream() {
-        clientMultiplexer?.createStreamChannel { stream in
-            stream.pipeline.addHandler(
-                HTTP2FramePayloadToHTTP1ServerCodec(),
-                name: "h2push.client.codec"
-            )
-        }.whenComplete { [weak self] result in
-            switch result {
-            case .success(let ch):
-                self?.clientPushChannel = ch
-                self?.connected = true
-                self?.flushPending()
-            case .failure(let error):
-                AxLogger.log("[H2PushRelay] Failed to create client push stream: \(error)", level: .Error)
-                self?.recorder.recordError("H2 push stream creation failed: \(error)")
-            }
-        }
-    }
-
-    private func enqueue(_ part: HTTPServerResponsePart) {
-        if connected, let ch = clientPushChannel, ch.isActive {
-            ch.writeAndFlush(part, promise: nil)
-        } else {
-            pendingParts.append(part)
-        }
-    }
-
-    private func flushPending() {
-        guard let ch = clientPushChannel, ch.isActive else { return }
-        for p in pendingParts { ch.writeAndFlush(p, promise: nil) }
-        pendingParts.removeAll()
     }
 }
 

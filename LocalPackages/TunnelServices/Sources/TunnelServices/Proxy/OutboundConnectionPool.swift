@@ -30,12 +30,14 @@ public struct ConnectionPoolKey: Hashable {
 /// Wraps an idle NIO Channel with timestamps for eviction decisions.
 struct PooledConnection {
     let channel: Channel
+    /// When the TCP connection was originally established (not reset on reuse).
     let createdAt: NIODeadline
+    /// When this connection was last returned to the pool.
     var lastUsedAt: NIODeadline
 
-    init(channel: Channel, now: NIODeadline = .now()) {
+    init(channel: Channel, createdAt: NIODeadline? = nil, now: NIODeadline = .now()) {
         self.channel = channel
-        self.createdAt = now
+        self.createdAt = createdAt ?? now
         self.lastUsedAt = now
     }
 }
@@ -71,9 +73,16 @@ public final class OutboundConnectionPool {
 
     // MARK: - Checkout
 
+    /// Result of a successful checkout: the channel and its original creation time.
+    public struct CheckoutResult {
+        public let channel: Channel
+        /// Original TCP connection creation time — pass back to checkin to preserve TTL.
+        public let createdAt: NIODeadline
+    }
+
     /// Retrieve an idle connection for the given key, or nil if none available.
     /// Uses LIFO order (most recently used first). Skips closed channels.
-    public func checkout(key: ConnectionPoolKey) -> Channel? {
+    public func checkout(key: ConnectionPoolKey) -> CheckoutResult? {
         lock.lock()
         defer { lock.unlock() }
 
@@ -89,7 +98,7 @@ public final class OutboundConnectionPool {
                 } else {
                     pool[key] = entries
                 }
-                return entry.channel
+                return CheckoutResult(channel: entry.channel, createdAt: entry.createdAt)
             }
             // Channel was closed while idle; discard and try next
         }
@@ -103,7 +112,8 @@ public final class OutboundConnectionPool {
 
     /// Return an idle connection to the pool. If the pool is full or the channel
     /// is inactive, the channel is closed instead.
-    public func checkin(key: ConnectionPoolKey, channel: Channel) {
+    /// Pass `createdAt` from `CheckoutResult` to preserve the original TCP creation time for TTL.
+    public func checkin(key: ConnectionPoolKey, channel: Channel, createdAt: NIODeadline? = nil) {
         lock.lock()
 
         guard !closed else {
@@ -133,7 +143,7 @@ public final class OutboundConnectionPool {
             return
         }
 
-        let entry = PooledConnection(channel: channel)
+        let entry = PooledConnection(channel: channel, createdAt: createdAt)
         entries.append(entry)
         pool[key] = entries
         totalCount += 1
@@ -194,7 +204,16 @@ public final class OutboundConnectionPool {
             self?.evictExpired()
         }
 
+        // Re-check closed state to avoid TOCTOU race: closeAll() may have run
+        // between the first unlock and here, setting closed=true and cancelling
+        // evictionTask. Without this check, we'd store a new task that never
+        // gets cancelled.
         lock.lock()
+        if closed {
+            lock.unlock()
+            task.cancel()
+            return
+        }
         self.evictionTask = task
         lock.unlock()
     }

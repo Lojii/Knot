@@ -257,12 +257,14 @@ final class WebSocketForwarder: ChannelInboundHandler, RemovableChannelHandler {
             forwardFrame = WebSocketFrame(fin: frame.fin, opcode: frame.opcode, data: forwardData)
         }
 
-        peerChannel?.writeAndFlush(forwardFrame, promise: nil)
-
-        // Handle close frame
+        // Handle close frame: forward first, then close after write completes
         if frame.opcode == .connectionClose {
-            peerChannel?.close(promise: nil)
-            context.close(promise: nil)
+            peerChannel?.writeAndFlush(forwardFrame).whenComplete { [weak self] _ in
+                self?.peerChannel?.close(promise: nil)
+                context.close(promise: nil)
+            }
+        } else {
+            peerChannel?.writeAndFlush(forwardFrame, promise: nil)
         }
     }
 

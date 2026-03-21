@@ -62,9 +62,9 @@ final class OutboundConnectionPoolTests: XCTestCase {
         pool.checkin(key: key, channel: channel)
         XCTAssertEqual(pool.count, 1)
 
-        let retrieved = pool.checkout(key: key)
-        XCTAssertNotNil(retrieved)
-        XCTAssertTrue(retrieved === channel)
+        let result = pool.checkout(key: key)
+        XCTAssertNotNil(result)
+        XCTAssertTrue(result?.channel === channel)
         XCTAssertEqual(pool.count, 0)
     }
 
@@ -103,10 +103,10 @@ final class OutboundConnectionPoolTests: XCTestCase {
 
         // LIFO: ch2 should come out first
         let out1 = pool.checkout(key: key)
-        XCTAssertTrue(out1 === ch2)
+        XCTAssertTrue(out1?.channel === ch2)
 
         let out2 = pool.checkout(key: key)
-        XCTAssertTrue(out2 === ch1)
+        XCTAssertTrue(out2?.channel === ch1)
     }
 
     // MARK: - Capacity enforcement
@@ -171,7 +171,7 @@ final class OutboundConnectionPoolTests: XCTestCase {
 
         // Should skip ch2 and return ch1
         let out = pool.checkout(key: key)
-        XCTAssertTrue(out === ch1)
+        XCTAssertTrue(out?.channel === ch1)
         XCTAssertEqual(pool.count, 0)
     }
 

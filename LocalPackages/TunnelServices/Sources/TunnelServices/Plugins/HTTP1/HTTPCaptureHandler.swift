@@ -48,6 +48,8 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
     private var idleTimeoutTask: Scheduled<Void>?
     private var responseCompleted = false      // tracks whether current cycle completed normally
     private var lastCompletedRequest: NetRequest?  // saved for pool checkin after resetForNextRequest clears request
+    private var pooledCreatedAt: NIODeadline?  // original TCP creation time from pool checkout, for TTL preservation
+    private var currentRequestVersion: HTTPVersion = .http1_1
 
     public init(recorder: SessionRecorder, isSSL: Bool, targetPort: Int? = nil) {
         self.recorder = recorder
@@ -71,6 +73,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             idleTimeoutTask?.cancel()
             idleTimeoutTask = nil
             responseCompleted = false
+            currentRequestVersion = head.version
 
             // Extract request info and prepare for forwarding
             AxLogger.log("[HTTPCapture] request: \(head.method) \(head.uri) isSSL=\(isSSL)", level: .Warning)
@@ -119,6 +122,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 connected = false
                 responseRelayHandler = nil
                 connectToServer(context: context, reuseFromPool: true)
+            } else {
+                // Reusing existing connection — update request version on relay handler
+                responseRelayHandler?.requestVersion = currentRequestVersion
             }
 
             enqueueOrSend(.head(head))
@@ -141,6 +147,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         let responseHandler = ResponseRelayHandler(
             recorder: recorder,
             serverChannel: serverChannel,
+            requestVersion: currentRequestVersion,
             wsInterceptor: wsInterceptor
         )
         self.responseRelayHandler = responseHandler
@@ -159,25 +166,28 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         // Try to reuse a pooled connection before creating a new one.
         if reuseFromPool {
             let poolKey = ConnectionPoolKey(host: req.host, port: req.port, isSSL: req.ssl)
-            if let pooled = recorder.task.connectionPool.checkout(key: poolKey) {
+            if let result = recorder.task.connectionPool.checkout(key: poolKey) {
                 AxLogger.log("[HTTPCapture] Reusing pooled connection to \(req.host):\(req.port)", level: .Info)
-                self.clientChannel = pooled
+                self.clientChannel = result.channel
+                self.pooledCreatedAt = result.createdAt
 
                 // Swap the ResponseRelayHandler in the pooled channel's pipeline.
                 // Remove old relay handler (if present) and add the new one.
-                pooled.pipeline.removeHandler(name: "client.responseRelay").whenComplete { [weak self] _ in
-                    pooled.pipeline.addHandler(responseHandler, name: "client.responseRelay").whenComplete { [weak self] result in
+                let pooledChannel = result.channel
+                pooledChannel.pipeline.removeHandler(name: "client.responseRelay").whenComplete { [weak self] _ in
+                    pooledChannel.pipeline.addHandler(responseHandler, name: "client.responseRelay").whenComplete { [weak self] pipelineResult in
                         guard let self = self else { return }
-                        switch result {
+                        switch pipelineResult {
                         case .success:
                             self.connected = true
-                            self.recorder.recordConnected(remoteAddress: pooled.remoteAddress)
+                            self.recorder.recordConnected(remoteAddress: pooledChannel.remoteAddress)
                             self.flushPendingParts()
                         case .failure:
                             // Pipeline swap failed; fall back to new connection
                             AxLogger.log("[HTTPCapture] Pooled channel pipeline swap failed, creating new connection", level: .Warning)
                             self.clientChannel = nil
                             self.connected = false
+                            self.pooledCreatedAt = nil
                             self.connectToServer(context: context, reuseFromPool: false)
                         }
                     }
@@ -353,7 +363,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
         // active, return it to the connection pool for reuse by future clients.
         if responseCompleted, let outbound = clientChannel, outbound.isActive, let req = request ?? lastCompletedRequest {
             let poolKey = ConnectionPoolKey(host: req.host, port: req.port, isSSL: req.ssl)
-            recorder.task.connectionPool.checkin(key: poolKey, channel: outbound)
+            recorder.task.connectionPool.checkin(key: poolKey, channel: outbound, createdAt: pooledCreatedAt)
         } else {
             clientChannel?.close(mode: .all, promise: nil)
         }
@@ -389,19 +399,25 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
     // Keep-alive state
     private var responseHead: HTTPResponseHead?
+    /// HTTP version from the client's request — used alongside response version
+    /// to determine keep-alive behavior (take the minimum of both).
+    var requestVersion: HTTPVersion
     var onResponseComplete: ((Bool) -> Void)?
 
     init(recorder: SessionRecorder, serverChannel: Channel?,
+         requestVersion: HTTPVersion = .http1_1,
          wsInterceptor: WebSocketUpgradeInterceptor? = nil) {
         self.recorder = recorder
         self.serverChannel = serverChannel
+        self.requestVersion = requestVersion
         self.wsInterceptor = wsInterceptor
     }
 
     /// Swap the recorder for a new request/response cycle on a keep-alive connection.
-    func swapRecorder(_ newRecorder: SessionRecorder) {
+    func swapRecorder(_ newRecorder: SessionRecorder, requestVersion: HTTPVersion = .http1_1) {
         self.recorder = newRecorder
         self.responseHead = nil
+        self.requestVersion = requestVersion
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -458,6 +474,7 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
     /// Determine whether the connection should be kept alive based on HTTP version
     /// and Connection header semantics.
+    /// Uses the minimum of request and response versions per RFC 7230:
     /// - HTTP/1.1: keep-alive by default unless "Connection: close"
     /// - HTTP/1.0: close by default unless "Connection: keep-alive"
     private func shouldKeepAlive() -> Bool {
@@ -465,7 +482,12 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
         let connectionHeader = head.headers["Connection"].joined(separator: ",").lowercased()
 
-        if head.version.major == 1 && head.version.minor >= 1 {
+        // Use the lower of request and response versions to decide keep-alive.
+        // A 1.0 request on a 1.1 response (or vice versa) should use 1.0 semantics.
+        let effectiveMinor = min(requestVersion.minor, head.version.minor)
+        let isHTTP11 = requestVersion.major == 1 && head.version.major == 1 && effectiveMinor >= 1
+
+        if isHTTP11 {
             // HTTP/1.1: keep-alive by default
             return !connectionHeader.contains("close")
         } else {
