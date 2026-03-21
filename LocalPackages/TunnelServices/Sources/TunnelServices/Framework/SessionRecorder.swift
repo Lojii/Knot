@@ -10,6 +10,37 @@ import Foundation
 import NIOHTTP1
 import NIO
 
+// MARK: - Protocol Metadata Types
+
+public struct ProtoFlag: OptionSet, Sendable {
+    public let rawValue: Int
+    public init(rawValue: Int) { self.rawValue = rawValue }
+
+    public static let keepAlive           = ProtoFlag(rawValue: 0x0001)
+    public static let pipelining          = ProtoFlag(rawValue: 0x0002)
+    public static let h2Multiplexing      = ProtoFlag(rawValue: 0x0004)
+    public static let h2ServerPush        = ProtoFlag(rawValue: 0x0008)
+    public static let h2FlowControl       = ProtoFlag(rawValue: 0x0010)
+    public static let wsFrameMasked       = ProtoFlag(rawValue: 0x0020)
+    public static let tlsMITM             = ProtoFlag(rawValue: 0x0040)
+    public static let tlsTunnel           = ProtoFlag(rawValue: 0x0080)
+    public static let tlsHandshakeOK      = ProtoFlag(rawValue: 0x0100)
+    public static let tlsHandshakeFail    = ProtoFlag(rawValue: 0x0200)
+    public static let tlsHandshakeTimeout = ProtoFlag(rawValue: 0x0400)
+}
+
+public enum ConnectionReuseType: Int, Sendable {
+    case new = 0
+    case keepAlive = 1
+    case pooled = 2
+}
+
+public enum PushForwardStatus: Int, Sendable {
+    case captureOnly = 0
+    case forwarded = 1
+    case failed = 2
+}
+
 /// Records HTTP session data via the new storage system (FlowDAO, PayloadWriter, TcpConnectionDAO).
 /// The `session` property is retained temporarily as an in-memory data holder
 /// because external handlers still read/write fields like `schemes`, `ignore`, `host`, etc.
@@ -35,6 +66,49 @@ public class SessionRecorder {
     public var taskDatabaseGroup: TaskDatabaseGroup? { dbGroup }
     private var taskId: Int64 = 0
     private var tcpRecord: TcpConnectionRecord?
+
+    // MARK: - Protocol Metadata State
+
+    private var _connReuse: ConnectionReuseType = .new
+    private var _protoFlags: ProtoFlag = []
+    private var _pushStatus: PushForwardStatus? = nil
+    private var _certChainRef: String? = nil
+    private var _connReusePoolKey: String? = nil
+    private var _keepAliveRequestIndex: Int = 0
+    private var _h2StreamId: Int? = nil
+    private var _bufferedCerts: [Any]? = nil
+
+    // MARK: - Protocol Metadata Public API
+
+    public var connReuse: Int { _connReuse.rawValue }
+    public var protoFlags: Int { _protoFlags.rawValue }
+    public var pushStatus: Int? { _pushStatus?.rawValue }
+    public var certChainRef: String? { _certChainRef }
+    public var connReusePoolKey: String? { _connReusePoolKey }
+    public var keepAliveRequestIndex: Int { _keepAliveRequestIndex }
+    public var h2StreamId: Int? { _h2StreamId }
+
+    public func markConnectionReuse(_ type: ConnectionReuseType, poolKey: String? = nil, requestIndex: Int = 0) {
+        _connReuse = type
+        _connReusePoolKey = poolKey
+        _keepAliveRequestIndex = requestIndex
+    }
+
+    public func addProtoFlag(_ flag: ProtoFlag) {
+        _protoFlags.insert(flag)
+    }
+
+    public func markPushStatus(_ status: PushForwardStatus) {
+        _pushStatus = status
+    }
+
+    public func setH2StreamId(_ id: Int) {
+        _h2StreamId = id
+    }
+
+    public func bufferCertificateChain(_ certs: [Any]) {
+        _bufferedCerts = certs
+    }
 
     // Local traffic counters (replaces session.uploadTraffic / session.downloadFlow)
     private var _uploadBytes: Int64 = 0
