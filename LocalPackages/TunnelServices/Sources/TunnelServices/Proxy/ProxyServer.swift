@@ -13,8 +13,13 @@ public class ProxyServer {
 
     private let masterGroup: MultiThreadedEventLoopGroup
     private let workerGroup: MultiThreadedEventLoopGroup
-    private var localChannel: Channel?
+    private(set) var localChannel: Channel?
     private var wifiChannel: Channel?
+
+    /// The port the local server is actually bound to (useful when binding to port 0).
+    public var localBoundPort: Int? {
+        localChannel?.localAddress?.port
+    }
 
     public init(
         masterThreads: Int = System.coreCount,

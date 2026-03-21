@@ -44,4 +44,20 @@ public class CertManager {
             AxLogger.log("CertManager: some certificates failed to load", level: .Error)
         }
     }
+
+    /// Initialize with explicit certificate and key values (for testing).
+    init(
+        cacert: NIOSSLCertificate?,
+        cakey: NIOSSLPrivateKey?,
+        rsakey: NIOSSLPrivateKey?,
+        x509CACert: Certificate?,
+        rsaSigningKey: _RSA.Signing.PrivateKey?
+    ) {
+        self.cacert = cacert
+        self.cakey = cakey
+        self.rsakey = rsakey
+        self.x509CACert = x509CACert
+        self.rsaSigningKey = rsaSigningKey
+        self.certPool = ThreadSafeCertPool()
+    }
 }
