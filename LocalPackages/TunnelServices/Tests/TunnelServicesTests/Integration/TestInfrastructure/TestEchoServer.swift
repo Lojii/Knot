@@ -173,18 +173,31 @@ final class TestEchoServer {
                 channel.eventLoop.makeSucceededFuture(HTTPHeaders())
             },
             upgradePipelineHandler: { channel, _ in
-                channel.pipeline.addHandler(WebSocketEchoHandler())
+                // NIO's upgrade mechanism removes HTTP codecs but not HTTPServerProtocolErrorHandler.
+                // We must remove it manually to prevent crashes when writing WebSocket frames
+                // through the outbound pipeline (HTTPServerProtocolErrorHandler expects HTTPServerResponsePart).
+                let removeErrorHandler: EventLoopFuture<Void>
+                if let handler = try? channel.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
+                    removeErrorHandler = channel.pipeline.removeHandler(handler)
+                } else {
+                    removeErrorHandler = channel.eventLoop.makeSucceededVoidFuture()
+                }
+                return removeErrorHandler.flatMap {
+                    channel.pipeline.addHandler(WebSocketEchoHandler())
+                }
             }
         )
 
+        // Set up HTTP pipeline with WebSocket upgrade support.
+        // Do NOT add EchoHTTPHandler — it would receive raw IOData forwarded
+        // by the HTTP request decoder when it's removed during upgrade,
+        // causing a crash. For WebSocket-only connections this is fine.
         return channel.pipeline.configureHTTPServerPipeline(
             withServerUpgrade: (
                 upgraders: [upgrader],
                 completionHandler: { _ in }
             )
-        ).flatMap {
-            channel.pipeline.addHandler(EchoHTTPHandler(options: options))
-        }
+        )
     }
 
     // MARK: TLS

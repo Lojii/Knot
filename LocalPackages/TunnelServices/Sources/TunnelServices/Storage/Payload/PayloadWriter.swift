@@ -57,7 +57,11 @@ public class PayloadWriter {
     /// Flush buffer to disk
     public func flush() throws {
         guard !buffer.isEmpty else { return }
-        fileHandle.write(buffer)
+        if #available(macOS 10.15.4, *) {
+            try fileHandle.write(contentsOf: buffer)
+        } else {
+            fileHandle.write(buffer)
+        }
         buffer.removeAll(keepingCapacity: true)
     }
 

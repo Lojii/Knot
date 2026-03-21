@@ -97,7 +97,9 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             let upgradeRaw = head.headers["Upgrade"].first?.lowercased() ?? ""
             if connectionRaw.contains("upgrade") && upgradeRaw == "websocket" {
                 isWebSocketUpgrade = true
-                wsInterceptor = WebSocketUpgradeInterceptor(recorder: recorder, task: recorder.task, isSSL: isSSL)
+                let interceptor = WebSocketUpgradeInterceptor(recorder: recorder, task: recorder.task, isSSL: isSSL)
+                interceptor.configure(upgradeRequest: head, serverChannel: context.channel)
+                wsInterceptor = interceptor
                 recorder.session.schemes = isSSL ? "WSS" : "WS"
             }
 
@@ -468,9 +470,12 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
         case .end(let trailers):
             recorder.recordResponseEnd()
-
             // If this was a 101 upgrade, switch to WebSocket (don't close recorder —
-            // WebSocket handler will manage its own recording lifecycle)
+            // WebSocket handler will manage its own recording lifecycle).
+            // We write the .end to the client first (while HTTP encoder is still active),
+            // then immediately reconfigure both pipelines. Since the reconfiguration
+            // happens before the next event loop turn, the client's WS frame won't
+            // arrive until the pipeline is ready.
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
                 if let interceptor = wsInterceptor {
