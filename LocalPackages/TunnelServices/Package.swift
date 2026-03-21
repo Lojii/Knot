@@ -75,6 +75,7 @@ let package = Package(
             dependencies: [
                 "TunnelServices",
                 .product(name: "NIOEmbedded", package: "swift-nio"),
+                .product(name: "SwiftQuiche", package: "SwiftQuiche"),
             ],
             path: "Tests/TunnelServicesTests"
         ),

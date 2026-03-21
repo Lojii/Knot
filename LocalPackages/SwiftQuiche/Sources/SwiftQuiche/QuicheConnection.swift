@@ -156,9 +156,29 @@ public class QUICConnection {
     // MARK: - Packet I/O
 
     public func recv(_ data: Data) -> Int {
+        return recv(data, from: nil, to: nil)
+    }
+
+    public func recv(_ data: Data, from peerAddr: sockaddr_in?, to localAddr: sockaddr_in?) -> Int {
         var buf = [UInt8](data)
-        var info = quiche_recv_info(from: nil, from_len: 0, to: nil, to_len: 0)
-        return Int(quiche_conn_recv(raw, &buf, buf.count, &info))
+        if var peer = peerAddr, var local = localAddr {
+            return withUnsafeMutablePointer(to: &peer) { peerPtr in
+                withUnsafeMutablePointer(to: &local) { localPtr in
+                    peerPtr.withMemoryRebound(to: sockaddr.self, capacity: 1) { peerSA in
+                        localPtr.withMemoryRebound(to: sockaddr.self, capacity: 1) { localSA in
+                            var info = quiche_recv_info(
+                                from: peerSA, from_len: socklen_t(MemoryLayout<sockaddr_in>.size),
+                                to: localSA, to_len: socklen_t(MemoryLayout<sockaddr_in>.size)
+                            )
+                            return Int(quiche_conn_recv(raw, &buf, buf.count, &info))
+                        }
+                    }
+                }
+            }
+        } else {
+            var info = quiche_recv_info(from: nil, from_len: 0, to: nil, to_len: 0)
+            return Int(quiche_conn_recv(raw, &buf, buf.count, &info))
+        }
     }
 
     public func send() -> Data? {
@@ -230,6 +250,11 @@ public class HTTP3Connection {
         case done
     }
 
+    /// Class-based accumulator for safely passing header storage through C callback void*.
+    private class _HeaderAccumulator {
+        var headers: [(String, String)] = []
+    }
+
     public func poll(quicConn: QUICConnection) -> Event {
         var ev: OpaquePointer?
         let streamId = quiche_h3_conn_poll(raw, quicConn.raw, &ev)
@@ -240,16 +265,17 @@ public class HTTP3Connection {
         let eventType = quiche_h3_event_type(event)
         switch eventType {
         case QUICHE_H3_EVENT_HEADERS:
-            var headers = [(String, String)]()
+            let accumulator = _HeaderAccumulator()
+            let accPtr = Unmanaged.passUnretained(accumulator).toOpaque()
             quiche_h3_event_for_each_header(event, { name, nameLen, value, valueLen, argp in
                 guard let argp = argp else { return 0 }
-                let n = String(bytes: UnsafeBufferPointer(start: name, count: nameLen), encoding: .utf8) ?? ""
-                let v = String(bytes: UnsafeBufferPointer(start: value, count: valueLen), encoding: .utf8) ?? ""
-                let ptr = argp.assumingMemoryBound(to: [(String, String)].self)
-                ptr.pointee.append((n, v))
+                let acc = Unmanaged<HTTP3Connection._HeaderAccumulator>.fromOpaque(argp).takeUnretainedValue()
+                let n = String(bytes: UnsafeBufferPointer(start: name!, count: nameLen), encoding: .utf8) ?? ""
+                let v = String(bytes: UnsafeBufferPointer(start: value!, count: valueLen), encoding: .utf8) ?? ""
+                acc.headers.append((n, v))
                 return 0
-            }, &headers)
-            return .headers(streamId: UInt64(streamId), headers: headers)
+            }, accPtr)
+            return .headers(streamId: UInt64(streamId), headers: accumulator.headers)
         case QUICHE_H3_EVENT_DATA:
             return .data(streamId: UInt64(streamId))
         case QUICHE_H3_EVENT_FINISHED:
