@@ -3,7 +3,7 @@
 //  TunnelServices
 //
 //  HTTP/2 capture pipeline with full H2 proxy support.
-//  Client ←H2→ Proxy ←H2→ Server (single shared connection, multiplexed streams).
+//  Client <-H2-> Proxy <-H2-> Server (single shared connection, multiplexed streams).
 //  Delegates gRPC-specific parsing to GRPCDecoder when content-type matches.
 //
 
@@ -18,8 +18,8 @@ import NIOSSL
 /// Builds an HTTP/2 capture pipeline for the MITMHandler.
 ///
 /// Architecture:
-/// - Client side: NIOHTTP2Handler(server) → HTTP2StreamMultiplexer(server) → per-stream capture
-/// - Server side: Single shared H2 connection → NIOHTTP2Handler(client) → HTTP2StreamMultiplexer(client)
+/// - Client side: NIOHTTP2Handler(server) -> HTTP2StreamMultiplexer(server) -> per-stream capture
+/// - Server side: Single shared H2 connection -> NIOHTTP2Handler(client) -> HTTP2StreamMultiplexer(client)
 /// - Each client H2 stream maps to a server H2 stream via H2ServerConnection
 public enum HTTP2CaptureBuilder {
 
@@ -30,9 +30,9 @@ public enum HTTP2CaptureBuilder {
         targetPort: Int = 443
     ) -> EventLoopFuture<Void> {
         // Shared H2 connection to the real server
-        let serverConn = H2ServerConnection(host: targetHost, port: targetPort)
+        let serverConn = H2ServerConnection(host: targetHost, port: targetPort, task: recorder.task)
 
-        let multiplexer = HTTP2StreamMultiplexer(
+        let clientMultiplexer = HTTP2StreamMultiplexer(
             mode: .server,
             channel: context.channel
         ) { stream -> EventLoopFuture<Void> in
@@ -53,12 +53,15 @@ public enum HTTP2CaptureBuilder {
             }
         }
 
+        // Pass client-side multiplexer to server connection for push promise forwarding
+        serverConn.clientMultiplexer = clientMultiplexer
+
         // Set up client-side H2 pipeline
         let pipeline = context.pipeline.addHandler(
             NIOHTTP2Handler(mode: .server),
             name: "h2.handler"
         ).flatMap {
-            context.pipeline.addHandler(multiplexer, name: "h2.multiplexer")
+            context.pipeline.addHandler(clientMultiplexer, name: "h2.multiplexer")
         }
 
         // Initiate server H2 connection in parallel
@@ -83,6 +86,8 @@ public enum HTTP2CaptureBuilder {
 final class H2ServerConnection {
     let host: String
     let port: Int
+    let task: CaptureTask
+    weak var clientMultiplexer: HTTP2StreamMultiplexer?
     private var channel: Channel?
     private var multiplexer: HTTP2StreamMultiplexer?
     private var ready = false
@@ -90,9 +95,10 @@ final class H2ServerConnection {
     private var pendingStreams: [(initializer: @Sendable (Channel) -> EventLoopFuture<Void>,
                                   promise: EventLoopPromise<Channel>)] = []
 
-    init(host: String, port: Int) {
+    init(host: String, port: Int, task: CaptureTask) {
         self.host = host
         self.port = port
+        self.task = task
     }
 
     func connect(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
@@ -109,9 +115,22 @@ final class H2ServerConnection {
                 }
 
                 let h2Handler = NIOHTTP2Handler(mode: .client)
-                let mux = HTTP2StreamMultiplexer(mode: .client, channel: channel) { stream in
-                    // Server-initiated streams (push promises) — not handled
-                    stream.eventLoop.makeSucceededVoidFuture()
+                let mux = HTTP2StreamMultiplexer(mode: .client, channel: channel) { [weak self] serverPushStream in
+                    guard let self = self, let clientMux = self.clientMultiplexer else {
+                        return serverPushStream.eventLoop.makeSucceededVoidFuture()
+                    }
+                    let pushRecorder = SessionRecorder(task: self.task)
+                    pushRecorder.session.schemes = "H2-Push"
+
+                    return serverPushStream.pipeline.addHandler(
+                        HTTP2FramePayloadToHTTP1ClientCodec(httpProtocol: .https),
+                        name: "h2push.codec"
+                    ).flatMap {
+                        serverPushStream.pipeline.addHandler(
+                            H2PushRelayHandler(recorder: pushRecorder, clientMultiplexer: clientMux),
+                            name: "h2push.relay"
+                        )
+                    }
                 }
                 self?.multiplexer = mux
 
@@ -154,6 +173,96 @@ final class H2ServerConnection {
             mux.createStreamChannel(promise: promise, initializer)
         }
         pendingStreams.removeAll()
+    }
+}
+
+// MARK: - H2 Push Relay
+
+/// Handles server push promises received on the upstream H2 connection.
+/// Captures the pushed response via SessionRecorder and forwards it to the
+/// client through a new stream on the client-side multiplexer.
+final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
+    typealias InboundIn = HTTPClientResponsePart
+
+    private let recorder: SessionRecorder
+    private weak var clientMultiplexer: HTTP2StreamMultiplexer?
+    private var clientPushChannel: Channel?
+    private var pendingParts = [HTTPServerResponsePart]()
+    private var connected = false
+
+    init(recorder: SessionRecorder, clientMultiplexer: HTTP2StreamMultiplexer?) {
+        self.recorder = recorder
+        self.clientMultiplexer = clientMultiplexer
+    }
+
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let part = unwrapInboundIn(data)
+
+        switch part {
+        case .head(let head):
+            recorder.recordResponseHead(head)
+            recorder.addDownload(200)
+            if clientPushChannel == nil {
+                createClientPushStream()
+            }
+            enqueue(.head(head))
+
+        case .body(let body):
+            recorder.recordResponseBody(body)
+            recorder.addDownload(body.readableBytes)
+            enqueue(.body(.byteBuffer(body)))
+
+        case .end(let trailers):
+            recorder.recordResponseEnd()
+            enqueue(.end(trailers))
+            recorder.recordClosed()
+        }
+    }
+
+    func channelUnregistered(context: ChannelHandlerContext) {
+        clientPushChannel?.close(promise: nil)
+    }
+
+    func errorCaught(context: ChannelHandlerContext, error: Error) {
+        AxLogger.log("[H2PushRelay] Error from upstream push stream: \(error)", level: .Error)
+        recorder.recordError("H2PushRelay error: \(error)")
+        clientPushChannel?.close(promise: nil)
+        context.close(promise: nil)
+    }
+
+    // MARK: - Private
+
+    private func createClientPushStream() {
+        clientMultiplexer?.createStreamChannel { stream in
+            stream.pipeline.addHandler(
+                HTTP2FramePayloadToHTTP1ServerCodec(),
+                name: "h2push.client.codec"
+            )
+        }.whenComplete { [weak self] result in
+            switch result {
+            case .success(let ch):
+                self?.clientPushChannel = ch
+                self?.connected = true
+                self?.flushPending()
+            case .failure(let error):
+                AxLogger.log("[H2PushRelay] Failed to create client push stream: \(error)", level: .Error)
+                self?.recorder.recordError("H2 push stream creation failed: \(error)")
+            }
+        }
+    }
+
+    private func enqueue(_ part: HTTPServerResponsePart) {
+        if connected, let ch = clientPushChannel, ch.isActive {
+            ch.writeAndFlush(part, promise: nil)
+        } else {
+            pendingParts.append(part)
+        }
+    }
+
+    private func flushPending() {
+        guard let ch = clientPushChannel, ch.isActive else { return }
+        for p in pendingParts { ch.writeAndFlush(p, promise: nil) }
+        pendingParts.removeAll()
     }
 }
 
@@ -346,7 +455,7 @@ final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandl
             }
             recorder.recordResponseEnd()
             clientStreamChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
-            // Response complete — flush recorded data to storage without closing the stream.
+            // Response complete -- flush recorded data to storage without closing the stream.
             // H2 streams are managed by the multiplexer; don't force-close them.
             captureHandler?.responseCompleted = true
             recorder.recordClosed()
