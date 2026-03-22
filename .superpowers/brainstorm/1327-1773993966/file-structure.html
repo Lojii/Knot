@@ -1,0 +1,123 @@
+<h2>Directory Structure — Protocol Plugin Architecture</h2>
+<p class="subtitle">Each protocol plugin is a self-contained folder</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">New Structure</div>
+    <div class="mockup-body" style="padding:16px; font-family:monospace; font-size:12.5px; line-height:2">
+      <span style="color:#6bf">TunnelServices/</span><br>
+      ├── <span style="color:#fa0">Framework/</span> &nbsp;<span style="color:#666">← plugin infrastructure</span><br>
+      │&nbsp;&nbsp; ├── ProtocolPlugin.swift &nbsp;<span style="color:#666">← protocol + MatchResult</span><br>
+      │&nbsp;&nbsp; ├── ProtocolRegistry.swift &nbsp;<span style="color:#666">← tree builder</span><br>
+      │&nbsp;&nbsp; ├── ProtocolDispatcher.swift &nbsp;<span style="color:#666">← match & dispatch</span><br>
+      │&nbsp;&nbsp; └── SessionRecorder.swift &nbsp;<span style="color:#666">← per-connection lifecycle</span><br>
+      │<br>
+      ├── <span style="color:#f88">Plugins/</span> &nbsp;<span style="color:#666">← each protocol = one folder</span><br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">HTTP1/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── HTTP1Plugin.swift &nbsp;<span style="color:#666">← canMatch + buildPipeline</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── HTTPCaptureHandler.swift &nbsp;<span style="color:#666">← NIO handler</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── HTTPRecorder.swift &nbsp;<span style="color:#666">← recording</span><br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">HTTP2/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── HTTP2Plugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── HTTP2CaptureHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── HTTP2CaptureBuilder.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">HTTP3/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── HTTP3Plugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── QUICPlugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── QUICMITMHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── LsquicMITMHandler.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">TLS/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── TLSPlugin.swift &nbsp;<span style="color:#666">← unwrap + re-detect</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── MITMHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── TLSSniffHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── OCSPChecker.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">SOCKS5/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── SOCKS5Plugin.swift &nbsp;<span style="color:#666">← unwrap + re-enter TCP</span><br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">WebSocket/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── WebSocketPlugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── WebSocketCaptureHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── WebSocketRecorder.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">GRPC/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── GRPCPlugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── GRPCCaptureHandler.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── GRPCRecorder.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">DNS/</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── DNSPlugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── DNSDecoder.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── DNSRecorder.swift<br>
+      │&nbsp;&nbsp; ├── <span style="color:#f88">Raw/</span> &nbsp;<span style="color:#666">← fallback for unrecognized</span><br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; ├── RawPlugin.swift<br>
+      │&nbsp;&nbsp; │&nbsp;&nbsp; └── RawPassthroughHandler.swift<br>
+      │&nbsp;&nbsp; └── <span style="color:#f88">Codec/</span> &nbsp;<span style="color:#666">← other decoders (not yet pluginized)</span><br>
+      │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── MQTTDecoder.swift<br>
+      │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── RedisDecoder.swift<br>
+      │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── SMTPDecoder.swift<br>
+      │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── ...<br>
+      │<br>
+      ├── <span style="color:#6f6">Proxy/</span> &nbsp;<span style="color:#666">← server bootstrap & shared handlers</span><br>
+      │&nbsp;&nbsp; ├── MitmService.swift<br>
+      │&nbsp;&nbsp; ├── ProxyServer.swift<br>
+      │&nbsp;&nbsp; ├── ConnectHandler.swift &nbsp;<span style="color:#666">← HTTP CONNECT (unwrap)</span><br>
+      │&nbsp;&nbsp; ├── TunnelHandler.swift &nbsp;<span style="color:#666">← raw TCP relay</span><br>
+      │&nbsp;&nbsp; ├── IPFilterHandler.swift<br>
+      │&nbsp;&nbsp; ├── BreakpointHandler.swift<br>
+      │&nbsp;&nbsp; ├── TrafficShapingHandler.swift<br>
+      │&nbsp;&nbsp; ├── TimeoutHandler.swift<br>
+      │&nbsp;&nbsp; └── RequestReplayer.swift<br>
+      │<br>
+      ├── Storage/ &nbsp;<span style="color:#666">← unchanged</span><br>
+      ├── Config/ &nbsp;<span style="color:#666">← unchanged</span><br>
+      ├── Rule/ &nbsp;<span style="color:#666">← unchanged</span><br>
+      ├── Export/ &nbsp;<span style="color:#666">← unchanged</span><br>
+      ├── HttpService/ &nbsp;<span style="color:#666">← unchanged</span><br>
+      ├── PacketCapture/ &nbsp;<span style="color:#666">← IPPacketParser, UDPForwarder stay</span><br>
+      └── Utils/ &nbsp;<span style="color:#666">← unchanged</span>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Plugin Folder Convention</div>
+    <div class="mockup-body" style="padding:16px; font-size:14px; line-height:1.8">
+      <p>Each plugin folder follows a consistent pattern:</p>
+      <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; font-family:monospace; font-size:13px; margin:12px 0; line-height:2">
+        Plugins/HTTP1/<br>
+        ├── <span style="color:#fa0">HTTP1Plugin.swift</span> &nbsp;← required<br>
+        │&nbsp;&nbsp; implements ProtocolPlugin<br>
+        │&nbsp;&nbsp; canMatch() + buildPipeline()<br>
+        ├── <span style="color:#6bf">HTTPCaptureHandler.swift</span> &nbsp;← NIO handler(s)<br>
+        │&nbsp;&nbsp; the actual ChannelHandler<br>
+        └── <span style="color:#6f6">HTTPRecorder.swift</span> &nbsp;← recording<br>
+        &nbsp;&nbsp;&nbsp; implements ProtocolRecorder<br>
+        &nbsp;&nbsp;&nbsp; buildFlowRecord()
+      </div>
+
+      <p style="margin-top:20px"><strong>Rules:</strong></p>
+      <ul style="line-height:2">
+        <li><code>*Plugin.swift</code> — always present, entry point</li>
+        <li><code>*Handler.swift</code> — NIO handlers (0 or more)</li>
+        <li><code>*Recorder.swift</code> — recording (0 or 1, leaf plugins only)</li>
+        <li><code>*Decoder.swift</code> — wire format decoding (if needed)</li>
+      </ul>
+
+      <p style="margin-top:20px"><strong>What goes where:</strong></p>
+      <table style="width:100%; border-collapse:collapse; font-size:13px">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+          <td style="padding:6px; color:#fa0">Framework/</td>
+          <td style="padding:6px">Plugin protocol, registry, dispatcher</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+          <td style="padding:6px; color:#f88">Plugins/X/</td>
+          <td style="padding:6px">Protocol-specific: match, handle, record</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+          <td style="padding:6px; color:#6f6">Proxy/</td>
+          <td style="padding:6px">Shared: server bootstrap, cross-cutting handlers</td>
+        </tr>
+        <tr>
+          <td style="padding:6px; color:#888">Storage/</td>
+          <td style="padding:6px">DAO, Schema, Model — protocol-agnostic</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

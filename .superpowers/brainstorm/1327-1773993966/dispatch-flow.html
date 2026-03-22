@@ -1,0 +1,89 @@
+<h2>Match & Dispatch Flow</h2>
+<p class="subtitle">A TCP connection arrives — how the protocol tree processes it</p>
+
+<div class="mockup">
+  <div class="mockup-header">Example: HTTPS request via proxy (HTTP CONNECT → TLS → HTTP/1.1)</div>
+  <div class="mockup-body" style="padding:20px; font-family:monospace; font-size:13px; line-height:2.2">
+    <div style="color:#6bf">① Raw bytes arrive on TCP port 8034</div>
+    <div style="padding-left:20px">
+      ProtocolDispatcher.detect(buffer, tcpNode.children)<br>
+      <div style="padding-left:20px">
+        <span style="color:#f88">HTTP1Plugin.canMatch("CONN...") → .yes(90)</span><br>
+        <span style="color:#888">TLSPlugin.canMatch(0x43≠0x16) → .no</span><br>
+        <span style="color:#888">SOCKS5Plugin.canMatch(0x43≠0x05) → .no</span><br>
+        <span style="color:#888">MQTTPlugin.canMatch(...) → .no</span>
+      </div>
+      → Winner: <span style="color:#f88">HTTP1Plugin</span> (confidence 90)
+    </div>
+
+    <br>
+    <div style="color:#6bf">② HTTP1Plugin.buildPipeline() — adds HTTP decoder</div>
+    <div style="padding-left:20px">
+      Decodes: <code>CONNECT example.com:443 HTTP/1.1</code><br>
+      Detects this is a CONNECT request → sends 200 → strips HTTP handlers<br>
+      <span style="color:#fa0">→ Emits re-detect event with raw bytes from client</span>
+    </div>
+
+    <br>
+    <div style="color:#6bf">③ Re-detect: now try HTTP1's children on new bytes</div>
+    <div style="padding-left:20px">
+      But CONNECT tunnel data isn't HTTP1's child — it's a new TCP stream<br>
+      <span style="color:#fa0">→ Re-enter TCP subtree (same as SOCKS5 unwrap)</span>
+    </div>
+
+    <br>
+    <div style="color:#6bf">④ ProtocolDispatcher.detect(buffer, tcpNode.children)</div>
+    <div style="padding-left:20px">
+      <span style="color:#888">HTTP1Plugin.canMatch(0x16≠HTTP) → .no</span><br>
+      <span style="color:#f88">TLSPlugin.canMatch(0x16=ClientHello) → .yes(100)</span><br>
+      → Winner: <span style="color:#f88">TLSPlugin</span>
+    </div>
+
+    <br>
+    <div style="color:#6bf">⑤ TLSPlugin.buildPipeline() — TLS handshake (async)</div>
+    <div style="padding-left:20px">
+      Extract SNI → generate cert → NIOSSLServerHandler<br>
+      ALPN negotiated: <code>http/1.1</code><br>
+      <span style="color:#fa0">→ Handshake complete, re-detect with metadata {alpn: "http/1.1"}</span>
+    </div>
+
+    <br>
+    <div style="color:#6bf">⑥ Detect TLS children with decrypted bytes</div>
+    <div style="padding-left:20px">
+      <span style="color:#f88">HTTP1Plugin.canMatch("GET /...") → .yes(90)</span><br>
+      <span style="color:#888">HTTP2Plugin.canMatch(metadata.alpn≠"h2") → .no</span><br>
+      → Winner: <span style="color:#f88">HTTP1Plugin</span> (under TLS this time)
+    </div>
+
+    <br>
+    <div style="color:#6bf">⑦ HTTP1Plugin.buildPipeline(context: {parent: "tls"})</div>
+    <div style="padding-left:20px">
+      Adds HTTPCaptureHandler with <code>isSSL: true</code><br>
+      Creates HTTPRecorder with <code>encrypted: false, decrypted: true</code><br>
+      <span style="color:#6f6">→ Capturing decrypted HTTPS traffic ✓</span>
+    </div>
+  </div>
+</div>
+
+<br>
+
+<div class="mockup">
+  <div class="mockup-header">Key Concept: "Re-detect" Protocol</div>
+  <div class="mockup-body" style="padding:20px; font-size:14px; line-height:1.8">
+    <p>Three types of plugins based on how they interact with children:</p>
+    <table style="width:100%; border-collapse:collapse; margin:12px 0">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px; color:#6bf; width:30%"><strong>Leaf Plugin</strong></td>
+        <td style="padding:8px">No children. Matches, builds pipeline, done.<br><em>Examples: MQTT, Redis, NTP, DNS</em></td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px; color:#fa0"><strong>Unwrap Plugin</strong></td>
+        <td style="padding:8px">Unwraps a layer, then re-detects children with the unwrapped data.<br>May be <strong>async</strong> (TLS handshake) or <strong>sync</strong> (HTTP CONNECT sends 200 then done).<br><em>Examples: TLS, SOCKS5, HTTP CONNECT</em></td>
+      </tr>
+      <tr>
+        <td style="padding:8px; color:#6f6"><strong>Inspect Plugin</strong></td>
+        <td style="padding:8px">Matches, captures/records data, may also have children for sub-protocols.<br><em>Examples: HTTP1 (child: WebSocket), HTTP2 (child: gRPC)</em></td>
+      </tr>
+    </table>
+  </div>
+</div>
