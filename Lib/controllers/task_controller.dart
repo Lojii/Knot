@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 import '../api/api_client.dart';
 import '../models/task_model.dart';
+import 'flow_controller.dart';
+import 'live_controller.dart';
+import 'detail_controller.dart';
 
 class TaskController extends GetxController {
   final ApiClient api;
@@ -9,12 +12,6 @@ class TaskController extends GetxController {
   final tasks = <TaskModel>[].obs;
   final currentTask = Rxn<TaskModel>();
   final isCapturing = false.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadTasks();
-  }
 
   Future<void> loadTasks() async {
     try {
@@ -30,5 +27,8 @@ class TaskController extends GetxController {
 
   void selectTask(TaskModel task) {
     currentTask.value = task;
+    Get.find<FlowController>().setTaskId(task.id);
+    Get.find<LiveController>().ws.switchTask(task.id);
+    Get.find<DetailController>().clear();
   }
 }

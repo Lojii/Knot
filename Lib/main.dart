@@ -11,7 +11,9 @@ import 'controllers/filter_controller.dart';
 import 'pages/capture/capture_page.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final api = ApiClient();
   final ws = WsClient();
 
@@ -25,6 +27,23 @@ void main() {
   Get.put(DetailController(api));
 
   runApp(const KnotApp());
+
+  // Startup sequence (after first frame)
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final taskCtrl = Get.find<TaskController>();
+    final flowCtrl = Get.find<FlowController>();
+    final liveCtrl = Get.find<LiveController>();
+
+    // Wait for API to be available
+    await taskCtrl.loadTasks();
+
+    // If we have a task, load its flows and connect WS
+    if (taskCtrl.currentTask.value != null) {
+      final tid = taskCtrl.currentTask.value!.id;
+      flowCtrl.setTaskId(tid);
+      liveCtrl.connectToTask(tid);
+    }
+  });
 }
 
 class KnotApp extends StatelessWidget {
