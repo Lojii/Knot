@@ -60,6 +60,17 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         let request = NetRequest(head)
         request.ssl = true
 
+        // CONNECT URI is always "host:port" — override whatever NetRequest parsed
+        // from the Host header (some clients like Node.js set Host to the proxy address).
+        let uriParts = head.uri.split(separator: ":", maxSplits: 1)
+        if uriParts.count == 2, let port = Int(uriParts[1]) {
+            request.host = String(uriParts[0])
+            request.port = port
+        } else if uriParts.count == 1 {
+            request.host = String(uriParts[0])
+            request.port = 443
+        }
+
         // Record request metadata
         recorder.recordRequestHead(head, localAddress: context.channel.remoteAddress, isSSL: true)
         recorder.session.host = request.host

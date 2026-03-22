@@ -80,7 +80,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
             currentRequestVersion = head.version
 
             // Extract request info and prepare for forwarding
-            AxLogger.log("[HTTPCapture] request: \(head.method) \(head.uri) isSSL=\(isSSL)", level: .Warning)
+            AxLogger.log("[HTTPCapture] request: \(head.method) \(head.uri) isSSL=\(isSSL) channel=\(context.channel)", level: .Warning)
             request = NetRequest(head)
             if isSSL {
                 request?.ssl = true
@@ -246,6 +246,7 @@ public final class HTTPCaptureHandler: ChannelInboundHandler, RemovableChannelHa
                 }
 
                 let alpnHandler = ApplicationProtocolNegotiationHandler { result -> EventLoopFuture<Void> in
+                    AxLogger.log("[HTTPCapture] outbound ALPN complete: \(result) for \(req.host):\(req.port)", level: .Warning)
                     self?.recorder.recordHandshakeComplete()
                     self?.connected = true
                     return channel.pipeline.addHandler(HTTPRequestEncoder(), name: "client.requestEncoder").flatMap {
@@ -471,6 +472,7 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
             responseHead = head
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
+            AxLogger.log("[ResponseRelay] .head status=\(head.status.code) serverChannel=\(serverChannel != nil) schemes=\(recorder.session.schemes ?? "nil")", level: .Warning)
             serverChannel?.writeAndFlush(HTTPServerResponsePart.head(head), promise: nil)
 
             // Detect WebSocket upgrade (101 Switching Protocols)
@@ -492,17 +494,20 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
             // happens before the next event loop turn, the client's WS frame won't
             // arrive until the pipeline is ready.
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
-                // Forward the 101 to the client, then close both sides.
-                // WebSocket pipeline upgrade in MITM mode has unresolved NIO pipeline
-                // race conditions (IOData reaching HTTPResponseEncoder during swap).
-                // For now, close the connection after 101 — the client will see the
-                // upgrade succeed but the WS connection will immediately close.
-                // This prevents the proxy from crashing on WS-heavy sites.
+                // Write 101 .end to the client FIRST (while HTTPResponseEncoder is still active)
+                AxLogger.log("[ResponseRelay] WS upgrade .end — writing to serverChannel=\(serverChannel != nil), wsInterceptor=\(wsInterceptor != nil)", level: .Warning)
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
-                AxLogger.log("[ResponseRelay] WebSocket 101 — closing (MITM WS upgrade disabled)", level: .Warning)
-                recorder.recordClosed()
-                serverChannel?.close(mode: .all, promise: nil)
-                context.channel.close(mode: .all, promise: nil)
+
+                // NOW upgrade both pipelines to WebSocket mode.
+                // CRITICAL: HTTPResponseEncoder on inbound channel must be removed BEFORE
+                // any WebSocket frame is written to that channel — otherwise the encoder
+                // receives WebSocketFrame instead of HTTPServerResponsePart and fatalErrors.
+                if let interceptor = wsInterceptor {
+                    interceptor.performWebSocketUpgrade(
+                        context: context,
+                        clientChannel: context.channel
+                    )
+                }
                 return
             }
 

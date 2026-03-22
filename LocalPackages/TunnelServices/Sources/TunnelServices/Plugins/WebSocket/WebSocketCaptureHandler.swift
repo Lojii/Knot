@@ -73,10 +73,13 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
         context: ChannelHandlerContext,
         clientChannel: Channel
     ) {
-        guard let request = upgradeRequest, let serverCh = serverChannel else { return }
+        guard let request = upgradeRequest, let serverCh = serverChannel else {
+            AxLogger.log("[WS Upgrade] ABORTED: upgradeRequest=\(upgradeRequest != nil) serverChannel=\(serverChannel != nil)", level: .Error)
+            return
+        }
         recorder.addProtoFlag(.wsFrameMasked)
 
-        AxLogger.log("WebSocket upgrade for \(request.headers["Host"].first ?? "unknown")", level: .Info)
+        AxLogger.log("[WS Upgrade] START for \(request.headers["Host"].first ?? "unknown"), serverCh=\(serverCh) clientCh=\(clientChannel) sameEL=\(serverCh.eventLoop === clientChannel.eventLoop)", level: .Warning)
 
         // Create frame loggers for both directions
         let clientLogger = WebSocketFrameLogger(recorder: recorder, direction: .clientToServer)
@@ -123,16 +126,22 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             position: .before(inboundGate)
         )
 
-        // Extra safety: ensure HTTPResponseEncoder is gone from inbound pipeline.
-        // configureHTTPServerPipeline may have added it with NIO-internal naming
-        // that removeHTTPHandlersSynchronously misses.
+        // CRITICAL: ensure HTTPResponseEncoder is gone from inbound pipeline.
+        // If it remains, WebSocketForwarder writing WS frames to this channel
+        // will hit the encoder → fatalError (expects HTTPServerResponsePart).
         if let enc = try? serverCh.pipeline.syncOperations.handler(type: HTTPResponseEncoder.self) {
             try? serverCh.pipeline.syncOperations.removeHandler(enc)
+            AxLogger.log("[WS Upgrade] removed lingering HTTPResponseEncoder from inbound", level: .Warning)
         }
         if let err = try? serverCh.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
             try? serverCh.pipeline.syncOperations.removeHandler(err)
         }
+        // Also remove NIOHTTPResponseHeadersValidator (outbound handler from configureHTTPServerPipeline)
+        if let val = try? serverCh.pipeline.syncOperations.handler(type: NIOHTTPResponseHeadersValidator.self) {
+            try? serverCh.pipeline.syncOperations.removeHandler(val)
+        }
 
+        AxLogger.log("[WS Upgrade] inbound pipeline ready, opening gate", level: .Warning)
         inboundGate.openAndRemove()
 
         // === OUTBOUND channel (proxy → real server, aka clientChannel) ===
@@ -173,7 +182,8 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             clientChannel.pipeline.addHandler(
                 WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
                 name: "ws.server.forwarder", position: .before(outboundGate))
-        }.whenComplete { _ in
+        }.whenComplete { result in
+            AxLogger.log("[WS Upgrade] outbound pipeline ready, opening gate. result=\(result)", level: .Warning)
             outboundGate.openAndRemove()
         }
     }
@@ -343,7 +353,6 @@ final class WebSocketForwarder: ChannelInboundHandler, RemovableChannelHandler {
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let frame = unwrapInboundIn(data)
-
         // RFC 6455 Section 5.1: Client→Server frames MUST be masked.
         // Proxy→Server: must mask (proxy acts as client to server)
         // Proxy→Client: must NOT mask (proxy acts as server to client)

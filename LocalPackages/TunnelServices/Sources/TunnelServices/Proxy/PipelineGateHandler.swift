@@ -35,11 +35,12 @@ public final class PipelineGateHandler: ChannelDuplexHandler, RemovableChannelHa
         guard let context = savedContext else { return }
         gateOpen = true
         // Flush outbound first (writes waiting to go to network)
+        let hadOutbound = !outboundBuffer.isEmpty
         for (data, promise) in outboundBuffer {
             context.write(data, promise: promise)
         }
         outboundBuffer.removeAll()
-        if !outboundBuffer.isEmpty { context.flush() }
+        if hadOutbound { context.flush() }
         // Then flush inbound (reads waiting to go to handlers)
         for data in inboundBuffer {
             context.fireChannelRead(data)

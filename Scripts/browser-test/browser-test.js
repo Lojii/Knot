@@ -64,13 +64,16 @@ async function visitPage(browser, url) {
     const page = await browser.newPage();
     try {
         // Navigate to the target URL
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // Simulate scrolling (3 times) to trigger lazy-loaded resources
-        for (let i = 0; i < 3; i++) {
-            await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.8));
-            await sleep(800 + Math.random() * 400);
+        // Stay on page at least 5 seconds — simulate reading + scrolling
+        // Scroll 4 times with longer pauses to meet minimum dwell time
+        for (let i = 0; i < 4; i++) {
+            await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.7));
+            await sleep(1200 + Math.random() * 600);  // ~1.2-1.8s per scroll
         }
+        // Extra dwell to ensure ≥5s total on page
+        await sleep(1000);
 
         // Click up to 2 same-origin links to exercise more traffic
         const origin = new URL(url).origin;
@@ -90,9 +93,9 @@ async function visitPage(browser, url) {
 
         for (const link of links.slice(0, 2)) {
             try {
-                await page.goto(link, { waitUntil: 'networkidle2', timeout: 10000 });
-                await page.evaluate(() => window.scrollBy(0, 500));
-                await sleep(500);
+                await page.goto(link, { waitUntil: 'networkidle2', timeout: 60000 });
+                await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.5));
+                await sleep(2000 + Math.random() * 1000);  // 2-3s on sub-page
             } catch {
                 // Individual sub-navigation failures are non-fatal
             }
@@ -192,6 +195,12 @@ async function main() {
             '--no-first-run',
             '--disable-default-apps',
             '--disable-extensions',
+            '--disable-background-networking',
+            '--disable-sync',
+            '--disable-component-update',
+            '--disable-domain-reliability',
+            '--disable-features=OptimizationHints,NetworkService',
+            '--no-proxy-server-for=localhost,127.0.0.1',
         ],
         defaultViewport: null,
     });
