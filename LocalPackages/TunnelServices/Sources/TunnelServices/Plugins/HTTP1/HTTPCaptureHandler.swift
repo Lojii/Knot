@@ -457,18 +457,13 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        fputs("[HTTP1ResponseRelay] channelRead entered\n", stderr)
-        // Safe type check before unwrapInboundIn.
-        // During WebSocket pipeline upgrade, the HTTP response decoder removal may
-        // forward leftover bytes as IOData. unwrapInboundIn fatalErrors on IOData.
-        // We detect IOData by trying to extract ByteBuffer from the NIOAny — if it
-        // succeeds, this is raw bytes (not an HTTP response part) and we absorb it.
-        // NIOAny.forceAsByteBuffer checks for case .ioData(.byteBuffer(bb)).
-        // We use the fact that HTTPClientResponsePart is wrapped differently than IOData.
-        //
-        // Implementation: NIOAny's _storage has cases .ioData and .other.
-        // HTTPClientResponsePart is wrapped as .other, IOData as .ioData.
-        // We check by comparing the debug description prefix.
+        // Guard: detect IOData before unwrapInboundIn fatalErrors.
+        // NIOAny.description = "ByteBuffer: ..." for IOData, "HTTPPart<...>: ..." for HTTP parts.
+        if data.description.hasPrefix("ByteBuffer") || data.description.hasPrefix("FileRegion") {
+            AxLogger.log("[ResponseRelay] absorbed IOData from decoder removal", level: .Warning)
+            return
+        }
+
         let part = unwrapInboundIn(data)
 
         switch part {

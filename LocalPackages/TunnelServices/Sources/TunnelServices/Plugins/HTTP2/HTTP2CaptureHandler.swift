@@ -750,25 +750,12 @@ final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandl
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        // Safe unwrap: H2 codec may forward IOData (e.g., after RST_STREAM or stream close).
-        // We check the NIOAny description cheaply — IOData descriptions start differently
-        // from HTTPClientResponsePart. Only do the check on the first few chars.
-        let raw = data
-        // NIOAny stores .ioData or .other internally. HTTP parts are .other.
-        // IOData.byteBuffer makes forceAsByteBuffer succeed, while HTTP parts don't.
-        // We use the trick: if tryAsByteBuffer succeeds, it's IOData, not HTTP.
-        // NIOAny.forceAsByteBuffer checks case .ioData(.byteBuffer(bb)).
-        // But we can't call that from here (it's on _NIOAny).
-        // Simplest reliable check: attempt to unwrap, catch fatalError... can't.
-        // Alternative: add the data to description once on first IOData encounter.
-        //
-        // PRAGMATIC FIX: Change InboundIn to HTTP2Frame.FramePayload to bypass
-        // the HTTP1 codec entirely. But that requires upstream pipeline changes.
-        //
-        // FOR NOW: use Mirror on NIOAny to detect IOData type.
-        let storageTypeName = String(describing: type(of: (Mirror(reflecting: raw).children.first?.value) ?? raw))
-        if storageTypeName.contains("IOData") || storageTypeName.contains("ioData") {
-            // IOData from H2 codec — absorb silently
+        // Guard: NIOAny.description uses type(of: asAny()) which returns:
+        //   "ByteBuffer: ..." for IOData.byteBuffer (raw bytes from decoder removal)
+        //   "HTTPPart<...>: ..." for HTTPClientResponsePart (normal response data)
+        // Check the prefix to detect IOData BEFORE calling unwrapInboundIn (which fatalErrors).
+        if data.description.hasPrefix("ByteBuffer") || data.description.hasPrefix("FileRegion") {
+            // IOData leaked from H2 codec (e.g., RST_STREAM, stream close, leftover frames)
             return
         }
 
