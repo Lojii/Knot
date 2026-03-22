@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../widgets/key_value_table.dart';
-import '../../widgets/json_viewer.dart';
+import '../../widgets/body_viewer.dart';
 import '../../theme/app_theme.dart';
 
 class FlowDetailPanel extends StatelessWidget {
@@ -108,15 +108,11 @@ class _BodyTab extends StatelessWidget {
           children: [
             const Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             const SizedBox(height: 4),
-            detailCtrl.requestBody.value.isNotEmpty
-                ? JsonViewer(jsonString: detailCtrl.requestBody.value)
-                : const Text('(empty)', style: TextStyle(color: Colors.grey, fontSize: 11)),
+            BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: ''),
             const SizedBox(height: 12),
             const Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             const SizedBox(height: 4),
-            detailCtrl.responseBody.value.isNotEmpty
-                ? JsonViewer(jsonString: detailCtrl.responseBody.value)
-                : const Text('(empty)', style: TextStyle(color: Colors.grey, fontSize: 11)),
+            BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: ''),
           ],
         ),
       );
