@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/live_controller.dart';
 import '../../widgets/connection_indicator.dart';
+import '../history/history_page.dart';
 
 class GlobalBar extends StatelessWidget {
   const GlobalBar({super.key});
@@ -48,7 +49,7 @@ class GlobalBar extends StatelessWidget {
               icon: const Icon(Icons.history, size: 18),
               tooltip: 'History',
               visualDensity: VisualDensity.compact,
-              onPressed: () {/* P2 */},
+              onPressed: () => Get.to(() => const HistoryPage()),
             ),
             // Protocol / TCP toggle
             IconButton(
