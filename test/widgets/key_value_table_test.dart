@@ -67,10 +67,11 @@ void main() {
         ('BoldKey', 'NormalValue'),
       ]));
 
-      final keyWidget = tester.widget<SelectableText>(
-        find.text('BoldKey'),
-      );
-      expect(keyWidget.style?.fontWeight, FontWeight.bold);
+      // Find all SelectableText widgets and check the one containing 'BoldKey'
+      final selectables = tester.widgetList<SelectableText>(find.byType(SelectableText));
+      final keyWidget = selectables.where((w) => w.data == 'BoldKey').firstOrNull;
+      expect(keyWidget, isNotNull);
+      expect(keyWidget!.style?.fontWeight, FontWeight.bold);
     });
   });
 }
