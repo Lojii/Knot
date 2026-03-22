@@ -131,35 +131,45 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             serverCh.pipeline.removeHandler(bridge, promise: nil)
 
             // === Transform OUTBOUND channel (proxy→real server, aka clientChannel) ===
-            // Pause reading, then chain all pipeline modifications as futures to
-            // guarantee ordering. Fire-and-forget operations caused race conditions
-            // where WS data arrived before the pipeline was fully reconfigured.
+            // Must pause autoRead to prevent server data arriving during pipeline swap.
             _ = clientChannel.setOption(ChannelOptions.autoRead, value: false)
 
-            // Chain: remove ResponseRelay → remove decompressor → remove requestEncoder
-            //      → add WS decoder → add WS encoder → add logger → add forwarder → resume
-            // We intentionally keep the HTTP response decoder to avoid IOData forwarding.
-            clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).responseRelay").flatMap { _ in
-                clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).decompressor")
-            }.flatMap { _ in
-                clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).requestEncoder")
-            }.flatMap { _ in
-                clientChannel.pipeline.addHandler(
-                    ByteToMessageHandler(WebSocketFrameDecoder()), name: "ws.server.decoder"
-                )
-            }.flatMap { _ in
-                clientChannel.pipeline.addHandler(WebSocketFrameEncoder(), name: "ws.server.encoder")
-            }.flatMap { _ in
-                clientChannel.pipeline.addHandler(serverLogger, name: "ws.server.logger")
-            }.flatMap { _ in
-                clientChannel.pipeline.addHandler(
-                    WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
-                    name: "ws.server.forwarder"
-                )
-            }.whenComplete { _ in
-                // Resume reading — WS pipeline is fully in place
-                _ = clientChannel.setOption(ChannelOptions.autoRead, value: true)
+            // Remove HTTP handlers — use regular removeHandler (not syncOperations)
+            // because clientChannel may be on a different EventLoop.
+            // Named handlers are removed fire-and-forget; leftover bytes from decoder
+            // removal are handled by the outbound pipeline's existing handlers or dropped.
+            for suffix in ["responseRelay", "decompressor", "responseDecoder", "requestEncoder"] {
+                clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).\(suffix)", promise: nil)
             }
+            // Also remove by type as fallback
+            func removeOutboundByType<T: RemovableChannelHandler>(_ type: T.Type) {
+                if let handler = try? clientChannel.pipeline.syncOperations.handler(type: type) {
+                    _ = clientChannel.pipeline.syncOperations.removeHandler(handler)
+                }
+            }
+            // For outbound: don't use removeByType for ByteToMessageHandler<HTTPResponseDecoder>
+            // as it may forward leftover bytes. Instead, keep the decoder — it won't receive
+            // HTTP data anymore (WS frames will arrive), and the WS decoder will be added after.
+            removeOutboundByType(HTTPRequestEncoder.self)
+            removeOutboundByType(NIOHTTPResponseDecompressor.self)
+
+            // Add WS handlers on the outbound channel
+            _ = clientChannel.pipeline.addHandler(
+                ByteToMessageHandler(WebSocketFrameDecoder()),
+                name: "ws.server.decoder"
+            )
+            _ = clientChannel.pipeline.addHandler(
+                WebSocketFrameEncoder(),
+                name: "ws.server.encoder"
+            )
+            _ = clientChannel.pipeline.addHandler(serverLogger, name: "ws.server.logger")
+            _ = clientChannel.pipeline.addHandler(
+                WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
+                name: "ws.server.forwarder"
+            )
+
+            // Resume reading — WS pipeline is now in place
+            _ = clientChannel.setOption(ChannelOptions.autoRead, value: true)
         }
     }
 
