@@ -32,7 +32,12 @@ public final class HTTP1Plugin: ProtocolPlugin {
         let isSSL = context.parentProtocol == "tls"
         let pipeline = context.channel.pipeline
 
-        return pipeline.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .forwardBytes)),
+        // Use .dropBytes: when ConnectHandler removes this decoder (to switch to
+        // raw TLS or MITM), any buffered bytes (e.g., pipelined TLS ClientHello from
+        // Chromium) are dropped instead of forwarded as IOData. This prevents a crash
+        // where IOData reaches HTTPCaptureHandler which expects HTTPServerRequestPart.
+        // The MITMHandler will receive the ClientHello via its own channelRead.
+        return pipeline.addHandler(ByteToMessageHandler(HTTPRequestDecoder(leftOverBytesStrategy: .dropBytes)),
                                    name: "http1.requestDecoder")
             .flatMap {
                 pipeline.addHandler(HTTPResponseEncoder(), name: "http1.responseEncoder")
@@ -45,6 +50,9 @@ public final class HTTP1Plugin: ProtocolPlugin {
                 // non-CONNECT requests pass through to HTTPCaptureHandler.
                 let connectHandler = ConnectHandler(task: context.task, recorder: context.recorder)
                 return pipeline.addHandler(connectHandler, name: "http1.connect")
+            }
+            .flatMap {
+                pipeline.addHandler(IODataGuardHandler(), name: "http1.ioguard")
             }
             .flatMap {
                 pipeline.addHandler(

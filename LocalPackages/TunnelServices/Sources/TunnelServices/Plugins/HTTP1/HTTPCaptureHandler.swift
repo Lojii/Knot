@@ -573,3 +573,24 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
         context.channel.close(mode: .all, promise: nil)
     }
 }
+
+// MARK: - IOData Guard
+
+/// Absorbs raw IOData that leaks through when HTTP codec handlers are removed
+/// from the pipeline (ByteToMessageHandler.leftOverBytesStrategy = .forwardBytes).
+/// Without this guard, HTTPCaptureHandler crashes with fatalError when it receives
+/// IOData instead of HTTPServerRequestPart.
+/// Place this handler immediately before HTTPCaptureHandler in the pipeline.
+public final class IODataGuardHandler: ChannelInboundHandler, RemovableChannelHandler {
+    public typealias InboundIn = NIOAny
+
+    public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        // Check if this is IOData (raw bytes) rather than HTTP parts.
+        let desc = String(describing: data)
+        if desc.contains("ioData") || desc.contains("IOData") {
+            AxLogger.log("[IODataGuard] absorbed leftover bytes from decoder removal", level: .Warning)
+            return
+        }
+        context.fireChannelRead(data)
+    }
+}

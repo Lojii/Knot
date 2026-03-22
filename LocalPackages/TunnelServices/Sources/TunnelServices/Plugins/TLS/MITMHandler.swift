@@ -154,27 +154,39 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
                     targetHost: capturedHost, targetPort: capturedPort
                 )
             default:
-                // HTTP/1.1 (default) — use NIO's configureHTTPServerPipeline() which
-                // adds requestDecoder + responseEncoder + pipeliningHandler atomically
-                // via syncOperations, then append the capture handler.
+                // HTTP/1.1 (default) — add all handlers synchronously via syncOperations
+                // to prevent ALPN unbuffering from racing with pipeline setup.
                 let pipeline = channel.pipeline
                 let captureHandler = HTTPCaptureHandler(recorder: capturedRecorder, isSSL: true, targetPort: capturedPort)
-                let future = pipeline.configureHTTPServerPipeline(withPipeliningAssistance: true).flatMap {
-                    pipeline.addHandler(captureHandler, name: "mitm.http.capture")
+                do {
+                    try pipeline.syncOperations.configureHTTPServerPipeline(withPipeliningAssistance: true)
+                    // Add IOData guard before capture handler — catches raw bytes
+                    // that leak through when HTTP decoder is removed (leftOverBytesStrategy).
+                    try pipeline.syncOperations.addHandler(IODataGuardHandler(), name: "mitm.http.ioguard")
+                    try pipeline.syncOperations.addHandler(captureHandler, name: "mitm.http.capture")
+                    return channel.eventLoop.makeSucceededVoidFuture()
+                } catch {
+                    return channel.eventLoop.makeFailedFuture(error)
                 }
-                return future
             }
         }
 
-        // Add handlers: SSL → ALPN → (HTTP pipeline added after handshake)
-        _ = context.pipeline.addHandler(sslHandler, name: "mitm.ssl", position: .last)
-        _ = context.pipeline.addHandler(alpnHandler, name: "mitm.alpn")
+        // Add handlers synchronously: SSL → ALPN → (HTTP pipeline added after handshake)
+        // Must use syncOperations to ensure handlers are in place before fireChannelRead.
+        do {
+            try context.pipeline.syncOperations.addHandler(sslHandler, name: "mitm.ssl", position: .last)
+            try context.pipeline.syncOperations.addHandler(alpnHandler, name: "mitm.alpn")
+        } catch {
+            AxLogger.log("[MITM] Failed to add SSL/ALPN handlers: \(error)", level: .Error)
+            context.channel.close(mode: .all, promise: nil)
+            return
+        }
 
         // Forward the ClientHello data to the SSL handler
         context.fireChannelRead(wrapInboundOut(buffer))
 
         // Remove ourselves
-        _ = context.pipeline.removeHandler(name: "mitm")
+        context.pipeline.syncOperations.removeHandler(self, promise: nil)
     }
 
     /// Fallback: when MITM can't proceed (no certs), switch to tunnel passthrough.

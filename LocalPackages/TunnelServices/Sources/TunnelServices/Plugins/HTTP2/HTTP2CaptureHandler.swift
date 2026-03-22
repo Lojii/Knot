@@ -95,12 +95,18 @@ public enum HTTP2CaptureBuilder {
         serverConn.clientMultiplexer = clientMultiplexer
         serverConn.clientH2Channel = channel
 
-        // Set up client-side H2 pipeline
-        let pipelineFuture = pipeline.addHandler(
-            NIOHTTP2Handler(mode: .server),
-            name: "h2.handler"
-        ).flatMap {
-            pipeline.addHandler(clientMultiplexer, name: "h2.multiplexer")
+        // Set up client-side H2 pipeline — use syncOperations to prevent
+        // ALPN unbuffering from racing with handler installation.
+        let pipelineFuture: EventLoopFuture<Void>
+        do {
+            try pipeline.syncOperations.addHandler(
+                NIOHTTP2Handler(mode: .server),
+                name: "h2.handler"
+            )
+            try pipeline.syncOperations.addHandler(clientMultiplexer, name: "h2.multiplexer")
+            pipelineFuture = eventLoop.makeSucceededVoidFuture()
+        } catch {
+            pipelineFuture = eventLoop.makeFailedFuture(error)
         }
 
         // Initiate server H2 connection in parallel

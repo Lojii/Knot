@@ -78,33 +78,21 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         context.write(wrapOutboundOut(.head(response)), promise: nil)
         context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
 
-        // Remove all HTTP handlers from pipeline (we're switching to raw bytes or TLS)
-        // Use syncOperations for reliable synchronous removal
+        // Switch pipeline from HTTP to raw bytes (for TLS or tunnel).
+        //
+        // STRATEGY: Add the next handler (MITM or Dispatcher) FIRST, then remove
+        // HTTP handlers. When ByteToMessageHandler<HTTPRequestDecoder> is removed,
+        // its leftOverBytesStrategy (.forwardBytes) forwards any buffered bytes
+        // (e.g., pipelined TLS ClientHello from Chromium) as IOData. These bytes
+        // must reach the newly-added handler (MITMHandler / ProtocolDispatcher),
+        // NOT the old HTTPCaptureHandler.
+        //
+        // Order:
+        // 1. Decide MITM or Tunnel
+        // 2. Add next handler at .first position
+        // 3. Remove all old HTTP handlers (leftover bytes flow to new handler)
+
         let pipeline = context.pipeline
-        let handlerNames = [
-            "http1.requestDecoder", "http1.responseEncoder", "http1.pipelining",
-            "http1.captureHandler",
-            "https.requestDecoder", "https.responseEncoder", "https.pipelining",
-            "https.captureHandler",
-            "dispatcher"
-        ]
-        var removedHandlers = [String]()
-        for name in handlerNames {
-            if let ctx = try? pipeline.syncOperations.context(name: name) {
-                pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
-                removedHandlers.append(name)
-            }
-        }
-        AxLogger.log("[CONNECT] removed handlers: \(removedHandlers.joined(separator: ", "))", level: .Warning)
-
-        // Also remove http1.connect (ourselves) by name, since context may be stale
-        // after removing other handlers
-        context.pipeline.removeHandler(context: context, promise: nil)
-        AxLogger.log("[CONNECT] removed self from pipeline", level: .Warning)
-
-        // Decision: intercept TLS or tunnel raw bytes?
-        // MITM only if CA is trusted AND host not in fallback list.
-        // Future: rule engine will also control per-host interception.
         let caTrusted = task.isCACertTrusted
         let mitmFailed = task.mitmFailedHosts.shouldTunnel(request.host)
         let shouldIntercept = caTrusted && !mitmFailed
@@ -117,28 +105,41 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
             AxLogger.log("[CONNECT] \(request.host):\(request.port) → MITM", level: .Warning)
         }
 
+        // Step 1: Add the NEXT handler at .first so it receives leftover bytes
         if shouldIntercept {
-            // Add MITMHandler for TLS interception (handled by TLSPlugin in the tree)
             let mitmHandler = MITMHandler(
-                task: task,
-                recorder: recorder,
-                host: request.host,
-                port: request.port
+                task: task, recorder: recorder,
+                host: request.host, port: request.port
             )
-            _ = context.pipeline.addHandler(mitmHandler, name: "mitm", position: .first)
+            try? pipeline.syncOperations.addHandler(mitmHandler, name: "mitm", position: .first)
         } else {
-            // Re-detect inner protocol via ProtocolDispatcher.
-            // Pass the CONNECT target as metadata so TLSPlugin knows the
-            // destination even if SNI extraction fails.
-            AxLogger.log("[CONNECT] Tunnel path: adding ProtocolDispatcher with innerHost=\(request.host) innerPort=\(request.port)", level: .Warning)
             let tcpChildren = ProtocolRegistry.shared.tcpChildren
             let dispatcher = ProtocolDispatcher(
                 task: task, nodes: tcpChildren, recorder: recorder,
                 metadata: ProtocolMetadata(innerHost: request.host, innerPort: request.port)
             )
-            _ = context.pipeline.addHandler(dispatcher, name: "dispatcher")
-            AxLogger.log("[CONNECT] ProtocolDispatcher added, waiting for client data", level: .Warning)
+            try? pipeline.syncOperations.addHandler(dispatcher, name: "dispatcher.tunnel", position: .first)
         }
+
+        // Step 2: Remove all old HTTP handlers. Leftover bytes from decoder removal
+        // flow to the newly-added handler at .first position.
+        let handlerNames = [
+            "http1.captureHandler", "https.captureHandler",
+            "http1.ioguard", "https.ioguard",
+            "http1.connect", "https.connect",
+            "dispatcher",
+            "http1.pipelining", "https.pipelining",
+            "http1.responseEncoder", "https.responseEncoder",
+            "http1.requestDecoder", "https.requestDecoder",
+        ]
+        for name in handlerNames {
+            if let ctx = try? pipeline.syncOperations.context(name: name) {
+                pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
+            }
+        }
+
+        // Step 3: Remove ourselves (ConnectHandler)
+        context.pipeline.syncOperations.removeHandler(self, promise: nil)
     }
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
