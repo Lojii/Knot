@@ -70,3 +70,12 @@ node_modules/
 *.iml
 .metadata
 .idea/
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
