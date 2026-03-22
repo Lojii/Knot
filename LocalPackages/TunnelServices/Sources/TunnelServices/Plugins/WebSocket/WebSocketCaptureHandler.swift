@@ -131,9 +131,21 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             serverCh.pipeline.removeHandler(bridge, promise: nil)
 
             // === Transform OUTBOUND channel (proxy→real server, aka clientChannel) ===
-            // Do this after inbound is ready so the outbound forwarder can safely
-            // write to the inbound channel.
+            // Add a temporary ByteBuffer sink at the END of the outbound pipeline.
+            // When removeHTTPHandlersSynchronously removes ByteToMessageHandler<HTTPResponseDecoder>,
+            // leftover bytes are forwarded as IOData. The sink absorbs them, preventing
+            // fatalError in ResponseRelayHandler (which expects HTTPClientResponsePart).
+            // Add sink synchronously to ensure it's in pipeline before decoder removal
+            let outboundSink = WebSocketUpgradeBridge(
+                clientChannel: clientChannel, serverCh: serverCh,
+                clientLogger: serverLogger, direction: .serverToClient
+            )
+            try? clientChannel.pipeline.syncOperations.addHandler(outboundSink, name: "ws.outbound.sink")
+
             self.removeHTTPHandlersSynchronously(from: clientChannel.pipeline, prefix: outboundPrefix)
+
+            // Remove the sink synchronously after HTTP handlers are gone
+            try? clientChannel.pipeline.syncOperations.removeHandler(outboundSink)
 
             _ = clientChannel.pipeline.addHandler(
                 ByteToMessageHandler(WebSocketFrameDecoder()),
@@ -176,7 +188,11 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
                        "responseEncoder", "requestDecoder",
                        "responseDecoder", "requestEncoder"] {
             let name = "\(prefix).\(suffix)"
-            pipeline.removeHandler(name: name, promise: nil)
+            // Use syncOperations for synchronous removal — ensures handler is gone
+            // before the next removeByType call potentially forwards leftover bytes.
+            if let ctx = try? pipeline.syncOperations.context(name: name) {
+                pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
+            }
         }
 
         // Also remove HTTP handlers by type (covers unnamed handlers).

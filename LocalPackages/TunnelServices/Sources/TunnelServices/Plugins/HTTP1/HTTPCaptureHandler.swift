@@ -457,6 +457,7 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        fputs("[ResponseRelay-ENTER] channelRead\n", stderr)
         let part = unwrapInboundIn(data)
 
         switch part {
