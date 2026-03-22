@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'flow_table.dart';
 import 'flow_detail_panel.dart';
+import 'waterfall_tab.dart';
+import 'dashboard_tab.dart';
 
 class ContentPanel extends StatefulWidget {
   const ContentPanel({super.key});
@@ -67,10 +69,10 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
                   ),
                 ],
               ),
-              // Waterfall tab (P2 placeholder)
-              const Center(child: Text('Waterfall -- coming in P2')),
-              // Dashboard tab (P2 placeholder)
-              const Center(child: Text('Dashboard -- coming in P2')),
+              // Waterfall tab
+              const WaterfallTab(),
+              // Dashboard tab
+              const DashboardTab(),
             ],
           ),
         ),
