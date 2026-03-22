@@ -26,6 +26,8 @@ let package = Package(
         .package(path: "../SwiftLsquic"),
         // Local Storage package
         .package(path: "../KnotStorage"),
+        // Local Web Service package
+        .package(path: "../KnotWebService"),
     ],
     targets: [
         .systemLibrary(
@@ -67,6 +69,8 @@ let package = Package(
                 .product(name: "SwiftLsquic", package: "SwiftLsquic"),
                 // Storage
                 .product(name: "KnotStorage", package: "KnotStorage"),
+                // Web Service
+                .product(name: "KnotWebService", package: "KnotWebService"),
                 // System
                 "Czlib",
             ],
@@ -79,6 +83,7 @@ let package = Package(
             dependencies: [
                 "TunnelServices",
                 .product(name: "KnotStorage", package: "KnotStorage"),
+                .product(name: "KnotWebService", package: "KnotWebService"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
                 .product(name: "SwiftQuiche", package: "SwiftQuiche"),
             ],

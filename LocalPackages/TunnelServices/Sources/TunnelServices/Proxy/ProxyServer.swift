@@ -8,6 +8,7 @@
 
 import Foundation
 import NIO
+import KnotWebService
 
 public class ProxyServer {
 
@@ -16,7 +17,9 @@ public class ProxyServer {
     private(set) var localChannel: Channel?
     private var wifiChannel: Channel?
     private(set) var udpChannel: Channel?
-    private var dashboardServer: DashboardServer?
+    private var webServer: KnotWebServer?
+    private var liveBridge: ProxyLiveBridge?
+    private var metricsTask: RepeatedTask?
 
     /// Whether the server has been intentionally stopped (vs. unexpected crash).
     private var intentionallyStopped = false
@@ -52,16 +55,47 @@ public class ProxyServer {
 
         if task.localEnable == 1 {
             DispatchQueue.global().async {
-                // Start real-time dashboard server (if enabled)
+                // Start real-time web server (if dashboard enabled)
                 if ProxyConfig.Dashboard.enabled {
-                    let dashboard = DashboardServer(group: self.workerGroup)
+                    let webServer = KnotWebServer(
+                        preferredPort: ProxyConfig.Dashboard.port,
+                        eventLoopGroup: self.workerGroup
+                    )
                     do {
-                        try dashboard.start(port: ProxyConfig.Dashboard.port, task: task)
-                        self.dashboardServer = dashboard
-                        task.dashboardServer = dashboard
-                        AxLogger.log("[ProxyServer] Dashboard: http://127.0.0.1:\(ProxyConfig.Dashboard.port)", level: .Info)
+                        let port = try webServer.start()
+                        self.webServer = webServer
+                        let bridge = ProxyLiveBridge()
+                        webServer.attachLiveBridge(bridge)
+                        self.liveBridge = bridge
+                        task.liveBridge = bridge
+                        AxLogger.log("[ProxyServer] Dashboard: http://127.0.0.1:\(port)", level: .Info)
+
+                        // Start periodic metrics push on a worker event loop
+                        let startTime = Date().timeIntervalSince1970
+                        let intervalMs = ProxyConfig.Dashboard.metricsIntervalMs
+                        let el = self.workerGroup.next()
+                        self.metricsTask = el.scheduleRepeatedTask(
+                            initialDelay: .milliseconds(Int64(intervalMs)),
+                            delay: .milliseconds(Int64(intervalMs))
+                        ) { [weak self, weak task] _ in
+                            guard let self = self, let bridge = self.liveBridge, let task = task else { return }
+                            DispatchQueue.global().async {
+                                let metrics = MetricsCollector.collect(task: task, startTime: startTime)
+                                let data: [String: Any] = [
+                                    "memory": ["rss_mb": metrics.rssMB, "rss_bytes": metrics.rssBytes],
+                                    "cpu": ["usage_percent": metrics.cpuPercent, "thread_count": metrics.threadCount],
+                                    "connections": [
+                                        "pool_total": metrics.poolTotal,
+                                        "pool_breakdown": metrics.poolBreakdown.map { ["key": $0.key, "count": $0.count] },
+                                        "mitm_failed_hosts": metrics.mitmFailedHosts
+                                    ],
+                                    "totals": ["uptime_s": metrics.uptimeSeconds]
+                                ]
+                                bridge.onMetrics?(data)
+                            }
+                        }
                     } catch {
-                        AxLogger.log("[ProxyServer] Dashboard failed: \(error)", level: .Error)
+                        AxLogger.log("[ProxyServer] WebServer failed: \(error)", level: .Error)
                     }
                 }
 
@@ -224,8 +258,11 @@ public class ProxyServer {
     public func stop(completionHandler: (() -> Void)? = nil) {
         intentionallyStopped = true
 
-        dashboardServer?.stop()
-        dashboardServer = nil
+        metricsTask?.cancel()
+        metricsTask = nil
+        webServer?.stop()
+        webServer = nil
+        liveBridge = nil
 
         udpChannel?.close(mode: .all, promise: nil)
         udpChannel = nil

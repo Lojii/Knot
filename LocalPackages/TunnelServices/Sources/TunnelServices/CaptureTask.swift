@@ -11,18 +11,12 @@ import NIO
 import NIOConcurrencyHelpers
 import CocoaAsyncSocket
 import KnotStorage
+import KnotWebService
 import SQLite
 
 public let TaskDidChangedNotification = AppNotification.taskDidChanged
 public let TaskValueDidChanged = AppNotification.taskValueDidChanged
 public let TaskConfigDidChanged = AppNotification.taskConfigDidChanged
-
-/// Protocol for dashboard push interface.
-/// Implemented by DashboardServer (Task 2) to receive real-time flow data.
-public protocol DashboardPushable: AnyObject {
-    var hasClients: Bool { get }
-    func pushFlow(_ flowData: [String: Any])
-}
 
 public class CaptureTask: NSObject {
 
@@ -86,9 +80,8 @@ public class CaptureTask: NSObject {
     /// When false, all HTTPS connections use tunnel passthrough (no MITM attempt).
     public var isCACertTrusted: Bool = false
 
-    /// Dashboard server for real-time push (set by ProxyServer).
-    /// Weak reference — ProxyServer owns the DashboardServer.
-    public weak var dashboardServer: DashboardPushable?
+    /// Live bridge for real-time push to the web dashboard (set by ProxyServer).
+    public var liveBridge: ProxyLiveBridge?
 }
 
 // MARK: - MITM Failed Host Tracker
