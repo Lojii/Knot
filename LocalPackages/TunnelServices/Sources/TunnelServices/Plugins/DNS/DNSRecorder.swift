@@ -1,4 +1,5 @@
 import Foundation
+import KnotStorage
 
 public enum DNSTransport: String {
     case udp = "udp"
@@ -58,7 +59,7 @@ public class DNSRecorder: ProtocolRecorder {
         self.endedAt = Date().timeIntervalSince1970
     }
 
-    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
+    public func buildFlowRecord(context: FlowBuildContext) -> FlowRecord {
         let firstAnswer = (answers.first?["data"] as? String) ?? ""
         let summaryAnswer = firstAnswer.isEmpty
             ? responseCode

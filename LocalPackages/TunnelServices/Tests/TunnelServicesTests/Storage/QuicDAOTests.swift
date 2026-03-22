@@ -1,4 +1,5 @@
 import XCTest
+import KnotStorage
 import SQLite
 @testable import TunnelServices
 

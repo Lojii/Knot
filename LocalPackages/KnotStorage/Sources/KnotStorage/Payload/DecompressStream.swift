@@ -113,7 +113,7 @@ public func makeDecompressStream(encoding: String) throws -> DecompressStream {
 
 extension Data {
     /// Compress using zlib (COMPRESSION_ZLIB) for testing
-    func compressed() throws -> Data {
+    public func compressed() throws -> Data {
         let bufferSize = 65536
         let outputBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
         defer { outputBuffer.deallocate() }

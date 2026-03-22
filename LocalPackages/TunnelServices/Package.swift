@@ -24,6 +24,8 @@ let package = Package(
         // Local QUIC packages
         .package(path: "../SwiftQuiche"),
         .package(path: "../SwiftLsquic"),
+        // Local Storage package
+        .package(path: "../KnotStorage"),
     ],
     targets: [
         .systemLibrary(
@@ -63,6 +65,8 @@ let package = Package(
                 // QUIC (all platforms)
                 .product(name: "SwiftQuiche", package: "SwiftQuiche"),
                 .product(name: "SwiftLsquic", package: "SwiftLsquic"),
+                // Storage
+                .product(name: "KnotStorage", package: "KnotStorage"),
                 // System
                 "Czlib",
             ],
@@ -74,6 +78,7 @@ let package = Package(
             name: "TunnelServicesTests",
             dependencies: [
                 "TunnelServices",
+                .product(name: "KnotStorage", package: "KnotStorage"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
                 .product(name: "SwiftQuiche", package: "SwiftQuiche"),
             ],

@@ -1,4 +1,5 @@
 import XCTest
+import KnotStorage
 import NIOCore
 import NIOPosix
 import SQLite
@@ -49,8 +50,6 @@ final class DecodeSchedulerTests: XCTestCase {
         let mgr = DatabaseManager(rootPath: helper.tempDir)
         let group = try mgr.openTask(2)
         let scheduler = DecodeScheduler(dbGroup: group, rootPath: helper.tempDir)
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { try? elg.syncShutdownGracefully() }
 
         // Setup flow and raw payload
         var record = FlowRecord(flowId: "sync_0001", protocolName: "HTTP", host: "test.com", port: 80, startedAt: 1000)
@@ -59,11 +58,18 @@ final class DecodeSchedulerTests: XCTestCase {
         let rawDir = "\(helper.tempDir)/tasks/2/payloads/raw"
         try Data("sync payload".utf8).write(to: URL(fileURLWithPath: "\(rawDir)/sync_0001_rsp.bin"))
 
-        // Sync decode via EventLoopFuture
-        let future = scheduler.decodeSynchronously(flowId: "sync_0001", eventLoop: elg.next())
-        let result = try future.wait()
-        XCTAssertNotNil(result.response)
-        XCTAssertEqual(result.response?.searchText, "sync payload")
+        // Sync decode via completion callback
+        let expectation = expectation(description: "decode")
+        var decodeResult: DecodedPayload?
+        scheduler.decodeSynchronously(flowId: "sync_0001") { result in
+            if case .success(let payload) = result {
+                decodeResult = payload
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 5.0)
+        XCTAssertNotNil(decodeResult?.response)
+        XCTAssertEqual(decodeResult?.response?.searchText, "sync payload")
 
         mgr.closeTask(2)
     }
@@ -108,14 +114,19 @@ final class DecodeSchedulerTests: XCTestCase {
         let mgr = DatabaseManager(rootPath: helper.tempDir)
         let group = try mgr.openTask(4)
         let scheduler = DecodeScheduler(dbGroup: group, rootPath: helper.tempDir)
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { try? elg.syncShutdownGracefully() }
 
         // Decode a non-existent flowId — should succeed with empty DecodedPayload
-        let future = scheduler.decodeSynchronously(flowId: "nonexistent_flow", eventLoop: elg.next())
-        let result = try future.wait()
-        XCTAssertNil(result.request)
-        XCTAssertNil(result.response)
+        let expectation = expectation(description: "decode not found")
+        var decodeResult: DecodedPayload?
+        scheduler.decodeSynchronously(flowId: "nonexistent_flow") { result in
+            if case .success(let payload) = result {
+                decodeResult = payload
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 5.0)
+        XCTAssertNil(decodeResult?.request)
+        XCTAssertNil(decodeResult?.response)
 
         mgr.closeTask(4)
     }

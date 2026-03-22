@@ -1,4 +1,5 @@
 import Foundation
+import KnotStorage
 
 /// WebSocket protocol recorder. Captures WS/WSS frames in real-time and
 /// produces a FlowRecord with WebSocket-specific search keys.
@@ -181,7 +182,7 @@ public class WebSocketRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
+    public func buildFlowRecord(context: FlowBuildContext) -> FlowRecord {
         let protocolName = isSecure ? "WSS" : "WS"
         var record = FlowRecord(flowId: flowId, protocolName: protocolName, host: host,
                                 port: port, startedAt: startedAt)

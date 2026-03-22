@@ -11,6 +11,7 @@ import NIO
 import NIOSSL
 import X509
 import _CryptoExtras
+import KnotStorage
 @testable import TunnelServices
 
 final class TestProxyLauncher {
@@ -137,7 +138,7 @@ final class TestProxyLauncher {
         // Register in the shared catalog so SessionRecorder can find it
         // The shared DatabaseManager falls back to in-memory when app group is unavailable
         let catalogDB = DatabaseManager.shared.catalogDB
-        let rowId = try CatalogDAO.insertFullTask(db: catalogDB, task: task)
+        let rowId = try CatalogDAO.insertFullTask(db: catalogDB, task: task.toCaptureTaskRecord())
         task.id = rowId
         self.task = task
 

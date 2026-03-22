@@ -10,6 +10,7 @@ import Foundation
 import NIOHTTP1
 import NIO
 import NIOSSL
+import KnotStorage
 
 // MARK: - Protocol Metadata Types
 
@@ -195,8 +196,9 @@ public class SessionRecorder {
     public func recordRequestBody(_ buffer: ByteBuffer) {
         guard !session.ignore else { return }
 
-        // Write request body to new payload writer
-        try? reqPayloadWriter?.append(buffer)
+        // Write request body to new payload writer (convert ByteBuffer → Data)
+        let data = Data(buffer.readableBytesView)
+        try? reqPayloadWriter?.append(data)
         httpRecorder?.addUpload(bytes: Int64(buffer.readableBytes))
     }
 
@@ -297,8 +299,9 @@ public class SessionRecorder {
     public func recordResponseBody(_ buffer: ByteBuffer) {
         guard !session.ignore else { return }
 
-        // Write response body to new payload writer
-        try? rspPayloadWriter?.append(buffer)
+        // Write response body to new payload writer (convert ByteBuffer → Data)
+        let data = Data(buffer.readableBytesView)
+        try? rspPayloadWriter?.append(data)
         httpRecorder?.addDownload(bytes: Int64(buffer.readableBytes))
     }
 
@@ -475,27 +478,65 @@ public class SessionRecorder {
             let fid = flowId
             let tid = taskId
             // Capture all state needed by the async block before it runs.
-            // SessionRecorder fields are read here (on EventLoop), written in async.
-            // Use strong self capture to ensure the SessionRecorder stays alive
-            // until the FlowRecord is written — its proto_flags, certChainRef, etc.
-            // are needed by buildFlowRecord.
             let certChainRef = _certChainRef
+            // Snapshot protocol metadata for FlowBuildContext
+            let snapshotProtoFlags = _protoFlags.rawValue
+            let snapshotConnReuse = _connReuse.rawValue
+            let snapshotPushStatus = _pushStatus?.rawValue
+            let snapshotCertChainRef = _certChainRef
+            let snapshotCertChainSummary = _certChainSummary
+            let snapshotConnReusePoolKey = _connReusePoolKey
+            let snapshotKeepAliveRequestIndex = _keepAliveRequestIndex
+            let snapshotH2StreamId = _h2StreamId
+            let snapshotUploadBytes = _uploadBytes
+            let snapshotDownloadBytes = _downloadBytes
 
             group.protoWriteQueue.async { [self] in
                 // Write cert chain PEM if buffered certs exist and not already done
+                var finalCertRef = certChainRef
                 if certChainRef == nil, let certs = bufferedCerts, let fid = fid, tid > 0 {
                     let taskDir = PathManager.taskDirectory(tid)
                     let certService = CertExportService(fileFolder: taskDir)
                     do {
-                        let (ref, summary) = try certService.saveCertChain(flowId: fid, certificates: certs)
+                        let (ref, summary) = try CertExportNIOBridge.saveCertChain(
+                            certService: certService, flowId: fid, certificates: certs)
                         self._certChainRef = ref
                         self._certChainSummary = summary
+                        finalCertRef = ref
                     } catch {
                         NSLog("[SessionRecorder] cert chain save failed: \(error)")
                     }
                 }
-                // Now build and insert the FlowRecord (picks up certChainRef/Summary)
-                let flowRecord = recorder.buildFlowRecord(sessionRecorder: self)
+
+                // Build FlowBuildContext from captured state
+                let context = FlowBuildContext(
+                    flowId: fid ?? "",
+                    reqPayloadRef: self.reqPayloadWriter?.filePath ?? "",
+                    rspPayloadRef: self.rspPayloadWriter?.filePath ?? "",
+                    uploadBytes: snapshotUploadBytes,
+                    downloadBytes: snapshotDownloadBytes,
+                    protoFlags: snapshotProtoFlags,
+                    connReuse: snapshotConnReuse,
+                    certChainRef: finalCertRef
+                )
+
+                var flowRecord = recorder.buildFlowRecord(context: context)
+
+                // Merge extra metadata not carried by FlowBuildContext
+                flowRecord.pushStatus = snapshotPushStatus
+                if let poolKey = snapshotConnReusePoolKey {
+                    flowRecord.metadata["connReusePoolKey"] = poolKey
+                }
+                if snapshotKeepAliveRequestIndex > 0 {
+                    flowRecord.metadata["keepAliveRequestIndex"] = snapshotKeepAliveRequestIndex
+                }
+                if let streamId = snapshotH2StreamId {
+                    flowRecord.metadata["h2StreamId"] = streamId
+                }
+                if let summary = snapshotCertChainSummary {
+                    flowRecord.metadata["certChainSummary"] = summary
+                }
+
                 try? FlowDAO.insert(db: group.proto, record: flowRecord)
             }
         }

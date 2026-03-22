@@ -3,6 +3,7 @@ import NIO
 import NIOHTTP1
 import NIOHTTPCompression
 import NIOExtras
+import KnotStorage
 
 /// Plugin that identifies and handles HTTP/1.x traffic.
 /// Matches plain-text HTTP request lines (GET, POST, etc.) and builds the

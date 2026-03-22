@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import KnotStorage
 import NIO
 
 // MARK: - PCAP File Writer

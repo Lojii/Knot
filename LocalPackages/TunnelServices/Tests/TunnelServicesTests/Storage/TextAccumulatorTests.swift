@@ -1,4 +1,5 @@
 import XCTest
+import KnotStorage
 @testable import TunnelServices
 
 final class TextAccumulatorTests: XCTestCase {

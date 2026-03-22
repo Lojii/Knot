@@ -1,4 +1,5 @@
 import Foundation
+import KnotStorage
 
 /// gRPC protocol recorder. Captures gRPC messages (unary and streaming) in real-time
 /// and produces a FlowRecord with gRPC-specific search keys.
@@ -132,7 +133,7 @@ public class GRPCRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
+    public func buildFlowRecord(context: FlowBuildContext) -> FlowRecord {
         var record = FlowRecord(flowId: flowId, protocolName: Self.protocolName,
                                 host: host, port: port, startedAt: startedAt)
 

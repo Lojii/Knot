@@ -1,4 +1,5 @@
 import Foundation
+import KnotStorage
 import SQLite
 @testable import TunnelServices
 

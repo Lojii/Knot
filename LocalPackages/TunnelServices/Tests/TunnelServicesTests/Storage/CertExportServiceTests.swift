@@ -4,6 +4,7 @@
 //
 
 import XCTest
+import KnotStorage
 @testable import TunnelServices
 
 final class CertExportServiceTests: XCTestCase {

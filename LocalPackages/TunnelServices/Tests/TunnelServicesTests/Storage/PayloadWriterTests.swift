@@ -1,4 +1,5 @@
 import XCTest
+import KnotStorage
 import NIOCore
 @testable import TunnelServices
 
@@ -58,7 +59,7 @@ final class PayloadWriterTests: XCTestCase {
         let writer = try PayloadWriter(directory: helper.tempDir, fileName: "nio.bin")
         var buf = ByteBufferAllocator().buffer(capacity: 256)
         buf.writeBytes([0x48, 0x65, 0x6C, 0x6C, 0x6F]) // "Hello"
-        try writer.append(buf)
+        try writer.append(Data(buf.readableBytesView))
         try writer.close()
         let data = try Data(contentsOf: URL(fileURLWithPath: "\(helper.tempDir)/nio.bin"))
         XCTAssertEqual(String(data: data, encoding: .utf8), "Hello")

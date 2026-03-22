@@ -1,5 +1,6 @@
 import Foundation
 import NIO
+import KnotStorage
 
 // MARK: - ProtocolRegistry
 

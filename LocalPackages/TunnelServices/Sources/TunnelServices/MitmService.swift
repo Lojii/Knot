@@ -9,6 +9,7 @@
 import Foundation
 import NIO
 import NIOHTTP1
+import KnotStorage
 
 
 public let StartInExtension = true
@@ -100,6 +101,10 @@ public class MitmService: NSObject {
     }
     
     public static func prepare() -> MitmService? {
+        // Set storage root path before initializing DatabaseManager
+        if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: GROUPNAME) {
+            DatabaseManager.rootPath = groupURL.path
+        }
         // Initialize storage layer (catalog.db + per-task databases)
         _ = DatabaseManager.shared
         // 日志记录

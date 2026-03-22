@@ -1,5 +1,6 @@
 import XCTest
 import NIO
+import KnotStorage
 @testable import TunnelServices
 
 // MARK: - StubPlugin

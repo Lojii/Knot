@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import KnotStorage
 import Foundation
 import NIOCore
 import NIOPosix

@@ -1,5 +1,6 @@
 import Foundation
 import NIO
+import KnotStorage
 
 /// Plugin that identifies and handles HTTP/2 traffic.
 /// HTTP/2 is detected via ALPN negotiation (alpnResult == "h2"), not byte inspection.

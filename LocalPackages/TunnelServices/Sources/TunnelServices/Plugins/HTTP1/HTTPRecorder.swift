@@ -1,4 +1,5 @@
 import Foundation
+import KnotStorage
 
 /// HTTP protocol recorder. Captures HTTP/1.x request/response metadata
 /// and produces a FlowRecord with HTTP-specific search keys.
@@ -98,7 +99,7 @@ public class HTTPRecorder: ProtocolRecorder {
 
     // MARK: - ProtocolRecorder
 
-    public func buildFlowRecord(sessionRecorder: SessionRecorder? = nil) -> FlowRecord {
+    public func buildFlowRecord(context: FlowBuildContext) -> FlowRecord {
         let effectiveHost = _hostOverride ?? host
         var record = FlowRecord(flowId: flowId, protocolName: protocolOverride ?? Self.protocolName, host: effectiveHost, port: port, startedAt: startedAt)
 
@@ -146,13 +147,40 @@ public class HTTPRecorder: ProtocolRecorder {
         record.reqPayloadRef = reqPayloadRef
         record.rspPayloadRef = rspPayloadRef
 
-        // Merge protocol metadata from SessionRecorder
-        if let sr = sessionRecorder {
-            record.connReuse = sr.connReuse
-            record.protoFlags = sr.protoFlags
-            record.pushStatus = sr.pushStatus
-            record.certChainRef = sr.certChainRef
+        // Merge protocol metadata from FlowBuildContext
+        record.connReuse = context.connReuse
+        record.protoFlags = context.protoFlags
+        record.certChainRef = context.certChainRef
 
+        return record
+    }
+
+    /// Backward-compatible overload for callers that don't have a FlowBuildContext.
+    public func buildFlowRecordLegacy(sessionRecorder: SessionRecorder?) -> FlowRecord {
+        var ctx = FlowBuildContext(
+            flowId: flowId,
+            reqPayloadRef: reqPayloadRef,
+            rspPayloadRef: rspPayloadRef,
+            uploadBytes: uploadBytes,
+            downloadBytes: downloadBytes
+        )
+        if let sr = sessionRecorder {
+            ctx = FlowBuildContext(
+                flowId: flowId,
+                reqPayloadRef: reqPayloadRef,
+                rspPayloadRef: rspPayloadRef,
+                uploadBytes: uploadBytes,
+                downloadBytes: downloadBytes,
+                protoFlags: sr.protoFlags,
+                connReuse: sr.connReuse,
+                certChainRef: sr.certChainRef
+            )
+        }
+        var record = buildFlowRecord(context: ctx)
+
+        // Merge extra SessionRecorder metadata that FlowBuildContext doesn't carry
+        if let sr = sessionRecorder {
+            record.pushStatus = sr.pushStatus
             if let poolKey = sr.connReusePoolKey {
                 record.metadata["connReusePoolKey"] = poolKey
             }

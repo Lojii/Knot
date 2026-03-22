@@ -1,4 +1,5 @@
 import XCTest
+import KnotStorage
 import NIOCore
 @testable import TunnelServices
 

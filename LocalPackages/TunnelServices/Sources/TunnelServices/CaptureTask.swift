@@ -10,6 +10,7 @@ import Foundation
 import NIO
 import NIOConcurrencyHelpers
 import CocoaAsyncSocket
+import KnotStorage
 import SQLite
 
 public let TaskDidChangedNotification = AppNotification.taskDidChanged
@@ -136,19 +137,45 @@ public final class MITMFailedHostTracker {
 
 extension CaptureTask {
 
+    // MARK: - CaptureTaskRecord Conversion
+
+    /// Convert CaptureTask to CaptureTaskRecord for KnotStorage DAO.
+    public func toCaptureTaskRecord() -> CaptureTaskRecord {
+        var r = CaptureTaskRecord()
+        r.id = id
+        r.name = ruleName
+        r.createdAt = creatTime ?? Date().timeIntervalSince1970
+        r.startedAt = startTime
+        r.stoppedAt = stopTime
+        r.status = numberOfUse
+        r.ruleId = ruleId
+        r.localIp = localIP
+        r.localPort = localPort
+        r.localEnabled = localEnable
+        r.wifiIp = wifiIP
+        r.wifiPort = wifiPort
+        r.wifiEnabled = wifiEnable
+        r.flowCount = interceptCount
+        r.uploadBytes = uploadTraffic
+        r.downloadBytes = downloadFlow
+        r.note = note
+        r.extra = extra
+        return r
+    }
+
     // MARK: - Persistence helpers
 
     /// Save a new task to catalog.db. Sets self.id from the inserted row.
     public func save() throws {
         let db = DatabaseManager.shared.catalogDB
-        let rowId = try CatalogDAO.insertFullTask(db: db, task: self)
+        let rowId = try CatalogDAO.insertFullTask(db: db, task: toCaptureTaskRecord())
         self.id = rowId
     }
 
     /// Update this task in catalog.db.
     public func update() throws {
         let db = DatabaseManager.shared.catalogDB
-        try CatalogDAO.updateFullTask(db: db, task: self)
+        try CatalogDAO.updateFullTask(db: db, task: toCaptureTaskRecord())
     }
 
     // MARK: - Factory methods
