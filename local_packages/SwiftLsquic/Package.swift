@@ -10,7 +10,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "CLsquic",
-            path: "../../Frameworks/CLsquic.xcframework"
+            path: "../../frameworks/CLsquic.xcframework"
         ),
         .target(
             name: "SwiftLsquic",

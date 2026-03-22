@@ -10,7 +10,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "CQuiche",
-            path: "../../Frameworks/CQuiche.xcframework"
+            path: "../../frameworks/CQuiche.xcframework"
         ),
         .target(
             name: "SwiftQuiche",
