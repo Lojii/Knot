@@ -754,8 +754,8 @@ final class H2ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandl
         //   "ByteBuffer: ..." for IOData.byteBuffer (raw bytes from decoder removal)
         //   "HTTPPart<...>: ..." for HTTPClientResponsePart (normal response data)
         // Check the prefix to detect IOData BEFORE calling unwrapInboundIn (which fatalErrors).
+        // Guard: IOData detection via NIOAny.description prefix
         if data.description.hasPrefix("ByteBuffer") || data.description.hasPrefix("FileRegion") {
-            // IOData leaked from H2 codec (e.g., RST_STREAM, stream close, leftover frames)
             return
         }
 

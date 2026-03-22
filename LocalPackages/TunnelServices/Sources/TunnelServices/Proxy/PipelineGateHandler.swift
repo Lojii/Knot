@@ -11,17 +11,21 @@ import NIO
 /// This solves the NIO pipeline reconfiguration race condition where
 /// ByteToMessageHandler forwards leftover bytes as IOData during removal,
 /// and those bytes reach a handler expecting a different type (causing fatalError).
-public final class PipelineGateHandler: ChannelInboundHandler, RemovableChannelHandler {
-    // Accept raw NIOAny — never call unwrapInboundIn (which fatalErrors on type mismatch)
+public final class PipelineGateHandler: ChannelDuplexHandler, RemovableChannelHandler {
+    // Accept raw NIOAny in both directions
     public typealias InboundIn = NIOAny
+    public typealias InboundOut = NIOAny
+    public typealias OutboundIn = NIOAny
+    public typealias OutboundOut = NIOAny
 
-    private var buffer: [NIOAny] = []
+    private var inboundBuffer: [NIOAny] = []
+    private var outboundBuffer: [(NIOAny, EventLoopPromise<Void>?)] = []
     private var gateOpen = true
     private weak var savedContext: ChannelHandlerContext?
 
     public init() {}
 
-    /// Close the gate. All subsequent channelRead data is buffered.
+    /// Close the gate. All subsequent inbound/outbound data is buffered.
     public func shut() {
         gateOpen = false
     }
@@ -30,10 +34,17 @@ public final class PipelineGateHandler: ChannelInboundHandler, RemovableChannelH
     public func openAndRemove() {
         guard let context = savedContext else { return }
         gateOpen = true
-        for data in buffer {
+        // Flush outbound first (writes waiting to go to network)
+        for (data, promise) in outboundBuffer {
+            context.write(data, promise: promise)
+        }
+        outboundBuffer.removeAll()
+        if !outboundBuffer.isEmpty { context.flush() }
+        // Then flush inbound (reads waiting to go to handlers)
+        for data in inboundBuffer {
             context.fireChannelRead(data)
         }
-        buffer.removeAll()
+        inboundBuffer.removeAll()
         context.fireChannelReadComplete()
         context.pipeline.removeHandler(self, promise: nil)
     }
@@ -42,11 +53,13 @@ public final class PipelineGateHandler: ChannelInboundHandler, RemovableChannelH
         savedContext = context
     }
 
+    // MARK: - Inbound
+
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         if gateOpen {
             context.fireChannelRead(data)
         } else {
-            buffer.append(data)
+            inboundBuffer.append(data)
         }
     }
 
@@ -54,6 +67,21 @@ public final class PipelineGateHandler: ChannelInboundHandler, RemovableChannelH
         if gateOpen {
             context.fireChannelReadComplete()
         }
-        // When gate is closed, suppress readComplete to avoid confusing downstream
+    }
+
+    // MARK: - Outbound
+
+    public func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
+        if gateOpen {
+            context.write(data, promise: promise)
+        } else {
+            outboundBuffer.append((data, promise))
+        }
+    }
+
+    public func flush(context: ChannelHandlerContext) {
+        if gateOpen {
+            context.flush()
+        }
     }
 }
