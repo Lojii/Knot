@@ -359,7 +359,10 @@ private final class DashboardWebSocketHandler: ChannelInboundHandler, @unchecked
         self.server = server
     }
 
-    func channelActive(context: ChannelHandlerContext) {
+    func handlerAdded(context: ChannelHandlerContext) {
+        // Use handlerAdded instead of channelActive because the channel is
+        // already active when this handler is added after WebSocket upgrade.
+        // channelActive would never fire in that case.
         server.addConnection(context.channel)
     }
 
