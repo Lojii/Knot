@@ -468,12 +468,6 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
         // Implementation: NIOAny's _storage has cases .ioData and .other.
         // HTTPClientResponsePart is wrapped as .other, IOData as .ioData.
         // We check by comparing the debug description prefix.
-        let dataDesc = String(reflecting: data)
-        if dataDesc.hasPrefix("_NIOAny(_storage: NIOCore.IOData") || dataDesc.contains(".ioData(") {
-            AxLogger.log("[ResponseRelay] absorbed IOData (WS upgrade leftover bytes)", level: .Warning)
-            return
-        }
-
         let part = unwrapInboundIn(data)
 
         switch part {
