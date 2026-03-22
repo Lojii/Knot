@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/flow_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../widgets/waterfall_bar.dart';
+import '../../theme/app_theme.dart';
 
 class WaterfallTab extends StatelessWidget {
   const WaterfallTab({super.key});
@@ -26,18 +27,18 @@ class WaterfallTab extends StatelessWidget {
         children: [
           // Legend
           Container(
-            height: 28,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            height: AppTheme.tableHeaderHeight,
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
             child: Row(
               children: [
-                _legend(Colors.orange, 'Connect'),
-                _legend(Colors.purple, 'TLS'),
-                _legend(Colors.blue, 'Request'),
-                _legend(Colors.green.shade300, 'TTFB'),
-                _legend(Colors.green, 'Download'),
+                _legend(AppTheme.timingConnect, 'Connect'),
+                _legend(AppTheme.timingTLS, 'TLS'),
+                _legend(AppTheme.timingRequest, 'Request'),
+                _legend(AppTheme.timingTTFB, 'TTFB'),
+                _legend(AppTheme.timingResponse, 'Download'),
                 const Spacer(),
                 Text('${(totalMs / 1000).toStringAsFixed(1)}s total',
-                    style: TextStyle(fontSize: 11, color: theme.hintColor)),
+                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
               ],
             ),
           ),
@@ -59,13 +60,13 @@ class WaterfallTab extends StatelessWidget {
   }
 
   Widget _legend(Color color, String label) => Padding(
-    padding: const EdgeInsets.only(right: 12),
+    padding: const EdgeInsets.only(right: AppTheme.spacingMD),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(width: 10, height: 10, color: color),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 10)),
+        const SizedBox(width: AppTheme.spacingXS),
+        Text(label, style: const TextStyle(fontSize: AppTheme.fontSizeXS)),
       ],
     ),
   );
@@ -87,10 +88,10 @@ class _WaterfallRow extends StatelessWidget {
           SizedBox(
             width: 200,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.only(left: AppTheme.spacingSM),
               child: Text(
                 '${flow.method} ${flow.host}${flow.uri}',
-                style: const TextStyle(fontSize: 10),
+                style: const TextStyle(fontSize: AppTheme.fontSizeXS),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -107,11 +108,11 @@ class _WaterfallRow extends StatelessWidget {
             width: 60,
             child: Text(
               flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-              style: const TextStyle(fontSize: 10),
+              style: const TextStyle(fontSize: AppTheme.fontSizeXS),
               textAlign: TextAlign.right,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppTheme.spacingSM),
         ],
       ),
     );

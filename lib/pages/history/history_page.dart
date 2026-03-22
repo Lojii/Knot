@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/history_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../models/task_model.dart';
+import '../../theme/app_theme.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -41,9 +42,9 @@ class _HistoryPageState extends State<HistoryPage> {
           return const Center(child: Text('No capture history'));
         }
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppTheme.spacingLG),
           itemCount: tasks.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: AppTheme.spacingSM),
           itemBuilder: (ctx, i) {
             final task = tasks[i];
             final isCurrent = taskCtrl.currentTask.value?.id == task.id;
@@ -74,19 +75,19 @@ class _TaskCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppTheme.spacingLG),
         decoration: BoxDecoration(
           color: isCurrent ? theme.colorScheme.primary.withValues(alpha: 0.08) : theme.colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           border: Border.all(color: isCurrent ? theme.colorScheme.primary : theme.dividerColor),
         ),
         child: Row(
           children: [
             if (isCurrent) ...[
-              const Icon(Icons.circle, size: 8, color: Colors.red),
-              const SizedBox(width: 8),
+              Icon(Icons.circle, size: 8, color: AppTheme.statusConnected),
+              const SizedBox(width: AppTheme.spacingSM),
             ],
             Expanded(
               child: Column(
@@ -96,15 +97,15 @@ class _TaskCard extends StatelessWidget {
                     task.name.isNotEmpty ? task.name : 'Task ${task.id}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 4),
-                  Text(timeStr, style: TextStyle(fontSize: 12, color: theme.hintColor)),
+                  const SizedBox(height: AppTheme.spacingXS),
+                  Text(timeStr, style: TextStyle(fontSize: AppTheme.fontSizeMD, color: theme.hintColor)),
                 ],
               ),
             ),
             if (task.flowCount != null)
               _badge('${task.flowCount} flows', theme),
             if (task.downloadBytes != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: AppTheme.spacingSM),
               _badge(_fmt(task.downloadBytes!), theme),
             ],
           ],
@@ -114,12 +115,12 @@ class _TaskCard extends StatelessWidget {
   }
 
   Widget _badge(String text, ThemeData theme) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM, vertical: 2),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(AppTheme.radiusSM),
     ),
-    child: Text(text, style: TextStyle(fontSize: 11, color: theme.hintColor)),
+    child: Text(text, style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
   );
 
   String _fmt(int b) {

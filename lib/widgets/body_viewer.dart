@@ -18,7 +18,10 @@ class BodyViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (body.isEmpty) {
-      return const Text('(empty)', style: TextStyle(color: Colors.grey, fontSize: 11));
+      return Text('(empty)', style: TextStyle(
+        color: Theme.of(context).hintColor,
+        fontSize: AppTheme.fontSizeSM,
+      ));
     }
 
     // Image detection
@@ -52,14 +55,15 @@ class BodyViewer extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Image Preview ($contentType)', style: const TextStyle(fontSize: 11)),
-          const SizedBox(height: 8),
+          Text('Image Preview ($contentType)', style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
+          const SizedBox(height: AppTheme.spacingSM),
           Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Text('Cannot preview image')),
+            errorBuilder: (_, _, _) => const Text('Cannot preview image')),
         ],
       );
     } catch (_) {
-      return Text('Image ($contentType) — ${body.length} bytes', style: const TextStyle(fontSize: 11));
+      return Text('Image ($contentType) — ${body.length} bytes',
+          style: const TextStyle(fontSize: AppTheme.fontSizeSM));
     }
   }
 
@@ -85,11 +89,11 @@ class _SyntaxText extends StatelessWidget {
       return SelectableText(text, style: style);
     }
     return SelectableText.rich(
-      _colorizeJson(text, style),
+      _colorizeJson(context, text, style),
     );
   }
 
-  TextSpan _colorizeJson(String json, TextStyle base) {
+  TextSpan _colorizeJson(BuildContext context, String json, TextStyle base) {
     final spans = <TextSpan>[];
     final re = RegExp(r'("(?:\\.|[^"\\])*")\s*:|("(?:\\.|[^"\\])*")|(\b\d+\.?\d*\b)|(\btrue\b|\bfalse\b|\bnull\b)');
 
@@ -100,17 +104,17 @@ class _SyntaxText extends StatelessWidget {
       }
       if (m.group(1) != null) {
         // JSON key
-        spans.add(TextSpan(text: m.group(1), style: base.copyWith(color: Colors.blue)));
+        spans.add(TextSpan(text: m.group(1), style: base.copyWith(color: AppTheme.syntaxKey(context))));
         spans.add(TextSpan(text: ':', style: base));
       } else if (m.group(2) != null) {
         // String value
-        spans.add(TextSpan(text: m.group(2), style: base.copyWith(color: Colors.green)));
+        spans.add(TextSpan(text: m.group(2), style: base.copyWith(color: AppTheme.syntaxString(context))));
       } else if (m.group(3) != null) {
         // Number
-        spans.add(TextSpan(text: m.group(3), style: base.copyWith(color: Colors.orange)));
+        spans.add(TextSpan(text: m.group(3), style: base.copyWith(color: AppTheme.syntaxNumber(context))));
       } else if (m.group(4) != null) {
         // Boolean/null
-        spans.add(TextSpan(text: m.group(4), style: base.copyWith(color: Colors.purple)));
+        spans.add(TextSpan(text: m.group(4), style: base.copyWith(color: AppTheme.syntaxBool(context))));
       }
       lastEnd = m.end;
     }

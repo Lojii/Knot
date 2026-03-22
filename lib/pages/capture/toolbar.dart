@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../theme/app_theme.dart';
 
 class CaptureToolbar extends StatelessWidget {
   const CaptureToolbar({super.key});
@@ -13,8 +14,8 @@ class CaptureToolbar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: AppTheme.toolbarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
       ),
@@ -22,7 +23,9 @@ class CaptureToolbar extends StatelessWidget {
         children: [
           Obx(() => IconButton(
             icon: Icon(taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow),
-            color: taskCtrl.isCapturing.value ? Colors.red : Colors.green,
+            color: taskCtrl.isCapturing.value
+                ? AppTheme.methodDelete
+                : AppTheme.methodGet,
             tooltip: taskCtrl.isCapturing.value ? 'Stop' : 'Start',
             onPressed: () {/* platform channel P1 later */},
           )),
@@ -40,8 +43,10 @@ class CaptureToolbar extends StatelessWidget {
                 hintText: 'Search...',
                 prefixIcon: const Icon(Icons.search, size: 16),
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                contentPadding: const EdgeInsets.symmetric(vertical: AppTheme.spacingMD),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
               ),
               onChanged: flowCtrl.search,
             ),

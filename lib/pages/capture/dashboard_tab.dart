@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../theme/app_theme.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -26,7 +27,7 @@ class _DashboardTabState extends State<DashboardTab> {
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.spacingLG),
       child: Obx(() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,35 +36,35 @@ class _DashboardTabState extends State<DashboardTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _card(theme, 'Protocol Distribution', _protocolPie(dc, theme))),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMD),
               Expanded(child: _card(theme, 'Status Codes', _statusList(dc, theme))),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spacingMD),
           // Row 2: System metrics
           Row(
             children: [
               Expanded(child: _metricCard(theme, 'Memory', '${dc.rssMB.value.toStringAsFixed(0)} MB', Icons.memory)),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMD),
               Expanded(child: _metricCard(theme, 'CPU', '${dc.cpuPercent.value.toStringAsFixed(1)}%', Icons.speed)),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMD),
               Expanded(child: _metricCard(theme, 'Threads', '${dc.threadCount.value}', Icons.account_tree)),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMD),
               Expanded(child: _metricCard(theme, 'Connections', '${dc.poolTotal.value}', Icons.cable)),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spacingMD),
               Expanded(child: _metricCard(theme, 'Uptime', '${dc.uptimeSeconds.value.toStringAsFixed(0)}s', Icons.timer)),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spacingMD),
           // Row 3: Traffic
           _card(theme, 'Traffic', Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _trafficStat('Upload', dc.totalUpload.value, Colors.blue),
-                _trafficStat('Download', dc.totalDownload.value, Colors.green),
-                _trafficStat('Total', dc.totalUpload.value + dc.totalDownload.value, Colors.orange),
+                _trafficStat('Upload', dc.totalUpload.value, theme.colorScheme.primary),
+                _trafficStat('Download', dc.totalDownload.value, AppTheme.methodGet),
+                _trafficStat('Total', dc.totalUpload.value + dc.totalDownload.value, AppTheme.methodPost),
               ],
             ),
           )),
@@ -73,35 +74,35 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _card(ThemeData theme, String title, Widget child) => Container(
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.all(AppTheme.spacingMD),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
       border: Border.all(color: theme.dividerColor),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.hintColor)),
-        const SizedBox(height: 8),
+        Text(title, style: TextStyle(fontSize: AppTheme.fontSizeMD, fontWeight: FontWeight.bold, color: theme.hintColor)),
+        const SizedBox(height: AppTheme.spacingSM),
         child,
       ],
     ),
   );
 
   Widget _metricCard(ThemeData theme, String label, String value, IconData icon) => Container(
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.all(AppTheme.spacingMD),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppTheme.radiusLG),
       border: Border.all(color: theme.dividerColor),
     ),
     child: Column(
       children: [
         Icon(icon, size: 20, color: theme.hintColor),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppTheme.spacingXS),
         Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(fontSize: 10, color: theme.hintColor)),
+        Text(label, style: TextStyle(fontSize: AppTheme.fontSizeXS, color: theme.hintColor)),
       ],
     ),
   );
@@ -110,18 +111,11 @@ class _DashboardTabState extends State<DashboardTab> {
     final data = dc.protocols;
     if (data.isEmpty) return const SizedBox(height: 120, child: Center(child: Text('No data')));
 
-    final colors = <String, Color>{
-      'HTTP': Colors.blue,
-      'HTTPS': Colors.green,
-      'H2': Colors.orange,
-      'WS': Colors.purple,
-      'WSS': Colors.red,
-    };
     final sections = data.entries.where((e) => e.value > 0).map((e) => PieChartSectionData(
       value: e.value.toDouble(),
       title: '${e.key}\n${e.value}',
-      titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-      color: colors[e.key] ?? Colors.grey,
+      titleStyle: const TextStyle(fontSize: AppTheme.fontSizeXS, fontWeight: FontWeight.bold, color: Colors.white),
+      color: AppTheme.protocolColors[e.key] ?? AppTheme.methodDefault,
       radius: 50,
     )).toList();
 
@@ -137,9 +131,9 @@ class _DashboardTabState extends State<DashboardTab> {
         child: Row(
           children: [
             Text(e.key == '1' ? 'Completed' : e.key == '2' ? 'Failed' : 'Status ${e.key}',
-                style: const TextStyle(fontSize: 12)),
+                style: const TextStyle(fontSize: AppTheme.fontSizeMD)),
             const Spacer(),
-            Text('${e.value}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            Text('${e.value}', style: const TextStyle(fontSize: AppTheme.fontSizeMD, fontWeight: FontWeight.bold)),
           ],
         ),
       )).toList(),
@@ -149,7 +143,7 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget _trafficStat(String label, int bytes, Color color) => Column(
     children: [
       Text(_fmt(bytes), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-      Text(label, style: const TextStyle(fontSize: 11)),
+      Text(label, style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
     ],
   );
 

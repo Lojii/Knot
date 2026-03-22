@@ -5,6 +5,7 @@ import '../../controllers/tree_controller.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../models/flow_summary.dart';
+import '../../theme/app_theme.dart';
 
 class FlowTable extends StatefulWidget {
   const FlowTable({super.key});
@@ -53,8 +54,9 @@ class _FlowTableState extends State<FlowTable> {
         return Column(
           children: [
             _tableHeader(theme),
-            const Expanded(
-              child: Center(child: Text('No requests captured', style: TextStyle(color: Colors.grey))),
+            Expanded(
+              child: Center(child: Text('No requests captured',
+                  style: TextStyle(color: theme.hintColor))),
             ),
           ],
         );
@@ -84,20 +86,20 @@ class _FlowTableState extends State<FlowTable> {
   }
 
   Widget _tableHeader(ThemeData theme) => Container(
-    height: 28,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
+    height: AppTheme.tableHeaderHeight,
+    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerHigh,
     ),
     child: const Row(
       children: [
-        SizedBox(width: 60, child: Text('Method', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-        SizedBox(width: 8),
-        Expanded(flex: 2, child: Text('Host', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-        Expanded(flex: 3, child: Text('Path', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-        SizedBox(width: 50, child: Text('Status', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-        SizedBox(width: 70, child: Text('Size', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-        SizedBox(width: 70, child: Text('Time', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        SizedBox(width: 60, child: Text('Method', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        SizedBox(width: AppTheme.spacingSM),
+        Expanded(flex: 2, child: Text('Host', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        Expanded(flex: 3, child: Text('Path', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        SizedBox(width: 50, child: Text('Status', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        SizedBox(width: 70, child: Text('Size', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        SizedBox(width: 70, child: Text('Time', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
       ],
     ),
   );
@@ -125,27 +127,27 @@ class _FlowRow extends StatelessWidget {
         }
       },
       child: Container(
-        height: 26,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        height: AppTheme.tableRowHeight,
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
         color: isSelected
             ? theme.colorScheme.primary.withAlpha(26)
             : null,
         child: Row(
           children: [
             SizedBox(width: 60, child: Text(_methodLabel(flow.method),
-                style: TextStyle(fontSize: 11, color: _methodColor(flow.method)))),
-            const SizedBox(width: 8),
+                style: TextStyle(fontSize: AppTheme.fontSizeSM, color: AppTheme.methodColor(flow.method)))),
+            const SizedBox(width: AppTheme.spacingSM),
             Expanded(flex: 2, child: Text(flow.host,
-                style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis)),
+                style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
             Expanded(flex: 3, child: Text(flow.uri,
-                style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis)),
+                style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
             SizedBox(width: 50, child: Text(flow.statusCode,
-                style: TextStyle(fontSize: 11, color: _statusColor(flow.statusCode)))),
+                style: TextStyle(fontSize: AppTheme.fontSizeSM, color: _statusColor(flow.statusCode)))),
             SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
-                style: const TextStyle(fontSize: 11))),
+                style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
             SizedBox(width: 70, child: Text(
                 flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-                style: const TextStyle(fontSize: 11))),
+                style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
           ],
         ),
       ),
@@ -153,21 +155,12 @@ class _FlowRow extends StatelessWidget {
   }
 
   String _methodLabel(String m) => m.isNotEmpty ? m : '-';
-  Color _methodColor(String m) => switch (m) {
-    'GET' => Colors.green,
-    'POST' => Colors.orange,
-    'PUT' => Colors.blue,
-    'DELETE' => Colors.red,
-    _ => Colors.grey,
-  };
+
   Color _statusColor(String s) {
     final code = int.tryParse(s) ?? 0;
-    if (code >= 500) return Colors.red;
-    if (code >= 400) return Colors.orange;
-    if (code >= 300) return Colors.blue;
-    if (code >= 200) return Colors.green;
-    return Colors.grey;
+    return AppTheme.statusColor(code);
   }
+
   String _formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}K';

@@ -13,26 +13,33 @@ class FlowDetailPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
     final detailCtrl = Get.find<DetailController>();
+    final theme = Theme.of(context);
 
     return Obx(() {
       if (flowCtrl.selectedFlow.value == null) {
-        return const Center(
+        return Center(
           child: Text('Select a request to view details',
-              style: TextStyle(color: Colors.grey)),
+              style: TextStyle(color: theme.hintColor)),
         );
       }
+
+      // Loading state: show spinner while detail is loading
+      if (detailCtrl.isLoadingDetail.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
       return DefaultTabController(
         length: 4,
         child: Column(
           children: [
-            const TabBar(
+            TabBar(
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              tabs: [
-                Tab(text: 'Headers', height: 28),
-                Tab(text: 'Body', height: 28),
-                Tab(text: 'Timing', height: 28),
-                Tab(text: 'Connection', height: 28),
+              tabs: const [
+                Tab(text: 'Headers', height: AppTheme.detailTabHeight),
+                Tab(text: 'Body', height: AppTheme.detailTabHeight),
+                Tab(text: 'Timing', height: AppTheme.detailTabHeight),
+                Tab(text: 'Connection', height: AppTheme.detailTabHeight),
               ],
             ),
             Expanded(
@@ -58,6 +65,7 @@ class _HeadersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Obx(() {
       final raw = detailCtrl.detail.value?.raw ?? {};
       final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
@@ -69,21 +77,21 @@ class _HeadersTab extends StatelessWidget {
           .toList() ?? [];
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Request Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            const Text('Request Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
             if (reqHeaders.isNotEmpty)
               KeyValueTable(entries: reqHeaders)
             else
-              const Text('No headers available', style: TextStyle(color: Colors.grey, fontSize: 11)),
-            const SizedBox(height: 12),
-            const Text('Response Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeSM)),
+            const SizedBox(height: AppTheme.spacingMD),
+            const Text('Response Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
             if (rspHeaders.isNotEmpty)
               KeyValueTable(entries: rspHeaders)
             else
-              const Text('No headers available', style: TextStyle(color: Colors.grey, fontSize: 11)),
+              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeSM)),
           ],
         ),
       );
@@ -101,18 +109,45 @@ class _BodyTab extends StatelessWidget {
       if (detailCtrl.isLoadingBody.value) {
         return const Center(child: CircularProgressIndicator());
       }
+
+      // Extract content-type from metadata
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
+      final rspHeaders = metadata['responseHeaders'] as List?;
+      String responseContentType = '';
+      String requestContentType = '';
+      if (rspHeaders != null) {
+        for (final h in rspHeaders) {
+          final pair = h as List;
+          if ((pair.first as String).toLowerCase() == 'content-type') {
+            responseContentType = pair.last as String;
+            break;
+          }
+        }
+      }
+      final reqHeaders = metadata['requestHeaders'] as List?;
+      if (reqHeaders != null) {
+        for (final h in reqHeaders) {
+          final pair = h as List;
+          if ((pair.first as String).toLowerCase() == 'content-type') {
+            requestContentType = pair.last as String;
+            break;
+          }
+        }
+      }
+
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-            const SizedBox(height: 4),
-            BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: ''),
-            const SizedBox(height: 12),
-            const Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-            const SizedBox(height: 4),
-            BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: ''),
+            const Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            const SizedBox(height: AppTheme.spacingXS),
+            BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: requestContentType),
+            const SizedBox(height: AppTheme.spacingMD),
+            const Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            const SizedBox(height: AppTheme.spacingXS),
+            BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: responseContentType),
           ],
         ),
       );
@@ -144,7 +179,7 @@ class _TimingTab extends StatelessWidget {
       ];
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: events.map((e) {
@@ -153,7 +188,7 @@ class _TimingTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
                 children: [
-                  SizedBox(width: 120, child: Text(e.$1, style: const TextStyle(fontSize: 12))),
+                  SizedBox(width: 120, child: Text(e.$1, style: const TextStyle(fontSize: AppTheme.fontSizeMD))),
                   Text('${ms}ms', style: AppTheme.mono(context)),
                 ],
               ),
@@ -176,7 +211,7 @@ class _ConnectionTab extends StatelessWidget {
       if (conn == null) return const Center(child: Text('No connection info'));
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
         child: KeyValueTable(entries: [
           ('Source', '${conn.srcIp}:${conn.srcPort}'),
           ('Destination', '${conn.dstIp}:${conn.dstPort}'),

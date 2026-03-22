@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/live_controller.dart';
 import '../../widgets/connection_indicator.dart';
+import '../../theme/app_theme.dart';
 import '../history/history_page.dart';
 import '../settings/settings_page.dart';
 
@@ -22,11 +23,10 @@ class GlobalBar extends StatelessWidget {
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) {},
       child: Container(
-        height: 38,
+        height: AppTheme.globalBarHeight,
         padding: EdgeInsets.only(
-          // macOS: leave 78px for traffic light buttons (close/min/max)
-          left: isMacOS ? 78 : 12,
-          right: 12,
+          left: isMacOS ? AppTheme.macOSTrafficLightWidth : AppTheme.spacingMD,
+          right: AppTheme.spacingMD,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -41,7 +41,7 @@ class GlobalBar extends StatelessWidget {
                 : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
               style: theme.textTheme.titleSmall,
             )),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppTheme.spacingSM),
             // Connection status
             Obx(() => ConnectionIndicator(status: liveCtrl.wsStatus.value)),
             const Spacer(),

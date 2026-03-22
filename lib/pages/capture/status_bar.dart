@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/live_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../theme/app_theme.dart';
 
 class CaptureStatusBar extends StatelessWidget {
   const CaptureStatusBar({super.key});
@@ -13,31 +14,36 @@ class CaptureStatusBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: AppTheme.statusBarHeight,
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: Obx(() => Row(
         children: [
-          _item('${flowCtrl.total.value} requests'),
-          _sep(),
-          _item('Up ${_formatBytes(liveCtrl.uploadBytes.value)}'),
-          _item(' Down ${_formatBytes(liveCtrl.downloadBytes.value)}'),
-          _sep(),
-          _item('Mem ${liveCtrl.memoryMB.value.toStringAsFixed(0)} MB'),
-          _sep(),
-          _item('${liveCtrl.connectionCount.value} conn'),
+          _item(context, '${flowCtrl.total.value} requests'),
+          _sep(context),
+          _item(context, 'Up ${_formatBytes(liveCtrl.uploadBytes.value)}'),
+          _item(context, ' Down ${_formatBytes(liveCtrl.downloadBytes.value)}'),
+          _sep(context),
+          _item(context, 'Mem ${liveCtrl.memoryMB.value.toStringAsFixed(0)} MB'),
+          _sep(context),
+          _item(context, '${liveCtrl.connectionCount.value} conn'),
         ],
       )),
     );
   }
 
-  Widget _item(String text) => Text(text, style: const TextStyle(fontSize: 11));
-  Widget _sep() => const Padding(
-    padding: EdgeInsets.symmetric(horizontal: 8),
-    child: Text('|', style: TextStyle(fontSize: 11, color: Colors.grey)),
+  Widget _item(BuildContext context, String text) =>
+      Text(text, style: const TextStyle(fontSize: AppTheme.fontSizeSM));
+
+  Widget _sep(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+    child: Text('|', style: TextStyle(
+      fontSize: AppTheme.fontSizeSM,
+      color: Theme.of(context).hintColor,
+    )),
   );
 
   String _formatBytes(int bytes) {

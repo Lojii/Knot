@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import '../../theme/app_theme.dart';
 import 'flow_table.dart';
 import 'flow_detail_panel.dart';
 import 'waterfall_tab.dart';
@@ -41,11 +42,11 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
             controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+            labelPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
             tabs: const [
               Tab(text: 'List', height: 32),
-              Tab(text: 'Waterfall', height: 32),     // P2
-              Tab(text: 'Dashboard', height: 32),      // P2
+              Tab(text: 'Waterfall', height: 32),
+              Tab(text: 'Dashboard', height: 32),
             ],
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import '../../theme/app_theme.dart';
 import 'global_bar.dart';
 import 'toolbar.dart';
 import 'filter_bar.dart';
@@ -15,16 +16,16 @@ class CapturePage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const GlobalBar(),            // Row 0
-          const CaptureToolbar(),       // Row 1
-          const FilterBar(),            // Row 2
-          Expanded(                     // Row 3
+          const GlobalBar(),
+          const CaptureToolbar(),
+          const FilterBar(),
+          Expanded(
             child: MultiSplitView(
               axis: Axis.horizontal,
               initialAreas: [
                 Area(
                   min: 150,
-                  size: 220,
+                  size: AppTheme.treeDefaultWidth,
                   builder: (context, area) => const TreePanel(),
                 ),
                 Area(
@@ -34,7 +35,7 @@ class CapturePage extends StatelessWidget {
               ],
             ),
           ),
-          const CaptureStatusBar(),     // Row 4
+          const CaptureStatusBar(),
         ],
       ),
     );

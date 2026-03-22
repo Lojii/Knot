@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class WaterfallBar extends StatelessWidget {
   final double totalDuration;  // total time range in ms
@@ -69,11 +70,11 @@ class _WaterfallPainter extends CustomPainter {
       x += segW;
     }
 
-    drawSegment(connectMs, Colors.orange);
-    drawSegment(tlsMs, Colors.purple);
-    drawSegment(requestMs, Colors.blue);
-    drawSegment(ttfbMs, Colors.green.shade300);
-    drawSegment(responseMs, Colors.green);
+    drawSegment(connectMs, AppTheme.timingConnect);
+    drawSegment(tlsMs, AppTheme.timingTLS);
+    drawSegment(requestMs, AppTheme.timingRequest);
+    drawSegment(ttfbMs, AppTheme.timingTTFB);
+    drawSegment(responseMs, AppTheme.timingResponse);
   }
 
   @override
