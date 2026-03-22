@@ -492,23 +492,17 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
             // happens before the next event loop turn, the client's WS frame won't
             // arrive until the pipeline is ready.
             if recorder.session.schemes == "WS" || recorder.session.schemes == "WSS" {
-                // Pause reading from the outbound channel (real server) to prevent
-                // WS frames from arriving before we've reconfigured the pipeline.
-                _ = context.channel.setOption(ChannelOptions.autoRead, value: false)
-
-                // Write 101 .end to the client
+                // Forward the 101 to the client, then close both sides.
+                // WebSocket pipeline upgrade in MITM mode has unresolved NIO pipeline
+                // race conditions (IOData reaching HTTPResponseEncoder during swap).
+                // For now, close the connection after 101 — the client will see the
+                // upgrade succeed but the WS connection will immediately close.
+                // This prevents the proxy from crashing on WS-heavy sites.
                 serverChannel?.writeAndFlush(HTTPServerResponsePart.end(trailers), promise: nil)
-
-                // Reconfigure both pipelines to WebSocket mode
-                if let interceptor = wsInterceptor {
-                    interceptor.performWebSocketUpgrade(
-                        context: context,
-                        clientChannel: context.channel
-                    )
-                }
-
-                // Resume reading from outbound — now both pipelines are in WS mode
-                _ = context.channel.setOption(ChannelOptions.autoRead, value: true)
+                AxLogger.log("[ResponseRelay] WebSocket 101 — closing (MITM WS upgrade disabled)", level: .Warning)
+                recorder.recordClosed()
+                serverChannel?.close(mode: .all, promise: nil)
+                context.channel.close(mode: .all, promise: nil)
                 return
             }
 
