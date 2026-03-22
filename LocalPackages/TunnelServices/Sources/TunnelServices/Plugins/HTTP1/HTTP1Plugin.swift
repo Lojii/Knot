@@ -52,9 +52,6 @@ public final class HTTP1Plugin: ProtocolPlugin {
                 return pipeline.addHandler(connectHandler, name: "http1.connect")
             }
             .flatMap {
-                pipeline.addHandler(IODataGuardHandler(), name: "http1.ioguard")
-            }
-            .flatMap {
                 pipeline.addHandler(
                     HTTPCaptureHandler(recorder: context.recorder, isSSL: isSSL),
                     name: "http1.captureHandler"

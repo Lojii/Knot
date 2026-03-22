@@ -160,9 +160,6 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
                 let captureHandler = HTTPCaptureHandler(recorder: capturedRecorder, isSSL: true, targetPort: capturedPort)
                 do {
                     try pipeline.syncOperations.configureHTTPServerPipeline(withPipeliningAssistance: true)
-                    // Add IOData guard before capture handler — catches raw bytes
-                    // that leak through when HTTP decoder is removed (leftOverBytesStrategy).
-                    try pipeline.syncOperations.addHandler(IODataGuardHandler(), name: "mitm.http.ioguard")
                     try pipeline.syncOperations.addHandler(captureHandler, name: "mitm.http.capture")
                     return channel.eventLoop.makeSucceededVoidFuture()
                 } catch {

@@ -69,15 +69,15 @@ public final class DashboardServer: DashboardPushable, @unchecked Sendable {
                         channel.eventLoop.makeSucceededFuture(HTTPHeaders())
                     },
                     upgradePipelineHandler: { channel, _ in
-                        let removeErrorHandler: EventLoopFuture<Void>
-                        if let handler = try? channel.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
-                            removeErrorHandler = channel.pipeline.removeHandler(handler)
-                        } else {
-                            removeErrorHandler = channel.eventLoop.makeSucceededVoidFuture()
+                        // Remove DashboardHTTPHandler + HTTPServerProtocolErrorHandler
+                        // BEFORE the HTTP decoder removal forwards leftover bytes as IOData.
+                        if let h = try? channel.pipeline.syncOperations.handler(type: DashboardHTTPHandler.self) {
+                            try? channel.pipeline.syncOperations.removeHandler(h)
                         }
-                        return removeErrorHandler.flatMap {
-                            channel.pipeline.addHandler(DashboardWebSocketHandler(server: server))
+                        if let h = try? channel.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
+                            try? channel.pipeline.syncOperations.removeHandler(h)
                         }
+                        return channel.pipeline.addHandler(DashboardWebSocketHandler(server: server))
                     }
                 )
 
@@ -258,7 +258,7 @@ public final class DashboardServer: DashboardPushable, @unchecked Sendable {
 
 // MARK: - DashboardHTTPHandler
 
-private final class DashboardHTTPHandler: ChannelInboundHandler, @unchecked Sendable {
+private final class DashboardHTTPHandler: ChannelInboundHandler, RemovableChannelHandler, @unchecked Sendable {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 

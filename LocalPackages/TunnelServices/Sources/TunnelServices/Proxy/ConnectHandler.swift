@@ -125,7 +125,6 @@ public final class ConnectHandler: ChannelInboundHandler, RemovableChannelHandle
         // flow to the newly-added handler at .first position.
         let handlerNames = [
             "http1.captureHandler", "https.captureHandler",
-            "http1.ioguard", "https.ioguard",
             "http1.connect", "https.connect",
             "dispatcher",
             "http1.pipelining", "https.pipelining",
