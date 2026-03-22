@@ -13,4 +13,62 @@ extension FlowDAO {
         }
         return result
     }
+
+    /// Count flows matching the same filters as `query()`.
+    public static func count(
+        db: Connection,
+        protocolFilter: String? = nil,
+        hostContains: String? = nil,
+        keyword: String? = nil
+    ) throws -> Int {
+        var conditions: [String] = []
+        var bindings: [Binding?] = []
+
+        if let proto = protocolFilter {
+            conditions.append("protocol = ?")
+            bindings.append(proto)
+        }
+        if let host = hostContains {
+            conditions.append("host LIKE ?")
+            bindings.append("%\(host)%")
+        }
+        if let kw = keyword {
+            conditions.append("(host LIKE ? OR search_key2 LIKE ? OR summary LIKE ?)")
+            let pattern = "%\(kw)%"
+            bindings.append(pattern)
+            bindings.append(pattern)
+            bindings.append(pattern)
+        }
+
+        let whereClause = conditions.isEmpty ? "" : "WHERE \(conditions.joined(separator: " AND "))"
+        let sql = "SELECT COUNT(*) FROM flow \(whereClause)"
+        let stmt = try db.prepare(sql, bindings)
+        for row in stmt {
+            return Int(row[0] as? Int64 ?? 0)
+        }
+        return 0
+    }
+
+    /// Returns a dictionary of status raw value → count
+    public static func countByStatus(db: Connection) throws -> [Int: Int] {
+        var result: [Int: Int] = [:]
+        let stmt = try db.prepare("SELECT status, COUNT(*) FROM flow GROUP BY status")
+        for row in stmt {
+            let status = Int(row[0] as? Int64 ?? 0)
+            let count = Int(row[1] as? Int64 ?? 0)
+            result[status] = count
+        }
+        return result
+    }
+
+    /// Returns total upload and download bytes across all flows.
+    public static func totalBytes(db: Connection) throws -> (upload: Int64, download: Int64) {
+        let stmt = try db.prepare("SELECT COALESCE(SUM(upload_bytes),0), COALESCE(SUM(download_bytes),0) FROM flow")
+        for row in stmt {
+            let up = row[0] as? Int64 ?? 0
+            let down = row[1] as? Int64 ?? 0
+            return (up, down)
+        }
+        return (0, 0)
+    }
 }
