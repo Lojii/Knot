@@ -82,95 +82,78 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
         let clientLogger = WebSocketFrameLogger(recorder: recorder, direction: .clientToServer)
         let serverLogger = WebSocketFrameLogger(recorder: recorder, direction: .serverToClient)
 
-        // Both channels must be reconfigured atomically (within the same event loop turn)
-        // to prevent frames from being forwarded to a pipeline with HTTP handlers.
-        // We use eventLoop.execute to defer ALL reconfiguration until after the current
-        // channelRead callback returns, ensuring no data races.
+        // === Pipeline reconfiguration using PipelineGateHandler ===
+        //
+        // Gate pattern: add a gate at the END of each pipeline, close it,
+        // then freely remove/add handlers. IOData from decoder removal is
+        // safely buffered by the gate. After reconfiguration, open the gate
+        // to flush buffered data through the new WS pipeline.
+        //
+        // This avoids the NIO fatalError where IOData reaches a handler
+        // expecting HTTPClientResponsePart or HTTPServerRequestPart.
+
         let inboundPrefix = isSSL ? "mitm.http" : "http1"
         let outboundPrefix = "client"
-        // Reconfigure both pipelines synchronously. Both channels MUST be on
-        // the same event loop (the outbound connection is created on the inbound's EL).
-        // Doing this synchronously prevents the race condition where data arrives
-        // between the channelRead return and an execute block.
-        do {
-            // === Transform INBOUND channel (client→proxy, aka serverCh) ===
-            // 1. Add a bridge handler to absorb raw bytes from HTTP decoder removal
-            let bridge = WebSocketUpgradeBridge(
-                clientChannel: clientChannel,
-                serverCh: serverCh,
-                clientLogger: clientLogger,
-                direction: .clientToServer
-            )
-            _ = serverCh.pipeline.addHandler(bridge, name: "ws.bridge")
 
-            // 2. Remove HTTP handlers
-            self.removeHTTPHandlersSynchronously(from: serverCh.pipeline, prefix: inboundPrefix)
+        // === INBOUND channel (client → proxy, aka serverCh) ===
+        let inboundGate = PipelineGateHandler()
+        try? serverCh.pipeline.syncOperations.addHandler(inboundGate, name: "ws.inbound.gate")
+        inboundGate.shut()
 
-            // 3. Add WS handlers before the bridge
-            _ = serverCh.pipeline.addHandler(
-                ByteToMessageHandler(WebSocketFrameDecoder()),
-                name: "ws.client.decoder",
-                position: .before(bridge)
-            )
-            _ = serverCh.pipeline.addHandler(
-                WebSocketFrameEncoder(),
-                name: "ws.client.encoder",
-                position: .before(bridge)
-            )
-            _ = serverCh.pipeline.addHandler(clientLogger,
-                name: "ws.client.logger",
-                position: .before(bridge)
-            )
-            _ = serverCh.pipeline.addHandler(
-                WebSocketForwarder(peerChannel: clientChannel, direction: .clientToServer),
-                name: "ws.client.forwarder",
-                position: .before(bridge)
-            )
+        self.removeHTTPHandlersSynchronously(from: serverCh.pipeline, prefix: inboundPrefix)
 
-            // 4. Remove the bridge
-            serverCh.pipeline.removeHandler(bridge, promise: nil)
+        try? serverCh.pipeline.syncOperations.addHandler(
+            ByteToMessageHandler(WebSocketFrameDecoder()),
+            name: "ws.client.decoder",
+            position: .before(inboundGate)
+        )
+        try? serverCh.pipeline.syncOperations.addHandler(
+            WebSocketFrameEncoder(),
+            name: "ws.client.encoder",
+            position: .before(inboundGate)
+        )
+        try? serverCh.pipeline.syncOperations.addHandler(
+            clientLogger,
+            name: "ws.client.logger",
+            position: .before(inboundGate)
+        )
+        try? serverCh.pipeline.syncOperations.addHandler(
+            WebSocketForwarder(peerChannel: clientChannel, direction: .clientToServer),
+            name: "ws.client.forwarder",
+            position: .before(inboundGate)
+        )
 
-            // === Transform OUTBOUND channel (proxy→real server, aka clientChannel) ===
-            // Must pause autoRead to prevent server data arriving during pipeline swap.
-            _ = clientChannel.setOption(ChannelOptions.autoRead, value: false)
+        inboundGate.openAndRemove()
 
-            // Remove HTTP handlers — use regular removeHandler (not syncOperations)
-            // because clientChannel may be on a different EventLoop.
-            // Named handlers are removed fire-and-forget; leftover bytes from decoder
-            // removal are handled by the outbound pipeline's existing handlers or dropped.
-            for suffix in ["responseRelay", "decompressor", "responseDecoder", "requestEncoder"] {
-                clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).\(suffix)", promise: nil)
-            }
-            // Also remove by type as fallback
-            func removeOutboundByType<T: RemovableChannelHandler>(_ type: T.Type) {
-                if let handler = try? clientChannel.pipeline.syncOperations.handler(type: type) {
-                    _ = clientChannel.pipeline.syncOperations.removeHandler(handler)
-                }
-            }
-            // For outbound: don't use removeByType for ByteToMessageHandler<HTTPResponseDecoder>
-            // as it may forward leftover bytes. Instead, keep the decoder — it won't receive
-            // HTTP data anymore (WS frames will arrive), and the WS decoder will be added after.
-            removeOutboundByType(HTTPRequestEncoder.self)
-            removeOutboundByType(NIOHTTPResponseDecompressor.self)
+        // === OUTBOUND channel (proxy → real server, aka clientChannel) ===
+        let outboundGate = PipelineGateHandler()
+        try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
+        outboundGate.shut()
 
-            // Add WS handlers on the outbound channel
-            _ = clientChannel.pipeline.addHandler(
-                ByteToMessageHandler(WebSocketFrameDecoder()),
-                name: "ws.server.decoder"
-            )
-            _ = clientChannel.pipeline.addHandler(
-                WebSocketFrameEncoder(),
-                name: "ws.server.encoder"
-            )
-            _ = clientChannel.pipeline.addHandler(serverLogger, name: "ws.server.logger")
-            _ = clientChannel.pipeline.addHandler(
-                WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
-                name: "ws.server.forwarder"
-            )
+        self.removeHTTPHandlersSynchronously(from: clientChannel.pipeline, prefix: outboundPrefix)
 
-            // Resume reading — WS pipeline is now in place
-            _ = clientChannel.setOption(ChannelOptions.autoRead, value: true)
-        }
+        try? clientChannel.pipeline.syncOperations.addHandler(
+            ByteToMessageHandler(WebSocketFrameDecoder()),
+            name: "ws.server.decoder",
+            position: .before(outboundGate)
+        )
+        try? clientChannel.pipeline.syncOperations.addHandler(
+            WebSocketFrameEncoder(),
+            name: "ws.server.encoder",
+            position: .before(outboundGate)
+        )
+        try? clientChannel.pipeline.syncOperations.addHandler(
+            serverLogger,
+            name: "ws.server.logger",
+            position: .before(outboundGate)
+        )
+        try? clientChannel.pipeline.syncOperations.addHandler(
+            WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
+            name: "ws.server.forwarder",
+            position: .before(outboundGate)
+        )
+
+        outboundGate.openAndRemove()
     }
 
     private func isWebSocketUpgrade(_ head: HTTPRequestHead) -> Bool {
@@ -387,35 +370,4 @@ final class WebSocketForwarder: ChannelInboundHandler, RemovableChannelHandler {
     }
 }
 
-// MARK: - WebSocket Upgrade Bridge
-
-/// Temporary handler installed at the tail of the inbound pipeline during WebSocket upgrade.
-/// Its purpose is to absorb raw bytes that the ByteToMessageHandler<HTTPRequestDecoder>
-/// forwards when removed (via leftOverBytesStrategy: .forwardBytes), and any stale
-/// HTTPServerRequestPart events still in flight. After the WS handlers are installed
-/// before this bridge, it can be removed.
-final class WebSocketUpgradeBridge: ChannelInboundHandler, RemovableChannelHandler {
-    typealias InboundIn = NIOAny
-
-    private let clientChannel: Channel
-    private let serverCh: Channel
-    private let clientLogger: WebSocketFrameLogger
-    private let direction: WebSocketFrameLogger.Direction
-
-    init(clientChannel: Channel, serverCh: Channel, clientLogger: WebSocketFrameLogger, direction: WebSocketFrameLogger.Direction) {
-        self.clientChannel = clientChannel
-        self.serverCh = serverCh
-        self.clientLogger = clientLogger
-        self.direction = direction
-    }
-
-    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        // Absorb any data that arrives during the upgrade transition.
-        // This includes IOData forwarded by the HTTP decoder and any stale HTTP events.
-        // Just drop them — the proper WS pipeline will handle subsequent data.
-    }
-
-    func errorCaught(context: ChannelHandlerContext, error: Error) {
-        context.fireErrorCaught(error)
-    }
-}
+// WebSocketUpgradeBridge removed — replaced by PipelineGateHandler
