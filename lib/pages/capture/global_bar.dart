@@ -5,6 +5,7 @@ import '../../controllers/task_controller.dart';
 import '../../controllers/live_controller.dart';
 import '../../widgets/connection_indicator.dart';
 import '../history/history_page.dart';
+import '../settings/settings_page.dart';
 
 class GlobalBar extends StatelessWidget {
   const GlobalBar({super.key});
@@ -63,7 +64,7 @@ class GlobalBar extends StatelessWidget {
               icon: const Icon(Icons.settings, size: 18),
               tooltip: 'Settings',
               visualDensity: VisualDensity.compact,
-              onPressed: () {/* P2 */},
+              onPressed: () => Get.to(() => const SettingsPage()),
             ),
           ],
         ),
