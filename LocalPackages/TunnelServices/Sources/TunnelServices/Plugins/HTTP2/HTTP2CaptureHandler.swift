@@ -211,15 +211,15 @@ final class H2ServerConnection {
                     let pushRecorder = SessionRecorder(task: self.task)
                     pushRecorder.session.schemes = "H2-Push"
 
+                    // NOTE: Do NOT add HTTP2FramePayloadToHTTP1ClientCodec here.
+                    // Push streams receive server responses WITHOUT a preceding client request,
+                    // which causes the codec to preconditionFailure ("Expected not to get a
+                    // response without having sent a request"). H2PushRelayHandler processes
+                    // raw HTTP2Frame.FramePayload directly.
                     return serverPushStream.pipeline.addHandler(
-                        HTTP2FramePayloadToHTTP1ClientCodec(httpProtocol: .https),
-                        name: "h2push.codec"
-                    ).flatMap {
-                        serverPushStream.pipeline.addHandler(
-                            H2PushRelayHandler(recorder: pushRecorder, serverConnection: self),
-                            name: "h2push.relay"
-                        )
-                    }
+                        H2PushRelayHandler(recorder: pushRecorder, serverConnection: self),
+                        name: "h2push.relay"
+                    )
                 }
                 self?.multiplexer = mux
 
@@ -364,7 +364,9 @@ final class PushPromiseTracker: ChannelInboundHandler, RemovableChannelHandler {
 /// 4. Write PUSH_PROMISE frame on client H2 channel (referencing original client stream)
 /// 5. Write HEADERS + DATA frames on client H2 channel (on the new push stream)
 final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
-    typealias InboundIn = HTTPClientResponsePart
+    // Raw H2 frame payload — NOT HTTP1 codec, because push streams have
+    // no outgoing request (which causes HTTP2FramePayloadToHTTP1ClientCodec to crash).
+    typealias InboundIn = HTTP2Frame.FramePayload
 
     private let recorder: SessionRecorder
     private weak var serverConnection: H2ServerConnection?
@@ -375,6 +377,8 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     private var pushPromiseSent = false
     /// The server-side stream ID of this push stream (captured from first frame context).
     private var serverPushStreamID: HTTP2StreamID?
+    /// Whether we've seen the first HEADERS frame.
+    private var gotHeaders = false
 
     init(recorder: SessionRecorder, serverConnection: H2ServerConnection) {
         self.recorder = recorder
@@ -382,31 +386,49 @@ final class H2PushRelayHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        let part = unwrapInboundIn(data)
+        let payload = unwrapInboundIn(data)
 
-        switch part {
-        case .head(let head):
+        switch payload {
+        case .headers(let headerContent):
             recorder.addProtoFlag(.h2ServerPush)
             recorder.markPushStatus(.captureOnly)
+
+            // Build HTTPResponseHead from HPACK headers for recording
+            let statusCode = headerContent.headers.first(name: ":status").flatMap { UInt($0) } ?? 200
+            var httpHeaders = HTTPHeaders()
+            for (name, value, _) in headerContent.headers {
+                if !name.hasPrefix(":") { httpHeaders.add(name: name, value: value) }
+            }
+            let head = HTTPResponseHead(
+                version: .http2,
+                status: HTTPResponseStatus(statusCode: Int(statusCode))
+            )
             recorder.recordResponseHead(head)
             recorder.addDownload(200)
-            // On first head, try to forward PUSH_PROMISE + response headers to client
-            tryForwardPushPromise(context: context, responseHead: head)
-
-        case .body(let body):
-            recorder.recordResponseBody(body)
-            recorder.addDownload(body.readableBytes)
-            forwardData(body, endStream: false)
-
-        case .end(let trailers):
-            recorder.recordResponseEnd()
-            if let trailers = trailers {
-                // Forward trailers as HEADERS with endStream
-                forwardTrailers(trailers)
-            } else {
-                forwardEndStream()
+            if !gotHeaders {
+                gotHeaders = true
+                tryForwardPushPromise(context: context, responseHead: head)
             }
-            recorder.recordClosed()
+
+            if headerContent.endStream {
+                recorder.recordResponseEnd()
+                recorder.recordClosed()
+            }
+
+        case .data(let dataContent):
+            if case .byteBuffer(let body) = dataContent.data {
+                recorder.recordResponseBody(body)
+                recorder.addDownload(body.readableBytes)
+                forwardData(body, endStream: dataContent.endStream)
+            }
+            if dataContent.endStream {
+                recorder.recordResponseEnd()
+                recorder.recordClosed()
+            }
+
+        default:
+            // RST_STREAM, WINDOW_UPDATE, etc. — ignore for recording
+            break
         }
     }
 
