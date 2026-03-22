@@ -127,33 +127,37 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
 
         // === OUTBOUND channel (proxy → real server, aka clientChannel) ===
         let outboundGate = PipelineGateHandler()
-        try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
+        do {
+            try clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
+        } catch {
+            // syncOperations fails if we're not on clientChannel's EventLoop.
+            // Fall back to async addHandler and wait.
+            AxLogger.log("[WS Upgrade] outbound gate syncOp failed (\(error)), using async", level: .Warning)
+            try? clientChannel.pipeline.addHandler(outboundGate, name: "ws.outbound.gate").wait()
+        }
         outboundGate.shut()
 
+        // Remove HTTP handlers — gate buffers any leftover IOData
         self.removeHTTPHandlersSynchronously(from: clientChannel.pipeline, prefix: outboundPrefix)
 
-        try? clientChannel.pipeline.syncOperations.addHandler(
-            ByteToMessageHandler(WebSocketFrameDecoder()),
-            name: "ws.server.decoder",
+        // Add WS handlers — use chained futures for correct ordering on outbound EL
+        clientChannel.pipeline.addHandler(
+            ByteToMessageHandler(WebSocketFrameDecoder()), name: "ws.server.decoder",
             position: .before(outboundGate)
-        )
-        try? clientChannel.pipeline.syncOperations.addHandler(
-            WebSocketFrameEncoder(),
-            name: "ws.server.encoder",
-            position: .before(outboundGate)
-        )
-        try? clientChannel.pipeline.syncOperations.addHandler(
-            serverLogger,
-            name: "ws.server.logger",
-            position: .before(outboundGate)
-        )
-        try? clientChannel.pipeline.syncOperations.addHandler(
-            WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
-            name: "ws.server.forwarder",
-            position: .before(outboundGate)
-        )
-
-        outboundGate.openAndRemove()
+        ).flatMap { _ in
+            clientChannel.pipeline.addHandler(
+                WebSocketFrameEncoder(), name: "ws.server.encoder",
+                position: .before(outboundGate))
+        }.flatMap { _ in
+            clientChannel.pipeline.addHandler(serverLogger, name: "ws.server.logger",
+                position: .before(outboundGate))
+        }.flatMap { _ in
+            clientChannel.pipeline.addHandler(
+                WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
+                name: "ws.server.forwarder", position: .before(outboundGate))
+        }.whenComplete { _ in
+            outboundGate.openAndRemove()
+        }
     }
 
     private func isWebSocketUpgrade(_ head: HTTPRequestHead) -> Bool {
@@ -167,32 +171,32 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
     /// Remove HTTP handlers from the pipeline. When called on the event loop,
     /// named handler removal executes synchronously via the internal sync path.
     /// Note: SSL and ALPN handlers are NOT removed — they must stay for WSS connections.
+    /// Remove HTTP handlers from the pipeline.
+    /// Works on both same-EL (sync) and cross-EL (async with wait) pipelines.
+    /// The PipelineGateHandler at the end of the pipeline buffers any IOData
+    /// from decoder removal, so handler ordering is less critical now.
     private func removeHTTPHandlersSynchronously(from pipeline: ChannelPipeline, prefix: String) {
-        // Remove named handlers by convention.
-        // pipeline.removeHandler(name:promise:) calls syncOperations internally when
-        // already on the event loop, so this is effectively synchronous.
-        // Note: "ssl" and "alpn" are intentionally NOT removed because
-        // WebSocket frames still need to be encrypted for WSS connections.
-        // Remove application-level handlers FIRST (responseRelay, capture, etc.)
-        // to prevent them from receiving raw IOData forwarded by codec handlers
-        // when those are removed (ByteToMessageHandler.leftOverBytesStrategy = .forwardBytes).
+        // Remove by name first (application handlers before codecs)
         for suffix in ["responseRelay", "capture", "captureHandler", "connect",
                        "pipelining", "decompressor",
                        "responseEncoder", "requestDecoder",
                        "responseDecoder", "requestEncoder"] {
             let name = "\(prefix).\(suffix)"
-            // Use syncOperations for synchronous removal — ensures handler is gone
-            // before the next removeByType call potentially forwards leftover bytes.
+            // Try sync first, fall back to async
             if let ctx = try? pipeline.syncOperations.context(name: name) {
                 pipeline.syncOperations.removeHandler(context: ctx, promise: nil)
+            } else {
+                // Async removal — fire and forget (gate buffers any data)
+                pipeline.removeHandler(name: name, promise: nil)
             }
         }
 
-        // Also remove HTTP handlers by type (covers unnamed handlers).
-        // syncOperations.handler(type:) + removeHandler is fully synchronous on the EL.
+        // Remove by type as fallback (covers unnamed handlers from configureHTTPServerPipeline)
         func removeByType<T: RemovableChannelHandler>(_ type: T.Type) {
             if let handler = try? pipeline.syncOperations.handler(type: type) {
                 _ = pipeline.syncOperations.removeHandler(handler)
+            } else {
+                // Can't use syncOperations — skip (gate handles any leaks)
             }
         }
         removeByType(HTTPRequestEncoder.self)
