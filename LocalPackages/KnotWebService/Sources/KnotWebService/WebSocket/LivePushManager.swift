@@ -29,10 +29,10 @@ public final class LivePushManager {
 
     public func attach(_ bridge: LiveBridge) {
         bridge.onNewFlow = { [weak self] data in
-            self?.broadcast(type: "newFlow", data: data)
+            self?.broadcast(type: "flow", data: data)
         }
         bridge.onFlowUpdate = { [weak self] data in
-            self?.broadcast(type: "flowUpdate", data: data)
+            self?.broadcast(type: "flow_update", data: data)
         }
         bridge.onMetrics = { [weak self] data in
             self?.broadcast(type: "metrics", data: data)
@@ -44,7 +44,7 @@ public final class LivePushManager {
             self?.broadcast(type: "retest", data: data)
         }
         bridge.onSurfProgress = { [weak self] data in
-            self?.broadcast(type: "surfProgress", data: data)
+            self?.broadcast(type: "surf_progress", data: data)
         }
     }
 
