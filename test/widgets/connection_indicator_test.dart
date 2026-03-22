@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:knot/api/ws_client.dart';
 import 'package:knot/widgets/connection_indicator.dart';
+import 'package:knot/theme/app_theme.dart';
 
 void main() {
   Widget buildWidget(WsStatus status) {
@@ -20,12 +21,11 @@ void main() {
       expect(find.text('Connected'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Connected'));
-      expect(text.style?.color, Colors.green);
+      expect(text.style?.color, AppTheme.statusConnected);
 
-      // Check the dot color
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, Colors.green);
+      expect(decoration.color, AppTheme.statusConnected);
     });
 
     testWidgets('shows "Connecting..." with orange for connecting status',
@@ -35,11 +35,11 @@ void main() {
       expect(find.text('Connecting...'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Connecting...'));
-      expect(text.style?.color, Colors.orange);
+      expect(text.style?.color, AppTheme.statusConnecting);
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, Colors.orange);
+      expect(decoration.color, AppTheme.statusConnecting);
     });
 
     testWidgets('shows "Disconnected" with red for disconnected status',
@@ -49,11 +49,11 @@ void main() {
       expect(find.text('Disconnected'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Disconnected'));
-      expect(text.style?.color, Colors.red);
+      expect(text.style?.color, AppTheme.statusDisconnected);
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, Colors.red);
+      expect(decoration.color, AppTheme.statusDisconnected);
     });
 
     testWidgets('renders dot with circle shape', (tester) async {

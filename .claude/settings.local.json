@@ -319,7 +319,9 @@
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign rm -rf native/TunnelServices/.build rm -rf native/KnotStorage/.build rm -rf native/KnotWebService/.build swift build --package-path native/TunnelServices)",
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign flutter analyze)",
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign flutter test)",
-      "Bash(tee /tmp/flutter-test-result.txt)"
+      "Bash(tee /tmp/flutter-test-result.txt)",
+      "Bash(tee /tmp/ft.txt)",
+      "Bash(echo \"EXIT:$?\")"
     ],
     "additionalDirectories": [
       "/Users/aa123/Documents/Knot"
