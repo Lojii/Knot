@@ -131,22 +131,29 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             serverCh.pipeline.removeHandler(bridge, promise: nil)
 
             // === Transform OUTBOUND channel (proxy→real server, aka clientChannel) ===
-            // Add a temporary ByteBuffer sink at the END of the outbound pipeline.
-            // When removeHTTPHandlersSynchronously removes ByteToMessageHandler<HTTPResponseDecoder>,
-            // leftover bytes are forwarded as IOData. The sink absorbs them, preventing
-            // fatalError in ResponseRelayHandler (which expects HTTPClientResponsePart).
-            // Add sink synchronously to ensure it's in pipeline before decoder removal
-            let outboundSink = WebSocketUpgradeBridge(
-                clientChannel: clientChannel, serverCh: serverCh,
-                clientLogger: serverLogger, direction: .serverToClient
-            )
-            try? clientChannel.pipeline.syncOperations.addHandler(outboundSink, name: "ws.outbound.sink")
+            // Must pause autoRead to prevent server data arriving during pipeline swap.
+            _ = clientChannel.setOption(ChannelOptions.autoRead, value: false)
 
-            self.removeHTTPHandlersSynchronously(from: clientChannel.pipeline, prefix: outboundPrefix)
+            // Remove HTTP handlers — use regular removeHandler (not syncOperations)
+            // because clientChannel may be on a different EventLoop.
+            // Named handlers are removed fire-and-forget; leftover bytes from decoder
+            // removal are handled by the outbound pipeline's existing handlers or dropped.
+            for suffix in ["responseRelay", "decompressor", "responseDecoder", "requestEncoder"] {
+                clientChannel.pipeline.removeHandler(name: "\(outboundPrefix).\(suffix)", promise: nil)
+            }
+            // Also remove by type as fallback
+            func removeOutboundByType<T: RemovableChannelHandler>(_ type: T.Type) {
+                if let handler = try? clientChannel.pipeline.syncOperations.handler(type: type) {
+                    _ = clientChannel.pipeline.syncOperations.removeHandler(handler)
+                }
+            }
+            // For outbound: don't use removeByType for ByteToMessageHandler<HTTPResponseDecoder>
+            // as it may forward leftover bytes. Instead, keep the decoder — it won't receive
+            // HTTP data anymore (WS frames will arrive), and the WS decoder will be added after.
+            removeOutboundByType(HTTPRequestEncoder.self)
+            removeOutboundByType(NIOHTTPResponseDecompressor.self)
 
-            // Remove the sink synchronously after HTTP handlers are gone
-            try? clientChannel.pipeline.syncOperations.removeHandler(outboundSink)
-
+            // Add WS handlers on the outbound channel
             _ = clientChannel.pipeline.addHandler(
                 ByteToMessageHandler(WebSocketFrameDecoder()),
                 name: "ws.server.decoder"
@@ -160,6 +167,9 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
                 WebSocketForwarder(peerChannel: serverCh, direction: .serverToClient),
                 name: "ws.server.forwarder"
             )
+
+            // Resume reading — WS pipeline is now in place
+            _ = clientChannel.setOption(ChannelOptions.autoRead, value: true)
         }
     }
 
