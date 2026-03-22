@@ -31,6 +31,8 @@ Pods/Pods.xcodeproj
 #
 # Add this line if you want to avoid checking in source code from the Xcode workspace
 *.xcworkspace
+# But keep Flutter's macOS workspace
+!macos/Runner.xcworkspace/
 
 # Carthage
 #
@@ -60,3 +62,11 @@ iOSInjectionProject/
 .build/
 
 node_modules/
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.metadata
+.idea/

@@ -22,8 +22,8 @@ let package = Package(
         // Networking
         .package(url: "https://github.com/robbiehanson/CocoaAsyncSocket.git", from: "7.6.5"),
         // Local QUIC packages
-        .package(path: "../SwiftQuiche"),
-        .package(path: "../SwiftLsquic"),
+        .package(path: "../../LocalPackages/SwiftQuiche"),
+        .package(path: "../../LocalPackages/SwiftLsquic"),
         // Local Storage package
         .package(path: "../KnotStorage"),
         // Local Web Service package
