@@ -123,6 +123,16 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
             position: .before(inboundGate)
         )
 
+        // Extra safety: ensure HTTPResponseEncoder is gone from inbound pipeline.
+        // configureHTTPServerPipeline may have added it with NIO-internal naming
+        // that removeHTTPHandlersSynchronously misses.
+        if let enc = try? serverCh.pipeline.syncOperations.handler(type: HTTPResponseEncoder.self) {
+            try? serverCh.pipeline.syncOperations.removeHandler(enc)
+        }
+        if let err = try? serverCh.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
+            try? serverCh.pipeline.syncOperations.removeHandler(err)
+        }
+
         inboundGate.openAndRemove()
 
         // === OUTBOUND channel (proxy → real server, aka clientChannel) ===
