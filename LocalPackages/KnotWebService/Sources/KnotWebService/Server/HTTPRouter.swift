@@ -2,7 +2,7 @@ import Foundation
 import NIOCore
 import NIOHTTP1
 
-final class HTTPRouter: ChannelInboundHandler {
+final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = HTTPServerRequestPart
     typealias OutboundOut = HTTPServerResponsePart
 
@@ -134,7 +134,7 @@ final class HTTPRouter: ChannelInboundHandler {
     // MARK: - Dashboard
 
     private func serveDashboard(context: ChannelHandlerContext) {
-        let body = Data(DashboardHTML.page.utf8)
+        let body = Data(DashboardHTML.html.utf8)
         ResponseHelper.sendHTTP(context: context, status: .ok, contentType: "text/html; charset=utf-8", body: body)
     }
 
