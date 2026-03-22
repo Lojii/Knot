@@ -1,0 +1,53 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../controllers/task_controller.dart';
+import '../../controllers/flow_controller.dart';
+
+class CaptureToolbar extends StatelessWidget {
+  const CaptureToolbar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final taskCtrl = Get.find<TaskController>();
+    final flowCtrl = Get.find<FlowController>();
+    final theme = Theme.of(context);
+
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: theme.dividerColor)),
+      ),
+      child: Row(
+        children: [
+          Obx(() => IconButton(
+            icon: Icon(taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow),
+            color: taskCtrl.isCapturing.value ? Colors.red : Colors.green,
+            tooltip: taskCtrl.isCapturing.value ? 'Stop' : 'Start',
+            onPressed: () {/* platform channel P1 later */},
+          )),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 18),
+            tooltip: 'Clear',
+            onPressed: () => flowCtrl.flows.clear(),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: 240,
+            height: 30,
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                prefixIcon: const Icon(Icons.search, size: 16),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+              onChanged: flowCtrl.search,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
