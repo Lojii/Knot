@@ -126,14 +126,22 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
         inboundGate.openAndRemove()
 
         // === OUTBOUND channel (proxy → real server, aka clientChannel) ===
+        // Check EL alignment
+        let onOutboundEL = clientChannel.eventLoop.inEventLoop
+        AxLogger.log("[WS Upgrade] outbound EL: inEventLoop=\(onOutboundEL), inbound EL same=\(serverCh.eventLoop === clientChannel.eventLoop)", level: .Warning)
+
         let outboundGate = PipelineGateHandler()
-        do {
-            try clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
-        } catch {
-            // syncOperations fails if we're not on clientChannel's EventLoop.
-            // Fall back to async addHandler and wait.
-            AxLogger.log("[WS Upgrade] outbound gate syncOp failed (\(error)), using async", level: .Warning)
-            try? clientChannel.pipeline.addHandler(outboundGate, name: "ws.outbound.gate").wait()
+        if onOutboundEL {
+            try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
+        } else {
+            // Cross-EL: execute on outbound EL and wait
+            AxLogger.log("[WS Upgrade] cross-EL! Dispatching outbound gate to outbound EL", level: .Warning)
+            let sem = DispatchSemaphore(value: 0)
+            clientChannel.eventLoop.execute {
+                try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
+                sem.signal()
+            }
+            sem.wait()
         }
         outboundGate.shut()
 

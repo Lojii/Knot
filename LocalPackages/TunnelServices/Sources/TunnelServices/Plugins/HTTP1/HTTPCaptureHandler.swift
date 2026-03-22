@@ -457,6 +457,7 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        fputs("[HTTP1ResponseRelay] channelRead entered\n", stderr)
         // Safe type check before unwrapInboundIn.
         // During WebSocket pipeline upgrade, the HTTP response decoder removal may
         // forward leftover bytes as IOData. unwrapInboundIn fatalErrors on IOData.
