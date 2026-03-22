@@ -457,7 +457,23 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        fputs("[ResponseRelay-ENTER] channelRead\n", stderr)
+        // Safe type check before unwrapInboundIn.
+        // During WebSocket pipeline upgrade, the HTTP response decoder removal may
+        // forward leftover bytes as IOData. unwrapInboundIn fatalErrors on IOData.
+        // We detect IOData by trying to extract ByteBuffer from the NIOAny — if it
+        // succeeds, this is raw bytes (not an HTTP response part) and we absorb it.
+        // NIOAny.forceAsByteBuffer checks for case .ioData(.byteBuffer(bb)).
+        // We use the fact that HTTPClientResponsePart is wrapped differently than IOData.
+        //
+        // Implementation: NIOAny's _storage has cases .ioData and .other.
+        // HTTPClientResponsePart is wrapped as .other, IOData as .ioData.
+        // We check by comparing the debug description prefix.
+        let dataDesc = String(reflecting: data)
+        if dataDesc.hasPrefix("_NIOAny(_storage: NIOCore.IOData") || dataDesc.contains(".ioData(") {
+            AxLogger.log("[ResponseRelay] absorbed IOData (WS upgrade leftover bytes)", level: .Warning)
+            return
+        }
+
         let part = unwrapInboundIn(data)
 
         switch part {
