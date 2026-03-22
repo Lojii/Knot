@@ -1,0 +1,75 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:knot/api/ws_client.dart';
+import 'package:knot/widgets/connection_indicator.dart';
+
+void main() {
+  Widget buildWidget(WsStatus status) {
+    return MaterialApp(
+      home: Scaffold(
+        body: ConnectionIndicator(status: status),
+      ),
+    );
+  }
+
+  group('ConnectionIndicator', () {
+    testWidgets('shows "Connected" with green for connected status',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(WsStatus.connected));
+
+      expect(find.text('Connected'), findsOneWidget);
+
+      final text = tester.widget<Text>(find.text('Connected'));
+      expect(text.style?.color, Colors.green);
+
+      // Check the dot color
+      final container = tester.widget<Container>(find.byType(Container));
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, Colors.green);
+    });
+
+    testWidgets('shows "Connecting..." with orange for connecting status',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(WsStatus.connecting));
+
+      expect(find.text('Connecting...'), findsOneWidget);
+
+      final text = tester.widget<Text>(find.text('Connecting...'));
+      expect(text.style?.color, Colors.orange);
+
+      final container = tester.widget<Container>(find.byType(Container));
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, Colors.orange);
+    });
+
+    testWidgets('shows "Disconnected" with red for disconnected status',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(WsStatus.disconnected));
+
+      expect(find.text('Disconnected'), findsOneWidget);
+
+      final text = tester.widget<Text>(find.text('Disconnected'));
+      expect(text.style?.color, Colors.red);
+
+      final container = tester.widget<Container>(find.byType(Container));
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, Colors.red);
+    });
+
+    testWidgets('renders dot with circle shape', (tester) async {
+      await tester.pumpWidget(buildWidget(WsStatus.connected));
+
+      final container = tester.widget<Container>(find.byType(Container));
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.shape, BoxShape.circle);
+    });
+
+    testWidgets('dot is 8x8 pixels', (tester) async {
+      await tester.pumpWidget(buildWidget(WsStatus.connected));
+
+      final container = tester.widget<Container>(find.byType(Container));
+      expect(container.constraints?.maxWidth, 8);
+      expect(container.constraints?.maxHeight, 8);
+    });
+  });
+}

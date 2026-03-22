@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/tree_controller.dart';
-import '../../controllers/flow_controller.dart';
 
 class TreePanel extends StatelessWidget {
   const TreePanel({super.key});
@@ -9,11 +8,7 @@ class TreePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final treeCtrl = Get.find<TreeController>();
-    final flowCtrl = Get.find<FlowController>();
     final theme = Theme.of(context);
-
-    // Rebuild tree when flows change
-    ever(flowCtrl.flows, (_) => treeCtrl.buildTree(flowCtrl.flows));
 
     return Container(
       decoration: BoxDecoration(

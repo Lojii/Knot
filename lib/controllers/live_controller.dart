@@ -26,15 +26,25 @@ class LiveController extends GetxController {
 
     ws.connect(taskId: taskId);
 
-    _statusSub = ws.statusStream.listen((s) => wsStatus.value = s);
+    _statusSub = ws.statusStream.listen((s) {
+      final wasDisconnected = wsStatus.value != WsStatus.connected;
+      wsStatus.value = s;
+      // On reconnect: reload flow list (may have missed events during disconnect)
+      if (s == WsStatus.connected && wasDisconnected) {
+        Get.find<FlowController>().reloadFromFirstPage();
+      }
+    });
     _msgSub = ws.messages.listen((msg) {
       switch (msg.type) {
         case 'flow':
           final flow = FlowSummary.fromJson(msg.data);
           Get.find<FlowController>().addFlowFromPush(flow);
           requestCount.value++;
-          final bytes = (msg.data['uploadBytes'] as int? ?? 0) + (msg.data['downloadBytes'] as int? ?? 0);
-          Get.find<DashboardController>().addTrafficPoint(bytes);
+          final up = msg.data['uploadBytes'] as int? ?? 0;
+          final down = msg.data['downloadBytes'] as int? ?? 0;
+          uploadBytes.value += up;
+          downloadBytes.value += down;
+          Get.find<DashboardController>().addTrafficPoint(up + down);
           break;
         case 'flow_update':
           Get.find<FlowController>().updateFlowFromPush(msg.data);
@@ -58,7 +68,12 @@ class LiveController extends GetxController {
   }
 
   void _updateStats(Map<String, dynamic> data) {
-    // Update status bar counters from stats push
+    if (data.containsKey('totalUploadBytes')) {
+      uploadBytes.value = (data['totalUploadBytes'] as int?) ?? uploadBytes.value;
+    }
+    if (data.containsKey('totalDownloadBytes')) {
+      downloadBytes.value = (data['totalDownloadBytes'] as int?) ?? downloadBytes.value;
+    }
   }
 
   @override

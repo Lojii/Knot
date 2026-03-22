@@ -23,13 +23,13 @@ class FilterBar extends StatelessWidget {
           const Text('Proto: ', style: TextStyle(fontSize: 11)),
           ..._chips(['HTTP', 'HTTPS', 'WS', 'H2'], filterCtrl.activeProtocols, (p) {
             filterCtrl.toggleProtocol(p);
-            flowCtrl.loadFlows();
+            flowCtrl.reloadFromFirstPage();
           }),
           const SizedBox(width: 12),
           const Text('Status: ', style: TextStyle(fontSize: 11)),
           ..._chips(['2xx', '3xx', '4xx', '5xx'], filterCtrl.activeStatuses, (s) {
             filterCtrl.toggleStatus(s);
-            flowCtrl.loadFlows();
+            flowCtrl.reloadFromFirstPage();
           }),
         ],
       )),

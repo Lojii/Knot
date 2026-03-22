@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
@@ -15,7 +15,7 @@ class GlobalBar extends StatelessWidget {
     final taskCtrl = Get.find<TaskController>();
     final liveCtrl = Get.find<LiveController>();
     final theme = Theme.of(context);
-    final isMacOS = Platform.isMacOS;
+    final isMacOS = defaultTargetPlatform == TargetPlatform.macOS;
 
     return GestureDetector(
       // Allow dragging the window by this bar

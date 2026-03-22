@@ -50,8 +50,15 @@ class FlowController extends GetxController {
   }
 
   void loadMore() {
+    if (isLoading.value || flows.length >= total.value) return;
     _currentPage++;
     loadFlows(append: true);
+  }
+
+  /// Reset to first page and reload — call after filter/search changes
+  void reloadFromFirstPage() {
+    _currentPage = 1;
+    loadFlows();
   }
 
   void search(String query) {

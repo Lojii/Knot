@@ -6,8 +6,34 @@ import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../models/flow_summary.dart';
 
-class FlowTable extends StatelessWidget {
+class FlowTable extends StatefulWidget {
   const FlowTable({super.key});
+
+  @override
+  State<FlowTable> createState() => _FlowTableState();
+}
+
+class _FlowTableState extends State<FlowTable> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      Get.find<FlowController>().loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,30 +49,27 @@ class FlowTable extends StatelessWidget {
         items = items.where((f) => f.host == domain).toList();
       }
 
+      if (items.isEmpty && !flowCtrl.isLoading.value) {
+        return Column(
+          children: [
+            _tableHeader(theme),
+            const Expanded(
+              child: Center(child: Text('No requests captured', style: TextStyle(color: Colors.grey))),
+            ),
+          ],
+        );
+      }
+
       return Column(
         children: [
-          // Table header
-          Container(
-            height: 28,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHigh,
-            ),
-            child: const Row(
-              children: [
-                SizedBox(width: 60, child: Text('Method', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 8),
-                Expanded(flex: 2, child: Text('Host', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-                Expanded(flex: 3, child: Text('Path', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 50, child: Text('Status', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 70, child: Text('Size', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-                SizedBox(width: 70, child: Text('Time', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-              ],
-            ),
-          ),
+          _tableHeader(theme),
+          // Loading indicator
+          if (flowCtrl.isLoading.value)
+            const LinearProgressIndicator(minHeight: 2),
           // Table body
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               itemCount: items.length,
               itemBuilder: (ctx, i) {
                 final f = items[i];
@@ -59,6 +82,25 @@ class FlowTable extends StatelessWidget {
       );
     });
   }
+
+  Widget _tableHeader(ThemeData theme) => Container(
+    height: 28,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      color: theme.colorScheme.surfaceContainerHigh,
+    ),
+    child: const Row(
+      children: [
+        SizedBox(width: 60, child: Text('Method', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        SizedBox(width: 8),
+        Expanded(flex: 2, child: Text('Host', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        Expanded(flex: 3, child: Text('Path', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        SizedBox(width: 50, child: Text('Status', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        SizedBox(width: 70, child: Text('Size', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+        SizedBox(width: 70, child: Text('Time', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+      ],
+    ),
+  );
 }
 
 class _FlowRow extends StatelessWidget {

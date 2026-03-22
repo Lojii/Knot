@@ -1,0 +1,2366 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B36ABCAA2F6B88AD0078D8B0 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56162E8A2255CCB100D24F87 /* NetworkExtension.framework */; };
+		B36ABCB22F6B88AD0078D8B0 /* PacketTunnel-iOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B36ABCBD2F6B89570078D8B0 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56162E8A2255CCB100D24F87 /* NetworkExtension.framework */; };
+		B36ABCC72F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B36ABCD92F6B8B490078D8B0 /* KnotUI in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCD82F6B8B490078D8B0 /* KnotUI */; };
+		B36ABCDB2F6B8B490078D8B0 /* KnotCore in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCDA2F6B8B490078D8B0 /* KnotCore */; };
+		B36ABCDD2F6B8B490078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCDC2F6B8B490078D8B0 /* TunnelServices */; };
+		B36ABCDF2F6B8B5C0078D8B0 /* KnotUI in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCDE2F6B8B5C0078D8B0 /* KnotUI */; };
+		B36ABCE12F6B8B5C0078D8B0 /* KnotCore in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCE02F6B8B5C0078D8B0 /* KnotCore */; };
+		B36ABCE32F6B8B5C0078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCE22F6B8B5C0078D8B0 /* TunnelServices */; };
+		B36ABCE52F6B8B870078D8B0 /* KnotCore in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCE42F6B8B870078D8B0 /* KnotCore */; };
+		B36ABCE72F6B8B870078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCE62F6B8B870078D8B0 /* TunnelServices */; };
+		B36ABCE92F6B8B930078D8B0 /* KnotCore in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCE82F6B8B930078D8B0 /* KnotCore */; };
+		B36ABCEB2F6B8B930078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABCEA2F6B8B930078D8B0 /* TunnelServices */; };
+		B36ABCEC2F6B8BCD0078D8B0 /* Http in Resources */ = {isa = PBXBuildFile; fileRef = 5634538722BCD2E70076219D /* Http */; };
+		B36ABCED2F6B8BD10078D8B0 /* Http in Resources */ = {isa = PBXBuildFile; fileRef = 5634538722BCD2E70076219D /* Http */; };
+		B36ABFA92F6E1FDD0078D8B0 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56162E8A2255CCB100D24F87 /* NetworkExtension.framework */; };
+		B36ABFB32F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B36ABFBB2F6E20670078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABFBA2F6E20670078D8B0 /* TunnelServices */; };
+		B36ABFBC2F6E20670078D8B0 /* TunnelServices in Frameworks */ = {isa = PBXBuildFile; productRef = B36ABFBD2F6E20670078D8B0 /* TunnelServices */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		564B308622B2213C00387E07 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 564B308122B2213B00387E07 /* AxLogger.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 69A0D2851DD598F200227353;
+			remoteInfo = AxLogger;
+		};
+		564B308822B2213C00387E07 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 564B308122B2213B00387E07 /* AxLogger.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6918835E1DDEA7A00051DAAE;
+			remoteInfo = AxLoggerDemo;
+		};
+		B36ABC4F2F6B873A0078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABC412F6B87390078D8B0;
+			remoteInfo = "KnotApp-iOS";
+		};
+		B36ABC592F6B873A0078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABC412F6B87390078D8B0;
+			remoteInfo = "KnotApp-iOS";
+		};
+		B36ABC832F6B88350078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABC752F6B88340078D8B0;
+			remoteInfo = "KnotApp-macOS";
+		};
+		B36ABC8D2F6B88350078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABC752F6B88340078D8B0;
+			remoteInfo = "KnotApp-macOS";
+		};
+		B36ABCB02F6B88AD0078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABCA82F6B88AD0078D8B0;
+			remoteInfo = "PacketTunnel-iOS";
+		};
+		B36ABCC52F6B89570078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABCBB2F6B89570078D8B0;
+			remoteInfo = "SystemExtension-macOS";
+		};
+		B36ABFB12F6E1FDD0078D8B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 153E206C21EC26B500B82536 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B36ABFA72F6E1FDD0078D8B0;
+			remoteInfo = KnotHelperExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B36ABCB72F6B88AD0078D8B0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B36ABCB22F6B88AD0078D8B0 /* PacketTunnel-iOS.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCCC2F6B89570078D8B0 /* Embed System Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				B36ABCC72F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension in Embed System Extensions */,
+			);
+			name = "Embed System Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFB82F6E1FDD0078D8B0 /* Embed System Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				B36ABFB32F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension in Embed System Extensions */,
+			);
+			name = "Embed System Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		150C855621F6A04400318C60 /* KnotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnotTests.swift; sourceTree = "<group>"; };
+		150C855821F6A04400318C60 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOConcurrencyHelpersTests.swift; sourceTree = "<group>"; };
+		150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOConcurrencyHelpersTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C856121F6A05600318C60 /* LinuxMain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinuxMain.swift; sourceTree = "<group>"; };
+		150C856321F6A05600318C60 /* HTTPUpgradeTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPUpgradeTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C856421F6A05600318C60 /* HTTPServerClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerClientTest.swift; sourceTree = "<group>"; };
+		150C856521F6A05600318C60 /* HTTPHeadersTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPHeadersTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856621F6A05600318C60 /* HTTPRequestEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPRequestEncoderTest.swift; sourceTree = "<group>"; };
+		150C856721F6A05600318C60 /* HTTPDecoderLengthTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPDecoderLengthTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856821F6A05600318C60 /* HTTPResponseEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPResponseEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856921F6A05600318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerPipelineHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856A21F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerProtocolErrorHandlerTest.swift; sourceTree = "<group>"; };
+		150C856B21F6A05600318C60 /* HTTPDecoderLengthTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPDecoderLengthTest.swift; sourceTree = "<group>"; };
+		150C856C21F6A05600318C60 /* HTTPResponseEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPResponseEncoderTest.swift; sourceTree = "<group>"; };
+		150C856D21F6A05600318C60 /* HTTPServerClientTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerClientTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856E21F6A05600318C60 /* HTTPRequestEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPRequestEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C856F21F6A05600318C60 /* HTTPHeadersTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPHeadersTest.swift; sourceTree = "<group>"; };
+		150C857021F6A05600318C60 /* ByteBufferUtilsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferUtilsTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857121F6A05600318C60 /* HTTPServerPipelineHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPServerPipelineHandlerTest.swift; sourceTree = "<group>"; };
+		150C857221F6A05600318C60 /* ByteBufferUtilsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferUtilsTest.swift; sourceTree = "<group>"; };
+		150C857321F6A05600318C60 /* HTTPUpgradeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPUpgradeTests.swift; sourceTree = "<group>"; };
+		150C857421F6A05600318C60 /* HTTPResponseCompressorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPResponseCompressorTest.swift; sourceTree = "<group>"; };
+		150C857521F6A05600318C60 /* HTTPTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPTest.swift; sourceTree = "<group>"; };
+		150C857621F6A05600318C60 /* HTTPResponseCompressorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPResponseCompressorTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857721F6A05600318C60 /* HTTPDecoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPDecoderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857821F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPServerProtocolErrorHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857921F6A05600318C60 /* HTTPDecoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPDecoderTest.swift; sourceTree = "<group>"; };
+		150C857A21F6A05600318C60 /* HTTPTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HTTPTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857B21F6A05600318C60 /* TestUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtils.swift; sourceTree = "<group>"; };
+		150C857D21F6A05800318C60 /* ByteBufferTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C857E21F6A05800318C60 /* ChannelNotificationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelNotificationTest.swift; sourceTree = "<group>"; };
+		150C857F21F6A05800318C60 /* ChannelNotificationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelNotificationTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858021F6A05800318C60 /* RecvByteBufAllocatorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecvByteBufAllocatorTest.swift; sourceTree = "<group>"; };
+		150C858121F6A05800318C60 /* PriorityQueueTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PriorityQueueTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C858221F6A05800318C60 /* BootstrapTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BootstrapTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858321F6A05800318C60 /* BlockingIOThreadPoolTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockingIOThreadPoolTest.swift; sourceTree = "<group>"; };
+		150C858421F6A05800318C60 /* EchoServerClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EchoServerClientTest.swift; sourceTree = "<group>"; };
+		150C858521F6A05800318C60 /* SocketChannelTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketChannelTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858621F6A05800318C60 /* IntegerTypesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegerTypesTest.swift; sourceTree = "<group>"; };
+		150C858721F6A05800318C60 /* BaseObjectsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseObjectsTest.swift; sourceTree = "<group>"; };
+		150C858821F6A05800318C60 /* ThreadTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ThreadTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858921F6A05800318C60 /* SystemTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SystemTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858A21F6A05800318C60 /* CodecTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodecTest.swift; sourceTree = "<group>"; };
+		150C858B21F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelOptionStorageTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858C21F6A05800318C60 /* CustomChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomChannelTests.swift; sourceTree = "<group>"; };
+		150C858D21F6A05800318C60 /* ChannelPipelineTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelPipelineTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C858E21F6A05800318C60 /* BootstrapTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BootstrapTest.swift; sourceTree = "<group>"; };
+		150C858F21F6A05800318C60 /* FileRegionTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "FileRegionTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859021F6A05800318C60 /* CompositeErrorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompositeErrorTests.swift; sourceTree = "<group>"; };
+		150C859121F6A05800318C60 /* SystemTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemTest.swift; sourceTree = "<group>"; };
+		150C859221F6A05800318C60 /* FileRegionTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileRegionTest.swift; sourceTree = "<group>"; };
+		150C859321F6A05800318C60 /* MulticastTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastTest.swift; sourceTree = "<group>"; };
+		150C859421F6A05800318C60 /* SocketOptionProviderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketOptionProviderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859521F6A05800318C60 /* DatagramChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DatagramChannelTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C859621F6A05800318C60 /* UtilitiesTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilitiesTest.swift; sourceTree = "<group>"; };
+		150C859721F6A05800318C60 /* ByteBufferTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferTest.swift; sourceTree = "<group>"; };
+		150C859821F6A05800318C60 /* MarkedCircularBufferTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MarkedCircularBufferTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C859921F6A05800318C60 /* NonBlockingFileIOTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NonBlockingFileIOTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859A21F6A05800318C60 /* ChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChannelTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C859B21F6A05800318C60 /* EmbeddedEventLoopTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EmbeddedEventLoopTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859C21F6A05800318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TypeAssistedChannelHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C859D21F6A05800318C60 /* RecvByteBufAllocatorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "RecvByteBufAllocatorTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859E21F6A05800318C60 /* BlockingIOThreadPoolTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlockingIOThreadPoolTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C859F21F6A05800318C60 /* CustomChannelTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CustomChannelTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85A021F6A05800318C60 /* IdleStateHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IdleStateHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85A121F6A05800318C60 /* SystemCallWrapperHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemCallWrapperHelpers.swift; sourceTree = "<group>"; };
+		150C85A221F6A05800318C60 /* GetAddrInfoResolverTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetAddrInfoResolverTest.swift; sourceTree = "<group>"; };
+		150C85A321F6A05800318C60 /* MarkedCircularBufferTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarkedCircularBufferTests.swift; sourceTree = "<group>"; };
+		150C85A421F6A05800318C60 /* TypeAssistedChannelHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeAssistedChannelHandlerTests.swift; sourceTree = "<group>"; };
+		150C85A521F6A05800318C60 /* CircularBufferTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularBufferTests.swift; sourceTree = "<group>"; };
+		150C85A621F6A05800318C60 /* AcceptBackoffHandlerTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AcceptBackoffHandlerTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85A721F6A05800318C60 /* UtilitiesTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UtilitiesTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85A821F6A05800318C60 /* EventLoopTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EventLoopTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85A921F6A05800318C60 /* IdleStateHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdleStateHandlerTest.swift; sourceTree = "<group>"; };
+		150C85AA21F6A05800318C60 /* SocketChannelTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketChannelTest.swift; sourceTree = "<group>"; };
+		150C85AB21F6A05800318C60 /* SelectorTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SelectorTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85AC21F6A05800318C60 /* MulticastTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MulticastTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85AD21F6A05800318C60 /* EmbeddedChannelTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedChannelTest.swift; sourceTree = "<group>"; };
+		150C85AE21F6A05800318C60 /* PendingDatagramWritesManagerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PendingDatagramWritesManagerTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85AF21F6A05800318C60 /* AcceptBackoffHandlerTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcceptBackoffHandlerTest.swift; sourceTree = "<group>"; };
+		150C85B021F6A05800318C60 /* ChannelPipelineTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelPipelineTest.swift; sourceTree = "<group>"; };
+		150C85B121F6A05800318C60 /* BaseObjectsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BaseObjectsTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85B221F6A05800318C60 /* HappyEyeballsTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HappyEyeballsTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85B321F6A05800318C60 /* SelectorTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectorTest.swift; sourceTree = "<group>"; };
+		150C85B421F6A05800318C60 /* ThreadTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreadTest.swift; sourceTree = "<group>"; };
+		150C85B521F6A05800318C60 /* PendingDatagramWritesManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PendingDatagramWritesManagerTests.swift; sourceTree = "<group>"; };
+		150C85B621F6A05800318C60 /* HeapTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeapTests.swift; sourceTree = "<group>"; };
+		150C85B721F6A05800318C60 /* CompositeErrorTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CompositeErrorTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85B821F6A05800318C60 /* HeapTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HeapTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85B921F6A05800318C60 /* CircularBufferTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CircularBufferTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85BA21F6A05800318C60 /* CodecTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CodecTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85BB21F6A05800318C60 /* SocketAddressTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketAddressTest.swift; sourceTree = "<group>"; };
+		150C85BC21F6A05800318C60 /* HappyEyeballsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HappyEyeballsTest.swift; sourceTree = "<group>"; };
+		150C85BD21F6A05800318C60 /* DatagramChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatagramChannelTests.swift; sourceTree = "<group>"; };
+		150C85BE21F6A05800318C60 /* IntegerTypesTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IntegerTypesTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85BF21F6A05800318C60 /* NonBlockingFileIOTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NonBlockingFileIOTest.swift; sourceTree = "<group>"; };
+		150C85C021F6A05800318C60 /* EmbeddedChannelTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EmbeddedChannelTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85C121F6A05800318C60 /* EmbeddedEventLoopTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmbeddedEventLoopTest.swift; sourceTree = "<group>"; };
+		150C85C221F6A05800318C60 /* EventLoopFutureTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EventLoopFutureTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85C321F6A05800318C60 /* EventLoopFutureTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopFutureTest.swift; sourceTree = "<group>"; };
+		150C85C421F6A05800318C60 /* SocketAddressTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SocketAddressTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85C521F6A05800318C60 /* EchoServerClientTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EchoServerClientTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85C621F6A05800318C60 /* SocketOptionProviderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketOptionProviderTest.swift; sourceTree = "<group>"; };
+		150C85C721F6A05800318C60 /* GetAddrInfoResolverTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GetAddrInfoResolverTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85C821F6A05800318C60 /* TestUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtils.swift; sourceTree = "<group>"; };
+		150C85C921F6A05800318C60 /* PriorityQueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PriorityQueueTests.swift; sourceTree = "<group>"; };
+		150C85CA21F6A05800318C60 /* ChannelOptionStorageTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelOptionStorageTest.swift; sourceTree = "<group>"; };
+		150C85CB21F6A05800318C60 /* ChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelTests.swift; sourceTree = "<group>"; };
+		150C85CC21F6A05800318C60 /* EventLoopTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventLoopTest.swift; sourceTree = "<group>"; };
+		150C85CE21F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationProtocolNegotiationHandlerTests.swift; sourceTree = "<group>"; };
+		150C85CF21F6A05800318C60 /* SNIHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SNIHandlerTests.swift; sourceTree = "<group>"; };
+		150C85D021F6A05800318C60 /* SNIHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SNIHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85D121F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ApplicationProtocolNegotiationHandlerTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85D321F6A05800318C60 /* Base64Test+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Base64Test+XCTest.swift"; sourceTree = "<group>"; };
+		150C85D421F6A05800318C60 /* WebSocketFrameEncoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WebSocketFrameEncoderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85D521F6A05800318C60 /* EndToEndTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EndToEndTests+XCTest.swift"; sourceTree = "<group>"; };
+		150C85D621F6A05800318C60 /* WebSocketFrameDecoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocketFrameDecoderTest.swift; sourceTree = "<group>"; };
+		150C85D721F6A05800318C60 /* Base64Test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base64Test.swift; sourceTree = "<group>"; };
+		150C85D821F6A05800318C60 /* EndToEndTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndToEndTests.swift; sourceTree = "<group>"; };
+		150C85D921F6A05800318C60 /* WebSocketFrameDecoderTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WebSocketFrameDecoderTest+XCTest.swift"; sourceTree = "<group>"; };
+		150C85DA21F6A05800318C60 /* WebSocketFrameEncoderTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocketFrameEncoderTest.swift; sourceTree = "<group>"; };
+		153E23F621EC54D500B82536 /* NIOHTTP1.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = NIOHTTP1.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		153E23F821EC552600B82536 /* SwiftNIO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftNIO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		153E240A21EC565A00B82536 /* CNIOZlib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CNIOZlib.framework; path = "../../../Library/Developer/Xcode/DerivedData/Knot-camcvwinuyczshgplzuhnyfepfod/Build/Products/Debug-iphoneos/CNIOZlib.framework"; sourceTree = "<group>"; };
+		153E240B21EC565A00B82536 /* CNIODarwin.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CNIODarwin.framework; path = "../../../Library/Developer/Xcode/DerivedData/Knot-camcvwinuyczshgplzuhnyfepfod/Build/Products/Debug-iphoneos/CNIODarwin.framework"; sourceTree = "<group>"; };
+		153E240C21EC565A00B82536 /* CNIOLinux.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CNIOLinux.framework; path = "../../../Library/Developer/Xcode/DerivedData/Knot-camcvwinuyczshgplzuhnyfepfod/Build/Products/Debug-iphoneos/CNIOLinux.framework"; sourceTree = "<group>"; };
+		153E240D21EC565A00B82536 /* CNIOHTTPParser.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CNIOHTTPParser.framework; path = "../../../Library/Developer/Xcode/DerivedData/Knot-camcvwinuyczshgplzuhnyfepfod/Build/Products/Debug-iphoneos/CNIOHTTPParser.framework"; sourceTree = "<group>"; };
+		153E240E21EC569700B82536 /* CNIOAtomics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CNIOAtomics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		153E241021EC569700B82536 /* NIOConcurrencyHelpers.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = NIOConcurrencyHelpers.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5609BAB82264E30A006820E4 /* CA */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CA; sourceTree = "<group>"; };
+		5609BABD2265C13D006820E4 /* CertificateVerificationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CertificateVerificationTests.swift; sourceTree = "<group>"; };
+		5609BABE2265C13D006820E4 /* TLSConfigurationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TLSConfigurationTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BABF2265C13D006820E4 /* SSLCertificateTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLCertificateTest.swift; sourceTree = "<group>"; };
+		5609BAC02265C13D006820E4 /* SSLPrivateKeyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLPrivateKeyTests.swift; sourceTree = "<group>"; };
+		5609BAC12265C13D006820E4 /* IdentityVerificationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IdentityVerificationTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAC22265C13D006820E4 /* IdentityVerificationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityVerificationTest.swift; sourceTree = "<group>"; };
+		5609BAC32265C13D006820E4 /* ByteBufferBIOTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteBufferBIOTest.swift; sourceTree = "<group>"; };
+		5609BAC42265C13D006820E4 /* NIOSSLIntegrationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLIntegrationTest.swift; sourceTree = "<group>"; };
+		5609BAC52265C13D006820E4 /* ClientSNITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClientSNITests.swift; sourceTree = "<group>"; };
+		5609BAC62265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ByteBufferBIOTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAC72265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLPrivateKeyTests+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAC82265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOSSLALPNTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAC92265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NIOSSLIntegrationTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BACA2265C13D006820E4 /* UnwrappingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnwrappingTests.swift; sourceTree = "<group>"; };
+		5609BACB2265C13D006820E4 /* NIOSSLTestHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLTestHelpers.swift; sourceTree = "<group>"; };
+		5609BACC2265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLPKCS12BundleTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BACD2265C13D006820E4 /* TLSConfigurationTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TLSConfigurationTest.swift; sourceTree = "<group>"; };
+		5609BACE2265C13D006820E4 /* SSLCertificateTest+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SSLCertificateTest+XCTest.swift"; sourceTree = "<group>"; };
+		5609BACF2265C13D006820E4 /* NIOSSLALPNTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOSSLALPNTest.swift; sourceTree = "<group>"; };
+		5609BAD02265C13D006820E4 /* ClientSNITests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ClientSNITests+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAD12265C13D006820E4 /* UnwrappingTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UnwrappingTests+XCTest.swift"; sourceTree = "<group>"; };
+		5609BAD22265C13D006820E4 /* SSLPKCS12BundleTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSLPKCS12BundleTest.swift; sourceTree = "<group>"; };
+		5609BAD32265C13D006820E4 /* CertificateVerificationTests+XCTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CertificateVerificationTests+XCTest.swift"; sourceTree = "<group>"; };
+		56162E8A2255CCB100D24F87 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		5634538722BCD2E70076219D /* Http */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Http; sourceTree = "<group>"; };
+		564379EF22A769FA00DF957D /* PerfectCURLTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PerfectCURLTests.swift; sourceTree = "<group>"; };
+		564B308122B2213B00387E07 /* AxLogger.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AxLogger.xcodeproj; path = AxLogger/AxLogger.xcodeproj; sourceTree = "<group>"; };
+		565A4E822277262A00F13CAD /* ActiveSQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ActiveSQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56D260EB228132F7004F5636 /* NIOTSEventLoopTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSEventLoopTests.swift; sourceTree = "<group>"; };
+		56D260EC228132F7004F5636 /* NIOTSConnectionChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSConnectionChannelTests.swift; sourceTree = "<group>"; };
+		56D260ED228132F7004F5636 /* NIOTSEndToEndTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSEndToEndTests.swift; sourceTree = "<group>"; };
+		56D260EE228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSSocketOptionsOnChannelTests.swift; sourceTree = "<group>"; };
+		56D260EF228132F7004F5636 /* NIOTSListenerChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSListenerChannelTests.swift; sourceTree = "<group>"; };
+		56D260F0228132F7004F5636 /* NIOTSSocketOptionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NIOTSSocketOptionTests.swift; sourceTree = "<group>"; };
+		56F4159522770D0000AE1554 /* FMDB.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FMDB.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56F4159722770D0000AE1554 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56F41DB02277137D00AE1554 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC422F6B87390078D8B0 /* KnotApp-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KnotApp-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC4E2F6B873A0078D8B0 /* KnotApp-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KnotApp-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC582F6B873A0078D8B0 /* KnotApp-iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KnotApp-iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC762F6B88340078D8B0 /* KnotApp-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KnotApp-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC822F6B88350078D8B0 /* KnotApp-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KnotApp-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABC8C2F6B88350078D8B0 /* KnotApp-macOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KnotApp-macOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "PacketTunnel-iOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = "com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KnotHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.KingMap.KnotHelper.Extension.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B36ABC432F6B87390078D8B0 /* KnotApp-iOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-iOS"; sourceTree = "<group>"; };
+		B36ABC512F6B873A0078D8B0 /* KnotApp-iOSTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-iOSTests"; sourceTree = "<group>"; };
+		B36ABC5B2F6B873A0078D8B0 /* KnotApp-iOSUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-iOSUITests"; sourceTree = "<group>"; };
+		B36ABC772F6B88340078D8B0 /* KnotApp-macOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-macOS"; sourceTree = "<group>"; };
+		B36ABC852F6B88350078D8B0 /* KnotApp-macOSTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-macOSTests"; sourceTree = "<group>"; };
+		B36ABC8F2F6B88350078D8B0 /* KnotApp-macOSUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "KnotApp-macOSUITests"; sourceTree = "<group>"; };
+		B36ABCAB2F6B88AD0078D8B0 /* PacketTunnel-iOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "PacketTunnel-iOS"; sourceTree = "<group>"; };
+		B36ABCBE2F6B89570078D8B0 /* SystemExtension-macOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "SystemExtension-macOS"; sourceTree = "<group>"; };
+		B36ABF982F6E1F7D0078D8B0 /* KnotHelper */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KnotHelper; sourceTree = "<group>"; };
+		B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KnotHelperExtension; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B36ABC3F2F6B87390078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCD92F6B8B490078D8B0 /* KnotUI in Frameworks */,
+				B36ABCDD2F6B8B490078D8B0 /* TunnelServices in Frameworks */,
+				B36ABCDB2F6B8B490078D8B0 /* KnotCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC4B2F6B873A0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC552F6B873A0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC732F6B88340078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCDF2F6B8B5C0078D8B0 /* KnotUI in Frameworks */,
+				B36ABCE32F6B8B5C0078D8B0 /* TunnelServices in Frameworks */,
+				B36ABCE12F6B8B5C0078D8B0 /* KnotCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC7F2F6B88350078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC892F6B88350078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCA62F6B88AD0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCAA2F6B88AD0078D8B0 /* NetworkExtension.framework in Frameworks */,
+				B36ABCE72F6B8B870078D8B0 /* TunnelServices in Frameworks */,
+				B36ABCE52F6B8B870078D8B0 /* KnotCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCB92F6B89570078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCBD2F6B89570078D8B0 /* NetworkExtension.framework in Frameworks */,
+				B36ABCEB2F6B8B930078D8B0 /* TunnelServices in Frameworks */,
+				B36ABCE92F6B8B930078D8B0 /* KnotCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABF942F6E1F7D0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABFBC2F6E20670078D8B0 /* TunnelServices in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA52F6E1FDD0078D8B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABFBB2F6E20670078D8B0 /* TunnelServices in Frameworks */,
+				B36ABFA92F6E1FDD0078D8B0 /* NetworkExtension.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		150C855521F6A04400318C60 /* KnotTests */ = {
+			isa = PBXGroup;
+			children = (
+				564379EE22A769FA00DF957D /* PerfectCURLTests */,
+				56D260EA228132F7004F5636 /* NIOTransportServicesTests */,
+				5609BABC2265C13D006820E4 /* NIOSSLTests */,
+				150C855E21F6A05600318C60 /* NIOConcurrencyHelpersTests */,
+				150C856221F6A05600318C60 /* NIOHTTP1Tests */,
+				150C857C21F6A05800318C60 /* NIOTests */,
+				150C85CD21F6A05800318C60 /* NIOTLSTests */,
+				150C85D221F6A05800318C60 /* NIOWebSocketTests */,
+				150C856121F6A05600318C60 /* LinuxMain.swift */,
+				150C855621F6A04400318C60 /* KnotTests.swift */,
+				150C855821F6A04400318C60 /* Info.plist */,
+			);
+			path = KnotTests;
+			sourceTree = "<group>";
+		};
+		150C855E21F6A05600318C60 /* NIOConcurrencyHelpersTests */ = {
+			isa = PBXGroup;
+			children = (
+				150C855F21F6A05600318C60 /* NIOConcurrencyHelpersTests.swift */,
+				150C856021F6A05600318C60 /* NIOConcurrencyHelpersTests+XCTest.swift */,
+			);
+			path = NIOConcurrencyHelpersTests;
+			sourceTree = "<group>";
+		};
+		150C856221F6A05600318C60 /* NIOHTTP1Tests */ = {
+			isa = PBXGroup;
+			children = (
+				150C857221F6A05600318C60 /* ByteBufferUtilsTest.swift */,
+				150C857021F6A05600318C60 /* ByteBufferUtilsTest+XCTest.swift */,
+				150C856B21F6A05600318C60 /* HTTPDecoderLengthTest.swift */,
+				150C856721F6A05600318C60 /* HTTPDecoderLengthTest+XCTest.swift */,
+				150C857921F6A05600318C60 /* HTTPDecoderTest.swift */,
+				150C857721F6A05600318C60 /* HTTPDecoderTest+XCTest.swift */,
+				150C856F21F6A05600318C60 /* HTTPHeadersTest.swift */,
+				150C856521F6A05600318C60 /* HTTPHeadersTest+XCTest.swift */,
+				150C856621F6A05600318C60 /* HTTPRequestEncoderTest.swift */,
+				150C856E21F6A05600318C60 /* HTTPRequestEncoderTest+XCTest.swift */,
+				150C857421F6A05600318C60 /* HTTPResponseCompressorTest.swift */,
+				150C857621F6A05600318C60 /* HTTPResponseCompressorTest+XCTest.swift */,
+				150C856C21F6A05600318C60 /* HTTPResponseEncoderTest.swift */,
+				150C856821F6A05600318C60 /* HTTPResponseEncoderTest+XCTest.swift */,
+				150C856421F6A05600318C60 /* HTTPServerClientTest.swift */,
+				150C856D21F6A05600318C60 /* HTTPServerClientTest+XCTest.swift */,
+				150C857121F6A05600318C60 /* HTTPServerPipelineHandlerTest.swift */,
+				150C856921F6A05600318C60 /* HTTPServerPipelineHandlerTest+XCTest.swift */,
+				150C856A21F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest.swift */,
+				150C857821F6A05600318C60 /* HTTPServerProtocolErrorHandlerTest+XCTest.swift */,
+				150C857521F6A05600318C60 /* HTTPTest.swift */,
+				150C857A21F6A05600318C60 /* HTTPTest+XCTest.swift */,
+				150C857321F6A05600318C60 /* HTTPUpgradeTests.swift */,
+				150C856321F6A05600318C60 /* HTTPUpgradeTests+XCTest.swift */,
+				150C857B21F6A05600318C60 /* TestUtils.swift */,
+			);
+			path = NIOHTTP1Tests;
+			sourceTree = "<group>";
+		};
+		150C857C21F6A05800318C60 /* NIOTests */ = {
+			isa = PBXGroup;
+			children = (
+				150C85AF21F6A05800318C60 /* AcceptBackoffHandlerTest.swift */,
+				150C85A621F6A05800318C60 /* AcceptBackoffHandlerTest+XCTest.swift */,
+				150C858721F6A05800318C60 /* BaseObjectsTest.swift */,
+				150C85B121F6A05800318C60 /* BaseObjectsTest+XCTest.swift */,
+				150C858321F6A05800318C60 /* BlockingIOThreadPoolTest.swift */,
+				150C859E21F6A05800318C60 /* BlockingIOThreadPoolTest+XCTest.swift */,
+				150C858E21F6A05800318C60 /* BootstrapTest.swift */,
+				150C858221F6A05800318C60 /* BootstrapTest+XCTest.swift */,
+				150C859721F6A05800318C60 /* ByteBufferTest.swift */,
+				150C857D21F6A05800318C60 /* ByteBufferTest+XCTest.swift */,
+				150C857E21F6A05800318C60 /* ChannelNotificationTest.swift */,
+				150C857F21F6A05800318C60 /* ChannelNotificationTest+XCTest.swift */,
+				150C85CA21F6A05800318C60 /* ChannelOptionStorageTest.swift */,
+				150C858B21F6A05800318C60 /* ChannelOptionStorageTest+XCTest.swift */,
+				150C85B021F6A05800318C60 /* ChannelPipelineTest.swift */,
+				150C858D21F6A05800318C60 /* ChannelPipelineTest+XCTest.swift */,
+				150C85CB21F6A05800318C60 /* ChannelTests.swift */,
+				150C859A21F6A05800318C60 /* ChannelTests+XCTest.swift */,
+				150C85A521F6A05800318C60 /* CircularBufferTests.swift */,
+				150C85B921F6A05800318C60 /* CircularBufferTests+XCTest.swift */,
+				150C858A21F6A05800318C60 /* CodecTest.swift */,
+				150C85BA21F6A05800318C60 /* CodecTest+XCTest.swift */,
+				150C859021F6A05800318C60 /* CompositeErrorTests.swift */,
+				150C85B721F6A05800318C60 /* CompositeErrorTests+XCTest.swift */,
+				150C858C21F6A05800318C60 /* CustomChannelTests.swift */,
+				150C859F21F6A05800318C60 /* CustomChannelTests+XCTest.swift */,
+				150C85BD21F6A05800318C60 /* DatagramChannelTests.swift */,
+				150C859521F6A05800318C60 /* DatagramChannelTests+XCTest.swift */,
+				150C858421F6A05800318C60 /* EchoServerClientTest.swift */,
+				150C85C521F6A05800318C60 /* EchoServerClientTest+XCTest.swift */,
+				150C85AD21F6A05800318C60 /* EmbeddedChannelTest.swift */,
+				150C85C021F6A05800318C60 /* EmbeddedChannelTest+XCTest.swift */,
+				150C85C121F6A05800318C60 /* EmbeddedEventLoopTest.swift */,
+				150C859B21F6A05800318C60 /* EmbeddedEventLoopTest+XCTest.swift */,
+				150C85C321F6A05800318C60 /* EventLoopFutureTest.swift */,
+				150C85C221F6A05800318C60 /* EventLoopFutureTest+XCTest.swift */,
+				150C85CC21F6A05800318C60 /* EventLoopTest.swift */,
+				150C85A821F6A05800318C60 /* EventLoopTest+XCTest.swift */,
+				150C859221F6A05800318C60 /* FileRegionTest.swift */,
+				150C858F21F6A05800318C60 /* FileRegionTest+XCTest.swift */,
+				150C85A221F6A05800318C60 /* GetAddrInfoResolverTest.swift */,
+				150C85C721F6A05800318C60 /* GetAddrInfoResolverTest+XCTest.swift */,
+				150C85BC21F6A05800318C60 /* HappyEyeballsTest.swift */,
+				150C85B221F6A05800318C60 /* HappyEyeballsTest+XCTest.swift */,
+				150C85B621F6A05800318C60 /* HeapTests.swift */,
+				150C85B821F6A05800318C60 /* HeapTests+XCTest.swift */,
+				150C85A921F6A05800318C60 /* IdleStateHandlerTest.swift */,
+				150C85A021F6A05800318C60 /* IdleStateHandlerTest+XCTest.swift */,
+				150C858621F6A05800318C60 /* IntegerTypesTest.swift */,
+				150C85BE21F6A05800318C60 /* IntegerTypesTest+XCTest.swift */,
+				150C85A321F6A05800318C60 /* MarkedCircularBufferTests.swift */,
+				150C859821F6A05800318C60 /* MarkedCircularBufferTests+XCTest.swift */,
+				150C859321F6A05800318C60 /* MulticastTest.swift */,
+				150C85AC21F6A05800318C60 /* MulticastTest+XCTest.swift */,
+				150C85BF21F6A05800318C60 /* NonBlockingFileIOTest.swift */,
+				150C859921F6A05800318C60 /* NonBlockingFileIOTest+XCTest.swift */,
+				150C85B521F6A05800318C60 /* PendingDatagramWritesManagerTests.swift */,
+				150C85AE21F6A05800318C60 /* PendingDatagramWritesManagerTests+XCTest.swift */,
+				150C85C921F6A05800318C60 /* PriorityQueueTests.swift */,
+				150C858121F6A05800318C60 /* PriorityQueueTests+XCTest.swift */,
+				150C858021F6A05800318C60 /* RecvByteBufAllocatorTest.swift */,
+				150C859D21F6A05800318C60 /* RecvByteBufAllocatorTest+XCTest.swift */,
+				150C85B321F6A05800318C60 /* SelectorTest.swift */,
+				150C85AB21F6A05800318C60 /* SelectorTest+XCTest.swift */,
+				150C85BB21F6A05800318C60 /* SocketAddressTest.swift */,
+				150C85C421F6A05800318C60 /* SocketAddressTest+XCTest.swift */,
+				150C85AA21F6A05800318C60 /* SocketChannelTest.swift */,
+				150C858521F6A05800318C60 /* SocketChannelTest+XCTest.swift */,
+				150C85C621F6A05800318C60 /* SocketOptionProviderTest.swift */,
+				150C859421F6A05800318C60 /* SocketOptionProviderTest+XCTest.swift */,
+				150C85A121F6A05800318C60 /* SystemCallWrapperHelpers.swift */,
+				150C859121F6A05800318C60 /* SystemTest.swift */,
+				150C858921F6A05800318C60 /* SystemTest+XCTest.swift */,
+				150C85C821F6A05800318C60 /* TestUtils.swift */,
+				150C85B421F6A05800318C60 /* ThreadTest.swift */,
+				150C858821F6A05800318C60 /* ThreadTest+XCTest.swift */,
+				150C85A421F6A05800318C60 /* TypeAssistedChannelHandlerTests.swift */,
+				150C859C21F6A05800318C60 /* TypeAssistedChannelHandlerTests+XCTest.swift */,
+				150C859621F6A05800318C60 /* UtilitiesTest.swift */,
+				150C85A721F6A05800318C60 /* UtilitiesTest+XCTest.swift */,
+			);
+			path = NIOTests;
+			sourceTree = "<group>";
+		};
+		150C85CD21F6A05800318C60 /* NIOTLSTests */ = {
+			isa = PBXGroup;
+			children = (
+				150C85CE21F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests.swift */,
+				150C85CF21F6A05800318C60 /* SNIHandlerTests.swift */,
+				150C85D021F6A05800318C60 /* SNIHandlerTests+XCTest.swift */,
+				150C85D121F6A05800318C60 /* ApplicationProtocolNegotiationHandlerTests+XCTest.swift */,
+			);
+			path = NIOTLSTests;
+			sourceTree = "<group>";
+		};
+		150C85D221F6A05800318C60 /* NIOWebSocketTests */ = {
+			isa = PBXGroup;
+			children = (
+				150C85D321F6A05800318C60 /* Base64Test+XCTest.swift */,
+				150C85D421F6A05800318C60 /* WebSocketFrameEncoderTest+XCTest.swift */,
+				150C85D521F6A05800318C60 /* EndToEndTests+XCTest.swift */,
+				150C85D621F6A05800318C60 /* WebSocketFrameDecoderTest.swift */,
+				150C85D721F6A05800318C60 /* Base64Test.swift */,
+				150C85D821F6A05800318C60 /* EndToEndTests.swift */,
+				150C85D921F6A05800318C60 /* WebSocketFrameDecoderTest+XCTest.swift */,
+				150C85DA21F6A05800318C60 /* WebSocketFrameEncoderTest.swift */,
+			);
+			path = NIOWebSocketTests;
+			sourceTree = "<group>";
+		};
+		153E206B21EC26B500B82536 = {
+			isa = PBXGroup;
+			children = (
+				5609BAB82264E30A006820E4 /* CA */,
+				5634538722BCD2E70076219D /* Http */,
+				564B308022B2213400387E07 /* Lib */,
+				150C855521F6A04400318C60 /* KnotTests */,
+				B36ABC432F6B87390078D8B0 /* KnotApp-iOS */,
+				B36ABC512F6B873A0078D8B0 /* KnotApp-iOSTests */,
+				B36ABC5B2F6B873A0078D8B0 /* KnotApp-iOSUITests */,
+				B36ABC772F6B88340078D8B0 /* KnotApp-macOS */,
+				B36ABC852F6B88350078D8B0 /* KnotApp-macOSTests */,
+				B36ABC8F2F6B88350078D8B0 /* KnotApp-macOSUITests */,
+				B36ABCAB2F6B88AD0078D8B0 /* PacketTunnel-iOS */,
+				B36ABCBE2F6B89570078D8B0 /* SystemExtension-macOS */,
+				B36ABF982F6E1F7D0078D8B0 /* KnotHelper */,
+				B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */,
+				153E207521EC26B500B82536 /* Products */,
+				153E211A21EC274100B82536 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		153E207521EC26B500B82536 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B36ABC422F6B87390078D8B0 /* KnotApp-iOS.app */,
+				B36ABC4E2F6B873A0078D8B0 /* KnotApp-iOSTests.xctest */,
+				B36ABC582F6B873A0078D8B0 /* KnotApp-iOSUITests.xctest */,
+				B36ABC762F6B88340078D8B0 /* KnotApp-macOS.app */,
+				B36ABC822F6B88350078D8B0 /* KnotApp-macOSTests.xctest */,
+				B36ABC8C2F6B88350078D8B0 /* KnotApp-macOSUITests.xctest */,
+				B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */,
+				B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */,
+				B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */,
+				B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		153E211A21EC274100B82536 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				565A4E822277262A00F13CAD /* ActiveSQLite.framework */,
+				56F41DB02277137D00AE1554 /* SQLite.framework */,
+				56F4159522770D0000AE1554 /* FMDB.framework */,
+				56F4159722770D0000AE1554 /* SQLite.framework */,
+				56162E8A2255CCB100D24F87 /* NetworkExtension.framework */,
+				153E240E21EC569700B82536 /* CNIOAtomics.framework */,
+				153E241021EC569700B82536 /* NIOConcurrencyHelpers.framework */,
+				153E240C21EC565A00B82536 /* CNIOLinux.framework */,
+				153E240B21EC565A00B82536 /* CNIODarwin.framework */,
+				153E240D21EC565A00B82536 /* CNIOHTTPParser.framework */,
+				153E240A21EC565A00B82536 /* CNIOZlib.framework */,
+				153E23F821EC552600B82536 /* SwiftNIO.framework */,
+				153E23F621EC54D500B82536 /* NIOHTTP1.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5609BABC2265C13D006820E4 /* NIOSSLTests */ = {
+			isa = PBXGroup;
+			children = (
+				5609BAC32265C13D006820E4 /* ByteBufferBIOTest.swift */,
+				5609BAC62265C13D006820E4 /* ByteBufferBIOTest+XCTest.swift */,
+				5609BABD2265C13D006820E4 /* CertificateVerificationTests.swift */,
+				5609BAD32265C13D006820E4 /* CertificateVerificationTests+XCTest.swift */,
+				5609BAC52265C13D006820E4 /* ClientSNITests.swift */,
+				5609BAD02265C13D006820E4 /* ClientSNITests+XCTest.swift */,
+				5609BAC22265C13D006820E4 /* IdentityVerificationTest.swift */,
+				5609BAC12265C13D006820E4 /* IdentityVerificationTest+XCTest.swift */,
+				5609BACF2265C13D006820E4 /* NIOSSLALPNTest.swift */,
+				5609BAC82265C13D006820E4 /* NIOSSLALPNTest+XCTest.swift */,
+				5609BAC42265C13D006820E4 /* NIOSSLIntegrationTest.swift */,
+				5609BAC92265C13D006820E4 /* NIOSSLIntegrationTest+XCTest.swift */,
+				5609BACB2265C13D006820E4 /* NIOSSLTestHelpers.swift */,
+				5609BABF2265C13D006820E4 /* SSLCertificateTest.swift */,
+				5609BACE2265C13D006820E4 /* SSLCertificateTest+XCTest.swift */,
+				5609BAD22265C13D006820E4 /* SSLPKCS12BundleTest.swift */,
+				5609BACC2265C13D006820E4 /* SSLPKCS12BundleTest+XCTest.swift */,
+				5609BAC02265C13D006820E4 /* SSLPrivateKeyTests.swift */,
+				5609BAC72265C13D006820E4 /* SSLPrivateKeyTests+XCTest.swift */,
+				5609BACD2265C13D006820E4 /* TLSConfigurationTest.swift */,
+				5609BABE2265C13D006820E4 /* TLSConfigurationTest+XCTest.swift */,
+				5609BACA2265C13D006820E4 /* UnwrappingTests.swift */,
+				5609BAD12265C13D006820E4 /* UnwrappingTests+XCTest.swift */,
+			);
+			name = NIOSSLTests;
+			path = "../../../../../Downloads/swift-nio-ssl-2.0-2.2/Tests/NIOSSLTests";
+			sourceTree = "<group>";
+		};
+		564379EE22A769FA00DF957D /* PerfectCURLTests */ = {
+			isa = PBXGroup;
+			children = (
+				564379EF22A769FA00DF957D /* PerfectCURLTests.swift */,
+			);
+			path = PerfectCURLTests;
+			sourceTree = "<group>";
+		};
+		564B308022B2213400387E07 /* Lib */ = {
+			isa = PBXGroup;
+			children = (
+				564B308122B2213B00387E07 /* AxLogger.xcodeproj */,
+			);
+			path = Lib;
+			sourceTree = "<group>";
+		};
+		564B308222B2213B00387E07 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				564B308722B2213C00387E07 /* AxLogger.framework */,
+				564B308922B2213C00387E07 /* AxLoggerDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		56D260EA228132F7004F5636 /* NIOTransportServicesTests */ = {
+			isa = PBXGroup;
+			children = (
+				56D260EB228132F7004F5636 /* NIOTSEventLoopTests.swift */,
+				56D260EC228132F7004F5636 /* NIOTSConnectionChannelTests.swift */,
+				56D260ED228132F7004F5636 /* NIOTSEndToEndTests.swift */,
+				56D260EE228132F7004F5636 /* NIOTSSocketOptionsOnChannelTests.swift */,
+				56D260EF228132F7004F5636 /* NIOTSListenerChannelTests.swift */,
+				56D260F0228132F7004F5636 /* NIOTSSocketOptionTests.swift */,
+			);
+			path = NIOTransportServicesTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B36ABC412F6B87390078D8B0 /* KnotApp-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC672F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOS" */;
+			buildPhases = (
+				B36ABC3E2F6B87390078D8B0 /* Sources */,
+				B36ABC3F2F6B87390078D8B0 /* Frameworks */,
+				B36ABC402F6B87390078D8B0 /* Resources */,
+				B36ABCB72F6B88AD0078D8B0 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABCB12F6B88AD0078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC432F6B87390078D8B0 /* KnotApp-iOS */,
+			);
+			name = "KnotApp-iOS";
+			packageProductDependencies = (
+				B36ABCD82F6B8B490078D8B0 /* KnotUI */,
+				B36ABCDA2F6B8B490078D8B0 /* KnotCore */,
+				B36ABCDC2F6B8B490078D8B0 /* TunnelServices */,
+			);
+			productName = "KnotApp-iOS";
+			productReference = B36ABC422F6B87390078D8B0 /* KnotApp-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B36ABC4D2F6B873A0078D8B0 /* KnotApp-iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC682F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOSTests" */;
+			buildPhases = (
+				B36ABC4A2F6B873A0078D8B0 /* Sources */,
+				B36ABC4B2F6B873A0078D8B0 /* Frameworks */,
+				B36ABC4C2F6B873A0078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABC502F6B873A0078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC512F6B873A0078D8B0 /* KnotApp-iOSTests */,
+			);
+			name = "KnotApp-iOSTests";
+			packageProductDependencies = (
+			);
+			productName = "KnotApp-iOSTests";
+			productReference = B36ABC4E2F6B873A0078D8B0 /* KnotApp-iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B36ABC572F6B873A0078D8B0 /* KnotApp-iOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC692F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOSUITests" */;
+			buildPhases = (
+				B36ABC542F6B873A0078D8B0 /* Sources */,
+				B36ABC552F6B873A0078D8B0 /* Frameworks */,
+				B36ABC562F6B873A0078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABC5A2F6B873A0078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC5B2F6B873A0078D8B0 /* KnotApp-iOSUITests */,
+			);
+			name = "KnotApp-iOSUITests";
+			packageProductDependencies = (
+			);
+			productName = "KnotApp-iOSUITests";
+			productReference = B36ABC582F6B873A0078D8B0 /* KnotApp-iOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		B36ABC752F6B88340078D8B0 /* KnotApp-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC942F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOS" */;
+			buildPhases = (
+				B36ABC722F6B88340078D8B0 /* Sources */,
+				B36ABC732F6B88340078D8B0 /* Frameworks */,
+				B36ABC742F6B88340078D8B0 /* Resources */,
+				B36ABCCC2F6B89570078D8B0 /* Embed System Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABCC62F6B89570078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC772F6B88340078D8B0 /* KnotApp-macOS */,
+			);
+			name = "KnotApp-macOS";
+			packageProductDependencies = (
+				B36ABCDE2F6B8B5C0078D8B0 /* KnotUI */,
+				B36ABCE02F6B8B5C0078D8B0 /* KnotCore */,
+				B36ABCE22F6B8B5C0078D8B0 /* TunnelServices */,
+			);
+			productName = "KnotApp-macOS";
+			productReference = B36ABC762F6B88340078D8B0 /* KnotApp-macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B36ABC812F6B88350078D8B0 /* KnotApp-macOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC972F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOSTests" */;
+			buildPhases = (
+				B36ABC7E2F6B88350078D8B0 /* Sources */,
+				B36ABC7F2F6B88350078D8B0 /* Frameworks */,
+				B36ABC802F6B88350078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABC842F6B88350078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC852F6B88350078D8B0 /* KnotApp-macOSTests */,
+			);
+			name = "KnotApp-macOSTests";
+			packageProductDependencies = (
+			);
+			productName = "KnotApp-macOSTests";
+			productReference = B36ABC822F6B88350078D8B0 /* KnotApp-macOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B36ABC8B2F6B88350078D8B0 /* KnotApp-macOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABC9A2F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOSUITests" */;
+			buildPhases = (
+				B36ABC882F6B88350078D8B0 /* Sources */,
+				B36ABC892F6B88350078D8B0 /* Frameworks */,
+				B36ABC8A2F6B88350078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABC8E2F6B88350078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABC8F2F6B88350078D8B0 /* KnotApp-macOSUITests */,
+			);
+			name = "KnotApp-macOSUITests";
+			packageProductDependencies = (
+			);
+			productName = "KnotApp-macOSUITests";
+			productReference = B36ABC8C2F6B88350078D8B0 /* KnotApp-macOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		B36ABCA82F6B88AD0078D8B0 /* PacketTunnel-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABCB42F6B88AD0078D8B0 /* Build configuration list for PBXNativeTarget "PacketTunnel-iOS" */;
+			buildPhases = (
+				B36ABCA52F6B88AD0078D8B0 /* Sources */,
+				B36ABCA62F6B88AD0078D8B0 /* Frameworks */,
+				B36ABCA72F6B88AD0078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABCAB2F6B88AD0078D8B0 /* PacketTunnel-iOS */,
+			);
+			name = "PacketTunnel-iOS";
+			packageProductDependencies = (
+				B36ABCE42F6B8B870078D8B0 /* KnotCore */,
+				B36ABCE62F6B8B870078D8B0 /* TunnelServices */,
+			);
+			productName = "PacketTunnel-iOS";
+			productReference = B36ABCA92F6B88AD0078D8B0 /* PacketTunnel-iOS.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABCC92F6B89570078D8B0 /* Build configuration list for PBXNativeTarget "SystemExtension-macOS" */;
+			buildPhases = (
+				B36ABCB82F6B89570078D8B0 /* Sources */,
+				B36ABCB92F6B89570078D8B0 /* Frameworks */,
+				B36ABCBA2F6B89570078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABCBE2F6B89570078D8B0 /* SystemExtension-macOS */,
+			);
+			name = "SystemExtension-macOS";
+			packageProductDependencies = (
+				B36ABCE82F6B8B930078D8B0 /* KnotCore */,
+				B36ABCEA2F6B8B930078D8B0 /* TunnelServices */,
+			);
+			productName = "SystemExtension-macOS";
+			productReference = B36ABCBC2F6B89570078D8B0 /* com.KingMap.KnotApp-macOS.SystemExtension-macOS.systemextension */;
+			productType = "com.apple.product-type.system-extension";
+		};
+		B36ABF962F6E1F7D0078D8B0 /* KnotHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABFA32F6E1F7E0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelper" */;
+			buildPhases = (
+				B36ABF932F6E1F7D0078D8B0 /* Sources */,
+				B36ABF942F6E1F7D0078D8B0 /* Frameworks */,
+				B36ABF952F6E1F7D0078D8B0 /* Resources */,
+				B36ABFB82F6E1FDD0078D8B0 /* Embed System Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B36ABFB22F6E1FDD0078D8B0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABF982F6E1F7D0078D8B0 /* KnotHelper */,
+			);
+			name = KnotHelper;
+			packageProductDependencies = (
+				B36ABFBD2F6E20670078D8B0 /* TunnelServices */,
+			);
+			productName = KnotHelper;
+			productReference = B36ABF972F6E1F7D0078D8B0 /* KnotHelper.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B36ABFB52F6E1FDD0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelperExtension" */;
+			buildPhases = (
+				B36ABFA42F6E1FDD0078D8B0 /* Sources */,
+				B36ABFA52F6E1FDD0078D8B0 /* Frameworks */,
+				B36ABFA62F6E1FDD0078D8B0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B36ABFAA2F6E1FDD0078D8B0 /* KnotHelperExtension */,
+			);
+			name = KnotHelperExtension;
+			packageProductDependencies = (
+				B36ABFBA2F6E20670078D8B0 /* TunnelServices */,
+			);
+			productName = KnotHelperExtension;
+			productReference = B36ABFA82F6E1FDD0078D8B0 /* com.KingMap.KnotHelper.Extension.systemextension */;
+			productType = "com.apple.product-type.system-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		153E206C21EC26B500B82536 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = Lojii;
+				TargetAttributes = {
+					B36ABC412F6B87390078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABC4D2F6B873A0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = B36ABC412F6B87390078D8B0;
+					};
+					B36ABC572F6B873A0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = B36ABC412F6B87390078D8B0;
+					};
+					B36ABC752F6B88340078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABC812F6B88350078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = B36ABC752F6B88340078D8B0;
+					};
+					B36ABC8B2F6B88350078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = B36ABC752F6B88340078D8B0;
+					};
+					B36ABCA82F6B88AD0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABCBB2F6B89570078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABF962F6E1F7D0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					B36ABFA72F6E1FDD0078D8B0 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = 153E206F21EC26B500B82536 /* Build configuration list for PBXProject "Knot" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = 153E206B21EC26B500B82536;
+			packageReferences = (
+				6B2A836E2D8014E15BE0C474 /* XCRemoteSwiftPackageReference "swift-nio-ssl" */,
+				D134BBFC5F248BE7170C5A2B /* XCRemoteSwiftPackageReference "swift-certificates" */,
+				E30EEA17F88C05A3B2F4F111 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
+				25265924C3F809A7A71F3C3D /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				AE9009FA49728DB00BE91A5A /* XCRemoteSwiftPackageReference "SDWebImageWebPCoder" */,
+				CC1CDAAC47C4F5716AF69A67 /* XCRemoteSwiftPackageReference "Highlightr" */,
+				F90AFFCC0830DFE1437AE376 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */,
+				04F3C2B1B7F9FED55528EC81 /* XCRemoteSwiftPackageReference "swift-nio" */,
+				DA090655C7CBDE215D9F4DCB /* XCRemoteSwiftPackageReference "swift-nio-extras" */,
+				619F8AC3394BA1BB625A7949 /* XCRemoteSwiftPackageReference "swift-nio-http2" */,
+				62D658CCDB77CB6BEA2F60DA /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				FC609F686275F1E82CA0E39E /* XCLocalSwiftPackageReference "LocalPackages/SwiftQuiche" */,
+				C8DF9EC80944D94DBC3C8287 /* XCLocalSwiftPackageReference "LocalPackages/SwiftLsquic" */,
+				B36ABCCF2F6B8A840078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotUI" */,
+				B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */,
+				B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */,
+			);
+			productRefGroup = 153E207521EC26B500B82536 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 564B308222B2213B00387E07 /* Products */;
+					ProjectRef = 564B308122B2213B00387E07 /* AxLogger.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				B36ABC412F6B87390078D8B0 /* KnotApp-iOS */,
+				B36ABC4D2F6B873A0078D8B0 /* KnotApp-iOSTests */,
+				B36ABC572F6B873A0078D8B0 /* KnotApp-iOSUITests */,
+				B36ABC752F6B88340078D8B0 /* KnotApp-macOS */,
+				B36ABC812F6B88350078D8B0 /* KnotApp-macOSTests */,
+				B36ABC8B2F6B88350078D8B0 /* KnotApp-macOSUITests */,
+				B36ABCA82F6B88AD0078D8B0 /* PacketTunnel-iOS */,
+				B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */,
+				B36ABF962F6E1F7D0078D8B0 /* KnotHelper */,
+				B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		564B308722B2213C00387E07 /* AxLogger.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = AxLogger.framework;
+			remoteRef = 564B308622B2213C00387E07 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		564B308922B2213C00387E07 /* AxLoggerDemo.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = AxLoggerDemo.app;
+			remoteRef = 564B308822B2213C00387E07 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B36ABC402F6B87390078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCEC2F6B8BCD0078D8B0 /* Http in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC4C2F6B873A0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC562F6B873A0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC742F6B88340078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B36ABCED2F6B8BD10078D8B0 /* Http in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC802F6B88350078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC8A2F6B88350078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCA72F6B88AD0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCBA2F6B89570078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABF952F6E1F7D0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA62F6E1FDD0078D8B0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B36ABC3E2F6B87390078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC4A2F6B873A0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC542F6B873A0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC722F6B88340078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC7E2F6B88350078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABC882F6B88350078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCA52F6B88AD0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABCB82F6B89570078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABF932F6E1F7D0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B36ABFA42F6E1FDD0078D8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B36ABC502F6B873A0078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABC412F6B87390078D8B0 /* KnotApp-iOS */;
+			targetProxy = B36ABC4F2F6B873A0078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABC5A2F6B873A0078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABC412F6B87390078D8B0 /* KnotApp-iOS */;
+			targetProxy = B36ABC592F6B873A0078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABC842F6B88350078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABC752F6B88340078D8B0 /* KnotApp-macOS */;
+			targetProxy = B36ABC832F6B88350078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABC8E2F6B88350078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABC752F6B88340078D8B0 /* KnotApp-macOS */;
+			targetProxy = B36ABC8D2F6B88350078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABCB12F6B88AD0078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABCA82F6B88AD0078D8B0 /* PacketTunnel-iOS */;
+			targetProxy = B36ABCB02F6B88AD0078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABCC62F6B89570078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABCBB2F6B89570078D8B0 /* SystemExtension-macOS */;
+			targetProxy = B36ABCC52F6B89570078D8B0 /* PBXContainerItemProxy */;
+		};
+		B36ABFB22F6E1FDD0078D8B0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B36ABFA72F6E1FDD0078D8B0 /* KnotHelperExtension */;
+			targetProxy = B36ABFB12F6E1FDD0078D8B0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		153E208421EC26C800B82536 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		153E208521EC26C800B82536 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B36ABC602F6B873A0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "KnotApp-iOS/KnotApp-iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B36ABC612F6B873A0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "KnotApp-iOS/KnotApp-iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B36ABC622F6B873A0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnotApp-iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KnotApp-iOS";
+			};
+			name = Debug;
+		};
+		B36ABC632F6B873A0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnotApp-iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KnotApp-iOS";
+			};
+			name = Release;
+		};
+		B36ABC642F6B873A0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "KnotApp-iOS";
+			};
+			name = Debug;
+		};
+		B36ABC652F6B873A0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "KnotApp-iOS";
+			};
+			name = Release;
+		};
+		B36ABC952F6B88360078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "KnotApp-macOS/KnotApp-macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABC962F6B88360078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "KnotApp-macOS/KnotApp-macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B36ABC982F6B88360078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnotApp-macOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KnotApp-macOS";
+			};
+			name = Debug;
+		};
+		B36ABC992F6B88360078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnotApp-macOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KnotApp-macOS";
+			};
+			name = Release;
+		};
+		B36ABC9B2F6B88360078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "KnotApp-macOS";
+			};
+			name = Debug;
+		};
+		B36ABC9C2F6B88360078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "KnotApp-macOS";
+			};
+			name = Release;
+		};
+		B36ABCB52F6B88AD0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "PacketTunnel-iOS/PacketTunnel_iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PacketTunnel-iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "PacketTunnel-iOS";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOS.PacketTunnel-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B36ABCB62F6B88AD0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "PacketTunnel-iOS/PacketTunnel_iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PacketTunnel-iOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "PacketTunnel-iOS";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-iOS.PacketTunnel-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B36ABCCA2F6B89570078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "SystemExtension-macOS/SystemExtension_macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SystemExtension-macOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SystemExtension-macOS";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOS.SystemExtension-macOS";
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABCCB2F6B89570078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "SystemExtension-macOS/SystemExtension_macOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SystemExtension-macOS/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SystemExtension-macOS";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.KingMap.KnotApp-macOS.SystemExtension-macOS";
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B36ABF9F2F6E1F7E0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelper/KnotHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABFA02F6E1F7E0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelper/KnotHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B36ABFB62F6E1FDD0078D8B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelperExtension/KnotHelperExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KnotHelperExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KnotHelperExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper.Extension;
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B36ABFB72F6E1FDD0078D8B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = KnotHelperExtension/KnotHelperExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 73QYWNHB5F;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KnotHelperExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KnotHelperExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Lojii. All rights reserved.";
+				INFOPLIST_KEY_NSSystemExtensionUsageDescription = SYSTEM_EXTENSION_USAGE_DESCRIPTION;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KingMap.KnotHelper.Extension;
+				PRODUCT_NAME = "$(inherited)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		153E206F21EC26B500B82536 /* Build configuration list for PBXProject "Knot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				153E208421EC26C800B82536 /* Debug */,
+				153E208521EC26C800B82536 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC672F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC602F6B873A0078D8B0 /* Debug */,
+				B36ABC612F6B873A0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC682F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC622F6B873A0078D8B0 /* Debug */,
+				B36ABC632F6B873A0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC692F6B873A0078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-iOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC642F6B873A0078D8B0 /* Debug */,
+				B36ABC652F6B873A0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC942F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC952F6B88360078D8B0 /* Debug */,
+				B36ABC962F6B88360078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC972F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC982F6B88360078D8B0 /* Debug */,
+				B36ABC992F6B88360078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABC9A2F6B88360078D8B0 /* Build configuration list for PBXNativeTarget "KnotApp-macOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABC9B2F6B88360078D8B0 /* Debug */,
+				B36ABC9C2F6B88360078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABCB42F6B88AD0078D8B0 /* Build configuration list for PBXNativeTarget "PacketTunnel-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABCB52F6B88AD0078D8B0 /* Debug */,
+				B36ABCB62F6B88AD0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABCC92F6B89570078D8B0 /* Build configuration list for PBXNativeTarget "SystemExtension-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABCCA2F6B89570078D8B0 /* Debug */,
+				B36ABCCB2F6B89570078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABFA32F6E1F7E0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABF9F2F6E1F7E0078D8B0 /* Debug */,
+				B36ABFA02F6E1F7E0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B36ABFB52F6E1FDD0078D8B0 /* Build configuration list for PBXNativeTarget "KnotHelperExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B36ABFB62F6E1FDD0078D8B0 /* Debug */,
+				B36ABFB72F6E1FDD0078D8B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		B36ABCCF2F6B8A840078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/KnotUI;
+		};
+		B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/KnotCore;
+		};
+		B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/TunnelServices;
+		};
+		C8DF9EC80944D94DBC3C8287 /* XCLocalSwiftPackageReference "LocalPackages/SwiftLsquic" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/SwiftLsquic;
+		};
+		FC609F686275F1E82CA0E39E /* XCLocalSwiftPackageReference "LocalPackages/SwiftQuiche" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/SwiftQuiche;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		04F3C2B1B7F9FED55528EC81 /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.65.0;
+			};
+		};
+		25265924C3F809A7A71F3C3D /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.19.0;
+			};
+		};
+		619F8AC3394BA1BB625A7949 /* XCRemoteSwiftPackageReference "swift-nio-http2" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio-http2.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.30.0;
+			};
+		};
+		62D658CCDB77CB6BEA2F60DA /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.28.0;
+			};
+		};
+		6B2A836E2D8014E15BE0C474 /* XCRemoteSwiftPackageReference "swift-nio-ssl" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio-ssl.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.29.0;
+			};
+		};
+		AE9009FA49728DB00BE91A5A /* XCRemoteSwiftPackageReference "SDWebImageWebPCoder" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageWebPCoder.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.14.0;
+			};
+		};
+		CC1CDAAC47C4F5716AF69A67 /* XCRemoteSwiftPackageReference "Highlightr" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/raspu/Highlightr.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
+		D134BBFC5F248BE7170C5A2B /* XCRemoteSwiftPackageReference "swift-certificates" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-certificates.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+		DA090655C7CBDE215D9F4DCB /* XCRemoteSwiftPackageReference "swift-nio-extras" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio-extras.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+		E30EEA17F88C05A3B2F4F111 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.3;
+			};
+		};
+		F90AFFCC0830DFE1437AE376 /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/robbiehanson/CocoaAsyncSocket.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.6.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B36ABCD82F6B8B490078D8B0 /* KnotUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCCF2F6B8A840078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotUI" */;
+			productName = KnotUI;
+		};
+		B36ABCDA2F6B8B490078D8B0 /* KnotCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */;
+			productName = KnotCore;
+		};
+		B36ABCDC2F6B8B490078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABCDE2F6B8B5C0078D8B0 /* KnotUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCCF2F6B8A840078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotUI" */;
+			productName = KnotUI;
+		};
+		B36ABCE02F6B8B5C0078D8B0 /* KnotCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */;
+			productName = KnotCore;
+		};
+		B36ABCE22F6B8B5C0078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABCE42F6B8B870078D8B0 /* KnotCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */;
+			productName = KnotCore;
+		};
+		B36ABCE62F6B8B870078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABCE82F6B8B930078D8B0 /* KnotCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD22F6B8AB60078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/KnotCore" */;
+			productName = KnotCore;
+		};
+		B36ABCEA2F6B8B930078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABFBA2F6E20670078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+		B36ABFBD2F6E20670078D8B0 /* TunnelServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36ABCD52F6B8B040078D8B0 /* XCLocalSwiftPackageReference "LocalPackages/TunnelServices" */;
+			productName = TunnelServices;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 153E206C21EC26B500B82536 /* Project object */;
+}

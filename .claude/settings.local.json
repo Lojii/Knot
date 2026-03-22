@@ -314,7 +314,10 @@
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter build:*)",
-      "Bash(ls -d /Users/aa123/Documents/Knot-storage-redesign/[Ll]ib/)"
+      "Bash(ls -d /Users/aa123/Documents/Knot-storage-redesign/[Ll]ib/)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign swift build --package-path native/TunnelServices)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign rm -rf native/TunnelServices/.build rm -rf native/KnotStorage/.build rm -rf native/KnotWebService/.build swift build --package-path native/TunnelServices)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign flutter analyze)"
     ],
     "additionalDirectories": [
       "/Users/aa123/Documents/Knot"

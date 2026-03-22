@@ -4,18 +4,26 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../controllers/dashboard_controller.dart';
 import '../../controllers/task_controller.dart';
 
-class DashboardTab extends StatelessWidget {
+class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
+
+  @override
+  State<DashboardTab> createState() => _DashboardTabState();
+}
+
+class _DashboardTabState extends State<DashboardTab> {
+  @override
+  void initState() {
+    super.initState();
+    final dc = Get.find<DashboardController>();
+    final tid = Get.find<TaskController>().currentTask.value?.id;
+    if (tid != null) dc.loadStats(tid);
+  }
 
   @override
   Widget build(BuildContext context) {
     final dc = Get.find<DashboardController>();
-    final taskCtrl = Get.find<TaskController>();
     final theme = Theme.of(context);
-
-    // Load stats on first build
-    final tid = taskCtrl.currentTask.value?.id;
-    if (tid != null) dc.loadStats(tid);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

@@ -4,15 +4,24 @@ import '../../controllers/history_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../models/task_model.dart';
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
+
+  @override
+  State<HistoryPage> createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
+  @override
+  void initState() {
+    super.initState();
+    Get.find<HistoryController>().loadTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
     final historyCtrl = Get.find<HistoryController>();
     final taskCtrl = Get.find<TaskController>();
-
-    historyCtrl.loadTasks();
 
     return Scaffold(
       appBar: AppBar(

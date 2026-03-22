@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../models/flow_summary.dart';
+import 'flow_controller.dart';
 
 class TreeNode {
   final String label;
@@ -20,6 +21,14 @@ class TreeNode {
 class TreeController extends GetxController {
   final tree = <TreeNode>[].obs;
   final selectedDomain = Rxn<String>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Rebuild tree whenever flow list changes (registered once, not per build)
+    final flowCtrl = Get.find<FlowController>();
+    ever(flowCtrl.flows, (_) => buildTree(flowCtrl.flows));
+  }
 
   void buildTree(List<FlowSummary> flows) {
     final Map<String, List<FlowSummary>> grouped = {};
