@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../api/ws_client.dart';
 import '../models/flow_summary.dart';
 import 'flow_controller.dart';
+import 'dashboard_controller.dart';
 
 class LiveController extends GetxController {
   final WsClient ws;
@@ -32,12 +33,15 @@ class LiveController extends GetxController {
           final flow = FlowSummary.fromJson(msg.data);
           Get.find<FlowController>().addFlowFromPush(flow);
           requestCount.value++;
+          final bytes = (msg.data['uploadBytes'] as int? ?? 0) + (msg.data['downloadBytes'] as int? ?? 0);
+          Get.find<DashboardController>().addTrafficPoint(bytes);
           break;
         case 'flow_update':
           Get.find<FlowController>().updateFlowFromPush(msg.data);
           break;
         case 'metrics':
           _updateMetrics(msg.data);
+          Get.find<DashboardController>().updateFromMetrics(msg.data);
           break;
         case 'stats':
           _updateStats(msg.data);
