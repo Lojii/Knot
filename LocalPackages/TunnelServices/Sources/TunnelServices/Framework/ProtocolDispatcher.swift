@@ -65,14 +65,21 @@ public final class ProtocolDispatcher: ChannelInboundHandler, RemovableChannelHa
         }
 
         // 2. Accumulate bytes.
+        //    Guard: IOData from decoder removal has description "IOData { ByteBuffer ... }"
+        //    which will fatalError in unwrapInboundIn expecting ByteBuffer.
+        let desc = data.description
+        if desc.hasPrefix("IOData") || desc.hasPrefix("FileRegion") {
+            AxLogger.log("[ProtocolDispatcher] absorbed IOData from decoder removal", level: .Warning)
+            return
+        }
         var incoming = unwrapInboundIn(data)
         if pendingBuffer == nil {
             pendingBuffer = context.channel.allocator.buffer(capacity: incoming.readableBytes)
         }
-        pendingBuffer!.writeBuffer(&incoming)
+        pendingBuffer?.writeBuffer(&incoming)
 
         // 3. Enforce max-buffer cap.
-        if pendingBuffer!.readableBytes > Self.maxBufferSize {
+        if (pendingBuffer?.readableBytes ?? 0) > Self.maxBufferSize {
             AxLogger.log(
                 "[ProtocolDispatcher] buffer exceeded \(Self.maxBufferSize) bytes — falling back to Raw",
                 level: .Warning

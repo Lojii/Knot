@@ -182,7 +182,7 @@ public class MQTTParser {
         packet.topic = readMQTTString(payload, at: &off)
         packet.qos = Int((flags >> 1) & 0x03)
         packet.retain = (flags & 0x01) != 0
-        if packet.qos! > 0 {
+        if (packet.qos ?? 0) > 0 {
             guard off + 2 <= payload.count else { return }
             packet.packetID = UInt16(payload[off]) << 8 | UInt16(payload[off + 1])
             off += 2

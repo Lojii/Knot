@@ -18,6 +18,13 @@ public class ProxyServer {
     private(set) var udpChannel: Channel?
     private var dashboardServer: DashboardServer?
 
+    /// Whether the server has been intentionally stopped (vs. unexpected crash).
+    private var intentionallyStopped = false
+    /// Maximum auto-restart attempts before giving up.
+    private static let maxRestartAttempts = 3
+    /// Delay between restart attempts (seconds).
+    private static let restartDelaySeconds: UInt32 = 2
+
     /// The port the local server is actually bound to (useful when binding to port 0).
     public var localBoundPort: Int? {
         localChannel?.localAddress?.port
@@ -98,10 +105,16 @@ public class ProxyServer {
             .childChannelInitializer { channel in
                 let recorder = SessionRecorder(task: task)
                 let tcpChildren = ProtocolRegistry.shared.tcpChildren
+                // Add protocol dispatcher + catch-all error handler at the tail.
+                // The catch-all ensures no unhandled error crashes the EventLoop.
                 return channel.pipeline.addHandler(
                     ProtocolDispatcher(task: task, nodes: tcpChildren, recorder: recorder),
                     name: "dispatcher", position: .first
-                )
+                ).flatMap {
+                    channel.pipeline.addHandler(
+                        CatchAllErrorHandler(), name: "catchAll", position: .last
+                    )
+                }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 1)
@@ -166,7 +179,7 @@ public class ProxyServer {
             }
         }
 
-        // Block until channel closes
+        // Block until channel closes, then auto-restart if not intentional.
         try? channel.closeFuture.wait()
 
         if isWifi {
@@ -175,11 +188,42 @@ public class ProxyServer {
             task.localState = 0
         }
         try? task.update()
+
+        // Auto-restart: if the server channel closed unexpectedly (not via stop()),
+        // restart it up to maxRestartAttempts times with exponential backoff.
+        if !intentionallyStopped {
+            AxLogger.log("[ProxyServer] \(isWifi ? "Wifi" : "Local") server channel closed unexpectedly — attempting auto-restart", level: .Error)
+            for attempt in 1...Self.maxRestartAttempts {
+                guard !intentionallyStopped else { break }
+                let delay = Self.restartDelaySeconds * UInt32(attempt)
+                AxLogger.log("[ProxyServer] Restart attempt \(attempt)/\(Self.maxRestartAttempts) in \(delay)s...", level: .Warning)
+                sleep(delay)
+                guard !intentionallyStopped else { break }
+
+                // Recursive call — will block until the restarted channel closes too
+                self.startServer(host: host, port: port, task: task, isWifi: isWifi) { result in
+                    switch result {
+                    case .success:
+                        AxLogger.log("[ProxyServer] Auto-restart succeeded on attempt \(attempt)", level: .Info)
+                    case .failure(let error):
+                        AxLogger.log("[ProxyServer] Auto-restart attempt \(attempt) failed: \(error)", level: .Error)
+                    }
+                }
+                // If we get here, the restarted server also closed.
+                // If it was intentional, break; otherwise loop and retry.
+                if intentionallyStopped { break }
+            }
+            if !intentionallyStopped {
+                AxLogger.log("[ProxyServer] All \(Self.maxRestartAttempts) restart attempts exhausted", level: .Error)
+            }
+        }
     }
 
     // MARK: - Shutdown
 
     public func stop(completionHandler: (() -> Void)? = nil) {
+        intentionallyStopped = true
+
         dashboardServer?.stop()
         dashboardServer = nil
 
@@ -206,5 +250,28 @@ public class ProxyServer {
     public func stopWifi() {
         wifiChannel?.close(mode: .input, promise: nil)
         wifiChannel = nil
+    }
+}
+
+// MARK: - Catch-All Error Handler
+
+/// Last-resort error handler at the tail of every child channel pipeline.
+/// Prevents unhandled errors from crashing the EventLoop thread.
+/// All protocol-specific handlers should have their own errorCaught;
+/// this handler catches anything that slips through.
+final class CatchAllErrorHandler: ChannelInboundHandler, RemovableChannelHandler {
+    typealias InboundIn = NIOAny
+    typealias InboundOut = NIOAny
+
+    func errorCaught(context: ChannelHandlerContext, error: Error) {
+        let remote = context.channel.remoteAddress?.description ?? "unknown"
+        AxLogger.log("[CatchAll] Unhandled error on \(remote): \(error)", level: .Error)
+        // Close the channel gracefully — don't propagate further.
+        context.close(promise: nil)
+    }
+
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        // Pass through — this handler only catches errors.
+        context.fireChannelRead(data)
     }
 }

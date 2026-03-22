@@ -100,31 +100,23 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
 
         // === INBOUND channel (client → proxy, aka serverCh) ===
         let inboundGate = PipelineGateHandler()
-        try? serverCh.pipeline.syncOperations.addHandler(inboundGate, name: "ws.inbound.gate")
+        addHandlerLogging(serverCh.pipeline, inboundGate, name: "ws.inbound.gate")
         inboundGate.shut()
 
         self.removeHTTPHandlersSynchronously(from: serverCh.pipeline, prefix: inboundPrefix)
 
-        try? serverCh.pipeline.syncOperations.addHandler(
+        addHandlerLogging(serverCh.pipeline,
             ByteToMessageHandler(WebSocketFrameDecoder()),
-            name: "ws.client.decoder",
-            position: .before(inboundGate)
-        )
-        try? serverCh.pipeline.syncOperations.addHandler(
+            name: "ws.client.decoder", position: .before(inboundGate))
+        addHandlerLogging(serverCh.pipeline,
             WebSocketFrameEncoder(),
-            name: "ws.client.encoder",
-            position: .before(inboundGate)
-        )
-        try? serverCh.pipeline.syncOperations.addHandler(
+            name: "ws.client.encoder", position: .before(inboundGate))
+        addHandlerLogging(serverCh.pipeline,
             clientLogger,
-            name: "ws.client.logger",
-            position: .before(inboundGate)
-        )
-        try? serverCh.pipeline.syncOperations.addHandler(
+            name: "ws.client.logger", position: .before(inboundGate))
+        addHandlerLogging(serverCh.pipeline,
             WebSocketForwarder(peerChannel: clientChannel, direction: .clientToServer),
-            name: "ws.client.forwarder",
-            position: .before(inboundGate)
-        )
+            name: "ws.client.forwarder", position: .before(inboundGate))
 
         // CRITICAL: ensure HTTPResponseEncoder is gone from inbound pipeline.
         // If it remains, WebSocketForwarder writing WS frames to this channel
@@ -153,14 +145,19 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
         if onOutboundEL {
             try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
         } else {
-            // Cross-EL: execute on outbound EL and wait
+            // Cross-EL: use submit + wait with timeout to avoid indefinite deadlock.
             AxLogger.log("[WS Upgrade] cross-EL! Dispatching outbound gate to outbound EL", level: .Warning)
             let sem = DispatchSemaphore(value: 0)
             clientChannel.eventLoop.execute {
                 try? clientChannel.pipeline.syncOperations.addHandler(outboundGate, name: "ws.outbound.gate")
                 sem.signal()
             }
-            sem.wait()
+            // Timeout after 5s to prevent deadlock — if it fires, WS upgrade
+            // will be incomplete but the proxy won't hang.
+            if sem.wait(timeout: .now() + .seconds(5)) == .timedOut {
+                AxLogger.log("[WS Upgrade] TIMEOUT waiting for outbound gate — aborting WS upgrade", level: .Error)
+                return
+            }
         }
         outboundGate.shut()
 
@@ -239,6 +236,20 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
 
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
         context.fireErrorCaught(error)
+    }
+
+    /// Helper: add handler via syncOperations with error logging instead of silent try?.
+    private func addHandlerLogging(
+        _ pipeline: ChannelPipeline,
+        _ handler: ChannelHandler,
+        name: String,
+        position: NIOCore.ChannelPipeline.SynchronousOperations.Position = .last
+    ) {
+        do {
+            try pipeline.syncOperations.addHandler(handler, name: name, position: position)
+        } catch {
+            AxLogger.log("[WS Upgrade] FAILED to add \(name): \(error)", level: .Error)
+        }
     }
 }
 
