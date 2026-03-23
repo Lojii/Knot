@@ -6,8 +6,10 @@ import '../../controllers/tree_controller.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/tag_controller.dart';
+import '../../controllers/page_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/request_sender.dart';
 
 class FlowTable extends StatefulWidget {
   const FlowTable({super.key});
@@ -295,6 +297,29 @@ class _FlowRow extends StatelessWidget {
             ],
           ),
         ),
+        const PopupMenuDivider(),
+        // Repeat
+        const PopupMenuItem(
+          value: 'repeat',
+          child: Row(
+            children: [
+              Icon(Icons.replay, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Repeat'),
+            ],
+          ),
+        ),
+        // Open in Compose
+        const PopupMenuItem(
+          value: 'compose',
+          child: Row(
+            children: [
+              Icon(Icons.edit_note, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Open in Compose'),
+            ],
+          ),
+        ),
       ],
     ).then((value) {
       if (!context.mounted) return;
@@ -303,6 +328,10 @@ class _FlowRow extends StatelessWidget {
       } else if (value == 'curl') {
         final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
         Clipboard.setData(ClipboardData(text: curl));
+      } else if (value == 'repeat') {
+        _repeatRequest(context, flow);
+      } else if (value == 'compose') {
+        _openInCompose(context, flow);
       }
     });
   }
@@ -343,6 +372,67 @@ class _FlowRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _repeatRequest(BuildContext context, FlowSummary flow) async {
+    final taskCtrl = Get.find<TaskController>();
+    final detailCtrl = Get.find<DetailController>();
+    final tid = taskCtrl.currentTask.value?.id;
+
+    // Load detail if needed
+    Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
+    if (detail.isEmpty || detail['flowId'] != flow.flowId) {
+      if (tid != null) {
+        await detailCtrl.loadDetail(tid, flow.flowId);
+        detail = detailCtrl.detail.value?.raw ?? {};
+      }
+    }
+
+    if (!context.mounted) return;
+
+    try {
+      final result = await RequestSender.repeat(flow, detail);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${result.statusCode} (${result.elapsed.inMilliseconds}ms)'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Repeat failed: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openInCompose(BuildContext context, FlowSummary flow) async {
+    final taskCtrl = Get.find<TaskController>();
+    final detailCtrl = Get.find<DetailController>();
+    final pageCtrl = Get.find<AppPageController>();
+    final tid = taskCtrl.currentTask.value?.id;
+
+    // Load detail if needed
+    Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
+    if (detail.isEmpty || detail['flowId'] != flow.flowId) {
+      if (tid != null) {
+        await detailCtrl.loadDetail(tid, flow.flowId);
+        detail = detailCtrl.detail.value?.raw ?? {};
+      }
+    }
+
+    final headers = RequestSender.extractHeaders(detail);
+    final url = RequestSender.buildUrl(flow);
+
+    pageCtrl.openInCompose(
+      method: flow.method,
+      url: url,
+      headers: headers,
     );
   }
 

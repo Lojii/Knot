@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../utils/request_sender.dart';
 import '../../theme/app_theme.dart';
 import 'global_bar.dart';
 import 'toolbar.dart';
@@ -14,6 +16,7 @@ import 'content_panel.dart';
 import 'status_bar.dart';
 import '../history/history_page.dart';
 import '../settings/settings_page.dart';
+import '../compose/compose_page.dart';
 
 // ============ Intent declarations ============
 class FocusSearchIntent extends Intent {
@@ -36,6 +39,10 @@ class CopyAsCurlIntent extends Intent {
   const CopyAsCurlIntent();
 }
 
+class RepeatRequestIntent extends Intent {
+  const RepeatRequestIntent();
+}
+
 class CapturePage extends StatelessWidget {
   const CapturePage({super.key});
 
@@ -52,6 +59,7 @@ class CapturePage extends StatelessWidget {
               AppPage.capture => const _CaptureContent(),
               AppPage.history => const HistoryPanel(),
               AppPage.settings => const SettingsPanel(),
+              AppPage.compose => const ComposePage(),
             }),
           ),
           const CaptureStatusBar(),
@@ -94,6 +102,8 @@ class _CaptureContentState extends State<_CaptureContent> {
             const DeselectFlowIntent(),
         const SingleActivator(LogicalKeyboardKey.keyC, meta: true):
             const CopyAsCurlIntent(),
+        const SingleActivator(LogicalKeyboardKey.keyR, meta: true):
+            const RepeatRequestIntent(),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{
@@ -128,6 +138,45 @@ class _CaptureContentState extends State<_CaptureContent> {
                 final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
                 Clipboard.setData(ClipboardData(text: curl));
               }
+              return null;
+            },
+          ),
+          RepeatRequestIntent: CallbackAction<RepeatRequestIntent>(
+            onInvoke: (_) {
+              final flow = flowCtrl.selectedFlow.value;
+              if (flow == null) return null;
+              final detailCtrl = Get.find<DetailController>();
+              final tid = taskCtrl.currentTask.value?.id;
+
+              () async {
+                Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
+                if (detail.isEmpty || detail['flowId'] != flow.flowId) {
+                  if (tid != null) {
+                    await detailCtrl.loadDetail(tid, flow.flowId);
+                    detail = detailCtrl.detail.value?.raw ?? {};
+                  }
+                }
+                try {
+                  final result = await RequestSender.repeat(flow, detail);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${result.statusCode} (${result.elapsed.inMilliseconds}ms)'),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Repeat failed: $e'),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                }
+              }();
               return null;
             },
           ),
