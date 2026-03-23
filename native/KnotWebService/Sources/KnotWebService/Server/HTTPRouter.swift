@@ -8,6 +8,7 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
 
     private var uri: String?
     private var method: HTTPMethod?
+    private var body: ByteBuffer?
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let part = unwrapInboundIn(data)
@@ -16,35 +17,38 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
         case .head(let head):
             self.uri = head.uri
             self.method = head.method
+            self.body = nil
 
-        case .body:
-            break
+        case .body(let buf):
+            if self.body == nil {
+                self.body = buf
+            } else {
+                var b = buf
+                self.body?.writeBuffer(&b)
+            }
 
         case .end:
             guard let uri = self.uri, let method = self.method else {
                 send404(context: context)
                 return
             }
+            let bodyData = body.flatMap { $0.getData(at: $0.readerIndex, length: $0.readableBytes) }
             self.uri = nil
             self.method = nil
-            route(context: context, method: method, uri: uri)
+            self.body = nil
+            route(context: context, method: method, uri: uri, bodyData: bodyData)
         }
     }
 
     // MARK: - Routing
 
-    private func route(context: ChannelHandlerContext, method: HTTPMethod, uri: String) {
+    private func route(context: ChannelHandlerContext, method: HTTPMethod, uri: String, bodyData: Data? = nil) {
         let (path, queryParams) = parseURI(uri)
         let seg = pathSegments(path)
         let n = seg.count
 
-        guard method == .GET else {
-            send404(context: context)
-            return
-        }
-
         // GET /
-        if n == 0 {
+        if method == .GET && n == 0 {
             serveDashboard(context: context)
             return
         }
@@ -55,17 +59,34 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
             return
         }
 
+        // POST /api/tasks/batch-delete
+        if method == .POST && n == 3 && seg[2] == "batch-delete" {
+            TaskRoutes.batchDelete(context: context, bodyData: bodyData)
+            return
+        }
+
         // GET /api/tasks
-        if n == 2 {
+        if method == .GET && n == 2 {
             TaskRoutes.list(context: context, queryParams: queryParams)
             return
         }
 
         let taskId = seg[2]
 
+        // DELETE /api/tasks/{id}
+        if method == .DELETE && n == 3 {
+            TaskRoutes.delete(context: context, taskId: taskId)
+            return
+        }
+
         // GET /api/tasks/{id}
-        if n == 3 {
+        if method == .GET && n == 3 {
             TaskRoutes.detail(context: context, taskId: taskId, queryParams: queryParams)
+            return
+        }
+
+        guard method == .GET else {
+            send404(context: context)
             return
         }
 

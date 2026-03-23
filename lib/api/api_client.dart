@@ -76,5 +76,18 @@ class ApiClient {
     }
   }
 
+  Future<void> deleteTask(int taskId) async {
+    await _client.delete(Uri.parse('$baseUrl/api/tasks/$taskId'))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  Future<void> batchDeleteTasks(List<int> ids) async {
+    await _client.post(
+      Uri.parse('$baseUrl/api/tasks/batch-delete'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'ids': ids}),
+    ).timeout(const Duration(seconds: 30));
+  }
+
   void dispose() => _client.close();
 }

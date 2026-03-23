@@ -92,4 +92,54 @@ enum TaskRoutes {
                                          message: "Failed to get task: \(error.localizedDescription)")
         }
     }
+
+    // MARK: - Delete
+
+    /// DELETE /api/tasks/{id} — delete a single task and all its data
+    static func delete(context: ChannelHandlerContext, taskId: String) {
+        guard let id = Int64(taskId) else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")
+            return
+        }
+        do {
+            let db = DatabaseManager.shared.catalogDB
+            try DatabaseManager.shared.deleteTask(id)
+            try CatalogDAO.deleteTask(db: db, taskId: id)
+            ResponseHelper.jsonResponse(context: context, body: ["deleted": id])
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to delete task: \(error.localizedDescription)")
+        }
+    }
+
+    /// POST /api/tasks/batch-delete — delete multiple tasks
+    /// Body: {"ids": [1, 2, 3]}
+    static func batchDelete(context: ChannelHandlerContext, bodyData: Data?) {
+        guard let data = bodyData,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let ids = json["ids"] as? [Int] else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Expected {\"ids\": [...]}")
+            return
+        }
+
+        let db = DatabaseManager.shared.catalogDB
+        var deleted: [Int] = []
+        var failed: [Int] = []
+
+        for id in ids {
+            let taskId = Int64(id)
+            do {
+                try DatabaseManager.shared.deleteTask(taskId)
+                try CatalogDAO.deleteTask(db: db, taskId: taskId)
+                deleted.append(id)
+            } catch {
+                failed.append(id)
+            }
+        }
+
+        ResponseHelper.jsonResponse(context: context, body: [
+            "deleted": deleted,
+            "failed": failed,
+        ])
+    }
 }
