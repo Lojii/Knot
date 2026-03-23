@@ -5,9 +5,21 @@ import KnotStorage
 
 enum TaskRoutes {
 
+    /// Whether stats repair has been run this session
+    private static var statsRepaired = false
+
     static func list(context: ChannelHandlerContext, queryParams: [String: String]) {
         do {
             let db = DatabaseManager.shared.catalogDB
+
+            // Auto-repair stats on first load (backfills historical tasks)
+            if !statsRepaired {
+                statsRepaired = true
+                DispatchQueue.global().async {
+                    CatalogDAO.repairAllStats(catalogDB: db, rootPath: DatabaseManager.rootPath)
+                }
+            }
+
             let tasks = try CatalogDAO.findAllTasks(db: db)
             let items: [[String: Any]] = tasks.map { t in
                 var d: [String: Any] = [

@@ -93,6 +93,56 @@ public enum CatalogDAO {
         }
     }
 
+    /// Repair stats for all tasks with flow_count=0 by reading each task's protocol.db.
+    /// This backfills historical tasks that never had their stats synced to catalog.db.
+    /// Uses multiple root paths to find task directories (test temp dir + app group container).
+    public static func repairAllStats(catalogDB: Connection, rootPath: String) {
+        // Try both the provided rootPath and the default app group container
+        var roots = [rootPath]
+        let appGroupRoot = PathManager.root
+        if appGroupRoot != rootPath { roots.append(appGroupRoot) }
+        repairAllStatsWithRoots(catalogDB: catalogDB, roots: roots)
+    }
+
+    private static func repairAllStatsWithRoots(catalogDB: Connection, roots: [String]) {
+        let tasks: [(Int64, Int64)]
+        do {
+            let stmt = try catalogDB.prepare("SELECT id, flow_count FROM capture_task")
+            tasks = stmt.map { (($0[0] as? Int64 ?? 0), ($0[1] as? Int64 ?? 0)) }
+        } catch { return }
+
+        for (taskId, flowCount) in tasks {
+            guard flowCount == 0 else { continue }
+
+            // Try each root to find the protocol.db
+            var found = false
+            for root in roots {
+                let protoPath = PathManager.protocolDBPath(taskId, root: root)
+                guard FileManager.default.fileExists(atPath: protoPath) else { continue }
+
+                do {
+                    let protoDB = try Connection(protoPath, readonly: true)
+                    let countStmt = try protoDB.prepare("SELECT COUNT(*), IFNULL(SUM(upload_bytes),0), IFNULL(SUM(download_bytes),0) FROM flow")
+                    for row in countStmt {
+                        let count = row[0] as? Int64 ?? 0
+                        let upload = row[1] as? Int64 ?? 0
+                        let download = row[2] as? Int64 ?? 0
+                        if count > 0 {
+                            try catalogDB.run(
+                                "UPDATE capture_task SET flow_count = ?, upload_bytes = ?, download_bytes = ? WHERE id = ?",
+                                count, upload, download, taskId
+                            )
+                        }
+                    }
+                    found = true
+                    break
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+
     public static func deleteTask(db: Connection, taskId: Int64) throws {
         try db.run("DELETE FROM capture_task WHERE id = ?", taskId)
     }
