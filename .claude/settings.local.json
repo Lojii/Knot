@@ -327,7 +327,17 @@
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign flutter build macos --debug)",
       "Bash(pkill -f \"knot.app\")",
       "Bash(open build/macos/Build/Products/Debug/knot.app)",
-      "Bash(curl -s http://127.0.0.1:9090/api/tasks)"
+      "Bash(curl -s http://127.0.0.1:9090/api/tasks)",
+      "WebFetch(domain:docs.proxyman.com)",
+      "Bash(git reset:*)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign ls docs/需求/)",
+      "Bash(flutter test:*)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign __NEW_LINE_d1f314fb5469ed4d__ echo \"=== 1. Swift Build ===\" swift build --package-path native/TunnelServices)",
+      "Bash(node browser-test.js --auto --proxy-port 56244 --concurrency 2)",
+      "Bash(node browser-test.js --auto --proxy-port 59487 --concurrency 2)",
+      "Bash(PORT=63662)",
+      "Bash(node browser-test.js --auto --proxy-port $PORT --concurrency 2)",
+      "Bash(PORT=58039)"
     ],
     "additionalDirectories": [
       "/Users/aa123/Documents/Knot"

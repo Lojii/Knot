@@ -33,6 +33,14 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
     }
 
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        // Guard: IOData from decoder removal (e.g., TLS ClientHello after CONNECT)
+        // will fatalError in unwrapInboundIn. Pass it through untouched.
+        let desc = "\(data)"
+        if desc.hasPrefix("IOData") || desc.hasPrefix("ByteBuffer") || desc.hasPrefix("FileRegion") {
+            context.fireChannelRead(data)
+            return
+        }
+
         let part = unwrapInboundIn(data)
 
         switch part {
