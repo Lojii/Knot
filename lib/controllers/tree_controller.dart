@@ -21,6 +21,7 @@ class TreeNode {
 class TreeController extends GetxController {
   final tree = <TreeNode>[].obs;
   final selectedDomain = Rxn<String>();
+  final pinnedDomains = <String>{}.obs;
 
   @override
   void onInit() {
@@ -29,6 +30,19 @@ class TreeController extends GetxController {
     final flowCtrl = Get.find<FlowController>();
     ever(flowCtrl.flows, (_) => buildTree(flowCtrl.flows));
   }
+
+  void togglePin(String domain) {
+    if (pinnedDomains.contains(domain)) {
+      pinnedDomains.remove(domain);
+    } else {
+      pinnedDomains.add(domain);
+    }
+    // Rebuild tree to reflect pin order change
+    final flowCtrl = Get.find<FlowController>();
+    buildTree(flowCtrl.flows);
+  }
+
+  bool isPinned(String domain) => pinnedDomains.contains(domain);
 
   void buildTree(List<FlowSummary> flows) {
     final Map<String, List<FlowSummary>> grouped = {};
@@ -48,8 +62,14 @@ class TreeController extends GetxController {
       ));
     }
 
-    // Sort by request count descending
-    nodes.sort((a, b) => b.children.length.compareTo(a.children.length));
+    // Sort: pinned domains first, then by request count descending
+    nodes.sort((a, b) {
+      final aPinned = pinnedDomains.contains(a.domain);
+      final bPinned = pinnedDomains.contains(b.domain);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return b.children.length.compareTo(a.children.length);
+    });
     tree.value = nodes;
   }
 
