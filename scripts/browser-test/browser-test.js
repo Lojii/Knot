@@ -188,7 +188,7 @@ async function main() {
 
     // Launch Chromium through Puppeteer with proxy settings
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: 'new',
         args: [
             `--proxy-server=127.0.0.1:${PROXY_PORT}`,
             '--ignore-certificate-errors',
