@@ -10,6 +10,7 @@ import 'tree_panel.dart';
 import 'content_panel.dart';
 import 'status_bar.dart';
 import '../history/history_page.dart';
+import '../settings/settings_page.dart';
 
 class CapturePage extends StatelessWidget {
   const CapturePage({super.key});
@@ -21,16 +22,14 @@ class CapturePage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          // GlobalBar is always visible
           const GlobalBar(),
-          // Content switches based on current page
           Expanded(
-            child: Obx(() => pageCtrl.isHistory
-              ? const HistoryPanel()
-              : const _CaptureContent(),
-            ),
+            child: Obx(() => switch (pageCtrl.currentPage.value) {
+              AppPage.capture => const _CaptureContent(),
+              AppPage.history => const HistoryPanel(),
+              AppPage.settings => const SettingsPanel(),
+            }),
           ),
-          // Status bar always visible
           const CaptureStatusBar(),
         ],
       ),
@@ -38,7 +37,6 @@ class CapturePage extends StatelessWidget {
   }
 }
 
-/// The capture-specific content (toolbar + filter + tree/content split)
 class _CaptureContent extends StatelessWidget {
   const _CaptureContent();
 

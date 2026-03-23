@@ -6,7 +6,6 @@ import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../widgets/connection_indicator.dart';
 import '../../theme/app_theme.dart';
-import '../settings/settings_page.dart';
 
 class GlobalBar extends StatelessWidget {
   const GlobalBar({super.key});
@@ -32,54 +31,63 @@ class GlobalBar extends StatelessWidget {
           color: theme.colorScheme.surface,
           border: Border(bottom: BorderSide(color: theme.dividerColor)),
         ),
-        child: Obx(() => Row(
-          children: [
-            // === Left group: Task name + connection + TCP toggle ===
-            // Task name
-            Text(
-              taskCtrl.currentTask.value?.name.isNotEmpty == true
-                ? taskCtrl.currentTask.value!.name
-                : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
-              style: theme.textTheme.titleSmall,
-            ),
-            const SizedBox(width: AppTheme.spacingSM),
-            ConnectionIndicator(status: liveCtrl.wsStatus.value),
-            const SizedBox(width: AppTheme.spacingSM),
-            // Protocol / TCP toggle — hidden when on history page
-            if (pageCtrl.isCapture)
+        child: Obx(() {
+          final isSubPage = pageCtrl.isSubPage;
+
+          return Row(
+            children: [
+              // Back button — shown on history/settings pages
+              if (isSubPage) ...[
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, size: 18),
+                  tooltip: 'Back',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => pageCtrl.showCapture(),
+                ),
+                const SizedBox(width: AppTheme.spacingXS),
+              ],
+
+              // === Left group: Task name + connection + TCP toggle ===
+              Text(
+                taskCtrl.currentTask.value?.name.isNotEmpty == true
+                  ? taskCtrl.currentTask.value!.name
+                  : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
+                style: theme.textTheme.titleSmall,
+              ),
+              const SizedBox(width: AppTheme.spacingSM),
+              ConnectionIndicator(status: liveCtrl.wsStatus.value),
+              const SizedBox(width: AppTheme.spacingSM),
+              // Protocol / TCP toggle — only on capture page
+              if (pageCtrl.isCapture)
+                IconButton(
+                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  tooltip: 'Protocol / TCP/UDP',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {/* P2 */},
+                ),
+
+              const Spacer(),
+
+              // === Right group: History + Settings ===
               IconButton(
-                icon: const Icon(Icons.swap_horiz, size: 18),
-                tooltip: 'Protocol / TCP/UDP',
+                icon: const Icon(Icons.history, size: 18),
+                tooltip: 'History',
                 visualDensity: VisualDensity.compact,
-                onPressed: () {/* P2 */},
+                onPressed: () => pageCtrl.isHistory
+                    ? pageCtrl.showCapture()
+                    : pageCtrl.showHistory(),
               ),
-
-            const Spacer(),
-
-            // === Right group: History + Settings ===
-            IconButton(
-              icon: Icon(
-                pageCtrl.isHistory ? Icons.list_alt : Icons.history,
-                size: 18,
+              IconButton(
+                icon: const Icon(Icons.settings, size: 18),
+                tooltip: 'Settings',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => pageCtrl.isSettings
+                    ? pageCtrl.showCapture()
+                    : pageCtrl.showSettings(),
               ),
-              tooltip: pageCtrl.isHistory ? 'Back to Capture' : 'History',
-              visualDensity: VisualDensity.compact,
-              onPressed: () {
-                if (pageCtrl.isHistory) {
-                  pageCtrl.showCapture();
-                } else {
-                  pageCtrl.showHistory();
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings, size: 18),
-              tooltip: 'Settings',
-              visualDensity: VisualDensity.compact,
-              onPressed: () => Get.to(() => const SettingsPage()),
-            ),
-          ],
-        )),
+            ],
+          );
+        }),
       ),
     );
   }

@@ -1,46 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../theme/app_theme.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+/// Embeddable settings panel — displayed inside the main layout
+/// when the user clicks the Settings button in GlobalBar.
+/// No Scaffold or AppBar — GlobalBar stays on top.
+class SettingsPanel extends StatelessWidget {
+  const SettingsPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppTheme.spacingLG),
-        children: [
-          _section(theme, 'Connection', [
-            _infoTile(theme, 'API Endpoint', 'http://localhost:9090'),
-            _infoTile(theme, 'WebSocket', 'ws://localhost:9090/ws'),
-          ]),
-          const SizedBox(height: AppTheme.spacingLG),
-          _section(theme, 'Appearance', [
-            const ListTile(
-              title: Text('Theme'),
-              subtitle: Text('Follow system'),
-              trailing: Icon(Icons.brightness_auto),
-              dense: true,
-            ),
-          ]),
-          const SizedBox(height: AppTheme.spacingLG),
-          _section(theme, 'About', [
-            _infoTile(theme, 'Version', '1.0.0-dev'),
-            _infoTile(theme, 'Engine', 'Swift/NIO + KnotWebService'),
-          ]),
-        ],
-      ),
+    return ListView(
+      padding: const EdgeInsets.all(AppTheme.spacingLG),
+      children: [
+        _section(theme, 'Connection', [
+          _infoTile(theme, 'API Endpoint', 'http://localhost:9090'),
+          _infoTile(theme, 'WebSocket', 'ws://localhost:9090/ws'),
+        ]),
+        const SizedBox(height: AppTheme.spacingLG),
+        _section(theme, 'Appearance', [
+          const ListTile(
+            title: Text('Theme'),
+            subtitle: Text('Follow system'),
+            trailing: Icon(Icons.brightness_auto),
+            dense: true,
+          ),
+        ]),
+        const SizedBox(height: AppTheme.spacingLG),
+        _section(theme, 'About', [
+          _infoTile(theme, 'Version', '1.0.0-dev'),
+          _infoTile(theme, 'Engine', 'Swift/NIO + KnotWebService'),
+        ]),
+      ],
     );
   }
 
