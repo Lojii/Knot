@@ -53,7 +53,19 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
             return
         }
 
-        // All API routes start with /api/tasks
+        // /api/rules/...
+        if n >= 2 && seg[0] == "api" && seg[1] == "rules" {
+            routeRules(context: context, method: method, segments: Array(seg.dropFirst(2)), bodyData: bodyData)
+            return
+        }
+
+        // /api/breakpoint/{flowId}/resume
+        if n == 4 && seg[0] == "api" && seg[1] == "breakpoint" && seg[3] == "resume" && method == .PATCH {
+            RuleRoutes.resumeBreakpoint(context: context, flowId: seg[2], bodyData: bodyData)
+            return
+        }
+
+        // All remaining API routes start with /api/tasks
         guard n >= 2, seg[0] == "api", seg[1] == "tasks" else {
             send404(context: context)
             return
@@ -147,6 +159,67 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
         if seg5 == "decoded" {
             PayloadRoutes.decoded(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
             return
+        }
+
+        send404(context: context)
+    }
+
+    // MARK: - Rule routing
+
+    private func routeRules(context: ChannelHandlerContext, method: HTTPMethod,
+                            segments: [String], bodyData: Data?) {
+        let n = segments.count
+
+        // /api/rules/map-local
+        if n >= 1 && segments[0] == "map-local" {
+            if method == .GET && n == 1 {
+                RuleRoutes.listMapLocal(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.createMapLocal(context: context, bodyData: bodyData)
+                return
+            }
+            if n == 2, let id = Int64(segments[1]) {
+                if method == .PUT {
+                    RuleRoutes.updateMapLocal(context: context, id: id, bodyData: bodyData)
+                    return
+                }
+                if method == .DELETE {
+                    RuleRoutes.deleteMapLocal(context: context, id: id)
+                    return
+                }
+            }
+            if n == 3 && segments[2] == "toggle", let id = Int64(segments[1]), method == .PATCH {
+                RuleRoutes.toggleMapLocal(context: context, id: id)
+                return
+            }
+        }
+
+        // /api/rules/breakpoint
+        if n >= 1 && segments[0] == "breakpoint" {
+            if method == .GET && n == 1 {
+                RuleRoutes.listBreakpoint(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.createBreakpoint(context: context, bodyData: bodyData)
+                return
+            }
+            if n == 2, let id = Int64(segments[1]) {
+                if method == .PUT {
+                    RuleRoutes.updateBreakpoint(context: context, id: id, bodyData: bodyData)
+                    return
+                }
+                if method == .DELETE {
+                    RuleRoutes.deleteBreakpoint(context: context, id: id)
+                    return
+                }
+            }
+            if n == 3 && segments[2] == "toggle", let id = Int64(segments[1]), method == .PATCH {
+                RuleRoutes.toggleBreakpoint(context: context, id: id)
+                return
+            }
         }
 
         send404(context: context)

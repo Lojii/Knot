@@ -36,7 +36,7 @@ enum ResponseHelper {
         headers.add(name: "content-type", value: contentType)
         headers.add(name: "content-length", value: "\(body.count)")
         headers.add(name: "access-control-allow-origin", value: "*")
-        headers.add(name: "access-control-allow-methods", value: "GET, POST, OPTIONS")
+        headers.add(name: "access-control-allow-methods", value: "GET, POST, PUT, DELETE, PATCH, OPTIONS")
         headers.add(name: "access-control-allow-headers", value: "Content-Type")
 
         let head = HTTPResponseHead(version: .http1_1, status: status, headers: headers)
