@@ -34,9 +34,10 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
 
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         // Guard: IOData from decoder removal (e.g., TLS ClientHello after CONNECT)
-        // will fatalError in unwrapInboundIn. Pass it through untouched.
-        let desc = "\(data)"
-        if desc.hasPrefix("IOData") || desc.hasPrefix("ByteBuffer") || desc.hasPrefix("FileRegion") {
+        // will fatalError in unwrapInboundIn. Use description prefix check (cached once).
+        // "HTTPPart<...>" = valid HTTP, anything else (IOData/ByteBuffer/FileRegion) = pass through.
+        let desc = data.description
+        if !desc.hasPrefix("HTTPPart") {
             context.fireChannelRead(data)
             return
         }

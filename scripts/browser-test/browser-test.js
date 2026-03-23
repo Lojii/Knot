@@ -143,7 +143,7 @@ async function autoSurf(browser, sites, concurrency, pushProgress) {
 
 async function retestFailed() {
     const projectDir = path.resolve(__dirname, '../..');
-    const packageDir = path.join(projectDir, 'LocalPackages/TunnelServices');
+    const packageDir = path.join(projectDir, 'native/TunnelServices');
 
     try {
         console.log('Running failed flow retest...');

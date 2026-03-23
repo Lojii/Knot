@@ -35,55 +35,8 @@ public enum StateSchema {
         try db.execute("""
             INSERT OR IGNORE INTO task_stats (id, updated_at) VALUES (1, 0)
             """)
-        try db.execute("""
-            CREATE TABLE IF NOT EXISTS map_local_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                enabled INTEGER DEFAULT 1,
-                url_pattern TEXT NOT NULL,
-                method TEXT,
-                status_code INTEGER DEFAULT 200,
-                response_headers TEXT,
-                response_file TEXT,
-                comment TEXT,
-                created_at REAL
-            )
-            """)
-        try db.execute("""
-            CREATE TABLE IF NOT EXISTS breakpoint_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                enabled INTEGER DEFAULT 1,
-                url_pattern TEXT NOT NULL,
-                method TEXT,
-                break_on TEXT DEFAULT 'both',
-                comment TEXT,
-                created_at REAL
-            )
-            """)
-        try db.execute("""
-            CREATE TABLE IF NOT EXISTS map_remote_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                enabled INTEGER DEFAULT 1,
-                url_pattern TEXT NOT NULL,
-                method TEXT,
-                replace_scheme TEXT,
-                replace_host TEXT,
-                replace_port INTEGER,
-                replace_path TEXT,
-                comment TEXT,
-                created_at REAL
-            )
-            """)
-        try db.execute("""
-            CREATE TABLE IF NOT EXISTS allow_list (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                pattern TEXT NOT NULL UNIQUE
-            )
-            """)
-        try db.execute("""
-            CREATE TABLE IF NOT EXISTS block_list (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                pattern TEXT NOT NULL UNIQUE
-            )
-            """)
+        // Note: Rule tables (map_local_rule, breakpoint_rule, map_remote_rule,
+        // allow_list, block_list) are in CatalogSchema (catalog.db) because
+        // rules are global, not per-task.
     }
 }

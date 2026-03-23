@@ -58,6 +58,58 @@ public enum CatalogSchema {
             CREATE INDEX IF NOT EXISTS idx_breakpoint_enabled ON breakpoint(enabled)
             """)
 
+        // Rule tables (global, not per-task)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS map_local_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                status_code INTEGER DEFAULT 200,
+                response_headers TEXT,
+                response_file TEXT,
+                comment TEXT,
+                created_at REAL
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS breakpoint_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                break_on TEXT DEFAULT 'both',
+                comment TEXT,
+                created_at REAL
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS map_remote_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                replace_scheme TEXT,
+                replace_host TEXT,
+                replace_port INTEGER,
+                replace_path TEXT,
+                comment TEXT,
+                created_at REAL
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS allow_list (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern TEXT NOT NULL UNIQUE
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS block_list (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern TEXT NOT NULL UNIQUE
+            )
+            """)
+
         // Migrate: drop capture_task if it still has the removed ssl_enabled column
         migrateDropSSLEnabled(db)
     }
