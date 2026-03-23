@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-class BodyViewer extends StatelessWidget {
+enum BodyViewMode { pretty, raw, hex }
+
+class BodyViewer extends StatefulWidget {
   final String body;
   final String contentType;
   final String label;
@@ -16,62 +19,236 @@ class BodyViewer extends StatelessWidget {
   });
 
   @override
+  State<BodyViewer> createState() => _BodyViewerState();
+}
+
+class _BodyViewerState extends State<BodyViewer> {
+  BodyViewMode _viewMode = BodyViewMode.pretty;
+
+  @override
   Widget build(BuildContext context) {
-    if (body.isEmpty) {
+    if (widget.body.isEmpty) {
       return Text('(empty)', style: TextStyle(
         color: Theme.of(context).hintColor,
         fontSize: AppTheme.fontSizeSM,
       ));
     }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildModeToggle(context),
+        const SizedBox(height: AppTheme.spacingXS),
+        _buildBody(context),
+      ],
+    );
+  }
+
+  Widget _buildModeToggle(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: BodyViewMode.values.map((mode) {
+        final isActive = _viewMode == mode;
+        final label = switch (mode) {
+          BodyViewMode.pretty => 'Pretty',
+          BodyViewMode.raw => 'Raw',
+          BodyViewMode.hex => 'Hex',
+        };
+        return Padding(
+          padding: const EdgeInsets.only(right: AppTheme.spacingXS),
+          child: GestureDetector(
+            onTap: () => setState(() => _viewMode = mode),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingSM,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? theme.colorScheme.primary.withAlpha(26)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                border: Border.all(
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : theme.dividerColor,
+                ),
+              ),
+              child: Text(label, style: TextStyle(
+                fontSize: AppTheme.fontSizeSM,
+                color: isActive ? theme.colorScheme.primary : null,
+              )),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    switch (_viewMode) {
+      case BodyViewMode.pretty:
+        return _prettyView(context);
+      case BodyViewMode.raw:
+        return _rawView(context);
+      case BodyViewMode.hex:
+        return _hexView(context);
+    }
+  }
+
+  Widget _prettyView(BuildContext context) {
     // Image detection
-    if (_isImage(contentType)) {
+    if (_isImage(widget.contentType)) {
       return _imagePreview(context);
     }
 
     // JSON detection
-    if (_isJson(contentType) || _looksLikeJson(body)) {
+    if (_isJson(widget.contentType) || _looksLikeJson(widget.body)) {
       return _jsonView(context);
     }
 
+    // XML/HTML auto-indent
+    if (_isXml(widget.contentType)) {
+      return _xmlView(context);
+    }
+
     // Default: raw text
-    return SelectableText(body, style: AppTheme.mono(context));
+    return SelectableText(widget.body, style: AppTheme.mono(context));
+  }
+
+  Widget _rawView(BuildContext context) {
+    return SelectableText(
+      widget.body,
+      style: AppTheme.mono(context),
+    );
+  }
+
+  Widget _hexView(BuildContext context) {
+    final bytes = utf8.encode(widget.body);
+    // Limit to first 4KB for performance
+    final limit = math.min(bytes.length, 4096);
+    final truncated = bytes.sublist(0, limit);
+
+    final lines = <String>[];
+    for (int offset = 0; offset < truncated.length; offset += 16) {
+      final end = math.min(offset + 16, truncated.length);
+      final chunk = truncated.sublist(offset, end);
+
+      // Offset column
+      final offsetStr = offset.toRadixString(16).padLeft(8, '0');
+
+      // Hex bytes
+      final hexParts = <String>[];
+      for (int j = 0; j < 16; j++) {
+        if (j < chunk.length) {
+          hexParts.add(chunk[j].toRadixString(16).padLeft(2, '0'));
+        } else {
+          hexParts.add('  ');
+        }
+      }
+      final hexLeft = hexParts.sublist(0, math.min(8, hexParts.length)).join(' ');
+      final hexRight = hexParts.length > 8
+          ? hexParts.sublist(8).join(' ')
+          : '';
+      final hexStr = '$hexLeft  $hexRight';
+
+      // ASCII column
+      final ascii = chunk.map((b) => (b >= 32 && b <= 126)
+          ? String.fromCharCode(b)
+          : '.').join();
+
+      lines.add('$offsetStr  $hexStr  |$ascii|');
+    }
+
+    if (bytes.length > limit) {
+      lines.add('... truncated at 4096 bytes (total: ${bytes.length})');
+    }
+
+    return SelectableText(
+      lines.join('\n'),
+      style: AppTheme.mono(context),
+    );
   }
 
   Widget _jsonView(BuildContext context) {
     try {
-      final obj = jsonDecode(body);
+      final obj = jsonDecode(widget.body);
       final pretty = const JsonEncoder.withIndent('  ').convert(obj);
       return _SyntaxText(text: pretty, language: 'json');
     } catch (_) {
-      return SelectableText(body, style: AppTheme.mono(context));
+      return SelectableText(widget.body, style: AppTheme.mono(context));
     }
+  }
+
+  Widget _xmlView(BuildContext context) {
+    final formatted = _indentXml(widget.body);
+    return SelectableText(formatted, style: AppTheme.mono(context));
   }
 
   Widget _imagePreview(BuildContext context) {
     // Try to decode base64 or show placeholder
     try {
-      final bytes = base64Decode(body);
+      final bytes = base64Decode(widget.body);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Image Preview ($contentType)', style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
+          Text('Image Preview (${widget.contentType})',
+              style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
           const SizedBox(height: AppTheme.spacingSM),
           Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain,
             errorBuilder: (_, _, _) => const Text('Cannot preview image')),
         ],
       );
     } catch (_) {
-      return Text('Image ($contentType) — ${body.length} bytes',
+      return Text('Image (${widget.contentType}) \u2014 ${widget.body.length} bytes',
           style: const TextStyle(fontSize: AppTheme.fontSizeSM));
     }
   }
 
   bool _isImage(String ct) => ct.contains('image/');
   bool _isJson(String ct) => ct.contains('json');
+  bool _isXml(String ct) =>
+      ct.contains('xml') || ct.contains('html');
   bool _looksLikeJson(String s) {
     final trimmed = s.trimLeft();
     return trimmed.startsWith('{') || trimmed.startsWith('[');
+  }
+
+  /// Simple XML/HTML indenter.
+  String _indentXml(String xml) {
+    final buf = StringBuffer();
+    int indent = 0;
+    // Split on tags
+    final re = RegExp(r'(<[^>]+>)');
+    final parts = <String>[];
+    int last = 0;
+    for (final m in re.allMatches(xml)) {
+      if (m.start > last) {
+        final text = xml.substring(last, m.start).trim();
+        if (text.isNotEmpty) parts.add(text);
+      }
+      parts.add(m.group(0)!);
+      last = m.end;
+    }
+    if (last < xml.length) {
+      final text = xml.substring(last).trim();
+      if (text.isNotEmpty) parts.add(text);
+    }
+
+    for (final part in parts) {
+      if (part.startsWith('</')) {
+        indent = math.max(0, indent - 1);
+        buf.writeln('${'  ' * indent}$part');
+      } else if (part.startsWith('<') && !part.startsWith('<!') &&
+          !part.endsWith('/>') && !part.contains('</')) {
+        buf.writeln('${'  ' * indent}$part');
+        indent++;
+      } else {
+        buf.writeln('${'  ' * indent}$part');
+      }
+    }
+    return buf.toString().trimRight();
   }
 }
 
