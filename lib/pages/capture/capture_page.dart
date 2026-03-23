@@ -19,6 +19,7 @@ import '../settings/settings_page.dart';
 import '../compose/compose_page.dart';
 import '../tools/map_remote_page.dart';
 import '../tools/allow_block_page.dart';
+import '../tools/diff_page.dart';
 
 // ============ Intent declarations ============
 class FocusSearchIntent extends Intent {
@@ -64,6 +65,7 @@ class CapturePage extends StatelessWidget {
               AppPage.compose => const ComposePage(),
               AppPage.mapRemote => const MapRemotePanel(),
               AppPage.allowBlock => const AllowBlockPanel(),
+              AppPage.diff => const DiffPage(),
             }),
           ),
           const CaptureStatusBar(),
