@@ -65,7 +65,15 @@ class GlobalBar extends StatelessWidget {
 
               const Spacer(),
 
-              // === Right group: History + Settings ===
+              // === Right group: Compose + History + Settings ===
+              IconButton(
+                icon: const Icon(Icons.edit_note, size: 18),
+                tooltip: 'Compose',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => pageCtrl.isCompose
+                    ? pageCtrl.showCapture()
+                    : pageCtrl.showCompose(),
+              ),
               IconButton(
                 icon: const Icon(Icons.history, size: 18),
                 tooltip: 'History',

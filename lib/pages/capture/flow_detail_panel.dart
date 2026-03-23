@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../controllers/page_controller.dart';
 import '../../widgets/key_value_table.dart';
 import '../../widgets/body_viewer.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/curl_export.dart';
+import '../../utils/request_sender.dart';
 
 class FlowDetailPanel extends StatelessWidget {
   const FlowDetailPanel({super.key});
@@ -41,6 +43,23 @@ class FlowDetailPanel extends StatelessWidget {
               child: Row(
                 children: [
                   const Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      final flow = flowCtrl.selectedFlow.value;
+                      if (flow == null) return;
+                      final raw = detailCtrl.detail.value?.raw ?? {};
+                      final headers = RequestSender.extractHeaders(raw);
+                      final url = RequestSender.buildUrl(flow);
+                      final pageCtrl = Get.find<AppPageController>();
+                      pageCtrl.openInCompose(
+                        method: flow.method,
+                        url: url,
+                        headers: headers,
+                      );
+                    },
+                    icon: const Icon(Icons.edit_note, size: 14),
+                    label: const Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSizeSM)),
+                  ),
                   TextButton.icon(
                     onPressed: () {
                       final raw = detailCtrl.detail.value?.raw ?? {};
