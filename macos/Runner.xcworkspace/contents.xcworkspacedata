@@ -7,4 +7,13 @@
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:../native/TunnelServices">
+   </FileRef>
+   <FileRef
+      location = "group:../native/KnotWebService">
+   </FileRef>
+   <FileRef
+      location = "group:../native/KnotStorage">
+   </FileRef>
 </Workspace>
