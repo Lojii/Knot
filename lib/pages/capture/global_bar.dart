@@ -32,20 +32,17 @@ class GlobalBar extends StatelessWidget {
           border: Border(bottom: BorderSide(color: theme.dividerColor)),
         ),
         child: Obx(() {
-          final isSubPage = pageCtrl.isSubPage;
-
           return Row(
             children: [
-              // Back button — shown on history/settings pages
-              if (isSubPage) ...[
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 18),
-                  tooltip: 'Back',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => pageCtrl.showCapture(),
-                ),
-                const SizedBox(width: AppTheme.spacingXS),
-              ],
+              // Home button — always visible
+              IconButton(
+                icon: Icon(Icons.home_outlined, size: 18,
+                  color: pageCtrl.isCapture ? theme.hintColor : theme.colorScheme.primary),
+                tooltip: 'Home',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => pageCtrl.showCapture(),
+              ),
+              const SizedBox(width: AppTheme.spacingXS),
 
               // === Left group: Task name + connection + TCP toggle ===
               Text(
