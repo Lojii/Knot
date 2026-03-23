@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/flow_controller.dart';
 import '../../controllers/tree_controller.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/tag_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../theme/app_theme.dart';
 
@@ -167,6 +169,8 @@ class _FlowTableState extends State<FlowTable> {
     ),
     child: Row(
       children: [
+        // Extra space for tag dot
+        const SizedBox(width: 14),
         _sortableHeader('Method', _SortColumn.method, width: 60),
         const SizedBox(width: AppTheme.spacingSM),
         _sortableHeader('Host', _SortColumn.host, flex: 2),
@@ -189,41 +193,155 @@ class _FlowRow extends StatelessWidget {
     final flowCtrl = Get.find<FlowController>();
     final detailCtrl = Get.find<DetailController>();
     final taskCtrl = Get.find<TaskController>();
+    final tagCtrl = Get.find<TagController>();
     final theme = Theme.of(context);
 
-    return InkWell(
-      onTap: () {
-        flowCtrl.selectFlow(flow);
-        final tid = taskCtrl.currentTask.value?.id;
-        if (tid != null) {
-          detailCtrl.loadDetail(tid, flow.flowId);
-          detailCtrl.loadBodies(tid, flow.flowId);
-        }
+    return GestureDetector(
+      onSecondaryTapUp: (details) {
+        _showContextMenu(context, details.globalPosition, flow);
       },
-      child: Container(
-        height: AppTheme.tableRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
-        color: isSelected
-            ? theme.colorScheme.primary.withAlpha(26)
-            : null,
-        child: Row(
-          children: [
-            SizedBox(width: 60, child: Text(_methodLabel(flow.method),
-                style: TextStyle(fontSize: AppTheme.fontSizeSM, color: AppTheme.methodColor(flow.method)))),
-            const SizedBox(width: AppTheme.spacingSM),
-            Expanded(flex: 2, child: Text(flow.host,
-                style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
-            Expanded(flex: 3, child: Text(flow.uri,
-                style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
-            SizedBox(width: 50, child: Text(flow.statusCode,
-                style: TextStyle(fontSize: AppTheme.fontSizeSM, color: _statusColor(flow.statusCode)))),
-            SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
-                style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
-            SizedBox(width: 70, child: Text(
-                flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-                style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
-          ],
+      child: InkWell(
+        onTap: () {
+          flowCtrl.selectFlow(flow);
+          final tid = taskCtrl.currentTask.value?.id;
+          if (tid != null) {
+            detailCtrl.loadDetail(tid, flow.flowId);
+            detailCtrl.loadBodies(tid, flow.flowId);
+          }
+        },
+        child: Container(
+          height: AppTheme.tableRowHeight,
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+          color: isSelected
+              ? theme.colorScheme.primary.withAlpha(26)
+              : null,
+          child: Row(
+            children: [
+              // Color tag dot
+              Obx(() {
+                final tagColor = tagCtrl.getTag(flow.flowId);
+                return SizedBox(
+                  width: 14,
+                  child: tagColor != null
+                      ? Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: tagColor,
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                );
+              }),
+              SizedBox(width: 60, child: Text(_methodLabel(flow.method),
+                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: AppTheme.methodColor(flow.method)))),
+              const SizedBox(width: AppTheme.spacingSM),
+              Expanded(flex: 2, child: Text(flow.host,
+                  style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
+              Expanded(flex: 3, child: Text(flow.uri,
+                  style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
+              SizedBox(width: 50, child: Text(flow.statusCode,
+                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: _statusColor(flow.statusCode)))),
+              SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
+                  style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
+              SizedBox(width: 70, child: Text(
+                  flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
+                  style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  void _showContextMenu(BuildContext context, Offset position, FlowSummary flow) {
+    final tagCtrl = Get.find<TagController>();
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx, position.dy, position.dx, position.dy,
+      ),
+      items: [
+        // Color submenu
+        PopupMenuItem(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: _ColorSubmenu(flowId: flow.flowId),
+        ),
+        const PopupMenuDivider(),
+        // Add Comment
+        PopupMenuItem(
+          value: 'comment',
+          child: Row(
+            children: [
+              const Icon(Icons.comment_outlined, size: 16),
+              const SizedBox(width: AppTheme.spacingSM),
+              Text(tagCtrl.getComment(flow.flowId) != null
+                  ? 'Edit Comment' : 'Add Comment'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        // Copy as cURL
+        const PopupMenuItem(
+          value: 'curl',
+          child: Row(
+            children: [
+              Icon(Icons.copy, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Copy as cURL'),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (!context.mounted) return;
+      if (value == 'comment') {
+        _showCommentDialog(context, flow.flowId);
+      } else if (value == 'curl') {
+        final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
+        Clipboard.setData(ClipboardData(text: curl));
+      }
+    });
+  }
+
+  void _showCommentDialog(BuildContext context, String flowId) {
+    final tagCtrl = Get.find<TagController>();
+    final controller = TextEditingController(text: tagCtrl.getComment(flowId) ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Flow Comment', style: TextStyle(fontSize: AppTheme.fontSizeLG)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Enter a comment...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) {
+                tagCtrl.removeComment(flowId);
+              } else {
+                tagCtrl.setComment(flowId, text);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
@@ -239,5 +357,79 @@ class _FlowRow extends StatelessWidget {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}K';
     return '${(bytes / 1024 / 1024).toStringAsFixed(1)}M';
+  }
+}
+
+/// Inline color picker for the context menu.
+class _ColorSubmenu extends StatelessWidget {
+  final String flowId;
+  const _ColorSubmenu({required this.flowId});
+
+  @override
+  Widget build(BuildContext context) {
+    final tagCtrl = Get.find<TagController>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingSM,
+        vertical: AppTheme.spacingXS,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Color Tag', style: TextStyle(
+            fontSize: AppTheme.fontSizeSM,
+            fontWeight: FontWeight.bold,
+          )),
+          const SizedBox(height: AppTheme.spacingXS),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ...TagController.tagColors.map((entry) => GestureDetector(
+                onTap: () {
+                  tagCtrl.setTag(flowId, entry.value);
+                  Navigator.pop(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: AppTheme.spacingXS),
+                  child: Tooltip(
+                    message: entry.key,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: entry.value,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                    ),
+                  ),
+                ),
+              )),
+              // Clear button
+              GestureDetector(
+                onTap: () {
+                  tagCtrl.removeTag(flowId);
+                  Navigator.pop(context);
+                },
+                child: Tooltip(
+                  message: 'Clear',
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Theme.of(context).hintColor),
+                    ),
+                    child: Icon(Icons.close, size: 12, color: Theme.of(context).hintColor),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

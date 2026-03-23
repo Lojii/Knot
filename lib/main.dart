@@ -11,6 +11,7 @@ import 'controllers/filter_controller.dart';
 import 'controllers/dashboard_controller.dart';
 import 'controllers/history_controller.dart';
 import 'controllers/page_controller.dart';
+import 'controllers/tag_controller.dart';
 import 'pages/capture/capture_page.dart';
 import 'theme/app_theme.dart';
 
@@ -31,6 +32,7 @@ void main() async {
   Get.put(DashboardController(api));
   Get.put(HistoryController(api));
   Get.put(AppPageController());
+  Get.put(TagController());
 
   runApp(const KnotApp());
 
