@@ -326,7 +326,8 @@
       "Bash(node browser-test.js --auto --proxy-port 61772 --concurrency 2)",
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign flutter build macos --debug)",
       "Bash(pkill -f \"knot.app\")",
-      "Bash(open build/macos/Build/Products/Debug/knot.app)"
+      "Bash(open build/macos/Build/Products/Debug/knot.app)",
+      "Bash(curl -s http://127.0.0.1:9090/api/tasks)"
     ],
     "additionalDirectories": [
       "/Users/aa123/Documents/Knot"

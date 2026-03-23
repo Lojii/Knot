@@ -73,13 +73,22 @@ public enum CatalogDAO {
     }
 
     public static func findAllTasks(db: Connection) throws -> [CaptureTaskRecord] {
-        let stmt = try db.prepare("SELECT id, name, created_at, status FROM capture_task ORDER BY created_at DESC")
+        let stmt = try db.prepare("""
+            SELECT id, name, created_at, started_at, stopped_at, status,
+                   flow_count, upload_bytes, download_bytes
+            FROM capture_task ORDER BY created_at DESC
+        """)
         return stmt.map { row in
             var r = CaptureTaskRecord()
             r.id = row[0] as? Int64 ?? 0
             r.name = row[1] as? String ?? ""
             r.createdAt = row[2] as? Double ?? 0
-            r.status = Int(row[3] as? Int64 ?? 0)
+            r.startedAt = row[3] as? Double
+            r.stoppedAt = row[4] as? Double
+            r.status = Int(row[5] as? Int64 ?? 0)
+            r.flowCount = row[6] as? Int64 ?? 0
+            r.uploadBytes = row[7] as? Int64 ?? 0
+            r.downloadBytes = row[8] as? Int64 ?? 0
             return r
         }
     }

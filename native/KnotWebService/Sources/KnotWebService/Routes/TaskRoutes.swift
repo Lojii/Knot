@@ -10,12 +10,18 @@ enum TaskRoutes {
             let db = DatabaseManager.shared.catalogDB
             let tasks = try CatalogDAO.findAllTasks(db: db)
             let items: [[String: Any]] = tasks.map { t in
-                [
+                var d: [String: Any] = [
                     "id": t.id,
                     "name": t.name,
                     "createdAt": t.createdAt,
                     "status": t.status,
+                    "flowCount": t.flowCount,
+                    "uploadBytes": t.uploadBytes,
+                    "downloadBytes": t.downloadBytes,
                 ]
+                if let v = t.startedAt { d["startedAt"] = v }
+                if let v = t.stoppedAt { d["stoppedAt"] = v }
+                return d
             }
             ResponseHelper.jsonResponse(context: context, body: items)
         } catch {
