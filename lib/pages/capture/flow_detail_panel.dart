@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../widgets/key_value_table.dart';
 import '../../widgets/body_viewer.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/curl_export.dart';
 
 class FlowDetailPanel extends StatelessWidget {
   const FlowDetailPanel({super.key});
@@ -32,6 +34,31 @@ class FlowDetailPanel extends StatelessWidget {
         length: 7,
         child: Column(
           children: [
+            // Toolbar with cURL export
+            Container(
+              height: AppTheme.toolbarHeight,
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      final raw = detailCtrl.detail.value?.raw ?? {};
+                      final curl = CurlExport.fromFlowDetail(raw);
+                      Clipboard.setData(ClipboardData(text: curl));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('cURL command copied to clipboard'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.copy, size: 14),
+                    label: const Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSizeSM)),
+                  ),
+                ],
+              ),
+            ),
             TabBar(
               isScrollable: true,
               tabAlignment: TabAlignment.start,
