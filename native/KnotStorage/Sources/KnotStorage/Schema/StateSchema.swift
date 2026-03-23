@@ -35,5 +35,29 @@ public enum StateSchema {
         try db.execute("""
             INSERT OR IGNORE INTO task_stats (id, updated_at) VALUES (1, 0)
             """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS map_local_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                status_code INTEGER DEFAULT 200,
+                response_headers TEXT,
+                response_file TEXT,
+                comment TEXT,
+                created_at REAL
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS breakpoint_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                break_on TEXT DEFAULT 'both',
+                comment TEXT,
+                created_at REAL
+            )
+            """)
     }
 }
