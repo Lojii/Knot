@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../api/ws_client.dart';
 import '../models/flow_summary.dart';
+import '../pages/tools/breakpoint_dialog.dart';
 import 'flow_controller.dart';
 import 'dashboard_controller.dart';
 
@@ -56,8 +58,21 @@ class LiveController extends GetxController {
         case 'stats':
           _updateStats(msg.data);
           break;
+        case 'breakpoint_hit':
+          _showBreakpointDialog(msg.data);
+          break;
       }
     });
+  }
+
+  void _showBreakpointDialog(Map<String, dynamic> data) {
+    final context = Get.context;
+    if (context == null) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => BreakpointHitDialog(data: data),
+    );
   }
 
   void _updateMetrics(Map<String, dynamic> data) {
