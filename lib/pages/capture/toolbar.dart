@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../api/proxy_channel.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../controllers/live_controller.dart';
 import '../../theme/app_theme.dart';
 
 class CaptureToolbar extends StatefulWidget {
@@ -33,7 +35,25 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
                 ? AppTheme.methodDelete
                 : AppTheme.methodGet,
             tooltip: taskCtrl.isCapturing.value ? 'Stop' : 'Start',
-            onPressed: () {/* platform channel P1 later */},
+            onPressed: () async {
+              if (taskCtrl.isCapturing.value) {
+                await ProxyChannel.stopProxy();
+                taskCtrl.isCapturing.value = false;
+              } else {
+                try {
+                  await ProxyChannel.startProxy();
+                  taskCtrl.isCapturing.value = true;
+                  await taskCtrl.loadTasks();
+                  if (taskCtrl.currentTask.value != null) {
+                    final tid = taskCtrl.currentTask.value!.id;
+                    Get.find<FlowController>().setTaskId(tid);
+                    Get.find<LiveController>().connectToTask(tid);
+                  }
+                } catch (e) {
+                  Get.snackbar('Error', 'Failed to start proxy: $e');
+                }
+              }
+            },
           )),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 18),

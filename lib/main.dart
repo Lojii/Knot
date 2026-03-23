@@ -13,6 +13,7 @@ import 'controllers/history_controller.dart';
 import 'controllers/page_controller.dart';
 import 'controllers/tag_controller.dart';
 import 'controllers/tools_controller.dart';
+import 'api/proxy_channel.dart';
 import 'pages/capture/capture_page.dart';
 import 'theme/app_theme.dart';
 
@@ -43,6 +44,16 @@ void main() async {
     final taskCtrl = Get.find<TaskController>();
     final flowCtrl = Get.find<FlowController>();
     final liveCtrl = Get.find<LiveController>();
+
+    // Check if proxy is already running (e.g. from a previous session)
+    try {
+      final status = await ProxyChannel.getStatus();
+      if (status['running'] == true) {
+        taskCtrl.isCapturing.value = true;
+      }
+    } catch (_) {
+      // Platform channel not available or proxy not running — that's fine
+    }
 
     // Wait for API to be available
     await taskCtrl.loadTasks();
