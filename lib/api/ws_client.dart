@@ -5,7 +5,7 @@ import '../models/ws_message.dart';
 enum WsStatus { disconnected, connecting, connected }
 
 class WsClient {
-  final String baseUrl;
+  String baseUrl;
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
   Timer? _reconnectTimer;

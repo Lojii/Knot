@@ -5,7 +5,7 @@ import '../models/flow_summary.dart';
 import '../models/flow_detail.dart';
 
 class ApiClient {
-  final String baseUrl;
+  String baseUrl;
   final http.Client _client = http.Client();
 
   ApiClient({this.baseUrl = 'http://localhost:9090'});

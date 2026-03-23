@@ -45,24 +45,43 @@ void main() async {
     final flowCtrl = Get.find<FlowController>();
     final liveCtrl = Get.find<LiveController>();
 
-    // Check if proxy is already running (e.g. from a previous session)
+    // Step 1: Check if proxy is already running
+    bool proxyRunning = false;
+    int port = 9090;
     try {
       final status = await ProxyChannel.getStatus();
-      if (status['running'] == true) {
-        taskCtrl.isCapturing.value = true;
+      proxyRunning = status['running'] == true;
+      if (proxyRunning) {
+        port = (status['port'] as int?) ?? 9090;
       }
-    } catch (_) {
-      // Platform channel not available or proxy not running — that's fine
+    } catch (_) {}
+
+    // Step 2: If not running, try to start it automatically
+    if (!proxyRunning) {
+      try {
+        final result = await ProxyChannel.startProxy();
+        proxyRunning = result['running'] == true;
+        port = (result['port'] as int?) ?? 9090;
+      } catch (_) {}
     }
 
-    // Wait for API to be available
-    await taskCtrl.loadTasks();
+    // Step 3: If still not running, try connecting to default port (external proxy)
+    if (!proxyRunning) {
+      proxyRunning = await api.checkConnection();
+    }
 
-    // If we have a task, load its flows and connect WS
-    if (taskCtrl.currentTask.value != null) {
-      final tid = taskCtrl.currentTask.value!.id;
-      flowCtrl.setTaskId(tid);
-      liveCtrl.connectToTask(tid);
+    if (proxyRunning) {
+      taskCtrl.isCapturing.value = true;
+      api.baseUrl = 'http://localhost:$port';
+      ws.baseUrl = 'ws://localhost:$port';
+
+      // Load tasks and connect
+      await taskCtrl.loadTasks();
+      if (taskCtrl.currentTask.value != null) {
+        final tid = taskCtrl.currentTask.value!.id;
+        flowCtrl.setTaskId(tid);
+        liveCtrl.connectToTask(tid);
+      }
     }
   });
 }
