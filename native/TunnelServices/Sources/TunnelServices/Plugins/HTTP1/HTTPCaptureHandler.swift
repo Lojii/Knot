@@ -469,11 +469,19 @@ final class ResponseRelayHandler: ChannelInboundHandler, RemovableChannelHandler
 
         switch part {
         case .head(let head):
-            responseHead = head
-            recorder.recordResponseHead(head)
+            var headToSend = head
+            if recorder.task.noCachingEnabled {
+                headToSend.headers.remove(name: "Expires")
+                headToSend.headers.remove(name: "Last-Modified")
+                headToSend.headers.remove(name: "ETag")
+                headToSend.headers.replaceOrAdd(name: "Expires", value: "0")
+                headToSend.headers.replaceOrAdd(name: "Cache-Control", value: "no-cache")
+            }
+            responseHead = headToSend
+            recorder.recordResponseHead(headToSend)
             recorder.addDownload(200)
-            AxLogger.log("[ResponseRelay] .head status=\(head.status.code) serverChannel=\(serverChannel != nil) schemes=\(recorder.session.schemes ?? "nil")", level: .Warning)
-            serverChannel?.writeAndFlush(HTTPServerResponsePart.head(head), promise: nil)
+            AxLogger.log("[ResponseRelay] .head status=\(headToSend.status.code) serverChannel=\(serverChannel != nil) schemes=\(recorder.session.schemes ?? "nil")", level: .Warning)
+            serverChannel?.writeAndFlush(HTTPServerResponsePart.head(headToSend), promise: nil)
 
             // Detect WebSocket upgrade (101 Switching Protocols)
             if head.status == .switchingProtocols {

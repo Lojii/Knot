@@ -196,6 +196,78 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
             }
         }
 
+        // /api/rules/map-remote
+        if n >= 1 && segments[0] == "map-remote" {
+            if method == .GET && n == 1 {
+                RuleRoutes.listMapRemote(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.createMapRemote(context: context, bodyData: bodyData)
+                return
+            }
+            if n == 2, let id = Int64(segments[1]) {
+                if method == .PUT {
+                    RuleRoutes.updateMapRemote(context: context, id: id, bodyData: bodyData)
+                    return
+                }
+                if method == .DELETE {
+                    RuleRoutes.deleteMapRemote(context: context, id: id)
+                    return
+                }
+            }
+            if n == 3 && segments[2] == "toggle", let id = Int64(segments[1]), method == .PATCH {
+                RuleRoutes.toggleMapRemote(context: context, id: id)
+                return
+            }
+        }
+
+        // /api/rules/allow-list
+        if n >= 1 && segments[0] == "allow-list" {
+            if method == .GET && n == 1 {
+                RuleRoutes.listAllowList(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.addToAllowList(context: context, bodyData: bodyData)
+                return
+            }
+            if method == .DELETE && n == 2 {
+                let pattern = segments[1].removingPercentEncoding ?? segments[1]
+                RuleRoutes.removeFromAllowList(context: context, pattern: pattern)
+                return
+            }
+        }
+
+        // /api/rules/block-list
+        if n >= 1 && segments[0] == "block-list" {
+            if method == .GET && n == 1 {
+                RuleRoutes.listBlockList(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.addToBlockList(context: context, bodyData: bodyData)
+                return
+            }
+            if method == .DELETE && n == 2 {
+                let pattern = segments[1].removingPercentEncoding ?? segments[1]
+                RuleRoutes.removeFromBlockList(context: context, pattern: pattern)
+                return
+            }
+        }
+
+        // /api/rules/no-caching
+        if n >= 1 && segments[0] == "no-caching" {
+            if method == .GET && n == 1 {
+                RuleRoutes.getNoCaching(context: context)
+                return
+            }
+            if method == .POST && n == 1 {
+                RuleRoutes.setNoCaching(context: context, bodyData: bodyData)
+                return
+            }
+        }
+
         // /api/rules/breakpoint
         if n >= 1 && segments[0] == "breakpoint" {
             if method == .GET && n == 1 {

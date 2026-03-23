@@ -59,5 +59,31 @@ public enum StateSchema {
                 created_at REAL
             )
             """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS map_remote_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                enabled INTEGER DEFAULT 1,
+                url_pattern TEXT NOT NULL,
+                method TEXT,
+                replace_scheme TEXT,
+                replace_host TEXT,
+                replace_port INTEGER,
+                replace_path TEXT,
+                comment TEXT,
+                created_at REAL
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS allow_list (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern TEXT NOT NULL UNIQUE
+            )
+            """)
+        try db.execute("""
+            CREATE TABLE IF NOT EXISTS block_list (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern TEXT NOT NULL UNIQUE
+            )
+            """)
     }
 }

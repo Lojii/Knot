@@ -179,9 +179,10 @@ public class MockRuleManager {
     }
 }
 
-// MARK: - Map Remote Rule
+// MARK: - Legacy Map Remote Rule (superseded by KnotStorage.MapRemoteRule)
 
-public struct MapRemoteRule: Codable {
+@available(*, deprecated, renamed: "KnotStorage.MapRemoteRule")
+public struct LegacyMapRemoteRule: Codable {
     public var id: String
     public var sourcePattern: String     // URL pattern to match
     public var targetHost: String        // Redirect to this host

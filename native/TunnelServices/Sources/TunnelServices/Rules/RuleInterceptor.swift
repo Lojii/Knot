@@ -41,14 +41,61 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
             pendingBody = nil
             isIntercepted = false
 
-            // Check Map Local rules
+            let host = head.headers["Host"].first ?? ""
+
+            // 1. Check Block List — drop request with 403
+            if isBlocked(host: host) {
+                isIntercepted = true
+                let resp = HTTPResponseHead(version: .http1_1, status: .forbidden)
+                context.write(wrapOutboundOut(.head(resp)), promise: nil)
+                context.writeAndFlush(wrapOutboundOut(.end(nil)), promise: nil)
+                AxLogger.log("[RuleInterceptor] Blocked: \(host)", level: .Info)
+                return
+            }
+
+            // 2. Check Allow List — if non-empty, only allow matching hosts
+            if !task.allowList.isEmpty && !isAllowed(host: host) {
+                // Not in allow list — pass through without interception
+                context.fireChannelRead(data)
+                return
+            }
+
+            // 3. Check Map Local rules
             if let rule = matchMapLocal(head: head) {
                 isIntercepted = true
                 respondWithLocalFile(context: context, head: head, rule: rule)
                 return
             }
 
-            // Check Breakpoint rules (on request)
+            // 4. Check Map Remote rules — rewrite URL and pass through
+            if let (rule, modifiedHead) = matchAndApplyMapRemote(head: head) {
+                AxLogger.log("[RuleInterceptor] Map Remote: \(head.uri) → \(modifiedHead.uri)", level: .Info)
+                // 5. Apply No Caching to the rewritten request if enabled
+                if task.noCachingEnabled {
+                    var noCacheHead = modifiedHead
+                    noCacheHead.headers.remove(name: "If-Modified-Since")
+                    noCacheHead.headers.remove(name: "If-None-Match")
+                    noCacheHead.headers.replaceOrAdd(name: "Pragma", value: "no-cache")
+                    noCacheHead.headers.replaceOrAdd(name: "Cache-Control", value: "no-cache")
+                    context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(noCacheHead)))
+                } else {
+                    context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(modifiedHead)))
+                }
+                return
+            }
+
+            // 5. No Caching: strip cache headers from request
+            if task.noCachingEnabled {
+                var modified = head
+                modified.headers.remove(name: "If-Modified-Since")
+                modified.headers.remove(name: "If-None-Match")
+                modified.headers.replaceOrAdd(name: "Pragma", value: "no-cache")
+                modified.headers.replaceOrAdd(name: "Cache-Control", value: "no-cache")
+                context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(modified)))
+                return
+            }
+
+            // 6. Check Breakpoint rules (on request)
             if let rule = matchBreakpoint(head: head) {
                 if rule.breakOn == "request" || rule.breakOn == "both" {
                     isBreakpointPaused = true
@@ -177,6 +224,57 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
         recorder.recordClosed()
 
         AxLogger.log("[RuleInterceptor] Map Local: \(head.method) \(head.uri) → \(rule.responseFile) (\(status.code))", level: .Info)
+    }
+
+    // MARK: - Map Remote
+
+    private func matchAndApplyMapRemote(head: HTTPRequestHead) -> (MapRemoteRule, HTTPRequestHead)? {
+        let rules = task.mapRemoteRules.filter { $0.enabled }
+        let host = head.headers["Host"].first ?? ""
+        let fullURL = isSSL ? "https://\(host)\(head.uri)" : head.uri
+
+        for rule in rules {
+            if let method = rule.method, !method.isEmpty,
+               head.method.rawValue.uppercased() != method.uppercased() {
+                continue
+            }
+            if matchesPattern(url: fullURL, pattern: rule.urlPattern) {
+                var modified = head
+                // Parse current URL
+                guard var components = URLComponents(string: fullURL) else { continue }
+
+                // Apply replacements (empty/nil = keep original)
+                if let scheme = rule.replaceScheme, !scheme.isEmpty { components.scheme = scheme }
+                if let rHost = rule.replaceHost, !rHost.isEmpty { components.host = rHost }
+                if let port = rule.replacePort, port > 0 { components.port = port }
+                if let path = rule.replacePath, !path.isEmpty { components.path = path }
+
+                // Update Host header
+                if let newHost = components.host {
+                    modified.headers.replaceOrAdd(name: "Host", value: components.port != nil ? "\(newHost):\(components.port!)" : newHost)
+                }
+
+                // Update URI
+                if isSSL {
+                    modified.uri = components.path + (components.query.map { "?\($0)" } ?? "")
+                } else {
+                    modified.uri = components.string ?? head.uri
+                }
+
+                return (rule, modified)
+            }
+        }
+        return nil
+    }
+
+    // MARK: - Allow/Block List
+
+    private func isBlocked(host: String) -> Bool {
+        task.blockList.contains { matchesPattern(url: host, pattern: $0) }
+    }
+
+    private func isAllowed(host: String) -> Bool {
+        task.allowList.contains { matchesPattern(url: host, pattern: $0) }
     }
 
     // MARK: - Breakpoint

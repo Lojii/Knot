@@ -84,20 +84,31 @@ public class CaptureTask: NSObject {
     /// Live bridge for real-time push to the web dashboard (set by ProxyServer).
     public var liveBridge: ProxyLiveBridge?
 
-    // MARK: - Interceptor Rules (Map Local, Breakpoint)
+    // MARK: - Interceptor Rules (Map Local, Map Remote, Allow/Block, Breakpoint)
 
     /// Active Map Local rules loaded from catalog.db at task start.
     public var mapLocalRules: [MapLocalRule] = []
+    /// Active Map Remote rules loaded from catalog.db at task start.
+    public var mapRemoteRules: [MapRemoteRule] = []
     /// Active Breakpoint rules loaded from catalog.db at task start.
     public var breakpointRules: [BreakpointRule] = []
+    /// Allow list patterns loaded from catalog.db at task start.
+    public var allowList: [String] = []
+    /// Block list patterns loaded from catalog.db at task start.
+    public var blockList: [String] = []
+    /// Whether No Caching header stripping is enabled (runtime flag).
+    public var noCachingEnabled: Bool = false
 
-    /// Load Map Local and Breakpoint rules from catalog.db.
+    /// Load all rules from catalog.db.
     /// Called once at task start; for dynamic updates, call again.
     public func loadRules() {
         let db = DatabaseManager.shared.catalogDB
         mapLocalRules = (try? RuleDAO.findAllMapLocal(db: db)) ?? []
+        mapRemoteRules = (try? RuleDAO.findAllMapRemote(db: db)) ?? []
         breakpointRules = (try? RuleDAO.findAllBreakpoint(db: db)) ?? []
-        AxLogger.log("[CaptureTask] Loaded \(mapLocalRules.count) Map Local rules, \(breakpointRules.count) Breakpoint rules", level: .Info)
+        allowList = (try? RuleDAO.findAllAllowList(db: db)) ?? []
+        blockList = (try? RuleDAO.findAllBlockList(db: db)) ?? []
+        AxLogger.log("[CaptureTask] Loaded \(mapLocalRules.count) Map Local, \(mapRemoteRules.count) Map Remote, \(breakpointRules.count) Breakpoint, \(allowList.count) Allow, \(blockList.count) Block rules", level: .Info)
     }
 
     // MARK: - Breakpoint Pause/Resume
