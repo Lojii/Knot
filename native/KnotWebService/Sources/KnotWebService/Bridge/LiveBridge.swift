@@ -7,4 +7,7 @@ public protocol LiveBridge: AnyObject {
     var onStats: (([String: Any]) -> Void)? { get set }
     var onRetest: (([String: Any]) -> Void)? { get set }
     var onSurfProgress: (([String: Any]) -> Void)? { get set }
+    var onBreakpointHit: (([String: Any]) -> Void)? { get set }
+    /// Resume a paused breakpoint: (flowId, action, modifiedData)
+    var onBreakpointResume: ((String, String, [String: Any]?) -> Void)? { get set }
 }

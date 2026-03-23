@@ -69,6 +69,22 @@ public class ProxyServer {
                         webServer.attachLiveBridge(bridge)
                         self.liveBridge = bridge
                         task.liveBridge = bridge
+
+                        // Wire breakpoint resume: API route -> CaptureTask
+                        RuleRoutes.onBreakpointResume = { [weak task] (flowId: String, action: String, modified: [String: Any]?) in
+                            guard let task = task else { return }
+                            let bpAction: CaptureTask.BreakpointAction
+                            switch action {
+                            case "execute":
+                                bpAction = .execute(nil)  // TODO: parse modified into HTTPRequestHead
+                            case "abort":
+                                bpAction = .abort
+                            default:
+                                bpAction = .cancel
+                            }
+                            task.resumeBreakpoint(flowId: flowId, action: bpAction)
+                        }
+
                         AxLogger.log("[ProxyServer] Dashboard: http://127.0.0.1:\(port)", level: .Info)
 
                         // Start periodic metrics push on a worker event loop

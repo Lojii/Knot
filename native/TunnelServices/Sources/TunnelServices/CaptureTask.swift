@@ -8,6 +8,7 @@
 
 import Foundation
 import NIO
+import NIOHTTP1
 import NIOConcurrencyHelpers
 import CocoaAsyncSocket
 import KnotStorage
@@ -97,6 +98,34 @@ public class CaptureTask: NSObject {
         mapLocalRules = (try? RuleDAO.findAllMapLocal(db: db)) ?? []
         breakpointRules = (try? RuleDAO.findAllBreakpoint(db: db)) ?? []
         AxLogger.log("[CaptureTask] Loaded \(mapLocalRules.count) Map Local rules, \(breakpointRules.count) Breakpoint rules", level: .Info)
+    }
+
+    // MARK: - Breakpoint Pause/Resume
+
+    /// Action to take when resuming from a breakpoint.
+    public enum BreakpointAction {
+        case execute(HTTPRequestHead?)  // resume with optional modified request
+        case cancel                      // resume without modification
+        case abort                       // return 503
+    }
+
+    /// Active breakpoint callbacks — flowId -> resume closure
+    private var breakpointCallbacks: [String: (BreakpointAction) -> Void] = [:]
+    private let breakpointLock = NSLock()
+
+    /// Register a callback for a paused breakpoint flow.
+    public func registerBreakpointCallback(flowId: String, callback: @escaping (BreakpointAction) -> Void) {
+        breakpointLock.lock()
+        breakpointCallbacks[flowId] = callback
+        breakpointLock.unlock()
+    }
+
+    /// Resume a paused breakpoint flow with the given action.
+    public func resumeBreakpoint(flowId: String, action: BreakpointAction) {
+        breakpointLock.lock()
+        let callback = breakpointCallbacks.removeValue(forKey: flowId)
+        breakpointLock.unlock()
+        callback?(action)
     }
 }
 

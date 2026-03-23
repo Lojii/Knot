@@ -16,5 +16,7 @@ public class ProxyLiveBridge: LiveBridge {
     public var onStats: (([String: Any]) -> Void)?
     public var onRetest: (([String: Any]) -> Void)?
     public var onSurfProgress: (([String: Any]) -> Void)?
+    public var onBreakpointHit: (([String: Any]) -> Void)?
+    public var onBreakpointResume: ((String, String, [String: Any]?) -> Void)?
     public init() {}
 }

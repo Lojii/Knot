@@ -46,6 +46,9 @@ public final class LivePushManager {
         bridge.onSurfProgress = { [weak self] data in
             self?.broadcast(type: "surf_progress", data: data)
         }
+        bridge.onBreakpointHit = { [weak self] data in
+            self?.broadcast(type: "breakpoint_hit", data: data)
+        }
     }
 
     public func detach(_ bridge: LiveBridge) {
@@ -55,6 +58,7 @@ public final class LivePushManager {
         bridge.onStats = nil
         bridge.onRetest = nil
         bridge.onSurfProgress = nil
+        bridge.onBreakpointHit = nil
     }
 
     // MARK: - Broadcast

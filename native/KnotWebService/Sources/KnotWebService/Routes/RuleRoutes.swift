@@ -3,7 +3,10 @@ import NIOCore
 import NIOHTTP1
 import KnotStorage
 
-enum RuleRoutes {
+public enum RuleRoutes {
+
+    /// Static callback for resuming breakpoints — wired by ProxyServer when LiveBridge is attached.
+    public static var onBreakpointResume: ((String, String, [String: Any]?) -> Void)?
 
     // MARK: - Map Local
 
@@ -199,12 +202,11 @@ enum RuleRoutes {
         }
     }
 
-    // MARK: - Breakpoint Resume (stub)
+    // MARK: - Breakpoint Resume
 
     /// PATCH /api/breakpoint/{flowId}/resume
     /// Body: {"action": "execute"|"cancel"|"abort", "modifiedRequest": {...}}
     static func resumeBreakpoint(context: ChannelHandlerContext, flowId: String, bodyData: Data?) {
-        // Stub — actual resume mechanism will be implemented in Step 5
         guard let data = bodyData,
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let action = json["action"] as? String else {
@@ -212,10 +214,13 @@ enum RuleRoutes {
                                          message: "Expected {\"action\": \"execute\"|\"cancel\"|\"abort\"}")
             return
         }
-        ResponseHelper.jsonResponse(context: context, body: [
-            "flowId": flowId,
-            "action": action,
-            "status": "pending_implementation",
-        ])
+        let modified = json["modifiedRequest"] as? [String: Any]
+        if let handler = onBreakpointResume {
+            handler(flowId, action, modified)
+            ResponseHelper.jsonResponse(context: context, body: ["resumed": flowId])
+        } else {
+            ResponseHelper.errorResponse(context: context, status: .serviceUnavailable,
+                                         message: "No breakpoint resume handler registered")
+        }
     }
 }

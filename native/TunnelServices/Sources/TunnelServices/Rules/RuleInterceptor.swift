@@ -22,6 +22,9 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
     private var pendingHead: HTTPRequestHead?
     private var pendingBody: ByteBuffer?
     private var isIntercepted = false  // true when Map Local is responding
+    private var breakpointPromise: EventLoopPromise<CaptureTask.BreakpointAction>?
+    private var breakpointFlowId: String?
+    private var isBreakpointPaused = false
 
     public init(task: CaptureTask, recorder: SessionRecorder, isSSL: Bool) {
         self.task = task
@@ -45,11 +48,20 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
                 return
             }
 
+            // Check Breakpoint rules (on request)
+            if let rule = matchBreakpoint(head: head) {
+                if rule.breakOn == "request" || rule.breakOn == "both" {
+                    isBreakpointPaused = true
+                    pauseForBreakpoint(context: context, head: head, rule: rule)
+                    return
+                }
+            }
+
             // No rule matched — pass through to HTTPCaptureHandler
             context.fireChannelRead(data)
 
         case .body:
-            if isIntercepted { return }  // Swallow body if Map Local is responding
+            if isIntercepted || isBreakpointPaused { return }  // Swallow body if intercepted or paused
             context.fireChannelRead(data)
 
         case .end:
@@ -57,6 +69,7 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
                 isIntercepted = false
                 return  // Map Local already sent response
             }
+            if isBreakpointPaused { return }  // Swallow end while breakpoint is paused
             context.fireChannelRead(data)
         }
     }
@@ -164,6 +177,85 @@ public final class RuleInterceptor: ChannelInboundHandler, RemovableChannelHandl
         recorder.recordClosed()
 
         AxLogger.log("[RuleInterceptor] Map Local: \(head.method) \(head.uri) → \(rule.responseFile) (\(status.code))", level: .Info)
+    }
+
+    // MARK: - Breakpoint
+
+    private func matchBreakpoint(head: HTTPRequestHead) -> BreakpointRule? {
+        let rules = task.breakpointRules.filter { $0.enabled }
+        let host = head.headers["Host"].first ?? ""
+        let fullURL = isSSL ? "https://\(host)\(head.uri)" : head.uri
+
+        for rule in rules {
+            if matchesPattern(url: fullURL, pattern: rule.urlPattern) {
+                if let method = rule.method, !method.isEmpty,
+                   head.method.rawValue.uppercased() != method.uppercased() {
+                    continue
+                }
+                return rule
+            }
+        }
+        return nil
+    }
+
+    private func pauseForBreakpoint(context: ChannelHandlerContext, head: HTTPRequestHead, rule: BreakpointRule) {
+        let flowId = UUID().uuidString
+        breakpointFlowId = flowId
+
+        let promise = context.eventLoop.makePromise(of: CaptureTask.BreakpointAction.self)
+        breakpointPromise = promise
+
+        // Record request
+        recorder.recordRequestHead(head, localAddress: context.channel.remoteAddress, isSSL: isSSL)
+
+        // Notify UI via LiveBridge
+        let host = head.headers["Host"].first ?? ""
+        task.liveBridge?.onBreakpointHit?([
+            "flowId": flowId,
+            "method": head.method.rawValue,
+            "url": isSSL ? "https://\(host)\(head.uri)" : head.uri,
+            "headers": Dictionary(uniqueKeysWithValues: head.headers.map { ($0.name, $0.value) }),
+            "breakType": "request"
+        ])
+
+        // Register callback for API resume
+        task.registerBreakpointCallback(flowId: flowId) { [weak self] action in
+            context.eventLoop.execute {
+                promise.succeed(action)
+            }
+        }
+
+        // Handle resume
+        promise.futureResult.whenComplete { [weak self] result in
+            guard let self = self else { return }
+            self.isBreakpointPaused = false
+            self.breakpointFlowId = nil
+            self.breakpointPromise = nil
+
+            switch result {
+            case .success(.execute(let modifiedHead)):
+                let finalHead = modifiedHead ?? head
+                context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(finalHead)))
+            case .success(.cancel):
+                context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(head)))
+            case .success(.abort):
+                let resp = HTTPResponseHead(version: .http1_1, status: .serviceUnavailable)
+                context.write(self.wrapOutboundOut(.head(resp)), promise: nil)
+                context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+                self.recorder.recordClosed()
+            case .failure:
+                context.fireChannelRead(NIOAny(HTTPServerRequestPart.head(head)))
+            }
+        }
+
+        // Timeout: auto-cancel after 30 seconds
+        context.eventLoop.scheduleTask(in: .seconds(30)) { [weak self] in
+            if self?.breakpointFlowId == flowId {
+                promise.succeed(.cancel)
+            }
+        }
+
+        AxLogger.log("[RuleInterceptor] Breakpoint hit: \(head.method) \(head.uri)", level: .Warning)
     }
 
     // MARK: - Error
