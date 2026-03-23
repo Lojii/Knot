@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/history_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/page_controller.dart';
 import '../../models/task_model.dart';
 import '../../theme/app_theme.dart';
 
-class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key});
+/// Embeddable history panel — displayed inside the main layout
+/// when the user clicks the History button in GlobalBar.
+/// No Scaffold or AppBar — GlobalBar stays on top.
+class HistoryPanel extends StatefulWidget {
+  const HistoryPanel({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  State<HistoryPanel> createState() => _HistoryPanelState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPanelState extends State<HistoryPanel> {
   @override
   void initState() {
     super.initState();
@@ -23,39 +27,33 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     final historyCtrl = Get.find<HistoryController>();
     final taskCtrl = Get.find<TaskController>();
+    final pageCtrl = Get.find<AppPageController>();
+    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Capture History'),
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: Obx(() {
-        if (historyCtrl.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final tasks = historyCtrl.tasks;
-        if (tasks.isEmpty) {
-          return const Center(child: Text('No capture history'));
-        }
-        return ListView.separated(
-          padding: const EdgeInsets.all(AppTheme.spacingLG),
-          itemCount: tasks.length,
-          separatorBuilder: (_, _) => const SizedBox(height: AppTheme.spacingSM),
-          itemBuilder: (ctx, i) {
-            final task = tasks[i];
-            final isCurrent = taskCtrl.currentTask.value?.id == task.id;
-            return _TaskCard(task: task, isCurrent: isCurrent, onTap: () {
-              taskCtrl.selectTask(task);
-              Get.back();
-            });
-          },
+    return Obx(() {
+      if (historyCtrl.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      final tasks = historyCtrl.tasks;
+      if (tasks.isEmpty) {
+        return Center(
+          child: Text('No capture history', style: TextStyle(color: theme.hintColor)),
         );
-      }),
-    );
+      }
+      return ListView.separated(
+        padding: const EdgeInsets.all(AppTheme.spacingLG),
+        itemCount: tasks.length,
+        separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spacingSM),
+        itemBuilder: (ctx, i) {
+          final task = tasks[i];
+          final isCurrent = taskCtrl.currentTask.value?.id == task.id;
+          return _TaskCard(task: task, isCurrent: isCurrent, onTap: () {
+            taskCtrl.selectTask(task);
+            pageCtrl.showCapture(); // Switch back to capture view
+          });
+        },
+      );
+    });
   }
 }
 
@@ -79,14 +77,14 @@ class _TaskCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppTheme.spacingLG),
         decoration: BoxDecoration(
-          color: isCurrent ? theme.colorScheme.primary.withValues(alpha: 0.08) : theme.colorScheme.surfaceContainerLow,
+          color: isCurrent ? theme.colorScheme.primary.withAlpha(20) : theme.colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppTheme.radiusLG),
           border: Border.all(color: isCurrent ? theme.colorScheme.primary : theme.dividerColor),
         ),
         child: Row(
           children: [
             if (isCurrent) ...[
-              Icon(Icons.circle, size: 8, color: AppTheme.statusConnected),
+              const Icon(Icons.circle, size: 8, color: AppTheme.statusConnected),
               const SizedBox(width: AppTheme.spacingSM),
             ],
             Expanded(

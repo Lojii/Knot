@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/live_controller.dart';
+import '../../controllers/page_controller.dart';
 import '../../widgets/connection_indicator.dart';
 import '../../theme/app_theme.dart';
-import '../history/history_page.dart';
 import '../settings/settings_page.dart';
 
 class GlobalBar extends StatelessWidget {
@@ -15,11 +15,11 @@ class GlobalBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final taskCtrl = Get.find<TaskController>();
     final liveCtrl = Get.find<LiveController>();
+    final pageCtrl = Get.find<AppPageController>();
     final theme = Theme.of(context);
     final isMacOS = defaultTargetPlatform == TargetPlatform.macOS;
 
     return GestureDetector(
-      // Allow dragging the window by this bar
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) {},
       child: Container(
@@ -32,34 +32,46 @@ class GlobalBar extends StatelessWidget {
           color: theme.colorScheme.surface,
           border: Border(bottom: BorderSide(color: theme.dividerColor)),
         ),
-        child: Row(
+        child: Obx(() => Row(
           children: [
+            // === Left group: Task name + connection + TCP toggle ===
             // Task name
-            Obx(() => Text(
+            Text(
               taskCtrl.currentTask.value?.name.isNotEmpty == true
                 ? taskCtrl.currentTask.value!.name
                 : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
               style: theme.textTheme.titleSmall,
-            )),
+            ),
             const SizedBox(width: AppTheme.spacingSM),
-            // Connection status
-            Obx(() => ConnectionIndicator(status: liveCtrl.wsStatus.value)),
+            ConnectionIndicator(status: liveCtrl.wsStatus.value),
+            const SizedBox(width: AppTheme.spacingSM),
+            // Protocol / TCP toggle — hidden when on history page
+            if (pageCtrl.isCapture)
+              IconButton(
+                icon: const Icon(Icons.swap_horiz, size: 18),
+                tooltip: 'Protocol / TCP/UDP',
+                visualDensity: VisualDensity.compact,
+                onPressed: () {/* P2 */},
+              ),
+
             const Spacer(),
-            // History button
+
+            // === Right group: History + Settings ===
             IconButton(
-              icon: const Icon(Icons.history, size: 18),
-              tooltip: 'History',
+              icon: Icon(
+                pageCtrl.isHistory ? Icons.list_alt : Icons.history,
+                size: 18,
+              ),
+              tooltip: pageCtrl.isHistory ? 'Back to Capture' : 'History',
               visualDensity: VisualDensity.compact,
-              onPressed: () => Get.to(() => const HistoryPage()),
+              onPressed: () {
+                if (pageCtrl.isHistory) {
+                  pageCtrl.showCapture();
+                } else {
+                  pageCtrl.showHistory();
+                }
+              },
             ),
-            // Protocol / TCP toggle
-            IconButton(
-              icon: const Icon(Icons.swap_horiz, size: 18),
-              tooltip: 'Protocol / TCP/UDP',
-              visualDensity: VisualDensity.compact,
-              onPressed: () {/* P2 */},
-            ),
-            // Settings
             IconButton(
               icon: const Icon(Icons.settings, size: 18),
               tooltip: 'Settings',
@@ -67,7 +79,7 @@ class GlobalBar extends StatelessWidget {
               onPressed: () => Get.to(() => const SettingsPage()),
             ),
           ],
-        ),
+        )),
       ),
     );
   }
