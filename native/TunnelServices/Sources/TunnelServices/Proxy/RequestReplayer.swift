@@ -199,9 +199,10 @@ public struct MapRemoteRule: Codable {
     }
 }
 
-// MARK: - Map Local Rule
+// MARK: - Legacy Map Local Rule (superseded by KnotStorage.MapLocalRule)
 
-public struct MapLocalRule: Codable {
+@available(*, deprecated, renamed: "KnotStorage.MapLocalRule")
+public struct LegacyMapLocalRule: Codable {
     public var id: String
     public var urlPattern: String        // URL pattern to match
     public var localFilePath: String     // Path to local file

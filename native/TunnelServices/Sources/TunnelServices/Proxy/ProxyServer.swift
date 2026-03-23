@@ -50,6 +50,7 @@ public class ProxyServer {
     public func start(task: CaptureTask, callback: @escaping (Result<Void, Error>) -> Void) {
         task.startTime = Date().timeIntervalSince1970
         task.createFileFolder()
+        task.loadRules()
         task.numberOfUse = task.numberOfUse + 1
         try? task.update()
 

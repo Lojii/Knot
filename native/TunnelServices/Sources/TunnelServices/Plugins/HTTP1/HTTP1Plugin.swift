@@ -53,6 +53,10 @@ public final class HTTP1Plugin: ProtocolPlugin {
                 return pipeline.addHandler(connectHandler, name: "http1.connect")
             }
             .flatMap {
+                let ruleInterceptor = RuleInterceptor(task: context.task, recorder: context.recorder, isSSL: isSSL)
+                return pipeline.addHandler(ruleInterceptor, name: "http1.ruleInterceptor")
+            }
+            .flatMap {
                 pipeline.addHandler(
                     HTTPCaptureHandler(recorder: context.recorder, isSSL: isSSL),
                     name: "http1.captureHandler"

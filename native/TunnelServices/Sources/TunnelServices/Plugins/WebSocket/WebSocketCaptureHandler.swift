@@ -202,8 +202,8 @@ public final class WebSocketUpgradeInterceptor: ChannelInboundHandler, Removable
     /// from decoder removal, so handler ordering is less critical now.
     private func removeHTTPHandlersSynchronously(from pipeline: ChannelPipeline, prefix: String) {
         // Remove by name first (application handlers before codecs)
-        for suffix in ["responseRelay", "capture", "captureHandler", "connect",
-                       "pipelining", "decompressor",
+        for suffix in ["responseRelay", "capture", "captureHandler", "ruleInterceptor",
+                       "connect", "pipelining", "decompressor",
                        "responseEncoder", "requestDecoder",
                        "responseDecoder", "requestEncoder"] {
             let name = "\(prefix).\(suffix)"

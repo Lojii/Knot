@@ -120,6 +120,7 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
         }
 
         // Capture properties needed by the ALPN callback so MITMHandler can be safely removed
+        let capturedTask = self.task
         let capturedRecorder = self.recorder
         let capturedHost = self.host
         let capturedPort = self.port
@@ -158,8 +159,10 @@ public final class MITMHandler: ChannelInboundHandler, RemovableChannelHandler {
                 // to prevent ALPN unbuffering from racing with pipeline setup.
                 let pipeline = channel.pipeline
                 let captureHandler = HTTPCaptureHandler(recorder: capturedRecorder, isSSL: true, targetPort: capturedPort)
+                let ruleInterceptor = RuleInterceptor(task: capturedTask, recorder: capturedRecorder, isSSL: true)
                 do {
                     try pipeline.syncOperations.configureHTTPServerPipeline(withPipeliningAssistance: true)
+                    try pipeline.syncOperations.addHandler(ruleInterceptor, name: "mitm.ruleInterceptor")
                     try pipeline.syncOperations.addHandler(captureHandler, name: "mitm.http.capture")
                     return channel.eventLoop.makeSucceededVoidFuture()
                 } catch {

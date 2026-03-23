@@ -15,7 +15,8 @@ import NIOHTTP1
 
 // MARK: - Breakpoint Rule
 
-public struct BreakpointRule: Codable {
+@available(*, deprecated, renamed: "KnotStorage.BreakpointRule")
+public struct LegacyBreakpointRule: Codable {
     public var id: String
     public var urlPattern: String
     public var method: String?           // nil = match all
@@ -81,7 +82,7 @@ public struct RewriteRule: Codable {
 public class BreakpointManager {
     public static let shared = BreakpointManager()
 
-    private var breakpointRules = [BreakpointRule]()
+    private var breakpointRules = [LegacyBreakpointRule]()
     private var rewriteRules = [RewriteRule]()
     private let lock = NSLock()
 
@@ -94,7 +95,7 @@ public class BreakpointManager {
 
     // MARK: - Rule Management
 
-    public func addBreakpoint(_ rule: BreakpointRule) {
+    public func addBreakpoint(_ rule: LegacyBreakpointRule) {
         lock.lock(); breakpointRules.append(rule); lock.unlock()
     }
     public func addRewrite(_ rule: RewriteRule) {
@@ -106,7 +107,7 @@ public class BreakpointManager {
     public func removeRewrite(id: String) {
         lock.lock(); rewriteRules.removeAll { $0.id == id }; lock.unlock()
     }
-    public func allBreakpoints() -> [BreakpointRule] {
+    public func allBreakpoints() -> [LegacyBreakpointRule] {
         lock.lock(); defer { lock.unlock() }; return breakpointRules
     }
     public func allRewrites() -> [RewriteRule] {
@@ -115,7 +116,7 @@ public class BreakpointManager {
 
     // MARK: - Matching
 
-    func matchBreakpoint(url: String, method: String) -> BreakpointRule? {
+    func matchBreakpoint(url: String, method: String) -> LegacyBreakpointRule? {
         lock.lock(); defer { lock.unlock() }
         return breakpointRules.first { $0.matches(url: url, httpMethod: method) }
     }
