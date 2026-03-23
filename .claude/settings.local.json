@@ -340,7 +340,8 @@
       "Bash(PORT=58039)",
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign __NEW_LINE_b99c972b6c7a9acf__ echo \"=== 5. 规则表放在哪个 DB？ ===\" grep -n \"map_local_rule\\\\|breakpoint_rule\\\\|map_remote_rule\\\\|allow_list\\\\|block_list\" native/KnotStorage/Sources/KnotStorage/Schema/StateSchema.swift)",
       "Bash(cd /Users/aa123/Documents/Knot-storage-redesign __NEW_LINE_a72e0cee8d165a33__ echo \"=== 10. page_controller.dart 所有 AppPage 枚举 ===\" grep \"enum AppPage\" lib/controllers/page_controller.dart __NEW_LINE_a72e0cee8d165a33__ echo \"\" echo \"=== 11. CaptureTask loadRules 检查 — 用的哪个 DB ===\" grep -A5 \"func loadRules\" native/TunnelServices/Sources/TunnelServices/CaptureTask.swift __NEW_LINE_a72e0cee8d165a33__ echo \"\" echo \"=== 12. StateSchema 在哪里被调用（哪个 DB 初始化用它） ===\" grep -r \"StateSchema\" native/KnotStorage/Sources/ --include=\"*.swift\")",
-      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign __NEW_LINE_4c66aeec15b18d98__ echo \"=== Swift Build ===\" swift build --package-path native/TunnelServices)"
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign __NEW_LINE_4c66aeec15b18d98__ echo \"=== Swift Build ===\" swift build --package-path native/TunnelServices)",
+      "Bash(cd /Users/aa123/Documents/Knot-storage-redesign swift build --package-path native/TunnelServices --target KnotServer)"
     ],
     "additionalDirectories": [
       "/Users/aa123/Documents/Knot"

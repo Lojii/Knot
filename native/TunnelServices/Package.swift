@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "TunnelServices", targets: ["TunnelServices"]),
+        .executable(name: "knot-server", targets: ["KnotServer"]),
     ],
     dependencies: [
         // SwiftNIO
@@ -76,6 +77,14 @@ let package = Package(
             ],
             linkerSettings: [
                 .linkedLibrary("z"),
+            ]
+        ),
+        .executableTarget(
+            name: "KnotServer",
+            dependencies: [
+                "TunnelServices",
+                .product(name: "KnotStorage", package: "KnotStorage"),
+                .product(name: "KnotWebService", package: "KnotWebService"),
             ]
         ),
         .testTarget(

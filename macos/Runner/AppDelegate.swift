@@ -38,6 +38,8 @@ class AppDelegate: FlutterAppDelegate {
         stopProxyProcess()
     }
 
+    // MARK: - Proxy Management
+
     private func startProxy(result: @escaping FlutterResult) {
         if proxyProcess != nil && proxyProcess!.isRunning {
             let port = readPort()
@@ -45,27 +47,19 @@ class AppDelegate: FlutterAppDelegate {
             return
         }
 
-        // Resolve the package path relative to the project root.
-        // In debug builds the bundle sits inside build/, so strip that suffix.
-        // Otherwise fall back to the working directory.
-        let projectDir: String
-        if let idx = Bundle.main.bundlePath.range(of: "/build/") {
-            projectDir = String(Bundle.main.bundlePath[..<idx.lowerBound])
-        } else {
-            projectDir = FileManager.default.currentDirectoryPath
+        // Find knot-server binary
+        let serverPath = findServerBinary()
+        guard let path = serverPath, FileManager.default.fileExists(atPath: path) else {
+            result(FlutterError(code: "NOT_FOUND",
+                                message: "knot-server binary not found. Run: swift build --package-path native/TunnelServices --product knot-server",
+                                details: nil))
+            return
         }
-        let packagePath = "\(projectDir)/native/TunnelServices"
 
-        // Clean stale port file
         try? FileManager.default.removeItem(atPath: "/tmp/knot-proxy-port")
 
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/swift")
-        process.arguments = [
-            "test",
-            "--package-path", packagePath,
-            "--filter", "testStartProxyForBrowserTest"
-        ]
+        process.executableURL = URL(fileURLWithPath: path)
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
 
@@ -73,7 +67,6 @@ class AppDelegate: FlutterAppDelegate {
             try process.run()
             proxyProcess = process
 
-            // Poll for port file (up to 30 s)
             DispatchQueue.global().async {
                 var port: Int?
                 for _ in 0..<60 {
@@ -115,5 +108,35 @@ class AppDelegate: FlutterAppDelegate {
         guard let content = try? String(contentsOfFile: "/tmp/knot-proxy-port",
                                          encoding: .utf8) else { return nil }
         return Int(content.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// Find the knot-server binary. Search order:
+    /// 1. App bundle Resources/ (for packaged distribution)
+    /// 2. Project build output (for development)
+    private func findServerBinary() -> String? {
+        // 1. Bundled binary
+        if let bundled = Bundle.main.path(forResource: "knot-server", ofType: nil) {
+            return bundled
+        }
+
+        // 2. Development: project root / native/TunnelServices/.build/.../knot-server
+        let projectDir: String
+        if let idx = Bundle.main.bundlePath.range(of: "/build/") {
+            projectDir = String(Bundle.main.bundlePath[..<idx.lowerBound])
+        } else {
+            projectDir = FileManager.default.currentDirectoryPath
+        }
+
+        let debugPath = "\(projectDir)/native/TunnelServices/.build/arm64-apple-macosx/debug/knot-server"
+        if FileManager.default.fileExists(atPath: debugPath) {
+            return debugPath
+        }
+
+        let releasePath = "\(projectDir)/native/TunnelServices/.build/arm64-apple-macosx/release/knot-server"
+        if FileManager.default.fileExists(atPath: releasePath) {
+            return releasePath
+        }
+
+        return nil
     }
 }

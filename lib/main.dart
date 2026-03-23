@@ -54,7 +54,8 @@ void main() async {
       if (proxyRunning) {
         port = (status['port'] as int?) ?? 9090;
       }
-    } catch (_) {}
+    } catch (e) {
+    }
 
     // Step 2: If not running, try to start it automatically
     if (!proxyRunning) {
@@ -62,13 +63,15 @@ void main() async {
         final result = await ProxyChannel.startProxy();
         proxyRunning = result['running'] == true;
         port = (result['port'] as int?) ?? 9090;
-      } catch (_) {}
+      } catch (e) {
+      }
     }
 
     // Step 3: If still not running, try connecting to default port (external proxy)
     if (!proxyRunning) {
       proxyRunning = await api.checkConnection();
     }
+
 
     if (proxyRunning) {
       taskCtrl.isCapturing.value = true;
