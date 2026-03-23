@@ -79,6 +79,71 @@ BodyViewer 是一个通用的 HTTP body 查看组件，支持三种显示模式�
 - Hex 模式截断到 4KB 防止性能问题
 - XML 缩进为尽力而为（best-effort），复杂嵌套可能不完美
 
+## Proxyman 参考
+
+### 功能对标
+
+Proxyman 的 Body Viewer，位于 Request/Response 详情的 Body Tab 中。
+
+### Proxyman 界面布局描述
+
+Proxyman 的 Body Viewer 功能非常强大：
+- **Tree View（默认模式）**：JSON 以树形结构展示，每个节点可折叠/展开。支持 JSONPath 搜索（如 `$.data[0].name`）。节点显示 key: value 格式，数组显示元素个数
+- **Hex View**：标准十六进制转储，左侧偏移量 + 中间 hex + 右侧 ASCII
+- **Raw View**：原始文本显示
+- **Protobuf**：需要导入 .desc 文件，自动解码为 JSON 格式。支持 proto2/proto3，支持 Auto-detect / Single Message / Delimited Message 三种模式
+- **MessagePack**：自动解码为 JSON 格式
+- **底部工具栏**：Export（导出到文件）、Open With（用外部编辑器打开，如 VS Code / Sublime）、Copy（复制内容）
+- **格式化状态提示**：顶部显示 Content-Type 和 body 大小
+- **图片预览**：对于图片类型的 body，直接以图片形式展示
+
+### 参考截图
+
+| 截图 | 说明 |
+|------|------|
+| （文字描述）Proxyman JSON Tree View | JSON body 以树形结构展示：根节点可折叠，对象节点显示 key 名和子节点数，数组节点显示元素个数。顶部有 JSONPath 搜索框。底部有 Export / Open With / Copy 操作按钮 |
+| （文字描述）Proxyman Hex View | 经典 hex dump 格式，三栏布局：左侧 8 位偏移量、中间 16 字节 hex（左右各 8 字节，空格分隔）、右侧 ASCII 字符（不可打印显示 .） |
+
+### 布局优缺点分析
+
+**优点：**
+- JSON Tree View 功能强大，支持折叠/展开和 JSONPath 搜索
+- 支持 Protobuf 和 MessagePack 等二进制格式解码
+- 可导出 body 到文件或用外部编辑器打开
+- 图片直接预览
+- 自动检测 Content-Type 选择最佳展示方式
+
+**缺点：**
+- Protobuf 需要手动导入 .desc 文件，配置有一定门槛
+- Tree View 在超大 JSON（>10MB）时性能下降
+
+### Knot 与 Proxyman 差异
+
+| 对比点 | Proxyman | Knot |
+|--------|----------|------|
+| JSON 展示 | Tree View（折叠/展开/搜索） | 语法高亮文本 |
+| 搜索 | JSONPath 搜索 | 无搜索 |
+| Protobuf | 支持（需 .desc） | 不支持 |
+| MessagePack | 支持 | 不支持 |
+| 导出 | Export / Open With | 无 |
+| Hex 截断 | 无限制 | 4KB 截断 |
+| 图片 | 直接预览 | Base64 解码预览 |
+| XML/HTML | 语法高亮 | 自动缩进 |
+| Form URL-encoded | 支持解析 | 不支持 |
+| Multipart | 独立 Tab 解析 | 不支持 |
+
+### Knot 中尚未实现的 Proxyman 功能
+
+- **JSON Tree View**: 可折叠/展开的树形 JSON 浏览器
+- **JSONPath 搜索**: 按路径搜索 JSON 节点
+- **Protobuf 解码**: 配合 .desc 文件解码 Protocol Buffers
+- **MessagePack 解码**: 解码 MessagePack 二进制格式
+- **Body 导出**: 导出为文件 / Open With 外部编辑器
+- **Form URL-encoded 解析**: 解析 application/x-www-form-urlencoded body
+- **Multipart 解析**: 解析 multipart/form-data 上传内容
+- **行号显示**: Raw/Hex 视图的行号
+- **复制全部按钮**: 一键复制整个 body 内容
+
 ## Todo
 
 - [ ] JSON 大文件性能问题（regex 全文扫描）

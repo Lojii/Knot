@@ -70,6 +70,56 @@ curl -X {method} '{protocol}://{host}{uri}'
 - detail 未加载时使用空 headers（仅生成 method + URL）
 - body 内容未实际嵌入（使用占位符 `<request body>`）
 
+## Proxyman 参考
+
+### 功能对标
+
+Proxyman 的 Copy as cURL 功能，位于右键上下文菜单中。
+
+### Proxyman 界面布局描述
+
+Proxyman 导出 cURL 的方式：
+- **右键菜单**：在 Flow List 中右键选中请求 → "Copy as cURL"
+- **菜单栏**：Edit → Copy as cURL（⌘⇧C）
+- **生成的 cURL 包含**：完整的 method、URL、所有请求头（-H）、请求 body（--data / --data-binary）、--compressed 标志（如有 gzip）
+- 生成的命令完整可直接在终端执行，包含实际 body 内容
+- 支持多选请求批量复制为多条 cURL 命令
+
+### 参考截图
+
+| 截图 | 说明 |
+|------|------|
+| （文字描述）Proxyman 右键菜单 | 右键请求行弹出菜单，包含 "Copy as cURL" 选项（⌘⇧C），菜单还包含 Repeat、Compose、Add to Diff Pool、Map Local/Remote 等其他操作 |
+
+### 布局优缺点分析
+
+**优点：**
+- 生成的 cURL 包含完整的请求信息（含实际 body）
+- 使用独立快捷键 ⌘⇧C，不与系统复制冲突
+- 支持 --compressed 标志
+- 支持批量复制
+
+**缺点：**
+- 仅支持 cURL 格式，不支持其他语言格式
+
+### Knot 与 Proxyman 差异
+
+| 对比点 | Proxyman | Knot |
+|--------|----------|------|
+| 快捷键 | ⌘⇧C（不冲突） | ⌘C（与系统复制冲突） |
+| body 内容 | 包含实际 body | 占位符 `<request body>` |
+| --compressed | 自动添加 | 未实现 |
+| 批量复制 | 支持多选 | 仅单条 |
+| 触发方式 | 右键菜单 + 菜单栏 + 快捷键 | 右键菜单 + 详情按钮 + 快捷键 |
+| 其他格式 | 仅 cURL | 仅 cURL |
+
+### Knot 中尚未实现的 Proxyman 功能
+
+- **实际 body 嵌入**: Proxyman 的 cURL 包含完整请求 body，Knot 使用占位符
+- **--compressed 标志**: 当请求使用 gzip/br/deflate 时自动添加
+- **批量复制**: 多选请求批量生成 cURL
+- **不冲突的快捷键**: 使用 ⌘⇧C 避免与系统复制冲突
+
 ## Todo
 
 - [ ] body 应嵌入实际请求内容（需加载 request payload）

@@ -107,6 +107,70 @@ Diff 对比工具允许用户选择两条已捕获的流量，并排（Side-by-S
 - body 为空时显示 "(empty)"
 - 两个 DropdownButton 可以选择同一条流量（自己与自己比较，无差异）
 
+## Proxyman 参考
+
+### 功能对标
+
+Proxyman 的 Diff Tool 功能，通过右键 → "Add to Diff Pool" 或 Tools → Diff 访问。
+
+### Proxyman 界面布局描述
+
+Proxyman 的 Diff 工具：
+- **添加到 Diff Pool**：在流量列表中选择请求，右键 → "Add to Diff Pool"。需要添加两条请求
+- **视图模式**：支持 Side-by-Side（并排）和 Unified（统一）两种视图
+- **对比内容**：
+  - URL 和 Method
+  - Status Code
+  - Request Headers
+  - Response Headers
+  - Text-based body（文本类型的 body）
+- **差异高亮**：不同的行/部分用颜色标注（红色=删除/旧值，绿色=新增/新值）
+- **备注功能**：可以在 diff 结果中添加备注/注释
+- **导出**：可导出 diff 结果文件
+- **外部工具**：支持用 FileMerge 或 Kaleidoscope 打开进行更专业的对比
+
+### 参考截图
+
+| 截图 | 说明 |
+|------|------|
+| （文字描述）Proxyman Diff Tool Side-by-Side | 左右并排展示两个请求的差异。上方显示两个请求的摘要信息（Method + URL + Status）。下方分 Headers 和 Body 两个区域，差异行用红色（左侧/旧值）和绿色（右侧/新值）背景高亮 |
+| （文字描述）Proxyman Diff Tool Unified | 统一视图中差异以行为单位展示，删除行红色背景前缀 -，新增行绿色背景前缀 +，上下文行无特殊标记 |
+
+### 布局优缺点分析
+
+**优点：**
+- 两种视图模式（Side-by-Side + Unified），适应不同使用场景
+- 支持添加备注和导出 diff 结果
+- 可用外部专业 diff 工具（FileMerge/Kaleidoscope）打开
+- 差异高亮清晰，使用标准 diff 配色
+
+**缺点：**
+- 需要先"Add to Diff Pool"再对比，操作路径较长
+- 不支持 JSON 结构化对比（按 key path 比较）
+
+### Knot 与 Proxyman 差异
+
+| 对比点 | Proxyman | Knot |
+|--------|----------|------|
+| 选择方式 | Add to Diff Pool（右键） | 下拉菜单选择 |
+| 视图模式 | Side-by-Side + Unified | 仅 Side-by-Side |
+| Diff 算法 | 行级别精确 diff | 按 index 对齐比较（不精确） |
+| 备注 | 支持 | 不支持 |
+| 导出 | 支持导出 diff 文件 | 不支持 |
+| 外部工具 | FileMerge / Kaleidoscope | 不支持 |
+| 同步滚动 | 支持 | 不支持 |
+
+### Knot 中尚未实现的 Proxyman 功能
+
+- **Unified 视图**: 统一视图模式（删除行 - / 新增行 +）
+- **精确 Diff 算法**: 行级别的精确 diff（当前仅按 index 对齐）
+- **字符级 Diff**: 同一行内不同部分的高亮
+- **备注功能**: 在 diff 结果中添加注释
+- **导出 Diff**: 导出 diff 结果为文件
+- **外部工具集成**: 用 FileMerge / Kaleidoscope 打开
+- **同步滚动**: 左右两侧同步滚动
+- **JSON 结构化 Diff**: 按 JSON key path 对比而非文本行对比
+
 ## Todo
 
 - [ ] 缺少行级别的精确 diff 算法（当前仅按 index 对齐比较）

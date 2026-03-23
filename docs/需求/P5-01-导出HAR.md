@@ -99,6 +99,61 @@
 - 大 body (>1MB) 不加载（避免内存问题）
 - 导出文件写入失败时 catch 报错
 
+## Proxyman 参考
+
+### 功能对标
+
+Proxyman 的 Export 功能，位于 File → Export 菜单中。支持导出为 HAR 格式和 Proxyman 自有格式。
+
+### Proxyman 界面布局描述
+
+Proxyman 的导出功能：
+- **File → Export → HAR**：导出为 HAR 1.2 格式
+- **File → Export → Proxyman**：导出为 .proxyman 格式（Proxyman 专有格式，保留更多元数据）
+- **导出选择**：可选择导出全部请求或仅选中的请求
+- **文件选择器**：使用 macOS 标准 NSSavePanel，用户自选保存位置和文件名
+- **导出完成提示**：macOS 通知或状态栏提示
+- **导入 Charles Session**：支持导入 .chls 格式的 Charles Session 文件
+- **HAR 导出内容**：完整的请求和响应信息，包括 headers、body、timings
+
+### 参考截图
+
+| 截图 | 说明 |
+|------|------|
+| （文字描述）Proxyman File → Export 菜单 | File 菜单中 Export 子菜单包含 "HTTP Archive (.har)" 和 "Proxyman (.proxyman)" 两个选项。点击后弹出 macOS 标准文件保存对话框 |
+
+### 布局优缺点分析
+
+**优点：**
+- 使用 macOS 标准文件保存对话框，用户可自选保存位置
+- 支持两种格式（HAR + Proxyman 自有格式）
+- 支持选择性导出（全部或仅选中）
+- 导出内容完整，包含请求和响应 body
+
+**缺点：**
+- 大量请求导出时缺少进度条
+- 不支持压缩导出
+
+### Knot 与 Proxyman 差异
+
+| 对比点 | Proxyman | Knot |
+|--------|----------|------|
+| 保存位置 | macOS 文件选择器 | 固定保存到桌面 |
+| 导出格式 | HAR + .proxyman | 仅 HAR |
+| 选择性导出 | 全部或仅选中 | 仅全部导出 |
+| Request body | 包含 | 不包含 |
+| 进度提示 | 无明确进度条 | SnackBar "Exporting..." |
+| 大 body 处理 | 完整导出 | 超过 1MB 跳过 |
+
+### Knot 中尚未实现的 Proxyman 功能
+
+- **文件保存对话框**: 使用系统文件选择器让用户自选保存位置
+- **选择性导出**: 仅导出选中或过滤后的请求
+- **Request body 导出**: 导出请求 body（当前仅导出响应 body）
+- **自有格式导出**: 类似 .proxyman 的自有格式，保留更多元数据
+- **导出进度条**: 大量请求导出时显示进度
+- **导入 Charles Session**: 支持 .chls 格式导入
+
 ## Todo
 
 - [ ] 大量流量导出时无进度条

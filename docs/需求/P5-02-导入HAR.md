@@ -101,6 +101,66 @@
 - startedDateTime 解析失败时使用当前时间
 - 路径为空时不执行导入
 
+## Proxyman 参考
+
+### 功能对标
+
+Proxyman 的 File → Open 功能，支持导入 HAR 文件、Proxyman 文件和 Charles Session 文件。
+
+### Proxyman 界面布局描述
+
+Proxyman 的导入功能：
+- **File → Open（⌘O）**：使用 macOS 标准 NSOpenPanel 文件选择器
+- **支持格式**：
+  - .har（HAR 1.2 格式）
+  - .proxyman（Proxyman 自有格式）
+  - .chls（Charles Session 格式）
+- **导入方式**：导入后创建新的 Session 窗口/Tab，不与当前 Session 混合
+- **File → Open Recent**：显示最近打开的文件列表
+- **拖放支持**：支持将文件直接拖放到应用窗口中导入
+- **导入后展示**：完整的流量列表+详情，与实时抓包的数据展示方式一致
+
+### 参考截图
+
+| 截图 | 说明 |
+|------|------|
+| （文字描述）Proxyman File → Open | macOS 标准文件选择对话框，过滤器显示支持的文件类型（.har、.proxyman、.chls）。可以导航文件系统选择文件 |
+
+### 布局优缺点分析
+
+**优点：**
+- 使用 macOS 标准文件选择器，用户体验一致
+- 支持多种格式（HAR + Proxyman + Charles）
+- 导入创建新 Session，不污染当前数据
+- 支持拖放导入
+- 导入后可查看完整详情
+
+**缺点：**
+- 大 HAR 文件导入可能较慢
+- 不同格式的信息完整度不同
+
+### Knot 与 Proxyman 差异
+
+| 对比点 | Proxyman | Knot |
+|--------|----------|------|
+| 文件选择 | macOS 标准文件选择器 | 手动输入路径对话框 |
+| 支持格式 | HAR + .proxyman + .chls | 仅 HAR |
+| 导入方式 | 创建新 Session | 插入当前列表顶部 |
+| 拖放 | 支持 | 不支持 |
+| 详情查看 | 完整详情可查看 | 无法查看详情（无 detail 数据） |
+| 进度提示 | 有 | 无 |
+| Open Recent | 支持 | 不支持 |
+
+### Knot 中尚未实现的 Proxyman 功能
+
+- **文件选择器**: 使用系统文件选择对话框代替手动输入路径
+- **拖放导入**: 将文件拖放到窗口中导入
+- **导入 Charles Session**: 支持 .chls 格式
+- **创建新任务**: 导入时创建新 Task 而非混入当前列表
+- **完整详情**: 导入的流量应可查看详情
+- **导入进度**: 大文件导入时显示进度
+- **格式验证**: 验证 HAR 文件版本和完整性
+
 ## Todo
 
 - [ ] 缺少文件选择器（当前需手动输入路径）
