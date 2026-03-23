@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
+import '../../controllers/tools_controller.dart';
 import '../../widgets/connection_indicator.dart';
 import '../../theme/app_theme.dart';
 
@@ -65,7 +66,7 @@ class GlobalBar extends StatelessWidget {
 
               const Spacer(),
 
-              // === Right group: Compose + History + Settings ===
+              // === Right group: Compose + Tools + History + Settings ===
               IconButton(
                 icon: const Icon(Icons.edit_note, size: 18),
                 tooltip: 'Compose',
@@ -74,6 +75,7 @@ class GlobalBar extends StatelessWidget {
                     ? pageCtrl.showCapture()
                     : pageCtrl.showCompose(),
               ),
+              _ToolsMenuButton(pageCtrl: pageCtrl),
               IconButton(
                 icon: const Icon(Icons.history, size: 18),
                 tooltip: 'History',
@@ -94,6 +96,86 @@ class GlobalBar extends StatelessWidget {
           );
         }),
       ),
+    );
+  }
+}
+
+class _ToolsMenuButton extends StatelessWidget {
+  final AppPageController pageCtrl;
+  const _ToolsMenuButton({required this.pageCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final toolsCtrl = Get.find<ToolsController>();
+
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.build_outlined, size: 18),
+      tooltip: 'Tools',
+      padding: EdgeInsets.zero,
+      splashRadius: 16,
+      offset: const Offset(0, AppTheme.globalBarHeight),
+      itemBuilder: (ctx) => [
+        const PopupMenuItem(
+          value: 'mapRemote',
+          child: Row(
+            children: [
+              Icon(Icons.alt_route, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Map Remote'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'allowBlock',
+          child: Row(
+            children: [
+              Icon(Icons.filter_list, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Allow/Block List'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'noCaching',
+          child: Obx(() => Row(
+            children: [
+              Icon(
+                toolsCtrl.noCachingEnabled.value
+                    ? Icons.check_box
+                    : Icons.check_box_outline_blank,
+                size: 16,
+              ),
+              const SizedBox(width: AppTheme.spacingSM),
+              const Text('No Caching'),
+            ],
+          )),
+        ),
+      ],
+      onSelected: (value) {
+        switch (value) {
+          case 'mapRemote':
+            pageCtrl.isMapRemote
+                ? pageCtrl.showCapture()
+                : pageCtrl.showMapRemote();
+          case 'allowBlock':
+            pageCtrl.isAllowBlock
+                ? pageCtrl.showCapture()
+                : pageCtrl.showAllowBlock();
+          case 'noCaching':
+            toolsCtrl.toggleNoCaching();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  toolsCtrl.noCachingEnabled.value
+                      ? 'No Caching enabled'
+                      : 'No Caching disabled',
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+        }
+      },
     );
   }
 }
