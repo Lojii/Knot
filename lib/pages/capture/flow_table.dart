@@ -14,8 +14,12 @@ class FlowTable extends StatefulWidget {
   State<FlowTable> createState() => _FlowTableState();
 }
 
+enum _SortColumn { method, host, path, status, size, time }
+
 class _FlowTableState extends State<FlowTable> {
   final _scrollController = ScrollController();
+  _SortColumn? _sortColumn;
+  bool _sortAscending = true;
 
   @override
   void initState() {
@@ -36,6 +40,45 @@ class _FlowTableState extends State<FlowTable> {
     }
   }
 
+  void _onSortTap(_SortColumn col) {
+    setState(() {
+      if (_sortColumn == col) {
+        if (_sortAscending) {
+          _sortAscending = false;
+        } else {
+          // Third tap: reset to no sort
+          _sortColumn = null;
+          _sortAscending = true;
+        }
+      } else {
+        _sortColumn = col;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  List<FlowSummary> _applySorting(List<FlowSummary> items) {
+    if (_sortColumn == null) return items;
+    final sorted = List<FlowSummary>.from(items);
+    int Function(FlowSummary, FlowSummary) comparator;
+    switch (_sortColumn!) {
+      case _SortColumn.method:
+        comparator = (a, b) => a.method.compareTo(b.method);
+      case _SortColumn.host:
+        comparator = (a, b) => a.host.compareTo(b.host);
+      case _SortColumn.path:
+        comparator = (a, b) => a.uri.compareTo(b.uri);
+      case _SortColumn.status:
+        comparator = (a, b) => a.statusCode.compareTo(b.statusCode);
+      case _SortColumn.size:
+        comparator = (a, b) => a.downloadBytes.compareTo(b.downloadBytes);
+      case _SortColumn.time:
+        comparator = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
+    }
+    sorted.sort(_sortAscending ? comparator : (a, b) => comparator(b, a));
+    return sorted;
+  }
+
   @override
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
@@ -49,6 +92,8 @@ class _FlowTableState extends State<FlowTable> {
       if (domain != null) {
         items = items.where((f) => f.host == domain).toList();
       }
+
+      items = _applySorting(items);
 
       if (items.isEmpty && !flowCtrl.isLoading.value) {
         return Column(
@@ -85,21 +130,50 @@ class _FlowTableState extends State<FlowTable> {
     });
   }
 
+  Widget _sortableHeader(String label, _SortColumn col, {double? width, int? flex}) {
+    final isActive = _sortColumn == col;
+    final arrow = isActive ? (_sortAscending ? ' \u25B2' : ' \u25BC') : '';
+    final child = GestureDetector(
+      onTap: () => _onSortTap(col),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: TextStyle(
+            fontSize: AppTheme.fontSizeSM,
+            fontWeight: FontWeight.bold,
+            color: isActive ? null : null,
+          )),
+          if (arrow.isNotEmpty)
+            Text(arrow, style: TextStyle(
+              fontSize: AppTheme.fontSizeXS,
+              fontWeight: FontWeight.bold,
+            )),
+        ],
+      ),
+    );
+
+    if (flex != null) {
+      return Expanded(flex: flex, child: child);
+    }
+    return SizedBox(width: width, child: child);
+  }
+
   Widget _tableHeader(ThemeData theme) => Container(
     height: AppTheme.tableHeaderHeight,
     padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerHigh,
     ),
-    child: const Row(
+    child: Row(
       children: [
-        SizedBox(width: 60, child: Text('Method', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
-        SizedBox(width: AppTheme.spacingSM),
-        Expanded(flex: 2, child: Text('Host', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
-        Expanded(flex: 3, child: Text('Path', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
-        SizedBox(width: 50, child: Text('Status', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
-        SizedBox(width: 70, child: Text('Size', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
-        SizedBox(width: 70, child: Text('Time', style: TextStyle(fontSize: AppTheme.fontSizeSM, fontWeight: FontWeight.bold))),
+        _sortableHeader('Method', _SortColumn.method, width: 60),
+        const SizedBox(width: AppTheme.spacingSM),
+        _sortableHeader('Host', _SortColumn.host, flex: 2),
+        _sortableHeader('Path', _SortColumn.path, flex: 3),
+        _sortableHeader('Status', _SortColumn.status, width: 50),
+        _sortableHeader('Size', _SortColumn.size, width: 70),
+        _sortableHeader('Time', _SortColumn.time, width: 70),
       ],
     ),
   );
