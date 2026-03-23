@@ -29,7 +29,7 @@ class FlowDetailPanel extends StatelessWidget {
       }
 
       return DefaultTabController(
-        length: 4,
+        length: 7,
         child: Column(
           children: [
             TabBar(
@@ -38,8 +38,11 @@ class FlowDetailPanel extends StatelessWidget {
               tabs: const [
                 Tab(text: 'Headers', height: AppTheme.detailTabHeight),
                 Tab(text: 'Body', height: AppTheme.detailTabHeight),
+                Tab(text: 'Query', height: AppTheme.detailTabHeight),
+                Tab(text: 'Cookies', height: AppTheme.detailTabHeight),
                 Tab(text: 'Timing', height: AppTheme.detailTabHeight),
                 Tab(text: 'Connection', height: AppTheme.detailTabHeight),
+                Tab(text: 'Certificate', height: AppTheme.detailTabHeight),
               ],
             ),
             Expanded(
@@ -47,8 +50,11 @@ class FlowDetailPanel extends StatelessWidget {
                 children: [
                   _HeadersTab(detailCtrl: detailCtrl),
                   _BodyTab(detailCtrl: detailCtrl),
+                  _QueryTab(detailCtrl: detailCtrl),
+                  _CookiesTab(detailCtrl: detailCtrl),
                   _TimingTab(detailCtrl: detailCtrl),
                   _ConnectionTab(detailCtrl: detailCtrl),
+                  _CertificateTab(detailCtrl: detailCtrl),
                 ],
               ),
             ),
@@ -223,6 +229,179 @@ class _ConnectionTab extends StatelessWidget {
           if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty)
             ('SNI', conn.tlsSni!),
         ]),
+      );
+    });
+  }
+}
+
+class _QueryTab extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _QueryTab({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Obx(() {
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final uriStr = (raw['searchKey2'] as String?) ?? '';
+      if (uriStr.isEmpty) {
+        return Center(
+          child: Text('No query parameters', style: TextStyle(color: theme.hintColor)),
+        );
+      }
+
+      // Parse query parameters from the URI
+      final uri = Uri.tryParse(uriStr.startsWith('http') ? uriStr : 'http://x$uriStr');
+      final params = uri?.queryParametersAll ?? {};
+      if (params.isEmpty) {
+        return Center(
+          child: Text('No query parameters', style: TextStyle(color: theme.hintColor)),
+        );
+      }
+
+      final entries = <(String, String)>[];
+      for (final entry in params.entries) {
+        for (final val in entry.value) {
+          entries.add((entry.key, val));
+        }
+      }
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            KeyValueTable(entries: entries),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _CookiesTab extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _CookiesTab({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Obx(() {
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
+      final reqHeaders = (metadata['requestHeaders'] as List?) ?? [];
+      final rspHeaders = (metadata['responseHeaders'] as List?) ?? [];
+
+      // Extract Cookie header from request
+      final reqCookies = <(String, String)>[];
+      for (final h in reqHeaders) {
+        final pair = h as List;
+        if ((pair.first as String).toLowerCase() == 'cookie') {
+          final cookieStr = pair.last as String;
+          for (final c in cookieStr.split(';')) {
+            final trimmed = c.trim();
+            final eqIdx = trimmed.indexOf('=');
+            if (eqIdx > 0) {
+              reqCookies.add((trimmed.substring(0, eqIdx).trim(), trimmed.substring(eqIdx + 1).trim()));
+            } else if (trimmed.isNotEmpty) {
+              reqCookies.add((trimmed, ''));
+            }
+          }
+        }
+      }
+
+      // Extract Set-Cookie headers from response
+      final rspCookies = <(String, String)>[];
+      for (final h in rspHeaders) {
+        final pair = h as List;
+        if ((pair.first as String).toLowerCase() == 'set-cookie') {
+          final cookieStr = pair.last as String;
+          final eqIdx = cookieStr.indexOf('=');
+          if (eqIdx > 0) {
+            final name = cookieStr.substring(0, eqIdx).trim();
+            final rest = cookieStr.substring(eqIdx + 1).trim();
+            rspCookies.add((name, rest));
+          } else {
+            rspCookies.add((cookieStr, ''));
+          }
+        }
+      }
+
+      if (reqCookies.isEmpty && rspCookies.isEmpty) {
+        return Center(
+          child: Text('No cookies', style: TextStyle(color: theme.hintColor)),
+        );
+      }
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (reqCookies.isNotEmpty) ...[
+              const Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+              KeyValueTable(entries: reqCookies),
+              const SizedBox(height: AppTheme.spacingMD),
+            ],
+            if (rspCookies.isNotEmpty) ...[
+              const Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+              KeyValueTable(entries: rspCookies),
+            ],
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _CertificateTab extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _CertificateTab({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Obx(() {
+      final conn = detailCtrl.detail.value?.connection;
+      final raw = detailCtrl.detail.value?.raw ?? {};
+
+      final hasTls = conn != null &&
+          conn.tlsVersion != null &&
+          conn.tlsVersion!.isNotEmpty;
+      final certChainRef = raw['certChainRef'] as String?;
+
+      if (!hasTls && (certChainRef == null || certChainRef.isEmpty)) {
+        return Center(
+          child: Text('No certificate information', style: TextStyle(color: theme.hintColor)),
+        );
+      }
+
+      final entries = <(String, String)>[];
+      if (conn != null) {
+        if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty) {
+          entries.add(('TLS Version', conn.tlsVersion!));
+        }
+        if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty) {
+          entries.add(('Cipher Suite', conn.tlsCipher!));
+        }
+        if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty) {
+          entries.add(('SNI', conn.tlsSni!));
+        }
+      }
+      if (certChainRef != null && certChainRef.isNotEmpty) {
+        entries.add(('Certificate Chain Ref', certChainRef));
+      }
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            KeyValueTable(entries: entries),
+          ],
+        ),
       );
     });
   }
