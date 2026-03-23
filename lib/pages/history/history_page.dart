@@ -19,6 +19,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
   String _searchQuery = '';
   final _selectedIds = <int>{};
   bool _isEditing = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -83,14 +84,16 @@ class _HistoryPanelState extends State<HistoryPanel> {
   Future<void> _deleteTask(BuildContext ctx, TaskModel task) async {
     final confirm = await _confirmDelete(ctx, '确定删除 Task ${task.id} 及其所有数据？');
     if (confirm != true) return;
+    setState(() => _isDeleting = true);
     try {
       await Get.find<ApiClient>().deleteTask(task.id);
-      Get.find<HistoryController>().loadTasks();
+      await Get.find<HistoryController>().loadTasks();
     } catch (e) {
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('删除失败: $e')));
       }
     }
+    if (mounted) setState(() => _isDeleting = false);
   }
 
   Future<void> _batchDelete(BuildContext ctx) async {
@@ -98,15 +101,17 @@ class _HistoryPanelState extends State<HistoryPanel> {
     if (ids.isEmpty) return;
     final confirm = await _confirmDelete(ctx, '确定删除 ${ids.length} 个任务及其所有数据？');
     if (confirm != true) return;
+    setState(() => _isDeleting = true);
     try {
       await Get.find<ApiClient>().batchDeleteTasks(ids);
       _exitEditMode();
-      Get.find<HistoryController>().loadTasks();
+      await Get.find<HistoryController>().loadTasks();
     } catch (e) {
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('批量删除失败: $e')));
       }
     }
+    if (mounted) setState(() => _isDeleting = false);
   }
 
   Future<bool?> _confirmDelete(BuildContext ctx, String message) {
@@ -247,8 +252,10 @@ class _HistoryPanelState extends State<HistoryPanel> {
         ),
         // Task list
         Expanded(
-          child: Obx(() {
-            if (historyCtrl.isLoading.value) {
+          child: Stack(
+            children: [
+              Obx(() {
+            if (historyCtrl.isLoading.value && !_isDeleting) {
               return const Center(child: CircularProgressIndicator());
             }
             final tasks = _getVisibleTasks();
@@ -285,6 +292,28 @@ class _HistoryPanelState extends State<HistoryPanel> {
               },
             );
           }),
+              // Deleting overlay
+              if (_isDeleting)
+                Container(
+                  color: Colors.black.withAlpha(30),
+                  child: const Center(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppTheme.spacingXL),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: AppTheme.spacingMD),
+                            Text('正在删除...'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );
