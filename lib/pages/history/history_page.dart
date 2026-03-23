@@ -18,7 +18,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
   final _searchController = TextEditingController();
   final _searchQuery = ''.obs;
   final _selectedIds = <int>{}.obs;
-  final _isSelecting = false.obs;
+  final _isEditing = false.obs;
 
   @override
   void initState() {
@@ -32,69 +32,83 @@ class _HistoryPanelState extends State<HistoryPanel> {
     super.dispose();
   }
 
-  void _exitSelectMode() {
+  void _enterEditMode() {
+    _isEditing.value = true;
     _selectedIds.clear();
-    _isSelecting.value = false;
+  }
+
+  void _exitEditMode() {
+    _isEditing.value = false;
+    _selectedIds.clear();
   }
 
   void _toggleSelect(int id) {
     if (_selectedIds.contains(id)) {
       _selectedIds.remove(id);
-      if (_selectedIds.isEmpty) _isSelecting.value = false;
     } else {
       _selectedIds.add(id);
-      _isSelecting.value = true;
     }
   }
 
-  void _selectAll(List<TaskModel> tasks) {
-    _selectedIds.assignAll(tasks.map((t) => t.id));
-    _isSelecting.value = true;
+  List<TaskModel> _getVisibleTasks() {
+    var tasks = Get.find<HistoryController>().tasks.toList();
+    final q = _searchQuery.value;
+    if (q.isNotEmpty) {
+      tasks = tasks.where((t) {
+        final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
+        return name.toLowerCase().contains(q) || '${t.id}'.contains(q);
+      }).toList();
+    }
+    return tasks;
   }
 
-  Future<void> _deleteTask(BuildContext context, TaskModel task) async {
-    final confirm = await _confirmDelete(context, '确定删除 Task ${task.id} 及其所有数据？');
+  void _selectAll() {
+    _selectedIds.assignAll(_getVisibleTasks().map((t) => t.id));
+  }
+
+  void _deselectAll() {
+    _selectedIds.clear();
+  }
+
+  Future<void> _deleteTask(BuildContext ctx, TaskModel task) async {
+    final confirm = await _confirmDelete(ctx, '确定删除 Task ${task.id} 及其所有数据？');
     if (confirm != true) return;
     try {
       await Get.find<ApiClient>().deleteTask(task.id);
       Get.find<HistoryController>().loadTasks();
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除失败: $e')),
-        );
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('删除失败: $e')));
       }
     }
   }
 
-  Future<void> _batchDelete(BuildContext context) async {
+  Future<void> _batchDelete(BuildContext ctx) async {
     final ids = _selectedIds.toList();
     if (ids.isEmpty) return;
-    final confirm = await _confirmDelete(context, '确定删除 ${ids.length} 个任务及其所有数据？');
+    final confirm = await _confirmDelete(ctx, '确定删除 ${ids.length} 个任务及其所有数据？');
     if (confirm != true) return;
     try {
       await Get.find<ApiClient>().batchDeleteTasks(ids);
-      _exitSelectMode();
+      _exitEditMode();
       Get.find<HistoryController>().loadTasks();
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('批量删除失败: $e')),
-        );
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('批量删除失败: $e')));
       }
     }
   }
 
-  Future<bool?> _confirmDelete(BuildContext context, String message) {
+  Future<bool?> _confirmDelete(BuildContext ctx, String message) {
     return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
+      context: ctx,
+      builder: (c) => AlertDialog(
         title: const Text('删除确认'),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
           TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () => Navigator.pop(c, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('删除'),
           ),
@@ -103,10 +117,10 @@ class _HistoryPanelState extends State<HistoryPanel> {
     );
   }
 
-  void _showContextMenu(BuildContext context, Offset position, TaskModel task) {
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+  void _showContextMenu(BuildContext ctx, Offset position, TaskModel task) {
+    final overlay = Overlay.of(ctx).context.findRenderObject() as RenderBox;
     showMenu<String>(
-      context: context,
+      context: ctx,
       position: RelativeRect.fromLTRB(position.dx, position.dy, overlay.size.width - position.dx, 0),
       items: [
         const PopupMenuItem(value: 'open', child: Text('打开')),
@@ -118,7 +132,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
         Get.find<TaskController>().selectTask(task);
         Get.find<AppPageController>().showCapture();
       } else if (value == 'delete') {
-        _deleteTask(context, task);
+        _deleteTask(ctx, task);
       }
     });
   }
@@ -140,91 +154,83 @@ class _HistoryPanelState extends State<HistoryPanel> {
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
           child: Obx(() {
-            // Compute visible tasks for selectAll
-            var visibleTasks = historyCtrl.tasks.toList();
-            final q = _searchQuery.value;
-            if (q.isNotEmpty) {
-              visibleTasks = visibleTasks.where((t) {
-                final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
-                return name.toLowerCase().contains(q) || '${t.id}'.contains(q);
-              }).toList();
-            }
+            final editing = _isEditing.value;
+            final visibleTasks = _getVisibleTasks();
             final allSelected = visibleTasks.isNotEmpty &&
                 visibleTasks.every((t) => _selectedIds.contains(t.id));
-            final someSelected = _selectedIds.isNotEmpty;
 
             return Row(
               children: [
-                // SelectAll checkbox — always visible
-                SizedBox(
-                  width: 32,
-                  child: Checkbox(
-                    value: allSelected ? true : (someSelected ? null : false),
-                    tristate: true,
-                    onChanged: (_) {
-                      if (allSelected) {
-                        _exitSelectMode();
-                      } else {
-                        _selectAll(visibleTasks);
-                      }
-                    },
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                if (editing) ...[
+                  // Edit mode: selectAll checkbox + count + cancel + delete
+                  SizedBox(
+                    width: 28,
+                    child: Checkbox(
+                      value: allSelected,
+                      onChanged: (_) => allSelected ? _deselectAll() : _selectAll(),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   ),
-                ),
-
-                Text('Capture History', style: theme.textTheme.titleSmall),
-                const SizedBox(width: AppTheme.spacingSM),
-                Text('${historyCtrl.tasks.length} tasks',
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-
-                // Show selected count + delete button when selecting
-                if (_isSelecting.value) ...[
-                  const SizedBox(width: AppTheme.spacingMD),
-                  Text('(已选 ${_selectedIds.length})',
-                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.colorScheme.primary)),
                   const SizedBox(width: AppTheme.spacingSM),
+                  Text('已选 ${_selectedIds.length} / ${visibleTasks.length}',
+                      style: theme.textTheme.titleSmall),
+                  const SizedBox(width: AppTheme.spacingMD),
                   TextButton(
-                    onPressed: _exitSelectMode,
+                    onPressed: _exitEditMode,
                     style: TextButton.styleFrom(
                       minimumSize: const Size(0, 28),
                       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
                     ),
-                    child: const Text('取消'),
+                    child: const Text('完成'),
                   ),
-                  const SizedBox(width: AppTheme.spacingXS),
-                  ElevatedButton.icon(
-                    onPressed: _selectedIds.isEmpty ? null : () => _batchDelete(context),
-                    icon: const Icon(Icons.delete_outline, size: 14),
-                    label: Text('删除 (${_selectedIds.length})'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                  const Spacer(),
+                  if (_selectedIds.isNotEmpty)
+                    ElevatedButton.icon(
+                      onPressed: () => _batchDelete(context),
+                      icon: const Icon(Icons.delete_outline, size: 14),
+                      label: Text('删除 (${_selectedIds.length})'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
+                        minimumSize: const Size(0, 28),
+                      ),
+                    ),
+                ] else ...[
+                  // Normal mode: title + count + edit button + search
+                  Text('Capture History', style: theme.textTheme.titleSmall),
+                  const SizedBox(width: AppTheme.spacingSM),
+                  Text('${historyCtrl.tasks.length} tasks',
+                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+                  const SizedBox(width: AppTheme.spacingMD),
+                  TextButton.icon(
+                    onPressed: _enterEditMode,
+                    icon: const Icon(Icons.edit_outlined, size: 14),
+                    label: const Text('编辑'),
+                    style: TextButton.styleFrom(
                       minimumSize: const Size(0, 28),
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                    ),
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: 200,
+                    height: 28,
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search tasks...',
+                        prefixIcon: const Icon(Icons.search, size: 16),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMD)),
+                      ),
+                      style: const TextStyle(fontSize: AppTheme.fontSizeSM),
+                      onChanged: (v) => _searchQuery.value = v.toLowerCase(),
                     ),
                   ),
                 ],
-
-                const Spacer(),
-
-                // Search
-                SizedBox(
-                  width: 200,
-                  height: 28,
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search tasks...',
-                      prefixIcon: const Icon(Icons.search, size: 16),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMD)),
-                    ),
-                    style: const TextStyle(fontSize: AppTheme.fontSizeSM),
-                    onChanged: (v) => _searchQuery.value = v.toLowerCase(),
-                  ),
-                ),
               ],
             );
           }),
@@ -235,34 +241,28 @@ class _HistoryPanelState extends State<HistoryPanel> {
             if (historyCtrl.isLoading.value) {
               return const Center(child: CircularProgressIndicator());
             }
-            var tasks = historyCtrl.tasks.toList();
+            final tasks = _getVisibleTasks();
             if (tasks.isEmpty) {
               return Center(
                 child: Text('No capture history', style: TextStyle(color: theme.hintColor)),
               );
             }
-            final q = _searchQuery.value;
-            if (q.isNotEmpty) {
-              tasks = tasks.where((t) {
-                final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
-                return name.toLowerCase().contains(q) || '${t.id}'.contains(q);
-              }).toList();
-            }
             return ListView.separated(
-              padding: const EdgeInsets.all(AppTheme.spacingMD),
+              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
               itemCount: tasks.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
                 final task = tasks[i];
                 final isCurrent = taskCtrl.currentTask.value?.id == task.id;
                 final isSelected = _selectedIds.contains(task.id);
+                final editing = _isEditing.value;
                 return _TaskRow(
                   task: task,
                   isCurrent: isCurrent,
                   isSelected: isSelected,
-                  isSelecting: _isSelecting.value,
+                  isEditing: editing,
                   onTap: () {
-                    if (_isSelecting.value) {
+                    if (editing) {
                       _toggleSelect(task.id);
                     } else {
                       taskCtrl.selectTask(task);
@@ -271,7 +271,6 @@ class _HistoryPanelState extends State<HistoryPanel> {
                   },
                   onContextMenu: (pos) => _showContextMenu(context, pos, task),
                   onToggleSelect: () => _toggleSelect(task.id),
-                  onDelete: () => _deleteTask(context, task),
                 );
               },
             );
@@ -286,21 +285,19 @@ class _TaskRow extends StatelessWidget {
   final TaskModel task;
   final bool isCurrent;
   final bool isSelected;
-  final bool isSelecting;
+  final bool isEditing;
   final VoidCallback onTap;
   final void Function(Offset) onContextMenu;
   final VoidCallback onToggleSelect;
-  final VoidCallback onDelete;
 
   const _TaskRow({
     required this.task,
     required this.isCurrent,
     required this.isSelected,
-    required this.isSelecting,
+    required this.isEditing,
     required this.onTap,
     required this.onContextMenu,
     required this.onToggleSelect,
-    required this.onDelete,
   });
 
   @override
@@ -319,21 +316,21 @@ class _TaskRow extends StatelessWidget {
     }
 
     return GestureDetector(
-      onSecondaryTapUp: (details) => onContextMenu(details.globalPosition),
+      onSecondaryTapUp: (d) => onContextMenu(d.globalPosition),
       child: InkWell(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingMD,
+            horizontal: AppTheme.spacingLG,
             vertical: AppTheme.spacingSM,
           ),
           color: bgColor,
           child: Row(
             children: [
-              // Checkbox in select mode, status dot otherwise
-              if (isSelecting)
+              // Checkbox in edit mode, status dot otherwise
+              if (isEditing)
                 SizedBox(
-                  width: 24,
+                  width: 28,
                   child: Checkbox(
                     value: isSelected,
                     onChanged: (_) => onToggleSelect(),
@@ -343,15 +340,12 @@ class _TaskRow extends StatelessWidget {
                 )
               else if (isCurrent)
                 Container(
-                  width: 6, height: 6,
-                  margin: const EdgeInsets.only(right: AppTheme.spacingSM, left: 9),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.statusConnected,
-                    shape: BoxShape.circle,
-                  ),
+                  width: 8, height: 8,
+                  margin: const EdgeInsets.only(right: AppTheme.spacingSM, left: 10),
+                  decoration: const BoxDecoration(color: AppTheme.statusConnected, shape: BoxShape.circle),
                 )
               else
-                const SizedBox(width: 6 + AppTheme.spacingSM + 9),
+                const SizedBox(width: 18 + AppTheme.spacingSM),
 
               const SizedBox(width: AppTheme.spacingSM),
 
@@ -370,42 +364,30 @@ class _TaskRow extends StatelessWidget {
               const SizedBox(width: AppTheme.spacingLG),
 
               // Time
-              SizedBox(
-                width: 140,
-                child: Text(timeStr,
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-              ),
+              SizedBox(width: 140, child: Text(timeStr,
+                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor))),
               const SizedBox(width: AppTheme.spacingLG),
 
               // Flows
-              SizedBox(
-                width: 80,
-                child: Text('${task.flowCount ?? 0} flows',
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-              ),
+              SizedBox(width: 80, child: Text('${task.flowCount ?? 0} flows',
+                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor))),
               const SizedBox(width: AppTheme.spacingSM),
 
               // Upload
-              SizedBox(
-                width: 80,
-                child: Row(children: [
-                  Icon(Icons.arrow_upward, size: 12, color: theme.hintColor),
-                  const SizedBox(width: 2),
-                  Text(_fmtBytes(task.uploadBytes ?? 0),
-                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-                ]),
-              ),
+              SizedBox(width: 80, child: Row(children: [
+                Icon(Icons.arrow_upward, size: 12, color: theme.hintColor),
+                const SizedBox(width: 2),
+                Text(_fmtBytes(task.uploadBytes ?? 0),
+                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+              ])),
 
               // Download
-              SizedBox(
-                width: 80,
-                child: Row(children: [
-                  Icon(Icons.arrow_downward, size: 12, color: theme.hintColor),
-                  const SizedBox(width: 2),
-                  Text(_fmtBytes(task.downloadBytes ?? 0),
-                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-                ]),
-              ),
+              SizedBox(width: 80, child: Row(children: [
+                Icon(Icons.arrow_downward, size: 12, color: theme.hintColor),
+                const SizedBox(width: 2),
+                Text(_fmtBytes(task.downloadBytes ?? 0),
+                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+              ])),
 
               const Spacer(),
 
@@ -422,20 +404,21 @@ class _TaskRow extends StatelessWidget {
 
               const SizedBox(width: AppTheme.spacingSM),
 
-              // More button (...)
-              SizedBox(
-                width: 28,
-                child: IconButton(
-                  icon: const Icon(Icons.more_horiz, size: 16),
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    final box = context.findRenderObject() as RenderBox;
-                    final pos = box.localToGlobal(Offset(box.size.width - 40, box.size.height / 2));
-                    onContextMenu(pos);
-                  },
+              // More button
+              if (!isEditing)
+                SizedBox(
+                  width: 28,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_horiz, size: 16),
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () {
+                      final box = context.findRenderObject() as RenderBox;
+                      final pos = box.localToGlobal(Offset(box.size.width - 40, box.size.height / 2));
+                      onContextMenu(pos);
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         ),
