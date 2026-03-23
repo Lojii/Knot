@@ -4,9 +4,15 @@ import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../theme/app_theme.dart';
 
-class CaptureToolbar extends StatelessWidget {
-  const CaptureToolbar({super.key});
+class CaptureToolbar extends StatefulWidget {
+  final FocusNode searchFocusNode;
+  const CaptureToolbar({super.key, required this.searchFocusNode});
 
+  @override
+  State<CaptureToolbar> createState() => _CaptureToolbarState();
+}
+
+class _CaptureToolbarState extends State<CaptureToolbar> {
   @override
   Widget build(BuildContext context) {
     final taskCtrl = Get.find<TaskController>();
@@ -39,6 +45,7 @@ class CaptureToolbar extends StatelessWidget {
             width: 240,
             height: 30,
             child: TextField(
+              focusNode: widget.searchFocusNode,
               decoration: InputDecoration(
                 hintText: 'Search...',
                 prefixIcon: const Icon(Icons.search, size: 16),
