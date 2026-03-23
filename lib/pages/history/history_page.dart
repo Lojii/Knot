@@ -16,9 +16,9 @@ class HistoryPanel extends StatefulWidget {
 
 class _HistoryPanelState extends State<HistoryPanel> {
   final _searchController = TextEditingController();
-  final _searchQuery = ''.obs;
-  final _selectedIds = <int>{}.obs;
-  final _isEditing = false.obs;
+  String _searchQuery = '';
+  final _selectedIds = <int>{};
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -33,26 +33,32 @@ class _HistoryPanelState extends State<HistoryPanel> {
   }
 
   void _enterEditMode() {
-    _isEditing.value = true;
-    _selectedIds.clear();
+    setState(() {
+      _isEditing = true;
+      _selectedIds.clear();
+    });
   }
 
   void _exitEditMode() {
-    _isEditing.value = false;
-    _selectedIds.clear();
+    setState(() {
+      _isEditing = false;
+      _selectedIds.clear();
+    });
   }
 
   void _toggleSelect(int id) {
-    if (_selectedIds.contains(id)) {
-      _selectedIds.remove(id);
-    } else {
-      _selectedIds.add(id);
-    }
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
   }
 
   List<TaskModel> _getVisibleTasks() {
     var tasks = Get.find<HistoryController>().tasks.toList();
-    final q = _searchQuery.value;
+    final q = _searchQuery;
     if (q.isNotEmpty) {
       tasks = tasks.where((t) {
         final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
@@ -63,11 +69,15 @@ class _HistoryPanelState extends State<HistoryPanel> {
   }
 
   void _selectAll() {
-    _selectedIds.assignAll(_getVisibleTasks().map((t) => t.id));
+    setState(() {
+      _selectedIds.addAll(_getVisibleTasks().map((t) => t.id));
+    });
   }
 
   void _deselectAll() {
-    _selectedIds.clear();
+    setState(() {
+      _selectedIds.clear();
+    });
   }
 
   Future<void> _deleteTask(BuildContext ctx, TaskModel task) async {
@@ -154,7 +164,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
           child: Obx(() {
-            final editing = _isEditing.value;
+            final editing = _isEditing;
             final visibleTasks = _getVisibleTasks();
             final allSelected = visibleTasks.isNotEmpty &&
                 visibleTasks.every((t) => _selectedIds.contains(t.id));
@@ -227,7 +237,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMD)),
                       ),
                       style: const TextStyle(fontSize: AppTheme.fontSizeSM),
-                      onChanged: (v) => _searchQuery.value = v.toLowerCase(),
+                      onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                     ),
                   ),
                 ],
@@ -255,7 +265,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                 final task = tasks[i];
                 final isCurrent = taskCtrl.currentTask.value?.id == task.id;
                 final isSelected = _selectedIds.contains(task.id);
-                final editing = _isEditing.value;
+                final editing = _isEditing;
                 return _TaskRow(
                   task: task,
                   isCurrent: isCurrent,
