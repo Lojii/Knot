@@ -89,5 +89,68 @@ class ApiClient {
     ).timeout(const Duration(seconds: 30));
   }
 
+  // --- Map Local Rules ---
+
+  Future<List<Map<String, dynamic>>> getMapLocalRules() async {
+    final resp = await _client.get(Uri.parse('$baseUrl/api/rules/map-local'))
+        .timeout(const Duration(seconds: 10));
+    final json = jsonDecode(resp.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(json['data'] ?? []);
+  }
+
+  Future<void> createMapLocalRule(Map<String, dynamic> rule) async {
+    await _client.post(Uri.parse('$baseUrl/api/rules/map-local'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(rule))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  Future<void> deleteMapLocalRule(int id) async {
+    await _client.delete(Uri.parse('$baseUrl/api/rules/map-local/$id'))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  Future<void> toggleMapLocalRule(int id) async {
+    await _client.patch(Uri.parse('$baseUrl/api/rules/map-local/$id/toggle'))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  // --- Breakpoint Rules ---
+
+  Future<List<Map<String, dynamic>>> getBreakpointRules() async {
+    final resp = await _client.get(Uri.parse('$baseUrl/api/rules/breakpoint'))
+        .timeout(const Duration(seconds: 10));
+    final json = jsonDecode(resp.body) as Map<String, dynamic>;
+    return List<Map<String, dynamic>>.from(json['data'] ?? []);
+  }
+
+  Future<void> createBreakpointRule(Map<String, dynamic> rule) async {
+    await _client.post(Uri.parse('$baseUrl/api/rules/breakpoint'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(rule))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  Future<void> deleteBreakpointRule(int id) async {
+    await _client.delete(Uri.parse('$baseUrl/api/rules/breakpoint/$id'))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  Future<void> toggleBreakpointRule(int id) async {
+    await _client.patch(Uri.parse('$baseUrl/api/rules/breakpoint/$id/toggle'))
+        .timeout(const Duration(seconds: 10));
+  }
+
+  // --- Breakpoint Resume ---
+
+  Future<void> resumeBreakpoint(String flowId, String action, {Map<String, dynamic>? modifiedRequest}) async {
+    final body = <String, dynamic>{'action': action};
+    if (modifiedRequest != null) body['modifiedRequest'] = modifiedRequest;
+    await _client.patch(Uri.parse('$baseUrl/api/breakpoint/$flowId/resume'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body))
+        .timeout(const Duration(seconds: 10));
+  }
+
   void dispose() => _client.close();
 }

@@ -130,6 +130,26 @@ class _ToolsMenuButton extends StatelessWidget {
           ),
         ),
         const PopupMenuItem(
+          value: 'mapLocal',
+          child: Row(
+            children: [
+              Icon(Icons.folder_open, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Map Local'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'breakpointMgmt',
+          child: Row(
+            children: [
+              Icon(Icons.pause_circle_outline, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Breakpoints'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
           value: 'allowBlock',
           child: Row(
             children: [
@@ -214,6 +234,14 @@ class _ToolsMenuButton extends StatelessWidget {
             pageCtrl.isMapRemote
                 ? pageCtrl.showCapture()
                 : pageCtrl.showMapRemote();
+          case 'mapLocal':
+            pageCtrl.isMapLocal
+                ? pageCtrl.showCapture()
+                : pageCtrl.showMapLocal();
+          case 'breakpointMgmt':
+            pageCtrl.isBreakpointMgmt
+                ? pageCtrl.showCapture()
+                : pageCtrl.showBreakpointMgmt();
           case 'allowBlock':
             pageCtrl.isAllowBlock
                 ? pageCtrl.showCapture()

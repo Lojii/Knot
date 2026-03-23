@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-enum AppPage { capture, history, settings, compose, mapRemote, allowBlock, diff }
+enum AppPage { capture, history, settings, compose, mapRemote, mapLocal, allowBlock, diff, breakpointMgmt }
 
 class AppPageController extends GetxController {
   final currentPage = AppPage.capture.obs;
@@ -10,8 +10,10 @@ class AppPageController extends GetxController {
   bool get isSettings => currentPage.value == AppPage.settings;
   bool get isCompose => currentPage.value == AppPage.compose;
   bool get isMapRemote => currentPage.value == AppPage.mapRemote;
+  bool get isMapLocal => currentPage.value == AppPage.mapLocal;
   bool get isAllowBlock => currentPage.value == AppPage.allowBlock;
   bool get isDiff => currentPage.value == AppPage.diff;
+  bool get isBreakpointMgmt => currentPage.value == AppPage.breakpointMgmt;
   /// True when not on capture page (history, settings, or compose)
   bool get isSubPage => currentPage.value != AppPage.capture;
 
@@ -20,8 +22,10 @@ class AppPageController extends GetxController {
   void showSettings() => currentPage.value = AppPage.settings;
   void showCompose() => currentPage.value = AppPage.compose;
   void showMapRemote() => currentPage.value = AppPage.mapRemote;
+  void showMapLocal() => currentPage.value = AppPage.mapLocal;
   void showAllowBlock() => currentPage.value = AppPage.allowBlock;
   void showDiff() => currentPage.value = AppPage.diff;
+  void showBreakpointMgmt() => currentPage.value = AppPage.breakpointMgmt;
 
   // Pre-fill data for compose page (set before navigating)
   String composePrefillMethod = '';

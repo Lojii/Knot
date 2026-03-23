@@ -7,6 +7,7 @@ import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/tag_controller.dart';
 import '../../controllers/page_controller.dart';
+import '../../controllers/tools_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/request_sender.dart';
@@ -320,6 +321,18 @@ class _FlowRow extends StatelessWidget {
             ],
           ),
         ),
+        const PopupMenuDivider(),
+        // Map Local
+        const PopupMenuItem(
+          value: 'mapLocal',
+          child: Row(
+            children: [
+              Icon(Icons.folder_open, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Map Local'),
+            ],
+          ),
+        ),
       ],
     ).then((value) {
       if (!context.mounted) return;
@@ -332,6 +345,8 @@ class _FlowRow extends StatelessWidget {
         _repeatRequest(context, flow);
       } else if (value == 'compose') {
         _openInCompose(context, flow);
+      } else if (value == 'mapLocal') {
+        _openMapLocalWithUrl(context, flow);
       }
     });
   }
@@ -434,6 +449,20 @@ class _FlowRow extends StatelessWidget {
       url: url,
       headers: headers,
     );
+  }
+
+  void _openMapLocalWithUrl(BuildContext context, FlowSummary flow) {
+    final pageCtrl = Get.find<AppPageController>();
+    final toolsCtrl = Get.find<ToolsController>();
+    final protocol = flow.protocol.toLowerCase();
+    final scheme = (protocol == 'https' || protocol == 'h2') ? 'https' : 'http';
+    final urlPattern = '$scheme://${flow.host}${flow.uri}';
+    // Pre-create a rule with the URL pattern filled in and navigate
+    toolsCtrl.addMapLocalRule(MapLocalRule(
+      urlPattern: urlPattern,
+      method: flow.method,
+    ));
+    pageCtrl.showMapLocal();
   }
 
   String _methodLabel(String m) => m.isNotEmpty ? m : '-';

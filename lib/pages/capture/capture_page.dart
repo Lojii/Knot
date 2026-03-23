@@ -18,8 +18,10 @@ import '../history/history_page.dart';
 import '../settings/settings_page.dart';
 import '../compose/compose_page.dart';
 import '../tools/map_remote_page.dart';
+import '../tools/map_local_page.dart';
 import '../tools/allow_block_page.dart';
 import '../tools/diff_page.dart';
+import '../tools/breakpoint_page.dart';
 
 // ============ Intent declarations ============
 class FocusSearchIntent extends Intent {
@@ -64,8 +66,10 @@ class CapturePage extends StatelessWidget {
               AppPage.settings => const SettingsPanel(),
               AppPage.compose => const ComposePage(),
               AppPage.mapRemote => const MapRemotePanel(),
+              AppPage.mapLocal => const MapLocalPanel(),
               AppPage.allowBlock => const AllowBlockPanel(),
               AppPage.diff => const DiffPage(),
+              AppPage.breakpointMgmt => const BreakpointPanel(),
             }),
           ),
           const CaptureStatusBar(),
