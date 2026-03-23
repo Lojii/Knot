@@ -110,7 +110,6 @@ class _HistoryPanelState extends State<HistoryPanel> {
       position: RelativeRect.fromLTRB(position.dx, position.dy, overlay.size.width - position.dx, 0),
       items: [
         const PopupMenuItem(value: 'open', child: Text('打开')),
-        const PopupMenuItem(value: 'select', child: Text('选择')),
         const PopupMenuDivider(),
         const PopupMenuItem(value: 'delete', child: Text('删除', style: TextStyle(color: Colors.red))),
       ],
@@ -118,8 +117,6 @@ class _HistoryPanelState extends State<HistoryPanel> {
       if (value == 'open') {
         Get.find<TaskController>().selectTask(task);
         Get.find<AppPageController>().showCapture();
-      } else if (value == 'select') {
-        _toggleSelect(task.id);
       } else if (value == 'delete') {
         _deleteTask(context, task);
       }
@@ -142,49 +139,76 @@ class _HistoryPanelState extends State<HistoryPanel> {
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
-          child: Obx(() => Row(
-            children: [
-              if (_isSelecting.value) ...[
-                // Select mode toolbar
-                TextButton(
-                  onPressed: _exitSelectMode,
-                  child: const Text('取消'),
-                ),
-                const SizedBox(width: AppTheme.spacingSM),
-                Text('已选 ${_selectedIds.length} 项',
-                    style: theme.textTheme.titleSmall),
-                const SizedBox(width: AppTheme.spacingSM),
-                TextButton(
-                  onPressed: () {
-                    final tasks = historyCtrl.tasks.toList();
-                    final q = _searchQuery.value;
-                    final filtered = q.isEmpty ? tasks : tasks.where((t) {
-                      final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
-                      return name.toLowerCase().contains(q) || '${t.id}'.contains(q);
-                    }).toList();
-                    _selectAll(filtered);
-                  },
-                  child: const Text('全选'),
-                ),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: _selectedIds.isEmpty ? null : () => _batchDelete(context),
-                  icon: const Icon(Icons.delete_outline, size: 16),
-                  label: Text('删除 (${_selectedIds.length})'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
-                    minimumSize: const Size(0, 28),
+          child: Obx(() {
+            // Compute visible tasks for selectAll
+            var visibleTasks = historyCtrl.tasks.toList();
+            final q = _searchQuery.value;
+            if (q.isNotEmpty) {
+              visibleTasks = visibleTasks.where((t) {
+                final name = t.name.isNotEmpty ? t.name : 'Task ${t.id}';
+                return name.toLowerCase().contains(q) || '${t.id}'.contains(q);
+              }).toList();
+            }
+            final allSelected = visibleTasks.isNotEmpty &&
+                visibleTasks.every((t) => _selectedIds.contains(t.id));
+            final someSelected = _selectedIds.isNotEmpty;
+
+            return Row(
+              children: [
+                // SelectAll checkbox — always visible
+                SizedBox(
+                  width: 32,
+                  child: Checkbox(
+                    value: allSelected ? true : (someSelected ? null : false),
+                    tristate: true,
+                    onChanged: (_) {
+                      if (allSelected) {
+                        _exitSelectMode();
+                      } else {
+                        _selectAll(visibleTasks);
+                      }
+                    },
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
-              ] else ...[
-                // Normal toolbar
+
                 Text('Capture History', style: theme.textTheme.titleSmall),
-                const SizedBox(width: AppTheme.spacingLG),
+                const SizedBox(width: AppTheme.spacingSM),
                 Text('${historyCtrl.tasks.length} tasks',
                     style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+
+                // Show selected count + delete button when selecting
+                if (_isSelecting.value) ...[
+                  const SizedBox(width: AppTheme.spacingMD),
+                  Text('(已选 ${_selectedIds.length})',
+                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.colorScheme.primary)),
+                  const SizedBox(width: AppTheme.spacingSM),
+                  TextButton(
+                    onPressed: _exitSelectMode,
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(0, 28),
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                    ),
+                    child: const Text('取消'),
+                  ),
+                  const SizedBox(width: AppTheme.spacingXS),
+                  ElevatedButton.icon(
+                    onPressed: _selectedIds.isEmpty ? null : () => _batchDelete(context),
+                    icon: const Icon(Icons.delete_outline, size: 14),
+                    label: Text('删除 (${_selectedIds.length})'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                      minimumSize: const Size(0, 28),
+                    ),
+                  ),
+                ],
+
                 const Spacer(),
+
+                // Search
                 SizedBox(
                   width: 200,
                   height: 28,
@@ -202,8 +226,8 @@ class _HistoryPanelState extends State<HistoryPanel> {
                   ),
                 ),
               ],
-            ],
-          )),
+            );
+          }),
         ),
         // Task list
         Expanded(
