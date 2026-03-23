@@ -2,9 +2,13 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatf
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/flow_controller.dart';
 import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
+import '../../utils/har_export.dart';
+import '../../utils/har_import.dart';
+import '../../utils/list_export.dart';
 import '../../widgets/connection_indicator.dart';
 import '../../theme/app_theme.dart';
 
@@ -151,6 +155,58 @@ class _ToolsMenuButton extends StatelessWidget {
             ],
           )),
         ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'exportHar',
+          child: Row(
+            children: [
+              Icon(Icons.upload_file, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Export HAR'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'importHar',
+          child: Row(
+            children: [
+              Icon(Icons.download, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Import HAR'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'exportCsv',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart_outlined, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Export List as CSV'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'exportJson',
+          child: Row(
+            children: [
+              Icon(Icons.data_object, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Export List as JSON'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'diff',
+          child: Row(
+            children: [
+              Icon(Icons.compare_arrows, size: 16),
+              SizedBox(width: AppTheme.spacingSM),
+              Text('Diff Tool'),
+            ],
+          ),
+        ),
       ],
       onSelected: (value) {
         switch (value) {
@@ -174,8 +230,166 @@ class _ToolsMenuButton extends StatelessWidget {
                 duration: const Duration(seconds: 2),
               ),
             );
+          case 'exportHar':
+            _exportHar(context);
+          case 'importHar':
+            _importHar(context);
+          case 'exportCsv':
+            _exportListCsv(context);
+          case 'exportJson':
+            _exportListJson(context);
+          case 'diff':
+            pageCtrl.isDiff
+                ? pageCtrl.showCapture()
+                : pageCtrl.showDiff();
         }
       },
     );
+  }
+
+  void _exportHar(BuildContext context) async {
+    final flowCtrl = Get.find<FlowController>();
+    final taskCtrl = Get.find<TaskController>();
+    final taskId = taskCtrl.currentTask.value?.id;
+    if (taskId == null || flowCtrl.flows.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No flows to export')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Exporting HAR...')),
+    );
+    try {
+      final harJson = await HarExport.fromFlows(
+        flowCtrl.flows.toList(),
+        flowCtrl.api,
+        taskId,
+      );
+      final path = await HarExport.writeToDesktop(harJson);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('HAR exported to $path'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    }
+  }
+
+  void _importHar(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Import HAR'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: '/path/to/file.har',
+            labelText: 'HAR file path',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final path = controller.text.trim();
+              if (path.isEmpty) return;
+              try {
+                final flowCtrl = Get.find<FlowController>();
+                final imported = await HarImport.importFromFile(path);
+                for (final flow in imported) {
+                  flowCtrl.flows.insert(0, flow);
+                }
+                flowCtrl.total.value = flowCtrl.total.value + imported.length;
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Imported ${imported.length} requests from HAR file'),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Import failed: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Import'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _exportListCsv(BuildContext context) async {
+    final flowCtrl = Get.find<FlowController>();
+    if (flowCtrl.flows.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No flows to export')),
+      );
+      return;
+    }
+    try {
+      final csv = ListExport.toCsv(flowCtrl.flows.toList());
+      final path = await ListExport.writeToDesktop(csv, 'csv');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('CSV exported to $path'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    }
+  }
+
+  void _exportListJson(BuildContext context) async {
+    final flowCtrl = Get.find<FlowController>();
+    if (flowCtrl.flows.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No flows to export')),
+      );
+      return;
+    }
+    try {
+      final json = ListExport.toJson(flowCtrl.flows.toList());
+      final path = await ListExport.writeToDesktop(json, 'json');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('JSON exported to $path'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    }
   }
 }
