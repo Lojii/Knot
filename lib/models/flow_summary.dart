@@ -47,7 +47,7 @@ class FlowSummary {
     protocol: (json['protocol'] as String?) ?? '',
     host: (json['host'] as String?) ?? '',
     port: (json['port'] as int?) ?? 0,
-    startedAt: (json['startedAt'] as num).toDouble(),
+    startedAt: (json['startedAt'] as num?)?.toDouble() ?? 0,
     endedAt: (json['endedAt'] as num?)?.toDouble(),
     durationMs: (json['durationMs'] as num?)?.toDouble(),
     uploadBytes: (json['uploadBytes'] as int?) ?? 0,

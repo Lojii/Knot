@@ -73,7 +73,6 @@ void main() async {
       proxyRunning = await api.checkConnection();
     }
 
-
     if (proxyRunning) {
       taskCtrl.isCapturing.value = true;
       api.baseUrl = 'http://localhost:$port';
