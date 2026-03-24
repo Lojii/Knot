@@ -1,0 +1,199 @@
+{
+  "light": {
+    "colors": {
+      "scaffold": "#F5F5F7",
+      "surface": "#FFFFFF",
+      "divider": "#D1D1D6",
+      "primary": "#007AFF",
+      "textPrimary": "#1D1D1F",
+      "textSecondary": "#86868B",
+      "method": {
+        "GET": "#34C759",
+        "POST": "#FF9F0A",
+        "PUT": "#007AFF",
+        "DELETE": "#FF3B30",
+        "PATCH": "#AF52DE",
+        "default": "#8E8E93"
+      },
+      "status": {
+        "2xx": "#34C759",
+        "3xx": "#007AFF",
+        "4xx": "#FF9F0A",
+        "5xx": "#FF3B30",
+        "default": "#8E8E93"
+      },
+      "protocol": {
+        "HTTP": "#007AFF",
+        "HTTPS": "#34C759",
+        "H2": "#FF9F0A",
+        "WS": "#AF52DE",
+        "WSS": "#FF3B30"
+      },
+      "connection": {
+        "connected": "#34C759",
+        "connecting": "#FF9F0A",
+        "disconnected": "#FF3B30"
+      },
+      "timing": {
+        "connect": "#FF9F0A",
+        "tls": "#AF52DE",
+        "request": "#007AFF",
+        "ttfb": "#34C759",
+        "response": "#30D158"
+      },
+      "syntax": {
+        "key": "#0A2463",
+        "string": "#2E7D32",
+        "number": "#E65100",
+        "boolean": "#6A1B9A"
+      }
+    },
+    "toolbar": {
+      "gradient": { "start": "#FAFAFA", "end": "#EBEBEB" },
+      "borderWidth": 0.5
+    },
+    "table": {
+      "headerGradient": { "start": "#F4F4F5", "end": "#EAEAEB" },
+      "selectedBackground": "#007AFF14",
+      "selectedIndicatorWidth": 2,
+      "selectedIndicatorColor": "#007AFF"
+    },
+    "tree": {
+      "selectedBackground": "#007AFF",
+      "selectedText": "#FFFFFF",
+      "selectedRadius": 5
+    },
+    "filterChip": {
+      "activeBackground": "#007AFF1F",
+      "activeBorder": "transparent",
+      "activeText": "#007AFF",
+      "inactiveBackground": "transparent",
+      "inactiveBorder": "#D1D1D6"
+    },
+    "detailTab": {
+      "activeBackground": "#E8E8ED",
+      "activeText": "#1D1D1F",
+      "inactiveText": "#86868B",
+      "radius": 5
+    }
+  },
+  "dark": {
+    "colors": {
+      "scaffold": "#1C1C1E",
+      "surface": "#2C2C2E",
+      "divider": "#38383A",
+      "primary": "#0A84FF",
+      "textPrimary": "#F5F5F7",
+      "textSecondary": "#98989D",
+      "method": {
+        "GET": "#30D158",
+        "POST": "#FF9F0A",
+        "PUT": "#0A84FF",
+        "DELETE": "#FF453A",
+        "PATCH": "#BF5AF2",
+        "default": "#8E8E93"
+      },
+      "status": {
+        "2xx": "#30D158",
+        "3xx": "#0A84FF",
+        "4xx": "#FF9F0A",
+        "5xx": "#FF453A",
+        "default": "#8E8E93"
+      },
+      "protocol": {
+        "HTTP": "#0A84FF",
+        "HTTPS": "#30D158",
+        "H2": "#FF9F0A",
+        "WS": "#BF5AF2",
+        "WSS": "#FF453A"
+      },
+      "connection": {
+        "connected": "#30D158",
+        "connecting": "#FF9F0A",
+        "disconnected": "#FF453A"
+      },
+      "timing": {
+        "connect": "#FF9F0A",
+        "tls": "#BF5AF2",
+        "request": "#0A84FF",
+        "ttfb": "#30D158",
+        "response": "#34C759"
+      },
+      "syntax": {
+        "key": "#82AAFF",
+        "string": "#C3E88D",
+        "number": "#F78C6C",
+        "boolean": "#C792EA"
+      }
+    },
+    "toolbar": {
+      "gradient": { "start": "#2C2C2E", "end": "#232325" },
+      "borderWidth": 0.5
+    },
+    "table": {
+      "headerGradient": { "start": "#2C2C2E", "end": "#262628" },
+      "selectedBackground": "#0A84FF1F",
+      "selectedIndicatorWidth": 2,
+      "selectedIndicatorColor": "#0A84FF"
+    },
+    "tree": {
+      "selectedBackground": "#0A84FF",
+      "selectedText": "#FFFFFF",
+      "selectedRadius": 5
+    },
+    "filterChip": {
+      "activeBackground": "#0A84FF26",
+      "activeBorder": "transparent",
+      "activeText": "#0A84FF",
+      "inactiveBackground": "transparent",
+      "inactiveBorder": "#38383A"
+    },
+    "detailTab": {
+      "activeBackground": "#38383A",
+      "activeText": "#F5F5F7",
+      "inactiveText": "#98989D",
+      "radius": 5
+    }
+  },
+  "sizing": {
+    "globalBarHeight": 38,
+    "toolbarHeight": 38,
+    "filterBarHeight": 34,
+    "statusBarHeight": 26,
+    "tableRowHeight": 26,
+    "tableHeaderHeight": 28,
+    "detailTabHeight": 28,
+    "treeDefaultWidth": 220,
+    "macOSTrafficLightWidth": 78,
+    "iconSize": 16,
+    "iconButtonSize": 22,
+    "connectionDotSize": 6,
+    "searchFieldWidth": 240,
+    "searchFieldHeight": 28
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24
+  },
+  "fontSize": {
+    "xs": 10,
+    "sm": 11,
+    "md": 12,
+    "lg": 13,
+    "xl": 14
+  },
+  "fontFamily": {
+    "ui": "Inter",
+    "mono": "JetBrains Mono",
+    "uiLetterSpacing": -0.2
+  },
+  "radius": {
+    "sm": 4,
+    "md": 6,
+    "lg": 8,
+    "popup": 10
+  }
+}
