@@ -15,12 +15,12 @@ class KeyValueTable extends StatelessWidget {
       children: entries.map((e) => TableRow(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 2, horizontal: AppTheme.spacing.sm),
+            padding: EdgeInsets.symmetric(vertical: 1, horizontal: AppTheme.spacing.sm),
             child: SelectableText(e.$1,
               style: AppTheme.mono(context).copyWith(fontWeight: FontWeight.bold)),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 2, horizontal: AppTheme.spacing.sm),
+            padding: EdgeInsets.symmetric(vertical: 1, horizontal: AppTheme.spacing.sm),
             child: SelectableText(e.$2, style: AppTheme.mono(context)),
           ),
         ],

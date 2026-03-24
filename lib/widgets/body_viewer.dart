@@ -46,7 +46,7 @@ class _BodyViewerState extends State<BodyViewer> {
   }
 
   Widget _buildModeToggle(BuildContext context) {
-    final theme = Theme.of(context);
+    final filterChip = AppTheme.mode(context).filterChip;
     return Row(
       children: BodyViewMode.values.map((mode) {
         final isActive = _viewMode == mode;
@@ -66,18 +66,19 @@ class _BodyViewerState extends State<BodyViewer> {
               ),
               decoration: BoxDecoration(
                 color: isActive
-                    ? theme.colorScheme.primary.withAlpha(26)
-                    : Colors.transparent,
+                    ? filterChip.activeBackground
+                    : filterChip.inactiveBackground,
                 borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 border: Border.all(
                   color: isActive
-                      ? theme.colorScheme.primary
-                      : theme.dividerColor,
+                      ? filterChip.activeBorder
+                      : filterChip.inactiveBorder,
+                  width: 0.5,
                 ),
               ),
               child: Text(label, style: TextStyle(
                 fontSize: AppTheme.fontSize.sm,
-                color: isActive ? theme.colorScheme.primary : null,
+                color: isActive ? filterChip.activeText : null,
               )),
             ),
           ),

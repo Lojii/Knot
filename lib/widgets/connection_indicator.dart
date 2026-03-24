@@ -17,8 +17,11 @@ class ConnectionIndicator extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: AppTheme.sizing.connectionDotSize,
+          height: AppTheme.sizing.connectionDotSize,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         SizedBox(width: AppTheme.spacing.xs),
         Text(label, style: TextStyle(fontSize: AppTheme.fontSize.sm, color: color)),
       ],
