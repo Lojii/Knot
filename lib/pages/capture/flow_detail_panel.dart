@@ -10,14 +10,40 @@ import '../../theme/app_theme.dart';
 import '../../utils/curl_export.dart';
 import '../../utils/request_sender.dart';
 
-class FlowDetailPanel extends StatelessWidget {
+class FlowDetailPanel extends StatefulWidget {
   const FlowDetailPanel({super.key});
+
+  @override
+  State<FlowDetailPanel> createState() => _FlowDetailPanelState();
+}
+
+class _FlowDetailPanelState extends State<FlowDetailPanel>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  static const _tabs = [
+    'Headers', 'Body', 'Query', 'Cookies', 'Timing', 'Connection', 'Certificate',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
     final detailCtrl = Get.find<DetailController>();
     final theme = Theme.of(context);
+    final detailTab = AppTheme.mode(context).detailTab;
 
     return Obx(() {
       if (flowCtrl.selectedFlow.value == null) {
@@ -32,80 +58,105 @@ class FlowDetailPanel extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      return DefaultTabController(
-        length: 7,
-        child: Column(
-          children: [
-            // Toolbar with cURL export
-            Container(
-              height: AppTheme.sizing.toolbarHeight,
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: () {
-                      final flow = flowCtrl.selectedFlow.value;
-                      if (flow == null) return;
-                      final raw = detailCtrl.detail.value?.raw ?? {};
-                      final headers = RequestSender.extractHeaders(raw);
-                      final url = RequestSender.buildUrl(flow);
-                      final pageCtrl = Get.find<AppPageController>();
-                      pageCtrl.openInCompose(
-                        method: flow.method,
-                        url: url,
-                        headers: headers,
-                      );
-                    },
-                    icon: const Icon(Icons.edit_note, size: 14),
-                    label: Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      final raw = detailCtrl.detail.value?.raw ?? {};
-                      final curl = CurlExport.fromFlowDetail(raw);
-                      Clipboard.setData(ClipboardData(text: curl));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('cURL command copied to clipboard'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.copy, size: 14),
-                    label: Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
-                  ),
-                ],
-              ),
-            ),
-            TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              tabs: [
-                Tab(text: 'Headers', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Body', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Query', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Cookies', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Timing', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Connection', height: AppTheme.sizing.detailTabHeight),
-                Tab(text: 'Certificate', height: AppTheme.sizing.detailTabHeight),
+      return Column(
+        children: [
+          // Toolbar with cURL export
+          Container(
+            height: AppTheme.sizing.toolbarHeight,
+            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+            child: Row(
+              children: [
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () {
+                    final flow = flowCtrl.selectedFlow.value;
+                    if (flow == null) return;
+                    final raw = detailCtrl.detail.value?.raw ?? {};
+                    final headers = RequestSender.extractHeaders(raw);
+                    final url = RequestSender.buildUrl(flow);
+                    final pageCtrl = Get.find<AppPageController>();
+                    pageCtrl.openInCompose(
+                      method: flow.method,
+                      url: url,
+                      headers: headers,
+                    );
+                  },
+                  icon: const Icon(Icons.edit_note, size: 14),
+                  label: Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    final raw = detailCtrl.detail.value?.raw ?? {};
+                    final curl = CurlExport.fromFlowDetail(raw);
+                    Clipboard.setData(ClipboardData(text: curl));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('cURL command copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 14),
+                  label: Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+                ),
               ],
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _HeadersTab(detailCtrl: detailCtrl),
-                  _BodyTab(detailCtrl: detailCtrl),
-                  _QueryTab(detailCtrl: detailCtrl),
-                  _CookiesTab(detailCtrl: detailCtrl),
-                  _TimingTab(detailCtrl: detailCtrl),
-                  _ConnectionTab(detailCtrl: detailCtrl),
-                  _CertificateTab(detailCtrl: detailCtrl),
-                ],
-              ),
+          ),
+          // Custom segmented-control tab row
+          Container(
+            height: AppTheme.sizing.detailTabHeight,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing.sm,
+              vertical: 2,
             ),
-          ],
-        ),
+            child: Row(
+              children: List.generate(_tabs.length, (i) {
+                final isActive = _tabController.index == i;
+                return GestureDetector(
+                  onTap: () {
+                    _tabController.animateTo(i);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing.sm,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? detailTab.activeBackground
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(detailTab.radius),
+                    ),
+                    child: Text(
+                      _tabs[i],
+                      style: TextStyle(
+                        fontSize: AppTheme.fontSize.sm,
+                        fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                        color: isActive
+                            ? detailTab.activeText
+                            : detailTab.inactiveText,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _HeadersTab(detailCtrl: detailCtrl),
+                _BodyTab(detailCtrl: detailCtrl),
+                _QueryTab(detailCtrl: detailCtrl),
+                _CookiesTab(detailCtrl: detailCtrl),
+                _TimingTab(detailCtrl: detailCtrl),
+                _ConnectionTab(detailCtrl: detailCtrl),
+                _CertificateTab(detailCtrl: detailCtrl),
+              ],
+            ),
+          ),
+        ],
       );
     });
   }
@@ -133,13 +184,13 @@ class _HeadersTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Request Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('Request Headers', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             if (reqHeaders.isNotEmpty)
               KeyValueTable(entries: reqHeaders)
             else
               Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
             SizedBox(height: AppTheme.spacing.md),
-            Text('Response Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('Response Headers', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             if (rspHeaders.isNotEmpty)
               KeyValueTable(entries: rspHeaders)
             else
@@ -193,11 +244,11 @@ class _BodyTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('Request Body', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: requestContentType),
             SizedBox(height: AppTheme.spacing.md),
-            Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('Response Body', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: responseContentType),
           ],
@@ -317,7 +368,7 @@ class _QueryTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             KeyValueTable(entries: entries),
           ],
         ),
@@ -386,12 +437,12 @@ class _CookiesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (reqCookies.isNotEmpty) ...[
-              Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+              Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
               KeyValueTable(entries: reqCookies),
               SizedBox(height: AppTheme.spacing.md),
             ],
             if (rspCookies.isNotEmpty) ...[
-              Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+              Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
               KeyValueTable(entries: rspCookies),
             ],
           ],
@@ -444,7 +495,7 @@ class _CertificateTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             KeyValueTable(entries: entries),
           ],
         ),

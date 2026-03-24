@@ -15,10 +15,13 @@ class ContentPanel extends StatefulWidget {
 class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
+  static const _tabs = ['List', 'Waterfall', 'Dashboard'];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() => setState(() {}));
   }
 
   @override
@@ -30,24 +33,51 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final detailTab = AppTheme.mode(context).detailTab;
+
     return Column(
       children: [
-        // Tab bar
+        // Custom segmented-control tab bar
         Container(
           height: 32,
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            labelPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
-            tabs: const [
-              Tab(text: 'List', height: 32),
-              Tab(text: 'Waterfall', height: 32),
-              Tab(text: 'Dashboard', height: 32),
-            ],
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.sm,
+            vertical: 3,
+          ),
+          child: Row(
+            children: List.generate(_tabs.length, (i) {
+              final isActive = _tabController.index == i;
+              return GestureDetector(
+                onTap: () {
+                  _tabController.animateTo(i);
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.lg,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? detailTab.activeBackground
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(detailTab.radius),
+                  ),
+                  child: Text(
+                    _tabs[i],
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSize.sm,
+                      fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                      color: isActive
+                          ? detailTab.activeText
+                          : detailTab.inactiveText,
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
         ),
         // Tab content
