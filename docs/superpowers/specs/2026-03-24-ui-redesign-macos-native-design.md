@@ -304,6 +304,10 @@ Fallback: if JSON parsing fails, use hardcoded defaults (current values) so the 
 ### New
 - `assets/theme.json` — theme configuration file
 
+### Also Requires
+- `pubspec.yaml` — register `assets/theme.json` under `flutter.assets`
+- `lib/pages/capture/capture_page.dart` — may need minor background/scaffold style updates
+
 ### Not Changed
 - `lib/controllers/**` — no logic changes
 - `lib/models/**` — no data model changes
