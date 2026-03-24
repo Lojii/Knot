@@ -2,9 +2,9 @@ import Cocoa
 import FlutterMacOS
 
 // Uncomment after adding TunnelServices to Xcode Runner target:
-// import TunnelServices
-// import KnotStorage
-// import KnotWebService
+ import TunnelServices
+ import KnotStorage
+ import KnotWebService
 
 @main
 class AppDelegate: FlutterAppDelegate {
@@ -62,8 +62,8 @@ class AppDelegate: FlutterAppDelegate {
         }
 
         // TODO: When TunnelServices is linked in Xcode, use in-process mode:
-        // startInProcess(result: result)
-        // return
+         startInProcess(result: result)
+         return
 
         // Fallback: run knot-server binary
         startExternalBinary(result: result)
@@ -71,7 +71,7 @@ class AppDelegate: FlutterAppDelegate {
 
     // MARK: - In-Process Mode (uncomment when TunnelServices linked)
 
-    /*
+    
     private func startInProcess(result: @escaping FlutterResult) {
         // Setup database root
         if let groupURL = FileManager.default.containerURL(
@@ -122,7 +122,7 @@ class AppDelegate: FlutterAppDelegate {
             }
         }
     }
-    */
+    
 
     // MARK: - External Binary Mode
 
