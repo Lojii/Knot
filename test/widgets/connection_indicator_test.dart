@@ -68,12 +68,12 @@ void main() {
       expect(decoration.shape, BoxShape.circle);
     });
 
-    testWidgets('dot is 8x8 pixels', (tester) async {
+    testWidgets('dot matches connectionDotSize', (tester) async {
       await tester.pumpWidget(buildWidget(WsStatus.connected));
 
       final container = tester.widget<Container>(find.byType(Container));
-      expect(container.constraints?.maxWidth, 8);
-      expect(container.constraints?.maxHeight, 8);
+      expect(container.constraints?.maxWidth, AppTheme.sizing.connectionDotSize);
+      expect(container.constraints?.maxHeight, AppTheme.sizing.connectionDotSize);
     });
   });
 }
