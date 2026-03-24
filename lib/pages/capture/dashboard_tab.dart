@@ -57,54 +57,67 @@ class _DashboardTabState extends State<DashboardTab> {
           ),
           SizedBox(height: AppTheme.spacing.md),
           // Row 3: Traffic
-          _card(theme, 'Traffic', Padding(
-            padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _trafficStat('Upload', dc.totalUpload.value, theme.colorScheme.primary),
-                _trafficStat('Download', dc.totalDownload.value, AppTheme.methodColor('GET')),
-                _trafficStat('Total', dc.totalUpload.value + dc.totalDownload.value, AppTheme.methodColor('POST')),
-              ],
-            ),
-          )),
+          Builder(builder: (context) {
+            final themeColors = AppTheme.colors(context);
+            return _card(theme, 'Traffic', Padding(
+              padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _trafficStat('Upload', dc.totalUpload.value, themeColors.primary),
+                  _trafficStat('Download', dc.totalDownload.value, themeColors.method['GET'] ?? themeColors.primary),
+                  _trafficStat('Total', dc.totalUpload.value + dc.totalDownload.value, themeColors.method['POST'] ?? themeColors.primary),
+                ],
+              ),
+            ));
+          }),
         ],
       )),
     );
   }
 
-  Widget _card(ThemeData theme, String title, Widget child) => Container(
-    padding: EdgeInsets.all(AppTheme.spacing.md),
-    decoration: BoxDecoration(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-      border: Border.all(color: theme.dividerColor),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: TextStyle(fontSize: AppTheme.fontSize.md, fontWeight: FontWeight.bold, color: theme.hintColor)),
-        SizedBox(height: AppTheme.spacing.sm),
-        child,
-      ],
-    ),
+  Widget _card(ThemeData theme, String title, Widget child) => Builder(
+    builder: (context) {
+      final themeColors = AppTheme.colors(context);
+      return Container(
+        padding: EdgeInsets.all(AppTheme.spacing.md),
+        decoration: BoxDecoration(
+          color: themeColors.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+          border: Border.all(color: themeColors.divider),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(fontSize: AppTheme.fontSize.md, fontWeight: FontWeight.w600, color: themeColors.textSecondary)),
+            SizedBox(height: AppTheme.spacing.sm),
+            child,
+          ],
+        ),
+      );
+    },
   );
 
-  Widget _metricCard(ThemeData theme, String label, String value, IconData icon) => Container(
-    padding: EdgeInsets.all(AppTheme.spacing.md),
-    decoration: BoxDecoration(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppTheme.radius.lg),
-      border: Border.all(color: theme.dividerColor),
-    ),
-    child: Column(
-      children: [
-        Icon(icon, size: 20, color: theme.hintColor),
-        SizedBox(height: AppTheme.spacing.xs),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(fontSize: AppTheme.fontSize.xs, color: theme.hintColor)),
-      ],
-    ),
+  Widget _metricCard(ThemeData theme, String label, String value, IconData icon) => Builder(
+    builder: (context) {
+      final themeColors = AppTheme.colors(context);
+      return Container(
+        padding: EdgeInsets.all(AppTheme.spacing.md),
+        decoration: BoxDecoration(
+          color: themeColors.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radius.lg),
+          border: Border.all(color: themeColors.divider),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 20, color: themeColors.textSecondary),
+            SizedBox(height: AppTheme.spacing.xs),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label, style: TextStyle(fontSize: AppTheme.fontSize.xs, color: themeColors.textSecondary)),
+          ],
+        ),
+      );
+    },
   );
 
   Widget _protocolPie(DashboardController dc, ThemeData theme) {
