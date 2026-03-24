@@ -37,7 +37,7 @@ class MapRemotePanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _showRuleDialog(context),
                 icon: const Icon(Icons.add, size: 14),
-                label: const Text('Add Rule'),
+                label: Text('action.add_rule'.tr),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
                   padding: EdgeInsets.symmetric(
@@ -60,7 +60,7 @@ class MapRemotePanel extends StatelessWidget {
                     Icon(Icons.alt_route, size: 48, color: theme.hintColor),
                     SizedBox(height: AppTheme.spacing.sm),
                     Text(
-                      'No Map Remote rules',
+                      'empty.no_map_remote'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.md,
@@ -68,7 +68,7 @@ class MapRemotePanel extends StatelessWidget {
                     ),
                     SizedBox(height: AppTheme.spacing.xs),
                     Text(
-                      'Add a rule to redirect requests to a different server',
+                      'empty.no_map_remote_desc'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.sm,
@@ -255,7 +255,7 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Rule' : 'Add Map Remote Rule'),
+      title: Text(isEditing ? 'map_remote.edit_rule'.tr : 'map_remote.add_rule'.tr),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -263,7 +263,7 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Match Pattern',
+              'map_remote.match_pattern'.tr,
               style: TextStyle(
                 fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
@@ -293,7 +293,7 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
             ),
             SizedBox(height: AppTheme.spacing.lg),
             Text(
-              'Replace With (empty = keep original)',
+              'map_remote.replace_with'.tr,
               style: TextStyle(
                 fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
@@ -301,15 +301,15 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
               ),
             ),
             SizedBox(height: AppTheme.spacing.sm),
-            _field('Scheme', _schemeCtrl, 'https'),
+            _field('map_remote.scheme'.tr, _schemeCtrl, 'https'),
             SizedBox(height: AppTheme.spacing.sm),
-            _field('Host', _hostCtrl, 'localhost'),
+            _field('map_remote.host'.tr, _hostCtrl, 'localhost'),
             SizedBox(height: AppTheme.spacing.sm),
             Row(
               children: [
-                Expanded(child: _field('Port', _portCtrl, '8080')),
+                Expanded(child: _field('map_remote.port'.tr, _portCtrl, '8080')),
                 SizedBox(width: AppTheme.spacing.sm),
-                Expanded(child: _field('Path', _pathCtrl, '/api/v2/*')),
+                Expanded(child: _field('map_remote.path'.tr, _pathCtrl, '/api/v2/*')),
               ],
             ),
           ],
@@ -318,11 +318,11 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('action.cancel'.tr),
         ),
         ElevatedButton(
           onPressed: _save,
-          child: Text(isEditing ? 'Save' : 'Add'),
+          child: Text('action.save'.tr),
         ),
       ],
     );

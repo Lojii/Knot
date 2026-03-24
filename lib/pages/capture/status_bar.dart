@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../api/ws_client.dart';
 import '../../controllers/live_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../theme/app_theme.dart';
@@ -31,18 +32,44 @@ class CaptureStatusBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Obx(() => Row(
-        children: [
-          _item(context, '${flowCtrl.total.value} requests'),
-          _sep(context),
-          _item(context, 'Up ${_formatBytes(liveCtrl.uploadBytes.value)}'),
-          _item(context, ' Down ${_formatBytes(liveCtrl.downloadBytes.value)}'),
-          _sep(context),
-          _item(context, 'Mem ${liveCtrl.memoryMB.value.toStringAsFixed(0)} MB'),
-          _sep(context),
-          _item(context, '${liveCtrl.connectionCount.value} conn'),
-        ],
-      )),
+      child: Obx(() {
+        final wsStatus = liveCtrl.wsStatus.value;
+        final themeColors = AppTheme.colors(context);
+        final dotColor = switch (wsStatus) {
+          WsStatus.connected => themeColors.statusConnected,
+          WsStatus.connecting => themeColors.statusConnecting,
+          WsStatus.disconnected => themeColors.statusDisconnected,
+        };
+        final wsClient = Get.find<WsClient>();
+        final wsUrl = wsClient.baseUrl;
+        final statusLabel = switch (wsStatus) {
+          WsStatus.connected => 'status.connected'.tr,
+          WsStatus.connecting => 'status.connecting'.tr,
+          WsStatus.disconnected => 'status.disconnected'.tr,
+        };
+
+        return Row(
+          children: [
+            _item(context, 'status.requests'.trParams({'count': '${flowCtrl.total.value}'})),
+            _sep(context),
+            _item(context, 'status.up'.trParams({'size': _formatBytes(liveCtrl.uploadBytes.value)})),
+            _item(context, 'status.down'.trParams({'size': _formatBytes(liveCtrl.downloadBytes.value)})),
+            _sep(context),
+            _item(context, 'status.mem'.trParams({'size': liveCtrl.memoryMB.value.toStringAsFixed(0)})),
+            _sep(context),
+            _item(context, 'status.conn'.trParams({'count': '${liveCtrl.connectionCount.value}'})),
+            const Spacer(),
+            Tooltip(
+              message: '$statusLabel\n$wsUrl',
+              child: Container(
+                width: AppTheme.sizing.connectionDotSize,
+                height: AppTheme.sizing.connectionDotSize,
+                decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 

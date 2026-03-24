@@ -14,8 +14,10 @@ import 'controllers/page_controller.dart';
 import 'controllers/tag_controller.dart';
 import 'controllers/tools_controller.dart';
 import 'api/proxy_channel.dart';
+import 'dart:ui' as ui;
 import 'pages/capture/capture_page.dart';
 import 'theme/app_theme.dart';
+import 'i18n/translations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,51 +42,21 @@ void main() async {
 
   runApp(const KnotApp());
 
-  // Startup sequence (after first frame)
+  // Startup: only initialize web API connection, don't start proxy
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    final taskCtrl = Get.find<TaskController>();
-    final flowCtrl = Get.find<FlowController>();
-    final liveCtrl = Get.find<LiveController>();
-
-    // Step 1: Check if proxy is already running
-    bool proxyRunning = false;
-    int port = 9090;
+    // Check if proxy is already running (from a previous session)
+    int port = 0;
     try {
       final status = await ProxyChannel.getStatus();
-      proxyRunning = status['running'] == true;
-      if (proxyRunning) {
-        port = (status['port'] as int?) ?? 9090;
+      if (status['running'] == true) {
+        port = (status['port'] as int?) ?? 0;
       }
-    } catch (e) {
-    }
+    } catch (_) {}
 
-    // Step 2: If not running, try to start it automatically
-    if (!proxyRunning) {
-      try {
-        final result = await ProxyChannel.startProxy();
-        proxyRunning = result['running'] == true;
-        port = (result['port'] as int?) ?? 9090;
-      } catch (e) {
-      }
-    }
-
-    // Step 3: If still not running, try connecting to default port (external proxy)
-    if (!proxyRunning) {
-      proxyRunning = await api.checkConnection();
-    }
-
-    if (proxyRunning) {
-      taskCtrl.isCapturing.value = true;
+    // Set API endpoints if we got a port
+    if (port > 0) {
       api.baseUrl = 'http://localhost:$port';
       ws.baseUrl = 'ws://localhost:$port';
-
-      // Load tasks and connect
-      await taskCtrl.loadTasks();
-      if (taskCtrl.currentTask.value != null) {
-        final tid = taskCtrl.currentTask.value!.id;
-        flowCtrl.setTaskId(tid);
-        liveCtrl.connectToTask(tid);
-      }
     }
   });
 }
@@ -94,11 +66,20 @@ class KnotApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect system locale, fallback to en_US
+    final systemLocale = ui.PlatformDispatcher.instance.locale;
+    final locale = systemLocale.languageCode == 'zh'
+        ? const Locale('zh', 'CN')
+        : const Locale('en', 'US');
+
     return GetMaterialApp(
       title: 'Knot',
       themeMode: ThemeMode.system,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      translations: AppTranslations(),
+      locale: locale,
+      fallbackLocale: const Locale('en', 'US'),
       home: const CapturePage(),
     );
   }

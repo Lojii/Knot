@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../api/ws_client.dart';
 import '../theme/app_theme.dart';
 
@@ -10,9 +11,9 @@ class ConnectionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeColors = AppTheme.colors(context);
     final (color, label) = switch (status) {
-      WsStatus.connected => (themeColors.statusConnected, 'Connected'),
-      WsStatus.connecting => (themeColors.statusConnecting, 'Connecting...'),
-      WsStatus.disconnected => (themeColors.statusDisconnected, 'Disconnected'),
+      WsStatus.connected => (themeColors.statusConnected, 'status.connected'.tr),
+      WsStatus.connecting => (themeColors.statusConnecting, 'status.connecting'.tr),
+      WsStatus.disconnected => (themeColors.statusDisconnected, 'status.disconnected'.tr),
     };
     return Row(
       mainAxisSize: MainAxisSize.min,

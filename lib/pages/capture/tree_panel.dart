@@ -25,7 +25,7 @@ class TreePanel extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Row(
               children: [
-                Text('DOMAINS',
+                Text('tree.domains'.tr,
                   style: TextStyle(
                     fontSize: AppTheme.fontSize.xs,
                     fontWeight: FontWeight.w600,
@@ -53,7 +53,7 @@ class TreePanel extends StatelessWidget {
                   color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
                   borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
                 ),
-                child: Text('All Domains',
+                child: Text('tree.all_domains'.tr,
                   style: TextStyle(
                     fontSize: AppTheme.fontSize.md,
                     color: isSelected ? AppTheme.mode(context).tree.selectedText : null,
@@ -77,7 +77,7 @@ class TreePanel extends StatelessWidget {
                     horizontal: AppTheme.spacing.sm,
                     vertical: AppTheme.spacing.xs,
                   ),
-                  child: Text('PINNED',
+                  child: Text('tree.pinned'.tr,
                       style: TextStyle(
                           fontSize: AppTheme.fontSize.xs,
                           fontWeight: FontWeight.w600,
@@ -158,7 +158,7 @@ class _DomainTile extends StatelessWidget {
             children: [
               Icon(pinned ? Icons.star_border : Icons.star, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              Text(pinned ? 'Unpin' : 'Pin'),
+              Text(pinned ? 'tree.unpin'.tr : 'tree.pin'.tr),
             ],
           ),
         ),

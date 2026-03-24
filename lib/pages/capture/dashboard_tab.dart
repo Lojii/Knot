@@ -35,38 +35,38 @@ class _DashboardTabState extends State<DashboardTab> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _card(theme, 'Protocol Distribution', _protocolPie(dc, theme))),
+              Expanded(child: _card(theme, 'dashboard.protocol_dist'.tr, _protocolPie(dc, theme))),
               SizedBox(width: AppTheme.spacing.md),
-              Expanded(child: _card(theme, 'Status Codes', _statusList(dc, theme))),
+              Expanded(child: _card(theme, 'dashboard.status_codes'.tr, _statusList(dc, theme))),
             ],
           ),
           SizedBox(height: AppTheme.spacing.md),
           // Row 2: System metrics
           Row(
             children: [
-              Expanded(child: _metricCard(theme, 'Memory', '${dc.rssMB.value.toStringAsFixed(0)} MB', Icons.memory)),
+              Expanded(child: _metricCard(theme, 'dashboard.memory'.tr, '${dc.rssMB.value.toStringAsFixed(0)} MB', Icons.memory)),
               SizedBox(width: AppTheme.spacing.md),
-              Expanded(child: _metricCard(theme, 'CPU', '${dc.cpuPercent.value.toStringAsFixed(1)}%', Icons.speed)),
+              Expanded(child: _metricCard(theme, 'dashboard.cpu'.tr, '${dc.cpuPercent.value.toStringAsFixed(1)}%', Icons.speed)),
               SizedBox(width: AppTheme.spacing.md),
-              Expanded(child: _metricCard(theme, 'Threads', '${dc.threadCount.value}', Icons.account_tree)),
+              Expanded(child: _metricCard(theme, 'dashboard.threads'.tr, '${dc.threadCount.value}', Icons.account_tree)),
               SizedBox(width: AppTheme.spacing.md),
-              Expanded(child: _metricCard(theme, 'Connections', '${dc.poolTotal.value}', Icons.cable)),
+              Expanded(child: _metricCard(theme, 'dashboard.connections'.tr, '${dc.poolTotal.value}', Icons.cable)),
               SizedBox(width: AppTheme.spacing.md),
-              Expanded(child: _metricCard(theme, 'Uptime', '${dc.uptimeSeconds.value.toStringAsFixed(0)}s', Icons.timer)),
+              Expanded(child: _metricCard(theme, 'dashboard.uptime'.tr, '${dc.uptimeSeconds.value.toStringAsFixed(0)}s', Icons.timer)),
             ],
           ),
           SizedBox(height: AppTheme.spacing.md),
           // Row 3: Traffic
           Builder(builder: (context) {
             final themeColors = AppTheme.colors(context);
-            return _card(theme, 'Traffic', Padding(
+            return _card(theme, 'dashboard.traffic'.tr, Padding(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _trafficStat('Upload', dc.totalUpload.value, themeColors.primary),
-                  _trafficStat('Download', dc.totalDownload.value, themeColors.method['GET'] ?? themeColors.primary),
-                  _trafficStat('Total', dc.totalUpload.value + dc.totalDownload.value, themeColors.method['POST'] ?? themeColors.primary),
+                  _trafficStat('dashboard.upload'.tr, dc.totalUpload.value, themeColors.primary),
+                  _trafficStat('dashboard.download'.tr, dc.totalDownload.value, themeColors.method['GET'] ?? themeColors.primary),
+                  _trafficStat('dashboard.total'.tr, dc.totalUpload.value + dc.totalDownload.value, themeColors.method['POST'] ?? themeColors.primary),
                 ],
               ),
             ));
@@ -122,7 +122,7 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Widget _protocolPie(DashboardController dc, ThemeData theme) {
     final data = dc.protocols;
-    if (data.isEmpty) return const SizedBox(height: 120, child: Center(child: Text('No data')));
+    if (data.isEmpty) return SizedBox(height: 120, child: Center(child: Text('empty.no_data'.tr)));
 
     return Builder(builder: (context) {
       final themeColors = AppTheme.colors(context);
@@ -140,13 +140,13 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Widget _statusList(DashboardController dc, ThemeData theme) {
     final data = dc.statuses;
-    if (data.isEmpty) return const SizedBox(height: 120, child: Center(child: Text('No data')));
+    if (data.isEmpty) return SizedBox(height: 120, child: Center(child: Text('empty.no_data'.tr)));
     return Column(
       children: data.entries.map((e) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(
           children: [
-            Text(e.key == '1' ? 'Completed' : e.key == '2' ? 'Failed' : 'Status ${e.key}',
+            Text(e.key == '1' ? 'dashboard.completed'.tr : e.key == '2' ? 'dashboard.failed'.tr : 'Status ${e.key}',
                 style: TextStyle(fontSize: AppTheme.fontSize.md)),
             const Spacer(),
             Text('${e.value}', style: TextStyle(fontSize: AppTheme.fontSize.md, fontWeight: FontWeight.bold)),

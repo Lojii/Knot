@@ -21,14 +21,12 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const _tabs = [
-    'Headers', 'Body', 'Query', 'Cookies', 'Timing', 'Connection', 'Certificate',
-  ];
+  static const _tabCount = 7;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: _tabCount, vsync: this);
     _tabController.addListener(() => setState(() {}));
   }
 
@@ -37,6 +35,16 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
     _tabController.dispose();
     super.dispose();
   }
+
+  List<String> get _tabs => [
+    'tab.headers'.tr,
+    'tab.body'.tr,
+    'tab.query'.tr,
+    'tab.cookies'.tr,
+    'tab.timing'.tr,
+    'tab.connection'.tr,
+    'tab.certificate'.tr,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +56,7 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
     return Obx(() {
       if (flowCtrl.selectedFlow.value == null) {
         return Center(
-          child: Text('Select a request to view details',
+          child: Text('detail.select_request'.tr,
               style: TextStyle(color: theme.hintColor)),
         );
       }
@@ -57,6 +65,8 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
       if (detailCtrl.isLoadingDetail.value) {
         return const Center(child: CircularProgressIndicator());
       }
+
+      final tabs = _tabs;
 
       return Column(
         children: [
@@ -82,7 +92,7 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
                     );
                   },
                   icon: const Icon(Icons.edit_note, size: 14),
-                  label: Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+                  label: Text('detail.edit_resend'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                 ),
                 TextButton.icon(
                   onPressed: () {
@@ -90,14 +100,14 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
                     final curl = CurlExport.fromFlowDetail(raw);
                     Clipboard.setData(ClipboardData(text: curl));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('cURL command copied to clipboard'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: Text('detail.curl_copied'.tr),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },
                   icon: const Icon(Icons.copy, size: 14),
-                  label: Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+                  label: Text('detail.copy_curl'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                 ),
               ],
             ),
@@ -110,7 +120,7 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
               vertical: 2,
             ),
             child: Row(
-              children: List.generate(_tabs.length, (i) {
+              children: List.generate(tabs.length, (i) {
                 final isActive = _tabController.index == i;
                 return GestureDetector(
                   onTap: () {
@@ -128,7 +138,7 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
                       borderRadius: BorderRadius.circular(detailTab.radius),
                     ),
                     child: Text(
-                      _tabs[i],
+                      tabs[i],
                       style: TextStyle(
                         fontSize: AppTheme.fontSize.sm,
                         fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
@@ -184,17 +194,17 @@ class _HeadersTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Request Headers', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.request_headers'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             if (reqHeaders.isNotEmpty)
               KeyValueTable(entries: reqHeaders)
             else
-              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
+              Text('detail.no_headers'.tr, style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
             SizedBox(height: AppTheme.spacing.md),
-            Text('Response Headers', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.response_headers'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             if (rspHeaders.isNotEmpty)
               KeyValueTable(entries: rspHeaders)
             else
-              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
+              Text('detail.no_headers'.tr, style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
           ],
         ),
       );
@@ -244,11 +254,11 @@ class _BodyTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Request Body', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.request_body'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: requestContentType),
             SizedBox(height: AppTheme.spacing.md),
-            Text('Response Body', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.response_body'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: responseContentType),
           ],
@@ -273,12 +283,12 @@ class _TimingTab extends StatelessWidget {
       final ended = (raw['endedAt'] as num?)?.toDouble() ?? started;
 
       final events = <(String, double?)>[
-        ('Connect', d.connectAt),
-        ('Connected', d.connectedAt),
-        ('TLS Done', d.tlsDoneAt),
-        ('Request End', d.reqEndAt),
-        ('Response Start', d.rspStartAt),
-        ('Response End', ended > 0 ? ended : null),
+        ('timing.connect'.tr, d.connectAt),
+        ('timing.connected'.tr, d.connectedAt),
+        ('timing.tls_done'.tr, d.tlsDoneAt),
+        ('timing.request_end'.tr, d.reqEndAt),
+        ('timing.response_start'.tr, d.rspStartAt),
+        ('timing.response_end'.tr, ended > 0 ? ended : null),
       ];
 
       return SingleChildScrollView(
@@ -311,20 +321,20 @@ class _ConnectionTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final conn = detailCtrl.detail.value?.connection;
-      if (conn == null) return const Center(child: Text('No connection info'));
+      if (conn == null) return Center(child: Text('detail.no_connection'.tr));
 
       return SingleChildScrollView(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: KeyValueTable(entries: [
-          ('Source', '${conn.srcIp}:${conn.srcPort}'),
-          ('Destination', '${conn.dstIp}:${conn.dstPort}'),
-          ('State', conn.state),
+          ('detail.source'.tr, '${conn.srcIp}:${conn.srcPort}'),
+          ('detail.destination'.tr, '${conn.dstIp}:${conn.dstPort}'),
+          ('detail.state'.tr, conn.state),
           if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty)
-            ('TLS Version', conn.tlsVersion!),
+            ('detail.tls_version'.tr, conn.tlsVersion!),
           if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty)
-            ('Cipher', conn.tlsCipher!),
+            ('detail.cipher'.tr, conn.tlsCipher!),
           if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty)
-            ('SNI', conn.tlsSni!),
+            ('detail.sni'.tr, conn.tlsSni!),
         ]),
       );
     });
@@ -343,7 +353,7 @@ class _QueryTab extends StatelessWidget {
       final uriStr = (raw['searchKey2'] as String?) ?? '';
       if (uriStr.isEmpty) {
         return Center(
-          child: Text('No query parameters', style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_query'.tr, style: TextStyle(color: theme.hintColor)),
         );
       }
 
@@ -352,7 +362,7 @@ class _QueryTab extends StatelessWidget {
       final params = uri?.queryParametersAll ?? {};
       if (params.isEmpty) {
         return Center(
-          child: Text('No query parameters', style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_query'.tr, style: TextStyle(color: theme.hintColor)),
         );
       }
 
@@ -368,7 +378,7 @@ class _QueryTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.query_params'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             KeyValueTable(entries: entries),
           ],
         ),
@@ -427,7 +437,7 @@ class _CookiesTab extends StatelessWidget {
 
       if (reqCookies.isEmpty && rspCookies.isEmpty) {
         return Center(
-          child: Text('No cookies', style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_cookies'.tr, style: TextStyle(color: theme.hintColor)),
         );
       }
 
@@ -437,12 +447,12 @@ class _CookiesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (reqCookies.isNotEmpty) ...[
-              Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+              Text('detail.request_cookies'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
               KeyValueTable(entries: reqCookies),
               SizedBox(height: AppTheme.spacing.md),
             ],
             if (rspCookies.isNotEmpty) ...[
-              Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+              Text('detail.response_cookies'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
               KeyValueTable(entries: rspCookies),
             ],
           ],
@@ -470,24 +480,24 @@ class _CertificateTab extends StatelessWidget {
 
       if (!hasTls && (certChainRef == null || certChainRef.isEmpty)) {
         return Center(
-          child: Text('No certificate information', style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_certificate'.tr, style: TextStyle(color: theme.hintColor)),
         );
       }
 
       final entries = <(String, String)>[];
       if (conn != null) {
         if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty) {
-          entries.add(('TLS Version', conn.tlsVersion!));
+          entries.add(('detail.tls_version'.tr, conn.tlsVersion!));
         }
         if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty) {
-          entries.add(('Cipher Suite', conn.tlsCipher!));
+          entries.add(('detail.cipher_suite'.tr, conn.tlsCipher!));
         }
         if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty) {
-          entries.add(('SNI', conn.tlsSni!));
+          entries.add(('detail.sni'.tr, conn.tlsSni!));
         }
       }
       if (certChainRef != null && certChainRef.isNotEmpty) {
-        entries.add(('Certificate Chain Ref', certChainRef));
+        entries.add(('detail.cert_chain_ref'.tr, certChainRef));
       }
 
       return SingleChildScrollView(
@@ -495,7 +505,7 @@ class _CertificateTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
+            Text('detail.tls_certificate'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
             KeyValueTable(entries: entries),
           ],
         ),

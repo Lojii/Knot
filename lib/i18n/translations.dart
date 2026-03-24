@@ -1,0 +1,563 @@
+import 'package:get/get.dart';
+
+class AppTranslations extends Translations {
+  @override
+  Map<String, Map<String, String>> get keys => {
+    'en_US': enUS,
+    'zh_CN': zhCN,
+  };
+
+  static const enUS = {
+    // ===== Navigation =====
+    'nav.home': 'Home',
+    'nav.compose': 'Compose',
+    'nav.history': 'History',
+    'nav.settings': 'Settings',
+    'nav.tools': 'Tools',
+    'nav.protocol_toggle': 'Protocol / TCP/UDP',
+
+    // ===== Toolbar =====
+    'toolbar.start': 'Start',
+    'toolbar.stop': 'Stop',
+    'toolbar.clear': 'Clear',
+    'toolbar.search': 'Search...',
+
+    // ===== Tools Menu =====
+    'tools.map_remote': 'Map Remote',
+    'tools.map_local': 'Map Local',
+    'tools.breakpoints': 'Breakpoints',
+    'tools.allow_block': 'Allow/Block List',
+    'tools.no_caching': 'No Caching',
+    'tools.no_caching_enabled': 'No Caching enabled',
+    'tools.no_caching_disabled': 'No Caching disabled',
+    'tools.export_har': 'Export HAR',
+    'tools.import_har': 'Import HAR',
+    'tools.export_csv': 'Export List as CSV',
+    'tools.export_json': 'Export List as JSON',
+    'tools.diff': 'Diff Tool',
+
+    // ===== Tabs =====
+    'tab.list': 'List',
+    'tab.waterfall': 'Waterfall',
+    'tab.dashboard': 'Dashboard',
+    'tab.headers': 'Headers',
+    'tab.body': 'Body',
+    'tab.query': 'Query',
+    'tab.cookies': 'Cookies',
+    'tab.timing': 'Timing',
+    'tab.connection': 'Connection',
+    'tab.certificate': 'Certificate',
+    'tab.allow_list': 'Allow List',
+    'tab.block_list': 'Block List',
+    'tab.raw': 'Raw',
+    'tab.json': 'JSON',
+    'tab.form': 'Form',
+    'tab.pretty': 'Pretty',
+    'tab.hex': 'Hex',
+
+    // ===== Table Columns =====
+    'col.method': 'Method',
+    'col.host': 'Host',
+    'col.path': 'Path',
+    'col.status': 'Status',
+    'col.size': 'Size',
+    'col.time': 'Time',
+
+    // ===== Tree Panel =====
+    'tree.domains': 'DOMAINS',
+    'tree.all_domains': 'All Domains',
+    'tree.pinned': 'PINNED',
+    'tree.pin': 'Pin',
+    'tree.unpin': 'Unpin',
+
+    // ===== Flow Detail =====
+    'detail.edit_resend': 'Edit & Resend',
+    'detail.copy_curl': 'Copy as cURL',
+    'detail.curl_copied': 'cURL command copied to clipboard',
+    'detail.select_request': 'Select a request to view details',
+    'detail.request_headers': 'Request Headers',
+    'detail.response_headers': 'Response Headers',
+    'detail.no_headers': 'No headers available',
+    'detail.request_body': 'Request Body',
+    'detail.response_body': 'Response Body',
+    'detail.query_params': 'Query Parameters',
+    'detail.no_query': 'No query parameters',
+    'detail.request_cookies': 'Request Cookies',
+    'detail.response_cookies': 'Response Set-Cookie',
+    'detail.no_cookies': 'No cookies',
+    'detail.no_connection': 'No connection info',
+    'detail.no_certificate': 'No certificate information',
+    'detail.tls_certificate': 'TLS Certificate',
+    'detail.source': 'Source',
+    'detail.destination': 'Destination',
+    'detail.state': 'State',
+    'detail.tls_version': 'TLS Version',
+    'detail.cipher': 'Cipher',
+    'detail.sni': 'SNI',
+    'detail.cipher_suite': 'Cipher Suite',
+    'detail.cert_chain_ref': 'Certificate Chain Ref',
+
+    // ===== Timing =====
+    'timing.connect': 'Connect',
+    'timing.connected': 'Connected',
+    'timing.tls_done': 'TLS Done',
+    'timing.request_end': 'Request End',
+    'timing.response_start': 'Response Start',
+    'timing.response_end': 'Response End',
+    'timing.tls': 'TLS',
+    'timing.request': 'Request',
+    'timing.ttfb': 'TTFB',
+    'timing.download': 'Download',
+
+    // ===== Context Menu =====
+    'menu.color_tag': 'Color Tag',
+    'menu.clear': 'Clear',
+    'menu.add_comment': 'Add Comment',
+    'menu.edit_comment': 'Edit Comment',
+    'menu.copy_curl': 'Copy as cURL',
+    'menu.repeat': 'Repeat',
+    'menu.open_compose': 'Open in Compose',
+    'menu.map_local': 'Map Local',
+    'menu.open': 'Open',
+    'menu.delete': 'Delete',
+
+    // ===== Empty States =====
+    'empty.no_requests': 'No requests captured',
+    'empty.no_requests_yet': 'No requests yet',
+    'empty.no_data': 'No data',
+    'empty.no_history': 'No capture history',
+    'empty.no_flows_export': 'No flows to export',
+    'empty.no_map_remote': 'No Map Remote rules',
+    'empty.no_map_remote_desc': 'Add a rule to redirect requests to a different server',
+    'empty.no_map_local': 'No Map Local rules',
+    'empty.no_map_local_desc': 'Add a rule to serve requests with local file content',
+    'empty.no_breakpoints': 'No Breakpoint rules',
+    'empty.no_breakpoints_desc': 'Add a rule to pause matching requests for inspection',
+    'empty.no_allow': 'No allow list entries',
+    'empty.no_block': 'No block list entries',
+    'empty.send_request': 'Send a request to see the response',
+
+    // ===== Dashboard =====
+    'dashboard.protocol_dist': 'Protocol Distribution',
+    'dashboard.status_codes': 'Status Codes',
+    'dashboard.memory': 'Memory',
+    'dashboard.cpu': 'CPU',
+    'dashboard.threads': 'Threads',
+    'dashboard.connections': 'Connections',
+    'dashboard.uptime': 'Uptime',
+    'dashboard.traffic': 'Traffic',
+    'dashboard.upload': 'Upload',
+    'dashboard.download': 'Download',
+    'dashboard.total': 'Total',
+    'dashboard.completed': 'Completed',
+    'dashboard.failed': 'Failed',
+
+    // ===== Status Bar =====
+    'status.requests': '@count requests',
+    'status.up': 'Up @size',
+    'status.down': 'Down @size',
+    'status.mem': 'Mem @size MB',
+    'status.conn': '@count conn',
+    'status.connected': 'Connected',
+    'status.connecting': 'Connecting...',
+    'status.disconnected': 'Disconnected',
+
+    // ===== History =====
+    'history.title': 'Capture History',
+    'history.tasks': '@count tasks',
+    'history.edit': 'Edit',
+    'history.done': 'Done',
+    'history.selected': 'Selected @selected / @total',
+    'history.delete_count': 'Delete (@count)',
+    'history.search': 'Search tasks...',
+    'history.deleting': 'Deleting...',
+    'history.confirm_delete': 'Confirm Delete',
+    'history.confirm_delete_one': 'Delete Task @id and all its data?',
+    'history.confirm_delete_batch': 'Delete @count tasks and all their data?',
+    'history.delete_failed': 'Delete failed: @error',
+    'history.batch_delete_failed': 'Batch delete failed: @error',
+
+    // ===== Actions =====
+    'action.cancel': 'Cancel',
+    'action.save': 'Save',
+    'action.delete': 'Delete',
+    'action.import': 'Import',
+    'action.send': 'Send',
+    'action.add': 'Add',
+    'action.add_rule': 'Add Rule',
+    'action.compare': 'Compare',
+    'action.execute': 'Execute',
+    'action.abort': 'Abort',
+
+    // ===== Snackbar Messages =====
+    'msg.exporting_har': 'Exporting HAR...',
+    'msg.har_exported': 'HAR exported to @path',
+    'msg.export_failed': 'Export failed: @error',
+    'msg.imported_flows': 'Imported @count requests from HAR file',
+    'msg.import_failed': 'Import failed: @error',
+    'msg.csv_exported': 'CSV exported to @path',
+    'msg.json_exported': 'JSON exported to @path',
+    'msg.repeat_failed': 'Repeat failed: @error',
+    'msg.start_failed': 'Failed to start proxy: @error',
+    'msg.flow_comment': 'Flow Comment',
+    'msg.enter_comment': 'Enter a comment...',
+
+    // ===== Import Dialog =====
+    'import.har_path_hint': '/path/to/file.har',
+    'import.har_path_label': 'HAR file path',
+
+    // ===== Compose =====
+    'compose.url_hint': 'https://example.com/api/resource',
+    'compose.headers': 'Headers',
+    'compose.query_params': 'Query Parameters',
+    'compose.body': 'Body',
+    'compose.response_headers': 'Response Headers',
+    'compose.response_body': 'Response Body',
+
+    // ===== Map Remote =====
+    'map_remote.edit_rule': 'Edit Rule',
+    'map_remote.add_rule': 'Add Map Remote Rule',
+    'map_remote.match_pattern': 'Match Pattern',
+    'map_remote.replace_with': 'Replace With (empty = keep original)',
+    'map_remote.scheme': 'Scheme',
+    'map_remote.host': 'Host',
+    'map_remote.port': 'Port',
+    'map_remote.path': 'Path',
+
+    // ===== Map Local =====
+    'map_local.edit_rule': 'Edit Rule',
+    'map_local.add_rule': 'Add Map Local Rule',
+    'map_local.url_pattern': 'URL Pattern',
+    'map_local.method': 'Method',
+    'map_local.status_code': 'Status Code',
+    'map_local.response_file': 'Response File Path',
+    'map_local.response_headers': 'Response Headers (JSON)',
+    'map_local.no_file': '(no file)',
+
+    // ===== Breakpoints =====
+    'breakpoint.edit_rule': 'Edit Rule',
+    'breakpoint.add_rule': 'Add Breakpoint Rule',
+    'breakpoint.url_pattern': 'URL Pattern',
+    'breakpoint.method': 'Method',
+    'breakpoint.break_on': 'Break On',
+    'breakpoint.comment': 'Comment',
+    'breakpoint.optional_desc': 'Optional description',
+    'breakpoint.hit': 'Breakpoint Hit (@flowId)',
+    'breakpoint.url': 'URL',
+
+    // ===== Allow/Block =====
+    'allow_block.add_allow': 'Add to Allow List',
+    'allow_block.add_block': 'Add to Block List',
+    'allow_block.allow_desc': 'Allow List: only show traffic from these domains',
+    'allow_block.block_desc': 'Block List: hide traffic from these domains',
+
+    // ===== Diff =====
+    'diff.title': 'Diff Tool',
+    'diff.comparison': 'Diff Comparison',
+    'diff.change_flows': 'Change Flows',
+    'diff.select_prompt': 'Select two flows to compare side by side.',
+    'diff.no_flows': 'No flows available. Capture some traffic first.',
+    'diff.flow_a': 'Flow A:',
+    'diff.flow_b': 'Flow B:',
+    'diff.select_flow': 'Select a flow...',
+    'diff.request': 'Request',
+    'diff.load_failed': 'Failed to load flow details: @error',
+    'diff.empty': '(empty)',
+
+    // ===== Settings =====
+    'settings.connection': 'Connection',
+    'settings.appearance': 'Appearance',
+    'settings.about': 'About',
+    'settings.theme': 'Theme',
+    'settings.follow_system': 'Follow system',
+    'settings.api_endpoint': 'API Endpoint',
+    'settings.websocket': 'WebSocket',
+    'settings.version': 'Version',
+    'settings.engine': 'Engine',
+
+    // ===== Body Viewer =====
+    'body.empty': '(empty)',
+    'body.image_preview': 'Image Preview (@type)',
+    'body.cannot_preview': 'Cannot preview image',
+
+    // ===== Filter =====
+    'filter.all': 'All',
+  };
+
+  static const zhCN = {
+    // ===== Navigation =====
+    'nav.home': '首页',
+    'nav.compose': '构造请求',
+    'nav.history': '历史记录',
+    'nav.settings': '设置',
+    'nav.tools': '工具',
+    'nav.protocol_toggle': '协议 / TCP/UDP',
+
+    // ===== Toolbar =====
+    'toolbar.start': '开始',
+    'toolbar.stop': '停止',
+    'toolbar.clear': '清除',
+    'toolbar.search': '搜索...',
+
+    // ===== Tools Menu =====
+    'tools.map_remote': '远程映射',
+    'tools.map_local': '本地映射',
+    'tools.breakpoints': '断点',
+    'tools.allow_block': '黑白名单',
+    'tools.no_caching': '禁用缓存',
+    'tools.no_caching_enabled': '已启用禁用缓存',
+    'tools.no_caching_disabled': '已关闭禁用缓存',
+    'tools.export_har': '导出 HAR',
+    'tools.import_har': '导入 HAR',
+    'tools.export_csv': '导出为 CSV',
+    'tools.export_json': '导出为 JSON',
+    'tools.diff': '对比工具',
+
+    // ===== Tabs =====
+    'tab.list': '列表',
+    'tab.waterfall': '瀑布图',
+    'tab.dashboard': '仪表盘',
+    'tab.headers': '请求头',
+    'tab.body': '请求体',
+    'tab.query': '查询参数',
+    'tab.cookies': 'Cookies',
+    'tab.timing': '耗时',
+    'tab.connection': '连接',
+    'tab.certificate': '证书',
+    'tab.allow_list': '白名单',
+    'tab.block_list': '黑名单',
+    'tab.raw': '原始',
+    'tab.json': 'JSON',
+    'tab.form': '表单',
+    'tab.pretty': '格式化',
+    'tab.hex': '十六进制',
+
+    // ===== Table Columns =====
+    'col.method': '方法',
+    'col.host': '主机',
+    'col.path': '路径',
+    'col.status': '状态',
+    'col.size': '大小',
+    'col.time': '耗时',
+
+    // ===== Tree Panel =====
+    'tree.domains': '域名',
+    'tree.all_domains': '全部域名',
+    'tree.pinned': '已置顶',
+    'tree.pin': '置顶',
+    'tree.unpin': '取消置顶',
+
+    // ===== Flow Detail =====
+    'detail.edit_resend': '编辑并重发',
+    'detail.copy_curl': '复制为 cURL',
+    'detail.curl_copied': '已复制 cURL 命令到剪贴板',
+    'detail.select_request': '选择一个请求查看详情',
+    'detail.request_headers': '请求头',
+    'detail.response_headers': '响应头',
+    'detail.no_headers': '无请求头',
+    'detail.request_body': '请求体',
+    'detail.response_body': '响应体',
+    'detail.query_params': '查询参数',
+    'detail.no_query': '无查询参数',
+    'detail.request_cookies': '请求 Cookies',
+    'detail.response_cookies': '响应 Set-Cookie',
+    'detail.no_cookies': '无 Cookies',
+    'detail.no_connection': '无连接信息',
+    'detail.no_certificate': '无证书信息',
+    'detail.tls_certificate': 'TLS 证书',
+    'detail.source': '来源',
+    'detail.destination': '目标',
+    'detail.state': '状态',
+    'detail.tls_version': 'TLS 版本',
+    'detail.cipher': '加密算法',
+    'detail.sni': 'SNI',
+    'detail.cipher_suite': '密码套件',
+    'detail.cert_chain_ref': '证书链引用',
+
+    // ===== Timing =====
+    'timing.connect': '连接',
+    'timing.connected': '已连接',
+    'timing.tls_done': 'TLS 完成',
+    'timing.request_end': '请求结束',
+    'timing.response_start': '响应开始',
+    'timing.response_end': '响应结束',
+    'timing.tls': 'TLS',
+    'timing.request': '请求',
+    'timing.ttfb': 'TTFB',
+    'timing.download': '下载',
+
+    // ===== Context Menu =====
+    'menu.color_tag': '颜色标记',
+    'menu.clear': '清除',
+    'menu.add_comment': '添加备注',
+    'menu.edit_comment': '编辑备注',
+    'menu.copy_curl': '复制为 cURL',
+    'menu.repeat': '重放',
+    'menu.open_compose': '在构造器中打开',
+    'menu.map_local': '本地映射',
+    'menu.open': '打开',
+    'menu.delete': '删除',
+
+    // ===== Empty States =====
+    'empty.no_requests': '暂无请求',
+    'empty.no_requests_yet': '暂无请求',
+    'empty.no_data': '暂无数据',
+    'empty.no_history': '暂无抓包记录',
+    'empty.no_flows_export': '没有可导出的请求',
+    'empty.no_map_remote': '暂无远程映射规则',
+    'empty.no_map_remote_desc': '添加规则将请求重定向到其他服务器',
+    'empty.no_map_local': '暂无本地映射规则',
+    'empty.no_map_local_desc': '添加规则使用本地文件响应请求',
+    'empty.no_breakpoints': '暂无断点规则',
+    'empty.no_breakpoints_desc': '添加规则以暂停匹配的请求进行检查',
+    'empty.no_allow': '白名单为空',
+    'empty.no_block': '黑名单为空',
+    'empty.send_request': '发送请求以查看响应',
+
+    // ===== Dashboard =====
+    'dashboard.protocol_dist': '协议分布',
+    'dashboard.status_codes': '状态码',
+    'dashboard.memory': '内存',
+    'dashboard.cpu': 'CPU',
+    'dashboard.threads': '线程',
+    'dashboard.connections': '连接数',
+    'dashboard.uptime': '运行时间',
+    'dashboard.traffic': '流量',
+    'dashboard.upload': '上传',
+    'dashboard.download': '下载',
+    'dashboard.total': '总计',
+    'dashboard.completed': '已完成',
+    'dashboard.failed': '失败',
+
+    // ===== Status Bar =====
+    'status.requests': '@count 个请求',
+    'status.up': '上传 @size',
+    'status.down': '下载 @size',
+    'status.mem': '内存 @size MB',
+    'status.conn': '@count 连接',
+    'status.connected': '已连接',
+    'status.connecting': '连接中...',
+    'status.disconnected': '未连接',
+
+    // ===== History =====
+    'history.title': '抓包历史',
+    'history.tasks': '@count 个任务',
+    'history.edit': '编辑',
+    'history.done': '完成',
+    'history.selected': '已选 @selected / @total',
+    'history.delete_count': '删除 (@count)',
+    'history.search': '搜索任务...',
+    'history.deleting': '正在删除...',
+    'history.confirm_delete': '确认删除',
+    'history.confirm_delete_one': '确定删除任务 @id 及其所有数据？',
+    'history.confirm_delete_batch': '确定删除 @count 个任务及其所有数据？',
+    'history.delete_failed': '删除失败：@error',
+    'history.batch_delete_failed': '批量删除失败：@error',
+
+    // ===== Actions =====
+    'action.cancel': '取消',
+    'action.save': '保存',
+    'action.delete': '删除',
+    'action.import': '导入',
+    'action.send': '发送',
+    'action.add': '添加',
+    'action.add_rule': '添加规则',
+    'action.compare': '对比',
+    'action.execute': '执行',
+    'action.abort': '中止',
+
+    // ===== Snackbar Messages =====
+    'msg.exporting_har': '正在导出 HAR...',
+    'msg.har_exported': 'HAR 已导出到 @path',
+    'msg.export_failed': '导出失败：@error',
+    'msg.imported_flows': '已从 HAR 文件导入 @count 个请求',
+    'msg.import_failed': '导入失败：@error',
+    'msg.csv_exported': 'CSV 已导出到 @path',
+    'msg.json_exported': 'JSON 已导出到 @path',
+    'msg.repeat_failed': '重放失败：@error',
+    'msg.start_failed': '启动代理失败：@error',
+    'msg.flow_comment': '请求备注',
+    'msg.enter_comment': '输入备注...',
+
+    // ===== Import Dialog =====
+    'import.har_path_hint': '/path/to/file.har',
+    'import.har_path_label': 'HAR 文件路径',
+
+    // ===== Compose =====
+    'compose.url_hint': 'https://example.com/api/resource',
+    'compose.headers': '请求头',
+    'compose.query_params': '查询参数',
+    'compose.body': '请求体',
+    'compose.response_headers': '响应头',
+    'compose.response_body': '响应体',
+
+    // ===== Map Remote =====
+    'map_remote.edit_rule': '编辑规则',
+    'map_remote.add_rule': '添加远程映射规则',
+    'map_remote.match_pattern': '匹配规则',
+    'map_remote.replace_with': '替换为（留空保持原始值）',
+    'map_remote.scheme': '协议',
+    'map_remote.host': '主机',
+    'map_remote.port': '端口',
+    'map_remote.path': '路径',
+
+    // ===== Map Local =====
+    'map_local.edit_rule': '编辑规则',
+    'map_local.add_rule': '添加本地映射规则',
+    'map_local.url_pattern': 'URL 匹配规则',
+    'map_local.method': '方法',
+    'map_local.status_code': '状态码',
+    'map_local.response_file': '响应文件路径',
+    'map_local.response_headers': '响应头（JSON）',
+    'map_local.no_file': '（无文件）',
+
+    // ===== Breakpoints =====
+    'breakpoint.edit_rule': '编辑规则',
+    'breakpoint.add_rule': '添加断点规则',
+    'breakpoint.url_pattern': 'URL 匹配规则',
+    'breakpoint.method': '方法',
+    'breakpoint.break_on': '断点位置',
+    'breakpoint.comment': '备注',
+    'breakpoint.optional_desc': '可选描述',
+    'breakpoint.hit': '断点命中（@flowId）',
+    'breakpoint.url': 'URL',
+
+    // ===== Allow/Block =====
+    'allow_block.add_allow': '添加到白名单',
+    'allow_block.add_block': '添加到黑名单',
+    'allow_block.allow_desc': '白名单：仅显示这些域名的流量',
+    'allow_block.block_desc': '黑名单：隐藏这些域名的流量',
+
+    // ===== Diff =====
+    'diff.title': '对比工具',
+    'diff.comparison': '对比结果',
+    'diff.change_flows': '更换请求',
+    'diff.select_prompt': '选择两个请求进行并排对比',
+    'diff.no_flows': '暂无可用请求，请先抓取一些流量',
+    'diff.flow_a': '请求 A：',
+    'diff.flow_b': '请求 B：',
+    'diff.select_flow': '选择请求...',
+    'diff.request': '请求',
+    'diff.load_failed': '加载请求详情失败：@error',
+    'diff.empty': '（空）',
+
+    // ===== Settings =====
+    'settings.connection': '连接',
+    'settings.appearance': '外观',
+    'settings.about': '关于',
+    'settings.theme': '主题',
+    'settings.follow_system': '跟随系统',
+    'settings.api_endpoint': 'API 地址',
+    'settings.websocket': 'WebSocket',
+    'settings.version': '版本',
+    'settings.engine': '引擎',
+
+    // ===== Body Viewer =====
+    'body.empty': '（空）',
+    'body.image_preview': '图片预览（@type）',
+    'body.cannot_preview': '无法预览图片',
+
+    // ===== Filter =====
+    'filter.all': '全部',
+  };
+}

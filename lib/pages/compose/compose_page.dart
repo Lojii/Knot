@@ -296,7 +296,7 @@ class _ComposePageState extends State<ComposePage> {
                     controller: _urlController,
                     style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.md),
                     decoration: InputDecoration(
-                      hintText: 'https://example.com/api/resource',
+                      hintText: 'compose.url_hint'.tr,
                       hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.md),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppTheme.spacing.sm,
@@ -320,7 +320,7 @@ class _ComposePageState extends State<ComposePage> {
                   icon: _isSending
                       ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.send, size: 16),
-                  label: const Text('Send'),
+                  label: Text('action.send'.tr),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
@@ -334,7 +334,7 @@ class _ComposePageState extends State<ComposePage> {
           SizedBox(height: AppTheme.spacing.lg),
 
           // Headers section
-          _sectionTitle('Headers'),
+          _sectionTitle('compose.headers'.tr),
           SizedBox(height: AppTheme.spacing.xs),
           _buildKeyValueEditor(
             rows: _headerRows,
@@ -347,7 +347,7 @@ class _ComposePageState extends State<ComposePage> {
           SizedBox(height: AppTheme.spacing.lg),
 
           // Query Params section
-          _sectionTitle('Query Parameters'),
+          _sectionTitle('compose.query_params'.tr),
           SizedBox(height: AppTheme.spacing.xs),
           _buildKeyValueEditor(
             rows: _queryRows,
@@ -361,7 +361,7 @@ class _ComposePageState extends State<ComposePage> {
           SizedBox(height: AppTheme.spacing.lg),
 
           // Body section
-          _sectionTitle('Body'),
+          _sectionTitle('compose.body'.tr),
           SizedBox(height: AppTheme.spacing.xs),
           _buildBodyTabs(theme),
           SizedBox(height: AppTheme.spacing.xs),
@@ -400,7 +400,7 @@ class _ComposePageState extends State<ComposePage> {
   }
 
   Widget _buildBodyTabs(ThemeData theme) {
-    const labels = ['Raw', 'JSON', 'Form'];
+    final labels = ['tab.raw'.tr, 'tab.json'.tr, 'tab.form'.tr];
     return Row(
       children: List.generate(labels.length, (i) {
         final isActive = _bodyTab == i;
@@ -502,7 +502,7 @@ class _ComposePageState extends State<ComposePage> {
           child: TextButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add, size: 14),
-            label: Text('Add', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+            label: Text('action.add'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
             style: TextButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
@@ -522,7 +522,7 @@ class _ComposePageState extends State<ComposePage> {
             Icon(Icons.send_outlined, size: 48, color: theme.hintColor),
             SizedBox(height: AppTheme.spacing.sm),
             Text(
-              'Send a request to see the response',
+              'empty.send_request'.tr,
               style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.md),
             ),
           ],
@@ -587,14 +587,14 @@ class _ComposePageState extends State<ComposePage> {
 
           // Response Headers
           if (_responseHeaders.isNotEmpty) ...[
-            _sectionTitle('Response Headers'),
+            _sectionTitle('compose.response_headers'.tr),
             SizedBox(height: AppTheme.spacing.xs),
             KeyValueTable(entries: _responseHeaders),
             SizedBox(height: AppTheme.spacing.lg),
           ],
 
           // Response Body
-          _sectionTitle('Response Body'),
+          _sectionTitle('compose.response_body'.tr),
           SizedBox(height: AppTheme.spacing.xs),
           BodyViewer(
             body: _responseBody,

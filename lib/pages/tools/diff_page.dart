@@ -57,11 +57,11 @@ class _DiffPageState extends State<DiffPage> {
         children: [
           Icon(Icons.compare_arrows, size: 18, color: theme.colorScheme.primary),
           SizedBox(width: AppTheme.spacing.sm),
-          Text('Diff Comparison', style: theme.textTheme.titleSmall),
+          Text('diff.comparison'.tr, style: theme.textTheme.titleSmall),
           const Spacer(),
           TextButton.icon(
             icon: const Icon(Icons.swap_horiz, size: 16),
-            label: const Text('Change Flows'),
+            label: Text('diff.change_flows'.tr),
             onPressed: () => setState(() {
               _flowA = null;
               _flowB = null;
@@ -85,20 +85,20 @@ class _DiffPageState extends State<DiffPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Diff Tool', style: theme.textTheme.titleMedium),
+          Text('diff.title'.tr, style: theme.textTheme.titleMedium),
           SizedBox(height: AppTheme.spacing.sm),
           Text(
-            'Select two flows to compare side by side.',
+            'diff.select_prompt'.tr,
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
           ),
           SizedBox(height: AppTheme.spacing.lg),
           if (flows.isEmpty)
             Text(
-              'No flows available. Capture some traffic first.',
+              'diff.no_flows'.tr,
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
             )
           else ...[
-            Text('Flow A:', style: theme.textTheme.labelLarge),
+            Text('diff.flow_a'.tr, style: theme.textTheme.labelLarge),
             SizedBox(height: AppTheme.spacing.xs),
             _FlowDropdown(
               flows: flows,
@@ -106,7 +106,7 @@ class _DiffPageState extends State<DiffPage> {
               onChanged: (f) => setState(() => _flowA = f),
             ),
             SizedBox(height: AppTheme.spacing.md),
-            Text('Flow B:', style: theme.textTheme.labelLarge),
+            Text('diff.flow_b'.tr, style: theme.textTheme.labelLarge),
             SizedBox(height: AppTheme.spacing.xs),
             _FlowDropdown(
               flows: flows,
@@ -116,7 +116,7 @@ class _DiffPageState extends State<DiffPage> {
             SizedBox(height: AppTheme.spacing.lg),
             FilledButton.icon(
               icon: const Icon(Icons.compare_arrows, size: 16),
-              label: const Text('Compare'),
+              label: Text('action.compare'.tr),
               onPressed: _flowA != null && _flowB != null ? _loadAndCompare : null,
             ),
           ],
@@ -159,7 +159,7 @@ class _DiffPageState extends State<DiffPage> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load flow details: $e')),
+          SnackBar(content: Text('diff.load_failed'.trParams({'error': '$e'}))),
         );
       }
     }
@@ -205,13 +205,13 @@ class _DiffPageState extends State<DiffPage> {
 
     // URL section
     sections.add(_DiffSection(
-      title: 'Request',
+      title: 'diff.request'.tr,
       lines: ['${flow.method} ${flow.uri}'],
     ));
 
     // Status
     sections.add(_DiffSection(
-      title: 'Status',
+      title: 'col.status'.tr,
       lines: ['${flow.status} (${flow.protocol})'],
     ));
 
@@ -226,7 +226,7 @@ class _DiffPageState extends State<DiffPage> {
       reqLines.add('$name: $value');
     }
     reqLines.sort();
-    sections.add(_DiffSection(title: 'Request Headers', lines: reqLines));
+    sections.add(_DiffSection(title: 'detail.request_headers'.tr, lines: reqLines));
 
     // Response headers
     final rspHeaders = (metadata['responseHeaders'] as List?) ?? [];
@@ -239,11 +239,11 @@ class _DiffPageState extends State<DiffPage> {
       rspLines.add('$name: $value');
     }
     rspLines.sort();
-    sections.add(_DiffSection(title: 'Response Headers', lines: rspLines));
+    sections.add(_DiffSection(title: 'detail.response_headers'.tr, lines: rspLines));
 
     // Body
-    final bodyLines = body.isNotEmpty ? body.split('\n') : <String>['(empty)'];
-    sections.add(_DiffSection(title: 'Body', lines: bodyLines));
+    final bodyLines = body.isNotEmpty ? body.split('\n') : <String>['diff.empty'.tr];
+    sections.add(_DiffSection(title: 'tab.body'.tr, lines: bodyLines));
 
     return sections;
   }
@@ -349,7 +349,7 @@ class _FlowDropdown extends StatelessWidget {
     return DropdownButton<String>(
       isExpanded: true,
       value: selected?.flowId,
-      hint: const Text('Select a flow...'),
+      hint: Text('diff.select_flow'.tr),
       items: flows.map((f) => DropdownMenuItem(
         value: f.flowId,
         child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../controllers/filter_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../controllers/tree_controller.dart';
 import '../../controllers/detail_controller.dart';
@@ -97,6 +98,11 @@ class _FlowTableState extends State<FlowTable> {
       if (domain != null) {
         items = items.where((f) => f.host == domain).toList();
       }
+      // Filter by content type (client-side)
+      final filterCtrl = Get.find<FilterController>();
+      if (filterCtrl.activeContentTypes.isNotEmpty) {
+        items = items.where((f) => filterCtrl.matchesContentType(f)).toList();
+      }
 
       items = _applySorting(items);
 
@@ -105,7 +111,7 @@ class _FlowTableState extends State<FlowTable> {
           children: [
             _tableHeader(theme),
             Expanded(
-              child: Center(child: Text('No requests captured',
+              child: Center(child: Text('empty.no_requests'.tr,
                   style: TextStyle(color: theme.hintColor))),
             ),
           ],
@@ -181,13 +187,13 @@ class _FlowTableState extends State<FlowTable> {
       children: [
         // Extra space for tag dot
         const SizedBox(width: 14),
-        _sortableHeader('Method', _SortColumn.method, width: 60),
+        _sortableHeader('col.method'.tr, _SortColumn.method, width: 60),
         SizedBox(width: AppTheme.spacing.sm),
-        _sortableHeader('Host', _SortColumn.host, flex: 2),
-        _sortableHeader('Path', _SortColumn.path, flex: 3),
-        _sortableHeader('Status', _SortColumn.status, width: 50),
-        _sortableHeader('Size', _SortColumn.size, width: 70),
-        _sortableHeader('Time', _SortColumn.time, width: 70),
+        _sortableHeader('col.host'.tr, _SortColumn.host, flex: 2),
+        _sortableHeader('col.path'.tr, _SortColumn.path, flex: 3),
+        _sortableHeader('col.status'.tr, _SortColumn.status, width: 50),
+        _sortableHeader('col.size'.tr, _SortColumn.size, width: 70),
+        _sortableHeader('col.time'.tr, _SortColumn.time, width: 70),
       ],
     ),
   );
@@ -297,7 +303,7 @@ class _FlowRow extends StatelessWidget {
               const Icon(Icons.comment_outlined, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
               Text(tagCtrl.getComment(flow.flowId) != null
-                  ? 'Edit Comment' : 'Add Comment'),
+                  ? 'menu.edit_comment'.tr : 'menu.add_comment'.tr),
             ],
           ),
         ),
@@ -309,7 +315,7 @@ class _FlowRow extends StatelessWidget {
             children: [
               const Icon(Icons.copy, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Copy as cURL'),
+              Text('menu.copy_curl'.tr),
             ],
           ),
         ),
@@ -321,7 +327,7 @@ class _FlowRow extends StatelessWidget {
             children: [
               const Icon(Icons.replay, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Repeat'),
+              Text('menu.repeat'.tr),
             ],
           ),
         ),
@@ -332,7 +338,7 @@ class _FlowRow extends StatelessWidget {
             children: [
               const Icon(Icons.edit_note, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Open in Compose'),
+              Text('menu.open_compose'.tr),
             ],
           ),
         ),
@@ -344,7 +350,7 @@ class _FlowRow extends StatelessWidget {
             children: [
               const Icon(Icons.folder_open, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Map Local'),
+              Text('menu.map_local'.tr),
             ],
           ),
         ),
@@ -373,20 +379,20 @@ class _FlowRow extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Flow Comment', style: TextStyle(fontSize: AppTheme.fontSize.lg)),
+        title: Text('msg.flow_comment'.tr, style: TextStyle(fontSize: AppTheme.fontSize.lg)),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Enter a comment...',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: 'msg.enter_comment'.tr,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text('action.cancel'.tr),
           ),
           TextButton(
             onPressed: () {
@@ -398,7 +404,7 @@ class _FlowRow extends StatelessWidget {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Save'),
+            child: Text('action.save'.tr),
           ),
         ],
       ),
@@ -434,7 +440,7 @@ class _FlowRow extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Repeat failed: $e'),
+          content: Text('msg.repeat_failed'.trParams({'error': '$e'})),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -507,7 +513,7 @@ class _ColorSubmenu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Color Tag', style: TextStyle(
+          Text('menu.color_tag'.tr, style: TextStyle(
             fontSize: AppTheme.fontSize.sm,
             fontWeight: FontWeight.bold,
           )),
@@ -543,7 +549,7 @@ class _ColorSubmenu extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Tooltip(
-                  message: 'Clear',
+                  message: 'menu.clear'.tr,
                   child: Container(
                     width: 18,
                     height: 18,

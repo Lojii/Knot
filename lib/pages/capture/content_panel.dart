@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import '../../theme/app_theme.dart';
 import 'flow_table.dart';
@@ -15,12 +16,12 @@ class ContentPanel extends StatefulWidget {
 class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const _tabs = ['List', 'Waterfall', 'Dashboard'];
+  static const _tabCount = 3;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: _tabCount, vsync: this);
     _tabController.addListener(() => setState(() {}));
   }
 
@@ -30,10 +31,17 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
     super.dispose();
   }
 
+  List<String> get _tabs => [
+    'tab.list'.tr,
+    'tab.waterfall'.tr,
+    'tab.dashboard'.tr,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final detailTab = AppTheme.mode(context).detailTab;
+    final tabs = _tabs;
 
     return Column(
       children: [
@@ -48,7 +56,7 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
             vertical: 3,
           ),
           child: Row(
-            children: List.generate(_tabs.length, (i) {
+            children: List.generate(tabs.length, (i) {
               final isActive = _tabController.index == i;
               return GestureDetector(
                 onTap: () {
@@ -66,7 +74,7 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
                     borderRadius: BorderRadius.circular(detailTab.radius),
                   ),
                   child: Text(
-                    _tabs[i],
+                    tabs[i],
                     style: TextStyle(
                       fontSize: AppTheme.fontSize.sm,
                       fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
@@ -86,19 +94,28 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
             controller: _tabController,
             children: [
               // List tab: split into table + detail
-              MultiSplitView(
-                axis: Axis.vertical,
-                initialAreas: [
-                  Area(
-                    min: 100,
-                    size: 300,
-                    builder: (context, area) => const FlowTable(),
+              MultiSplitViewTheme(
+                data: MultiSplitViewThemeData(
+                  dividerPainter: DividerPainters.background(
+                    color: AppTheme.colors(context).divider,
+                    highlightedColor: AppTheme.colors(context).primary.withAlpha(80),
                   ),
-                  Area(
-                    min: 100,
-                    builder: (context, area) => const FlowDetailPanel(),
-                  ),
-                ],
+                  dividerThickness: 1,
+                ),
+                child: MultiSplitView(
+                  axis: Axis.vertical,
+                  initialAreas: [
+                    Area(
+                      min: 100,
+                      size: 300,
+                      builder: (context, area) => const FlowTable(),
+                    ),
+                    Area(
+                      min: 100,
+                      builder: (context, area) => const FlowDetailPanel(),
+                    ),
+                  ],
+                ),
               ),
               // Waterfall tab
               const WaterfallTab(),

@@ -37,7 +37,7 @@ class MapLocalPanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _showRuleDialog(context),
                 icon: const Icon(Icons.add, size: 14),
-                label: const Text('Add Rule'),
+                label: Text('action.add_rule'.tr),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
                   padding: EdgeInsets.symmetric(
@@ -60,7 +60,7 @@ class MapLocalPanel extends StatelessWidget {
                     Icon(Icons.folder_open, size: 48, color: theme.hintColor),
                     SizedBox(height: AppTheme.spacing.sm),
                     Text(
-                      'No Map Local rules',
+                      'empty.no_map_local'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.md,
@@ -68,7 +68,7 @@ class MapLocalPanel extends StatelessWidget {
                     ),
                     SizedBox(height: AppTheme.spacing.xs),
                     Text(
-                      'Add a rule to serve requests with local file content',
+                      'empty.no_map_local_desc'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.sm,
@@ -210,7 +210,7 @@ class _RuleRow extends StatelessWidget {
                       Expanded(
                         child: Text(
                           rule.filePath.isEmpty
-                              ? '(no file)'
+                              ? 'map_local.no_file'.tr
                               : rule.filePath,
                           style: TextStyle(
                             fontSize: AppTheme.fontSize.sm,
@@ -310,7 +310,7 @@ class _MapLocalRuleDialogState extends State<_MapLocalRuleDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Rule' : 'Add Map Local Rule'),
+      title: Text(isEditing ? 'map_local.edit_rule'.tr : 'map_local.add_rule'.tr),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -318,7 +318,7 @@ class _MapLocalRuleDialogState extends State<_MapLocalRuleDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'URL Pattern',
+              'map_local.url_pattern'.tr,
               style: TextStyle(
                 fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
@@ -356,7 +356,7 @@ class _MapLocalRuleDialogState extends State<_MapLocalRuleDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Method',
+                      Text('map_local.method'.tr,
                           style: TextStyle(
                             fontSize: AppTheme.fontSize.xs,
                             color: theme.hintColor,
@@ -396,15 +396,15 @@ class _MapLocalRuleDialogState extends State<_MapLocalRuleDialog> {
                 SizedBox(width: AppTheme.spacing.sm),
                 Expanded(
                   child: _field(
-                      'Status Code', _statusCodeCtrl, '200'),
+                      'map_local.status_code'.tr, _statusCodeCtrl, '200'),
                 ),
               ],
             ),
             SizedBox(height: AppTheme.spacing.sm),
-            _field('Response File Path', _filePathCtrl,
+            _field('map_local.response_file'.tr, _filePathCtrl,
                 '/path/to/response.json'),
             SizedBox(height: AppTheme.spacing.sm),
-            Text('Response Headers (JSON)',
+            Text('map_local.response_headers'.tr,
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.xs,
                   color: theme.hintColor,
@@ -441,11 +441,11 @@ class _MapLocalRuleDialogState extends State<_MapLocalRuleDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('action.cancel'.tr),
         ),
         ElevatedButton(
           onPressed: _save,
-          child: Text(isEditing ? 'Save' : 'Add'),
+          child: Text('action.save'.tr),
         ),
       ],
     );

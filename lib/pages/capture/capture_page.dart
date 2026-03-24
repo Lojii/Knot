@@ -198,19 +198,28 @@ class _CaptureContentState extends State<_CaptureContent> {
               CaptureToolbar(searchFocusNode: _searchFocusNode),
               const FilterBar(),
               Expanded(
-                child: MultiSplitView(
-                  axis: Axis.horizontal,
-                  initialAreas: [
-                    Area(
-                      min: 150,
-                      size: AppTheme.sizing.treeDefaultWidth,
-                      builder: (context, area) => const TreePanel(),
+                child: MultiSplitViewTheme(
+                  data: MultiSplitViewThemeData(
+                    dividerPainter: DividerPainters.background(
+                      color: AppTheme.colors(context).divider,
+                      highlightedColor: AppTheme.colors(context).primary.withAlpha(80),
                     ),
-                    Area(
-                      min: 300,
-                      builder: (context, area) => const ContentPanel(),
-                    ),
-                  ],
+                    dividerThickness: 1,
+                  ),
+                  child: MultiSplitView(
+                    axis: Axis.horizontal,
+                    initialAreas: [
+                      Area(
+                        min: 150,
+                        size: AppTheme.sizing.treeDefaultWidth,
+                        builder: (context, area) => const TreePanel(),
+                      ),
+                      Area(
+                        min: 300,
+                        builder: (context, area) => const ContentPanel(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

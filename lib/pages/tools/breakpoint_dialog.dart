@@ -62,14 +62,13 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final breakType = widget.data['breakType'] as String? ?? 'request';
 
     return AlertDialog(
       title: Row(
         children: [
           Icon(Icons.pause_circle_filled, color: Colors.orange, size: 20),
           SizedBox(width: AppTheme.spacing.sm),
-          Text('Breakpoint Hit ($breakType)'),
+          Text('breakpoint.hit'.trParams({'flowId': flowId})),
         ],
       ),
       content: SizedBox(
@@ -79,7 +78,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Method
-            Text('Method', style: TextStyle(
+            Text('breakpoint.method'.tr, style: TextStyle(
               fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
@@ -110,7 +109,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
             ),
             SizedBox(height: AppTheme.spacing.sm),
             // URL
-            Text('URL', style: TextStyle(
+            Text('breakpoint.url'.tr, style: TextStyle(
               fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
@@ -132,7 +131,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
             ),
             SizedBox(height: AppTheme.spacing.sm),
             // Headers
-            Text('Headers', style: TextStyle(
+            Text('tab.headers'.tr, style: TextStyle(
               fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
@@ -166,7 +165,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
         TextButton(
           onPressed: _sending ? null : () => _resume('abort'),
           style: TextButton.styleFrom(foregroundColor: Colors.red),
-          child: const Text('Abort'),
+          child: Text('action.abort'.tr),
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -174,7 +173,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
             // Cancel (grey) — pass through unmodified
             TextButton(
               onPressed: _sending ? null : () => _resume('cancel'),
-              child: const Text('Cancel'),
+              child: Text('action.cancel'.tr),
             ),
             SizedBox(width: AppTheme.spacing.sm),
             // Execute (green) — resume with (optionally modified) request
@@ -184,7 +183,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Execute'),
+              child: Text('action.execute'.tr),
             ),
           ],
         ),

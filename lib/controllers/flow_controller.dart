@@ -37,7 +37,6 @@ class FlowController extends GetxController {
         page: _currentPage,
         protocol: filter.protocolParam,
         keyword: searchQuery.value.isEmpty ? null : searchQuery.value,
-        status: filter.statusParam,
       );
       if (append) {
         flows.addAll(result.items);
@@ -45,6 +44,7 @@ class FlowController extends GetxController {
         flows.value = result.items;
       }
       total.value = result.total;
+      Get.find<FilterController>().updateAvailableFilters(flows);
     } catch (_) {}
     isLoading.value = false;
   }
@@ -77,6 +77,7 @@ class FlowController extends GetxController {
   void addFlowFromPush(FlowSummary flow) {
     flows.insert(0, flow);
     total.value++;
+    Get.find<FilterController>().updateAvailableFilters(flows);
   }
 
   void updateFlowFromPush(Map<String, dynamic> data) {

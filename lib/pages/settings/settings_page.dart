@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../theme/app_theme.dart';
 
 /// Embeddable settings panel — displayed inside the main layout
@@ -14,23 +15,23 @@ class SettingsPanel extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(AppTheme.spacing.lg),
       children: [
-        _section(theme, 'Connection', [
-          _infoTile(theme, 'API Endpoint', 'http://localhost:9090'),
-          _infoTile(theme, 'WebSocket', 'ws://localhost:9090/ws'),
+        _section(theme, 'settings.connection'.tr, [
+          _infoTile(theme, 'settings.api_endpoint'.tr, 'http://localhost:9090'),
+          _infoTile(theme, 'settings.websocket'.tr, 'ws://localhost:9090/ws'),
         ]),
         SizedBox(height: AppTheme.spacing.lg),
-        _section(theme, 'Appearance', [
-          const ListTile(
-            title: Text('Theme'),
-            subtitle: Text('Follow system'),
-            trailing: Icon(Icons.brightness_auto),
+        _section(theme, 'settings.appearance'.tr, [
+          ListTile(
+            title: Text('settings.theme'.tr),
+            subtitle: Text('settings.follow_system'.tr),
+            trailing: const Icon(Icons.brightness_auto),
             dense: true,
           ),
         ]),
         SizedBox(height: AppTheme.spacing.lg),
-        _section(theme, 'About', [
-          _infoTile(theme, 'Version', '1.0.0-dev'),
-          _infoTile(theme, 'Engine', 'Swift/NIO + KnotWebService'),
+        _section(theme, 'settings.about'.tr, [
+          _infoTile(theme, 'settings.version'.tr, '1.0.0-dev'),
+          _infoTile(theme, 'settings.engine'.tr, 'Swift/NIO + KnotWebService'),
         ]),
       ],
     );

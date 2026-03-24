@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../theme/app_theme.dart';
 
 enum BodyViewMode { pretty, raw, hex }
@@ -28,7 +29,7 @@ class _BodyViewerState extends State<BodyViewer> {
   @override
   Widget build(BuildContext context) {
     if (widget.body.isEmpty) {
-      return Text('(empty)', style: TextStyle(
+      return Text('body.empty'.tr, style: TextStyle(
         color: Theme.of(context).hintColor,
         fontSize: AppTheme.fontSize.sm,
       ));
@@ -51,9 +52,9 @@ class _BodyViewerState extends State<BodyViewer> {
       children: BodyViewMode.values.map((mode) {
         final isActive = _viewMode == mode;
         final label = switch (mode) {
-          BodyViewMode.pretty => 'Pretty',
-          BodyViewMode.raw => 'Raw',
-          BodyViewMode.hex => 'Hex',
+          BodyViewMode.pretty => 'tab.pretty'.tr,
+          BodyViewMode.raw => 'tab.raw'.tr,
+          BodyViewMode.hex => 'tab.hex'.tr,
         };
         return Padding(
           padding: EdgeInsets.only(right: AppTheme.spacing.xs),
@@ -194,11 +195,11 @@ class _BodyViewerState extends State<BodyViewer> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Image Preview (${widget.contentType})',
+          Text('body.image_preview'.trParams({'type': widget.contentType}),
               style: TextStyle(fontSize: AppTheme.fontSize.sm)),
           SizedBox(height: AppTheme.spacing.sm),
           Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => const Text('Cannot preview image')),
+            errorBuilder: (_, _, _) => Text('body.cannot_preview'.tr)),
         ],
       );
     } catch (_) {

@@ -17,7 +17,7 @@ class WaterfallTab extends StatelessWidget {
     return Obx(() {
       final flows = flowCtrl.flows.toList();
       if (flows.isEmpty) {
-        return const Center(child: Text('No requests yet'));
+        return Center(child: Text('empty.no_requests_yet'.tr));
       }
 
       final firstStart = flows.last.startedAt;
@@ -32,11 +32,11 @@ class WaterfallTab extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
             child: Row(
               children: [
-                _legend(colors.timingConnect, 'Connect'),
-                _legend(colors.timingTLS, 'TLS'),
-                _legend(colors.timingRequest, 'Request'),
-                _legend(colors.timingTTFB, 'TTFB'),
-                _legend(colors.timingResponse, 'Download'),
+                _legend(colors.timingConnect, 'timing.connect'.tr),
+                _legend(colors.timingTLS, 'timing.tls'.tr),
+                _legend(colors.timingRequest, 'timing.request'.tr),
+                _legend(colors.timingTTFB, 'timing.ttfb'.tr),
+                _legend(colors.timingResponse, 'timing.download'.tr),
                 const Spacer(),
                 Text('${(totalMs / 1000).toStringAsFixed(1)}s total',
                     style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),

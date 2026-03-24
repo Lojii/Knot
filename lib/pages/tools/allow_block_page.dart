@@ -34,9 +34,9 @@ class _AllowBlockTabBar extends StatelessWidget {
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
       ),
       child: TabBar(
-        tabs: const [
-          Tab(text: 'Allow List'),
-          Tab(text: 'Block List'),
+        tabs: [
+          Tab(text: 'tab.allow_list'.tr),
+          Tab(text: 'tab.block_list'.tr),
         ],
         isScrollable: true,
         tabAlignment: TabAlignment.start,
@@ -92,8 +92,8 @@ class _DomainListTab extends StatelessWidget {
               Expanded(
                 child: Text(
                   isAllow
-                      ? 'Allow List: only show traffic from these domains'
-                      : 'Block List: hide traffic from these domains',
+                      ? 'allow_block.allow_desc'.tr
+                      : 'allow_block.block_desc'.tr,
                   style: TextStyle(
                     fontSize: AppTheme.fontSize.sm,
                     color: theme.hintColor,
@@ -103,7 +103,7 @@ class _DomainListTab extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _showAddDialog(context),
                 icon: const Icon(Icons.add, size: 14),
-                label: const Text('Add'),
+                label: Text('action.add'.tr),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
                   padding: EdgeInsets.symmetric(
@@ -121,7 +121,7 @@ class _DomainListTab extends StatelessWidget {
             if (list.isEmpty) {
               return Center(
                 child: Text(
-                  isAllow ? 'No allow list entries' : 'No block list entries',
+                  isAllow ? 'empty.no_allow'.tr : 'empty.no_block'.tr,
                   style: TextStyle(
                     color: theme.hintColor,
                     fontSize: AppTheme.fontSize.md,
@@ -171,7 +171,7 @@ class _DomainListTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isAllow ? 'Add to Allow List' : 'Add to Block List'),
+        title: Text(isAllow ? 'allow_block.add_allow'.tr : 'allow_block.add_block'.tr),
         content: SizedBox(
           width: 360,
           child: TextField(
@@ -208,7 +208,7 @@ class _DomainListTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text('action.cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () {
@@ -222,7 +222,7 @@ class _DomainListTab extends StatelessWidget {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Add'),
+            child: Text('action.add'.tr),
           ),
         ],
       ),

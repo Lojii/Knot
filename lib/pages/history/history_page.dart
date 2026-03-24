@@ -82,7 +82,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
   }
 
   Future<void> _deleteTask(BuildContext ctx, TaskModel task) async {
-    final confirm = await _confirmDelete(ctx, '确定删除 Task ${task.id} 及其所有数据？');
+    final confirm = await _confirmDelete(ctx, 'history.confirm_delete_one'.trParams({'id': '${task.id}'}));
     if (confirm != true) return;
     setState(() => _isDeleting = true);
     try {
@@ -90,7 +90,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
       await Get.find<HistoryController>().loadTasks();
     } catch (e) {
       if (ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('history.delete_failed'.trParams({'error': '$e'}))));
       }
     }
     if (mounted) setState(() => _isDeleting = false);
@@ -99,7 +99,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
   Future<void> _batchDelete(BuildContext ctx) async {
     final ids = _selectedIds.toList();
     if (ids.isEmpty) return;
-    final confirm = await _confirmDelete(ctx, '确定删除 ${ids.length} 个任务及其所有数据？');
+    final confirm = await _confirmDelete(ctx, 'history.confirm_delete_batch'.trParams({'count': '${ids.length}'}));
     if (confirm != true) return;
     setState(() => _isDeleting = true);
     try {
@@ -108,7 +108,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
       await Get.find<HistoryController>().loadTasks();
     } catch (e) {
       if (ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('批量删除失败: $e')));
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('history.batch_delete_failed'.trParams({'error': '$e'}))));
       }
     }
     if (mounted) setState(() => _isDeleting = false);
@@ -118,14 +118,14 @@ class _HistoryPanelState extends State<HistoryPanel> {
     return showDialog<bool>(
       context: ctx,
       builder: (c) => AlertDialog(
-        title: const Text('删除确认'),
+        title: Text('history.confirm_delete'.tr),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text('action.cancel'.tr)),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('删除'),
+            child: Text('action.delete'.tr),
           ),
         ],
       ),
@@ -138,9 +138,9 @@ class _HistoryPanelState extends State<HistoryPanel> {
       context: ctx,
       position: RelativeRect.fromLTRB(position.dx, position.dy, overlay.size.width - position.dx, 0),
       items: [
-        const PopupMenuItem(value: 'open', child: Text('打开')),
+        PopupMenuItem(value: 'open', child: Text('menu.open'.tr)),
         const PopupMenuDivider(),
-        const PopupMenuItem(value: 'delete', child: Text('删除', style: TextStyle(color: Colors.red))),
+        PopupMenuItem(value: 'delete', child: Text('menu.delete'.tr, style: const TextStyle(color: Colors.red))),
       ],
     ).then((value) {
       if (value == 'open') {
@@ -188,7 +188,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                     ),
                   ),
                   SizedBox(width: AppTheme.spacing.sm),
-                  Text('已选 ${_selectedIds.length} / ${visibleTasks.length}',
+                  Text('history.selected'.trParams({'selected': '${_selectedIds.length}', 'total': '${visibleTasks.length}'}),
                       style: theme.textTheme.titleSmall),
                   SizedBox(width: AppTheme.spacing.md),
                   TextButton(
@@ -197,14 +197,14 @@ class _HistoryPanelState extends State<HistoryPanel> {
                       minimumSize: const Size(0, 28),
                       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                     ),
-                    child: const Text('完成'),
+                    child: Text('history.done'.tr),
                   ),
                   const Spacer(),
                   if (_selectedIds.isNotEmpty)
                     ElevatedButton.icon(
                       onPressed: () => _batchDelete(context),
                       icon: const Icon(Icons.delete_outline, size: 14),
-                      label: Text('删除 (${_selectedIds.length})'),
+                      label: Text('history.delete_count'.trParams({'count': '${_selectedIds.length}'})),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
@@ -214,15 +214,15 @@ class _HistoryPanelState extends State<HistoryPanel> {
                     ),
                 ] else ...[
                   // Normal mode: title + count + edit button + search
-                  Text('Capture History', style: theme.textTheme.titleSmall),
+                  Text('history.title'.tr, style: theme.textTheme.titleSmall),
                   SizedBox(width: AppTheme.spacing.sm),
-                  Text('${historyCtrl.tasks.length} tasks',
+                  Text('history.tasks'.trParams({'count': '${historyCtrl.tasks.length}'}),
                       style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
                   SizedBox(width: AppTheme.spacing.md),
                   TextButton.icon(
                     onPressed: _enterEditMode,
                     icon: const Icon(Icons.edit_outlined, size: 14),
-                    label: const Text('编辑'),
+                    label: Text('history.edit'.tr),
                     style: TextButton.styleFrom(
                       minimumSize: const Size(0, 28),
                       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
@@ -235,7 +235,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        hintText: 'Search tasks...',
+                        hintText: 'history.search'.tr,
                         prefixIcon: const Icon(Icons.search, size: 16),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -261,7 +261,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
             final tasks = _getVisibleTasks();
             if (tasks.isEmpty) {
               return Center(
-                child: Text('No capture history', style: TextStyle(color: theme.hintColor)),
+                child: Text('empty.no_history'.tr, style: TextStyle(color: theme.hintColor)),
               );
             }
             return ListView.separated(
@@ -305,7 +305,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                           children: [
                             const CircularProgressIndicator(),
                             SizedBox(height: AppTheme.spacing.md),
-                            const Text('正在删除...'),
+                            Text('history.deleting'.tr),
                           ],
                         ),
                       ),

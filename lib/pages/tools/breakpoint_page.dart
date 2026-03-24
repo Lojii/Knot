@@ -37,7 +37,7 @@ class BreakpointPanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _showRuleDialog(context),
                 icon: const Icon(Icons.add, size: 14),
-                label: const Text('Add Rule'),
+                label: Text('action.add_rule'.tr),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
                   padding: EdgeInsets.symmetric(
@@ -60,7 +60,7 @@ class BreakpointPanel extends StatelessWidget {
                     Icon(Icons.pause_circle_outline, size: 48, color: theme.hintColor),
                     SizedBox(height: AppTheme.spacing.sm),
                     Text(
-                      'No Breakpoint rules',
+                      'empty.no_breakpoints'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.md,
@@ -68,7 +68,7 @@ class BreakpointPanel extends StatelessWidget {
                     ),
                     SizedBox(height: AppTheme.spacing.xs),
                     Text(
-                      'Add a rule to pause matching requests for inspection',
+                      'empty.no_breakpoints_desc'.tr,
                       style: TextStyle(
                         color: theme.hintColor,
                         fontSize: AppTheme.fontSize.sm,
@@ -285,7 +285,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(isEditing ? 'Edit Rule' : 'Add Breakpoint Rule'),
+      title: Text(isEditing ? 'breakpoint.edit_rule'.tr : 'breakpoint.add_rule'.tr),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -293,7 +293,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'URL Pattern',
+              'breakpoint.url_pattern'.tr,
               style: TextStyle(
                 fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
@@ -329,7 +329,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Method', style: TextStyle(
+                      Text('breakpoint.method'.tr, style: TextStyle(
                         fontSize: AppTheme.fontSize.xs,
                         color: theme.hintColor,
                       )),
@@ -366,7 +366,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Break On', style: TextStyle(
+                      Text('breakpoint.break_on'.tr, style: TextStyle(
                         fontSize: AppTheme.fontSize.xs,
                         color: theme.hintColor,
                       )),
@@ -400,7 +400,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
               ],
             ),
             SizedBox(height: AppTheme.spacing.sm),
-            Text('Comment', style: TextStyle(
+            Text('breakpoint.comment'.tr, style: TextStyle(
               fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
             )),
@@ -411,7 +411,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                 controller: _commentCtrl,
                 style: TextStyle(fontSize: AppTheme.fontSize.sm),
                 decoration: InputDecoration(
-                  hintText: 'Optional description',
+                  hintText: 'breakpoint.optional_desc'.tr,
                   hintStyle: TextStyle(
                     color: theme.hintColor,
                     fontSize: AppTheme.fontSize.xs,
@@ -433,11 +433,11 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('action.cancel'.tr),
         ),
         ElevatedButton(
           onPressed: _save,
-          child: Text(isEditing ? 'Save' : 'Add'),
+          child: Text('action.save'.tr),
         ),
       ],
     );

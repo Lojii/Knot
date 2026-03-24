@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
-import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
 import '../../utils/har_export.dart';
 import '../../utils/har_import.dart';
 import '../../utils/list_export.dart';
-import '../../widgets/connection_indicator.dart';
 import '../../theme/app_theme.dart';
 
 class GlobalBar extends StatelessWidget {
@@ -18,7 +16,6 @@ class GlobalBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final taskCtrl = Get.find<TaskController>();
-    final liveCtrl = Get.find<LiveController>();
     final pageCtrl = Get.find<AppPageController>();
     final theme = Theme.of(context);
     final isMacOS = defaultTargetPlatform == TargetPlatform.macOS;
@@ -55,7 +52,7 @@ class GlobalBar extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.home_outlined, size: AppTheme.sizing.iconSize,
                   color: pageCtrl.isCapture ? theme.hintColor : theme.colorScheme.primary),
-                tooltip: 'Home',
+                tooltip: 'nav.home'.tr,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.showCapture(),
               ),
@@ -69,13 +66,11 @@ class GlobalBar extends StatelessWidget {
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
               ),
               SizedBox(width: AppTheme.spacing.sm),
-              ConnectionIndicator(status: liveCtrl.wsStatus.value),
-              SizedBox(width: AppTheme.spacing.sm),
               // Protocol / TCP toggle — only on capture page
               if (pageCtrl.isCapture)
                 IconButton(
                   icon: Icon(Icons.swap_horiz, size: AppTheme.sizing.iconSize),
-                  tooltip: 'Protocol / TCP/UDP',
+                  tooltip: 'nav.protocol_toggle'.tr,
                   visualDensity: VisualDensity.compact,
                   onPressed: () {/* P2 */},
                 ),
@@ -85,7 +80,7 @@ class GlobalBar extends StatelessWidget {
               // === Right group: Compose + Tools + History + Settings ===
               IconButton(
                 icon: Icon(Icons.edit_note, size: AppTheme.sizing.iconSize),
-                tooltip: 'Compose',
+                tooltip: 'nav.compose'.tr,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isCompose
                     ? pageCtrl.showCapture()
@@ -94,7 +89,7 @@ class GlobalBar extends StatelessWidget {
               _ToolsMenuButton(pageCtrl: pageCtrl),
               IconButton(
                 icon: Icon(Icons.history, size: AppTheme.sizing.iconSize),
-                tooltip: 'History',
+                tooltip: 'nav.history'.tr,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isHistory
                     ? pageCtrl.showCapture()
@@ -102,7 +97,7 @@ class GlobalBar extends StatelessWidget {
               ),
               IconButton(
                 icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
-                tooltip: 'Settings',
+                tooltip: 'nav.settings'.tr,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isSettings
                     ? pageCtrl.showCapture()
@@ -126,7 +121,7 @@ class _ToolsMenuButton extends StatelessWidget {
 
     return PopupMenuButton<String>(
       icon: const Icon(Icons.build_outlined, size: 18),
-      tooltip: 'Tools',
+      tooltip: 'nav.tools'.tr,
       padding: EdgeInsets.zero,
       splashRadius: 16,
       offset: Offset(0, AppTheme.sizing.globalBarHeight),
@@ -137,7 +132,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.alt_route, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Map Remote'),
+              Text('tools.map_remote'.tr),
             ],
           ),
         ),
@@ -147,7 +142,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.folder_open, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Map Local'),
+              Text('tools.map_local'.tr),
             ],
           ),
         ),
@@ -157,7 +152,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.pause_circle_outline, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Breakpoints'),
+              Text('tools.breakpoints'.tr),
             ],
           ),
         ),
@@ -167,7 +162,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.filter_list, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Allow/Block List'),
+              Text('tools.allow_block'.tr),
             ],
           ),
         ),
@@ -183,7 +178,7 @@ class _ToolsMenuButton extends StatelessWidget {
                 size: 16,
               ),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('No Caching'),
+              Text('tools.no_caching'.tr),
             ],
           )),
         ),
@@ -194,7 +189,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.upload_file, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Export HAR'),
+              Text('tools.export_har'.tr),
             ],
           ),
         ),
@@ -204,7 +199,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.download, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Import HAR'),
+              Text('tools.import_har'.tr),
             ],
           ),
         ),
@@ -214,7 +209,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.table_chart_outlined, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Export List as CSV'),
+              Text('tools.export_csv'.tr),
             ],
           ),
         ),
@@ -224,7 +219,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.data_object, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Export List as JSON'),
+              Text('tools.export_json'.tr),
             ],
           ),
         ),
@@ -235,7 +230,7 @@ class _ToolsMenuButton extends StatelessWidget {
             children: [
               const Icon(Icons.compare_arrows, size: 16),
               SizedBox(width: AppTheme.spacing.sm),
-              const Text('Diff Tool'),
+              Text('tools.diff'.tr),
             ],
           ),
         ),
@@ -264,8 +259,8 @@ class _ToolsMenuButton extends StatelessWidget {
               SnackBar(
                 content: Text(
                   toolsCtrl.noCachingEnabled.value
-                      ? 'No Caching enabled'
-                      : 'No Caching disabled',
+                      ? 'tools.no_caching_enabled'.tr
+                      : 'tools.no_caching_disabled'.tr,
                 ),
                 duration: const Duration(seconds: 2),
               ),
@@ -293,12 +288,12 @@ class _ToolsMenuButton extends StatelessWidget {
     final taskId = taskCtrl.currentTask.value?.id;
     if (taskId == null || flowCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No flows to export')),
+        SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Exporting HAR...')),
+      SnackBar(content: Text('msg.exporting_har'.tr)),
     );
     try {
       final harJson = await HarExport.fromFlows(
@@ -310,7 +305,7 @@ class _ToolsMenuButton extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('HAR exported to $path'),
+            content: Text('msg.har_exported'.trParams({'path': path})),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -318,7 +313,7 @@ class _ToolsMenuButton extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
+          SnackBar(content: Text('msg.export_failed'.trParams({'error': '$e'}))),
         );
       }
     }
@@ -329,18 +324,18 @@ class _ToolsMenuButton extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Import HAR'),
+        title: Text('tools.import_har'.tr),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: '/path/to/file.har',
-            labelText: 'HAR file path',
+          decoration: InputDecoration(
+            hintText: 'import.har_path_hint'.tr,
+            labelText: 'import.har_path_label'.tr,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text('action.cancel'.tr),
           ),
           TextButton(
             onPressed: () async {
@@ -357,7 +352,7 @@ class _ToolsMenuButton extends StatelessWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Imported ${imported.length} requests from HAR file'),
+                      content: Text('msg.imported_flows'.trParams({'count': '${imported.length}'})),
                       duration: const Duration(seconds: 3),
                     ),
                   );
@@ -365,12 +360,12 @@ class _ToolsMenuButton extends StatelessWidget {
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Import failed: $e')),
+                    SnackBar(content: Text('msg.import_failed'.trParams({'error': '$e'}))),
                   );
                 }
               }
             },
-            child: const Text('Import'),
+            child: Text('action.import'.tr),
           ),
         ],
       ),
@@ -381,7 +376,7 @@ class _ToolsMenuButton extends StatelessWidget {
     final flowCtrl = Get.find<FlowController>();
     if (flowCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No flows to export')),
+        SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
       return;
     }
@@ -391,7 +386,7 @@ class _ToolsMenuButton extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('CSV exported to $path'),
+            content: Text('msg.csv_exported'.trParams({'path': path})),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -399,7 +394,7 @@ class _ToolsMenuButton extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
+          SnackBar(content: Text('msg.export_failed'.trParams({'error': '$e'}))),
         );
       }
     }
@@ -409,7 +404,7 @@ class _ToolsMenuButton extends StatelessWidget {
     final flowCtrl = Get.find<FlowController>();
     if (flowCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No flows to export')),
+        SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
       return;
     }
@@ -419,7 +414,7 @@ class _ToolsMenuButton extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('JSON exported to $path'),
+            content: Text('msg.json_exported'.trParams({'path': path})),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -427,7 +422,7 @@ class _ToolsMenuButton extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
+          SnackBar(content: Text('msg.export_failed'.trParams({'error': '$e'}))),
         );
       }
     }

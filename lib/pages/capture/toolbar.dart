@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../api/api_client.dart';
+import '../../api/ws_client.dart';
 import '../../api/proxy_channel.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
@@ -48,7 +50,12 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
                 taskCtrl.isCapturing.value = false;
               } else {
                 try {
-                  await ProxyChannel.startProxy();
+                  final result = await ProxyChannel.startProxy();
+                  final port = (result['port'] as int?) ?? 0;
+                  if (port > 0) {
+                    Get.find<ApiClient>().baseUrl = 'http://localhost:$port';
+                    Get.find<WsClient>().baseUrl = 'ws://localhost:$port';
+                  }
                   taskCtrl.isCapturing.value = true;
                   await taskCtrl.loadTasks();
                   if (taskCtrl.currentTask.value != null) {
@@ -57,7 +64,7 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
                     Get.find<LiveController>().connectToTask(tid);
                   }
                 } catch (e) {
-                  Get.snackbar('Error', 'Failed to start proxy: $e');
+                  Get.snackbar('Error', 'msg.start_failed'.trParams({'error': '$e'}));
                 }
               }
             },
@@ -97,8 +104,8 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
             child: TextField(
               focusNode: widget.searchFocusNode,
               decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: const Icon(Icons.search, size: 16),
+                hintText: 'toolbar.search'.tr,
+                prefixIcon: Icon(Icons.search, size: 16),
                 isDense: true,
                 filled: true,
                 fillColor: AppTheme.colors(context).surface,
