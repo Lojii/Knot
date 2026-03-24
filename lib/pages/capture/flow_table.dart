@@ -204,7 +204,6 @@ class _FlowRow extends StatelessWidget {
     final detailCtrl = Get.find<DetailController>();
     final taskCtrl = Get.find<TaskController>();
     final tagCtrl = Get.find<TagController>();
-    final theme = Theme.of(context);
 
     return GestureDetector(
       onSecondaryTapUp: (details) {
@@ -221,10 +220,19 @@ class _FlowRow extends StatelessWidget {
         },
         child: Container(
           height: AppTheme.sizing.tableRowHeight,
-          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-          color: isSelected
-              ? theme.colorScheme.primary.withAlpha(26)
-              : null,
+          padding: EdgeInsets.only(
+            left: isSelected ? AppTheme.spacing.sm - AppTheme.mode(context).table.selectedIndicatorWidth : AppTheme.spacing.sm,
+            right: AppTheme.spacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.mode(context).table.selectedBackground : null,
+            border: isSelected
+                ? Border(left: BorderSide(
+                    color: AppTheme.mode(context).table.selectedIndicatorColor,
+                    width: AppTheme.mode(context).table.selectedIndicatorWidth,
+                  ))
+                : null,
+          ),
           child: Row(
             children: [
               // Color tag dot
@@ -245,14 +253,14 @@ class _FlowRow extends StatelessWidget {
                 );
               }),
               SizedBox(width: 60, child: Text(_methodLabel(flow.method),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.methodColor(flow.method)))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600, color: AppTheme.methodColorOf(context, flow.method)))),
               SizedBox(width: AppTheme.spacing.sm),
               Expanded(flex: 2, child: Text(flow.host,
                   style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
               Expanded(flex: 3, child: Text(flow.uri,
                   style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
               SizedBox(width: 50, child: Text(flow.statusCode,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: _statusColor(flow.statusCode)))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.statusColorOf(context, int.tryParse(flow.statusCode) ?? 0)))),
               SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
                   style: TextStyle(fontSize: AppTheme.fontSize.sm))),
               SizedBox(width: 70, child: Text(
@@ -473,11 +481,6 @@ class _FlowRow extends StatelessWidget {
   }
 
   String _methodLabel(String m) => m.isNotEmpty ? m : '-';
-
-  Color _statusColor(String s) {
-    final code = int.tryParse(s) ?? 0;
-    return AppTheme.statusColor(code);
-  }
 
   String _formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
