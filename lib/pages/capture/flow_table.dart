@@ -168,7 +168,14 @@ class _FlowTableState extends State<FlowTable> {
     height: AppTheme.sizing.tableHeaderHeight,
     padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
     decoration: BoxDecoration(
-      color: theme.colorScheme.surfaceContainerHigh,
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppTheme.mode(context).table.headerGradientStart,
+          AppTheme.mode(context).table.headerGradientEnd,
+        ],
+      ),
     ),
     child: Row(
       children: [

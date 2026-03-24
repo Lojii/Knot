@@ -11,14 +11,25 @@ class CaptureStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final liveCtrl = Get.find<LiveController>();
     final flowCtrl = Get.find<FlowController>();
-    final theme = Theme.of(context);
 
     return Container(
       height: AppTheme.sizing.statusBarHeight,
       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.mode(context).toolbar.gradientStart,
+            AppTheme.mode(context).toolbar.gradientEnd,
+          ],
+        ),
+        border: Border(
+          top: BorderSide(
+            color: AppTheme.colors(context).divider,
+            width: AppTheme.mode(context).toolbar.borderWidth,
+          ),
+        ),
       ),
       child: Obx(() => Row(
         children: [
@@ -40,9 +51,9 @@ class CaptureStatusBar extends StatelessWidget {
 
   Widget _sep(BuildContext context) => Padding(
     padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-    child: Text('|', style: TextStyle(
+    child: Text('·', style: TextStyle(
       fontSize: AppTheme.fontSize.sm,
-      color: Theme.of(context).hintColor,
+      color: AppTheme.colors(context).textSecondary,
     )),
   );
 

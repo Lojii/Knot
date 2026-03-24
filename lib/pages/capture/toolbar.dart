@@ -19,23 +19,30 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
   Widget build(BuildContext context) {
     final taskCtrl = Get.find<TaskController>();
     final flowCtrl = Get.find<FlowController>();
-    final theme = Theme.of(context);
 
     return Container(
       height: AppTheme.sizing.toolbarHeight,
       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.dividerColor)),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.mode(context).toolbar.gradientStart,
+            AppTheme.mode(context).toolbar.gradientEnd,
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.colors(context).divider,
+            width: AppTheme.mode(context).toolbar.borderWidth,
+          ),
+        ),
       ),
       child: Row(
         children: [
-          Obx(() => IconButton(
-            icon: Icon(taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow),
-            color: taskCtrl.isCapturing.value
-                ? AppTheme.methodColor('DELETE')
-                : AppTheme.methodColor('GET'),
-            tooltip: taskCtrl.isCapturing.value ? 'Stop' : 'Start',
-            onPressed: () async {
+          Obx(() => GestureDetector(
+            onTap: () async {
               if (taskCtrl.isCapturing.value) {
                 await ProxyChannel.stopProxy();
                 taskCtrl.isCapturing.value = false;
@@ -54,25 +61,68 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
                 }
               }
             },
+            child: Container(
+              width: AppTheme.sizing.iconButtonSize,
+              height: AppTheme.sizing.iconButtonSize,
+              decoration: BoxDecoration(
+                color: taskCtrl.isCapturing.value
+                    ? AppTheme.methodColor('DELETE')
+                    : AppTheme.methodColor('GET'),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Icon(
+                taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow,
+                size: 14,
+                color: Colors.white,
+              ),
+            ),
           )),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, size: 18),
-            tooltip: 'Clear',
-            onPressed: () => flowCtrl.flows.clear(),
+          SizedBox(width: AppTheme.spacing.sm),
+          GestureDetector(
+            onTap: () => flowCtrl.flows.clear(),
+            child: Container(
+              width: AppTheme.sizing.iconButtonSize,
+              height: AppTheme.sizing.iconButtonSize,
+              decoration: BoxDecoration(
+                color: AppTheme.colors(context).divider.withAlpha(40),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Icon(Icons.delete_outline, size: 14, color: AppTheme.colors(context).textSecondary),
+            ),
           ),
           const Spacer(),
           SizedBox(
-            width: 240,
-            height: 30,
+            width: AppTheme.sizing.searchFieldWidth,
+            height: AppTheme.sizing.searchFieldHeight,
             child: TextField(
               focusNode: widget.searchFocusNode,
               decoration: InputDecoration(
                 hintText: 'Search...',
                 prefixIcon: const Icon(Icons.search, size: 16),
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
+                filled: true,
+                fillColor: AppTheme.colors(context).surface,
+                contentPadding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radius.md),
+                  borderSide: BorderSide(
+                    color: AppTheme.colors(context).divider,
+                    width: 0.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
+                  borderSide: BorderSide(
+                    color: AppTheme.colors(context).divider,
+                    width: 0.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
+                  borderSide: BorderSide(
+                    color: AppTheme.colors(context).divider,
+                    width: 0.5,
+                  ),
                 ),
               ),
               onChanged: flowCtrl.search,

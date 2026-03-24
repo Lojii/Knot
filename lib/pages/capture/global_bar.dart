@@ -33,15 +33,27 @@ class GlobalBar extends StatelessWidget {
           right: AppTheme.spacing.md,
         ),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(bottom: BorderSide(color: theme.dividerColor)),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.mode(context).toolbar.gradientStart,
+              AppTheme.mode(context).toolbar.gradientEnd,
+            ],
+          ),
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.colors(context).divider,
+              width: AppTheme.mode(context).toolbar.borderWidth,
+            ),
+          ),
         ),
         child: Obx(() {
           return Row(
             children: [
               // Home button — always visible
               IconButton(
-                icon: Icon(Icons.home_outlined, size: 18,
+                icon: Icon(Icons.home_outlined, size: AppTheme.sizing.iconSize,
                   color: pageCtrl.isCapture ? theme.hintColor : theme.colorScheme.primary),
                 tooltip: 'Home',
                 visualDensity: VisualDensity.compact,
@@ -54,7 +66,7 @@ class GlobalBar extends StatelessWidget {
                 taskCtrl.currentTask.value?.name.isNotEmpty == true
                   ? taskCtrl.currentTask.value!.name
                   : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
-                style: theme.textTheme.titleSmall,
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
               ),
               SizedBox(width: AppTheme.spacing.sm),
               ConnectionIndicator(status: liveCtrl.wsStatus.value),
@@ -62,7 +74,7 @@ class GlobalBar extends StatelessWidget {
               // Protocol / TCP toggle — only on capture page
               if (pageCtrl.isCapture)
                 IconButton(
-                  icon: const Icon(Icons.swap_horiz, size: 18),
+                  icon: Icon(Icons.swap_horiz, size: AppTheme.sizing.iconSize),
                   tooltip: 'Protocol / TCP/UDP',
                   visualDensity: VisualDensity.compact,
                   onPressed: () {/* P2 */},
@@ -72,7 +84,7 @@ class GlobalBar extends StatelessWidget {
 
               // === Right group: Compose + Tools + History + Settings ===
               IconButton(
-                icon: const Icon(Icons.edit_note, size: 18),
+                icon: Icon(Icons.edit_note, size: AppTheme.sizing.iconSize),
                 tooltip: 'Compose',
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isCompose
@@ -81,7 +93,7 @@ class GlobalBar extends StatelessWidget {
               ),
               _ToolsMenuButton(pageCtrl: pageCtrl),
               IconButton(
-                icon: const Icon(Icons.history, size: 18),
+                icon: Icon(Icons.history, size: AppTheme.sizing.iconSize),
                 tooltip: 'History',
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isHistory
@@ -89,7 +101,7 @@ class GlobalBar extends StatelessWidget {
                     : pageCtrl.showHistory(),
               ),
               IconButton(
-                icon: const Icon(Icons.settings, size: 18),
+                icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
                 tooltip: 'Settings',
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.isSettings

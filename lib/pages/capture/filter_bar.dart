@@ -11,23 +11,20 @@ class FilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final filterCtrl = Get.find<FilterController>();
     final flowCtrl = Get.find<FlowController>();
-    final theme = Theme.of(context);
 
     return Container(
       height: AppTheme.sizing.filterBarHeight,
       padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.dividerColor)),
+        border: Border(bottom: BorderSide(color: AppTheme.colors(context).divider)),
       ),
       child: Obx(() => Row(
         children: [
-          Text('Proto: ', style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
           ..._chips(context, ['HTTP', 'HTTPS', 'WS', 'H2'], filterCtrl.activeProtocols, (p) {
             filterCtrl.toggleProtocol(p);
             flowCtrl.reloadFromFirstPage();
           }),
           SizedBox(width: AppTheme.spacing.md),
-          Text('Status: ', style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
           ..._chips(context, ['2xx', '3xx', '4xx', '5xx'], filterCtrl.activeStatuses, (s) {
             filterCtrl.toggleStatus(s);
             flowCtrl.reloadFromFirstPage();
@@ -38,8 +35,6 @@ class FilterBar extends StatelessWidget {
   }
 
   List<Widget> _chips(BuildContext context, List<String> labels, RxSet<String> active, void Function(String) onTap) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
     return labels.map((label) => Padding(
       padding: EdgeInsets.only(right: AppTheme.spacing.xs),
       child: GestureDetector(
@@ -48,18 +43,21 @@ class FilterBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
           decoration: BoxDecoration(
             color: active.contains(label)
-                ? primary.withAlpha(26)
-                : Colors.transparent,
+                ? AppTheme.mode(context).filterChip.activeBackground
+                : AppTheme.mode(context).filterChip.inactiveBackground,
             borderRadius: BorderRadius.circular(AppTheme.radius.sm),
             border: Border.all(
               color: active.contains(label)
-                  ? primary
-                  : theme.dividerColor,
+                  ? AppTheme.mode(context).filterChip.activeBorder
+                  : AppTheme.mode(context).filterChip.inactiveBorder,
+              width: 0.5,
             ),
           ),
           child: Text(label, style: TextStyle(
             fontSize: AppTheme.fontSize.sm,
-            color: active.contains(label) ? primary : null,
+            color: active.contains(label)
+                ? AppTheme.mode(context).filterChip.activeText
+                : null,
           )),
         ),
       ),

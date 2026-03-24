@@ -25,22 +25,43 @@ class TreePanel extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Row(
               children: [
-                Text('Domains', style: theme.textTheme.labelSmall),
+                Text('DOMAINS',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.xs,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                    color: AppTheme.colors(context).textSecondary,
+                  ),
+                ),
                 const Spacer(),
                 Obx(() => Text('${treeCtrl.tree.length}',
-                    style: TextStyle(fontSize: AppTheme.fontSize.xs, color: theme.hintColor))),
+                    style: TextStyle(fontSize: AppTheme.fontSize.xs, color: AppTheme.colors(context).textSecondary))),
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: AppTheme.colors(context).divider),
           // "All" option
-          Obx(() => ListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: Text('All Domains', style: TextStyle(fontSize: AppTheme.fontSize.md)),
-            selected: treeCtrl.selectedDomain.value == null,
-            onTap: () => treeCtrl.selectDomain(null),
-          )),
+          Obx(() {
+            final isSelected = treeCtrl.selectedDomain.value == null;
+            return GestureDetector(
+              onTap: () => treeCtrl.selectDomain(null),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 4),
+                margin: EdgeInsets.symmetric(horizontal: AppTheme.spacing.xs, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
+                  borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
+                ),
+                child: Text('All Domains',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.md,
+                    color: isSelected ? AppTheme.mode(context).tree.selectedText : null,
+                  ),
+                ),
+              ),
+            );
+          }),
           // Domain tree
           Expanded(
             child: Obx(() {
@@ -56,10 +77,12 @@ class TreePanel extends StatelessWidget {
                     horizontal: AppTheme.spacing.sm,
                     vertical: AppTheme.spacing.xs,
                   ),
-                  child: Text('\u2B50 Pinned',
-                      style: TextStyle(fontSize: AppTheme.fontSize.xs,
-                          fontWeight: FontWeight.bold,
-                          color: theme.hintColor)),
+                  child: Text('PINNED',
+                      style: TextStyle(
+                          fontSize: AppTheme.fontSize.xs,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                          color: AppTheme.colors(context).textSecondary)),
                 ));
                 for (final node in pinned) {
                   sections.add(_DomainTile(node: node, isPinned: true));
@@ -89,7 +112,6 @@ class _DomainTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final treeCtrl = Get.find<TreeController>();
-    final theme = Theme.of(context);
     final domain = node.domain ?? '';
 
     return GestureDetector(
@@ -104,7 +126,7 @@ class _DomainTile extends StatelessWidget {
             : null,
         title: Text(node.label, style: TextStyle(fontSize: AppTheme.fontSize.md)),
         trailing: Text('${node.children.length}',
-            style: TextStyle(fontSize: AppTheme.fontSize.xs, color: theme.hintColor)),
+            style: TextStyle(fontSize: AppTheme.fontSize.xs, color: AppTheme.colors(context).textSecondary)),
         onExpansionChanged: (_) => treeCtrl.selectDomain(node.domain),
         children: node.children.map((child) => ListTile(
           dense: true,
