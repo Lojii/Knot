@@ -5,6 +5,10 @@ import 'package:knot/widgets/connection_indicator.dart';
 import 'package:knot/theme/app_theme.dart';
 
 void main() {
+  setUpAll(() {
+    AppTheme.loadFromJson('{}');
+  });
+
   Widget buildWidget(WsStatus status) {
     return MaterialApp(
       home: Scaffold(
@@ -21,11 +25,11 @@ void main() {
       expect(find.text('Connected'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Connected'));
-      expect(text.style?.color, AppTheme.statusConnected);
+      expect(text.style?.color, AppTheme.lightMode.colors.statusConnected);
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, AppTheme.statusConnected);
+      expect(decoration.color, AppTheme.lightMode.colors.statusConnected);
     });
 
     testWidgets('shows "Connecting..." with orange for connecting status',
@@ -35,11 +39,11 @@ void main() {
       expect(find.text('Connecting...'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Connecting...'));
-      expect(text.style?.color, AppTheme.statusConnecting);
+      expect(text.style?.color, AppTheme.lightMode.colors.statusConnecting);
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, AppTheme.statusConnecting);
+      expect(decoration.color, AppTheme.lightMode.colors.statusConnecting);
     });
 
     testWidgets('shows "Disconnected" with red for disconnected status',
@@ -49,11 +53,11 @@ void main() {
       expect(find.text('Disconnected'), findsOneWidget);
 
       final text = tester.widget<Text>(find.text('Disconnected'));
-      expect(text.style?.color, AppTheme.statusDisconnected);
+      expect(text.style?.color, AppTheme.lightMode.colors.statusDisconnected);
 
       final container = tester.widget<Container>(find.byType(Container));
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, AppTheme.statusDisconnected);
+      expect(decoration.color, AppTheme.lightMode.colors.statusDisconnected);
     });
 
     testWidgets('renders dot with circle shape', (tester) async {

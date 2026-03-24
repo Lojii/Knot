@@ -203,7 +203,7 @@ class _CaptureContentState extends State<_CaptureContent> {
                   initialAreas: [
                     Area(
                       min: 150,
-                      size: AppTheme.treeDefaultWidth,
+                      size: AppTheme.sizing.treeDefaultWidth,
                       builder: (context, area) => const TreePanel(),
                     ),
                     Area(

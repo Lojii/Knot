@@ -22,8 +22,8 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
     final theme = Theme.of(context);
 
     return Container(
-      height: AppTheme.toolbarHeight,
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
+      height: AppTheme.sizing.toolbarHeight,
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
       ),
@@ -32,8 +32,8 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
           Obx(() => IconButton(
             icon: Icon(taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow),
             color: taskCtrl.isCapturing.value
-                ? AppTheme.methodDelete
-                : AppTheme.methodGet,
+                ? AppTheme.methodColor('DELETE')
+                : AppTheme.methodColor('GET'),
             tooltip: taskCtrl.isCapturing.value ? 'Stop' : 'Start',
             onPressed: () async {
               if (taskCtrl.isCapturing.value) {
@@ -70,9 +70,9 @@ class _CaptureToolbarState extends State<CaptureToolbar> {
                 hintText: 'Search...',
                 prefixIcon: const Icon(Icons.search, size: 16),
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: AppTheme.spacingMD),
+                contentPadding: EdgeInsets.symmetric(vertical: AppTheme.spacing.md),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
                 ),
               ),
               onChanged: flowCtrl.search,

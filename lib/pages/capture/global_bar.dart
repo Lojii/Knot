@@ -27,10 +27,10 @@ class GlobalBar extends StatelessWidget {
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) {},
       child: Container(
-        height: AppTheme.globalBarHeight,
+        height: AppTheme.sizing.globalBarHeight,
         padding: EdgeInsets.only(
-          left: isMacOS ? AppTheme.macOSTrafficLightWidth : AppTheme.spacingMD,
-          right: AppTheme.spacingMD,
+          left: isMacOS ? AppTheme.sizing.macOSTrafficLightWidth : AppTheme.spacing.md,
+          right: AppTheme.spacing.md,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -47,7 +47,7 @@ class GlobalBar extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 onPressed: () => pageCtrl.showCapture(),
               ),
-              const SizedBox(width: AppTheme.spacingXS),
+              SizedBox(width: AppTheme.spacing.xs),
 
               // === Left group: Task name + connection + TCP toggle ===
               Text(
@@ -56,9 +56,9 @@ class GlobalBar extends StatelessWidget {
                   : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               ConnectionIndicator(status: liveCtrl.wsStatus.value),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               // Protocol / TCP toggle — only on capture page
               if (pageCtrl.isCapture)
                 IconButton(
@@ -117,45 +117,45 @@ class _ToolsMenuButton extends StatelessWidget {
       tooltip: 'Tools',
       padding: EdgeInsets.zero,
       splashRadius: 16,
-      offset: const Offset(0, AppTheme.globalBarHeight),
+      offset: Offset(0, AppTheme.sizing.globalBarHeight),
       itemBuilder: (ctx) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'mapRemote',
           child: Row(
             children: [
-              Icon(Icons.alt_route, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Map Remote'),
+              const Icon(Icons.alt_route, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Map Remote'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'mapLocal',
           child: Row(
             children: [
-              Icon(Icons.folder_open, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Map Local'),
+              const Icon(Icons.folder_open, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Map Local'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'breakpointMgmt',
           child: Row(
             children: [
-              Icon(Icons.pause_circle_outline, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Breakpoints'),
+              const Icon(Icons.pause_circle_outline, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Breakpoints'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'allowBlock',
           child: Row(
             children: [
-              Icon(Icons.filter_list, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Allow/Block List'),
+              const Icon(Icons.filter_list, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Allow/Block List'),
             ],
           ),
         ),
@@ -170,60 +170,60 @@ class _ToolsMenuButton extends StatelessWidget {
                     : Icons.check_box_outline_blank,
                 size: 16,
               ),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               const Text('No Caching'),
             ],
           )),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'exportHar',
           child: Row(
             children: [
-              Icon(Icons.upload_file, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Export HAR'),
+              const Icon(Icons.upload_file, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Export HAR'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'importHar',
           child: Row(
             children: [
-              Icon(Icons.download, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Import HAR'),
+              const Icon(Icons.download, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Import HAR'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'exportCsv',
           child: Row(
             children: [
-              Icon(Icons.table_chart_outlined, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Export List as CSV'),
+              const Icon(Icons.table_chart_outlined, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Export List as CSV'),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'exportJson',
           child: Row(
             children: [
-              Icon(Icons.data_object, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Export List as JSON'),
+              const Icon(Icons.data_object, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Export List as JSON'),
             ],
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'diff',
           child: Row(
             children: [
-              Icon(Icons.compare_arrows, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Diff Tool'),
+              const Icon(Icons.compare_arrows, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Diff Tool'),
             ],
           ),
         ),

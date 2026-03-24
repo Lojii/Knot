@@ -163,8 +163,8 @@ class _HistoryPanelState extends State<HistoryPanel> {
       children: [
         // Toolbar
         Container(
-          height: AppTheme.toolbarHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
+          height: AppTheme.sizing.toolbarHeight,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
@@ -187,15 +187,15 @@ class _HistoryPanelState extends State<HistoryPanel> {
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                  const SizedBox(width: AppTheme.spacingSM),
+                  SizedBox(width: AppTheme.spacing.sm),
                   Text('已选 ${_selectedIds.length} / ${visibleTasks.length}',
                       style: theme.textTheme.titleSmall),
-                  const SizedBox(width: AppTheme.spacingMD),
+                  SizedBox(width: AppTheme.spacing.md),
                   TextButton(
                     onPressed: _exitEditMode,
                     style: TextButton.styleFrom(
                       minimumSize: const Size(0, 28),
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                     ),
                     child: const Text('完成'),
                   ),
@@ -208,24 +208,24 @@ class _HistoryPanelState extends State<HistoryPanel> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
+                        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
                         minimumSize: const Size(0, 28),
                       ),
                     ),
                 ] else ...[
                   // Normal mode: title + count + edit button + search
                   Text('Capture History', style: theme.textTheme.titleSmall),
-                  const SizedBox(width: AppTheme.spacingSM),
+                  SizedBox(width: AppTheme.spacing.sm),
                   Text('${historyCtrl.tasks.length} tasks',
-                      style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
-                  const SizedBox(width: AppTheme.spacingMD),
+                      style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
+                  SizedBox(width: AppTheme.spacing.md),
                   TextButton.icon(
                     onPressed: _enterEditMode,
                     icon: const Icon(Icons.edit_outlined, size: 14),
                     label: const Text('编辑'),
                     style: TextButton.styleFrom(
                       minimumSize: const Size(0, 28),
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                     ),
                   ),
                   const Spacer(),
@@ -239,9 +239,9 @@ class _HistoryPanelState extends State<HistoryPanel> {
                         prefixIcon: const Icon(Icons.search, size: 16),
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMD)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radius.md)),
                       ),
-                      style: const TextStyle(fontSize: AppTheme.fontSizeSM),
+                      style: TextStyle(fontSize: AppTheme.fontSize.sm),
                       onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                     ),
                   ),
@@ -265,7 +265,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
+              padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: tasks.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
@@ -296,16 +296,16 @@ class _HistoryPanelState extends State<HistoryPanel> {
               if (_isDeleting)
                 Container(
                   color: Colors.black.withAlpha(30),
-                  child: const Center(
+                  child: Center(
                     child: Card(
                       child: Padding(
-                        padding: EdgeInsets.all(AppTheme.spacingXL),
+                        padding: EdgeInsets.all(AppTheme.spacing.xl),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: AppTheme.spacingMD),
-                            Text('正在删除...'),
+                            const CircularProgressIndicator(),
+                            SizedBox(height: AppTheme.spacing.md),
+                            const Text('正在删除...'),
                           ],
                         ),
                       ),
@@ -359,9 +359,9 @@ class _TaskRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingLG,
-            vertical: AppTheme.spacingSM,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.lg,
+            vertical: AppTheme.spacing.sm,
           ),
           color: bgColor,
           child: Row(
@@ -380,13 +380,13 @@ class _TaskRow extends StatelessWidget {
               else if (isCurrent)
                 Container(
                   width: 8, height: 8,
-                  margin: const EdgeInsets.only(right: AppTheme.spacingSM, left: 10),
-                  decoration: const BoxDecoration(color: AppTheme.statusConnected, shape: BoxShape.circle),
+                  margin: EdgeInsets.only(right: AppTheme.spacing.sm, left: 10),
+                  decoration: BoxDecoration(color: AppTheme.colors(context).statusConnected, shape: BoxShape.circle),
                 )
               else
-                const SizedBox(width: 18 + AppTheme.spacingSM),
+                SizedBox(width: 18 + AppTheme.spacing.sm),
 
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
 
               // Task name
               SizedBox(
@@ -394,30 +394,30 @@ class _TaskRow extends StatelessWidget {
                 child: Text(
                   task.name.isNotEmpty ? task.name : 'Task ${task.id}',
                   style: TextStyle(
-                    fontSize: AppTheme.fontSizeMD,
+                    fontSize: AppTheme.fontSize.md,
                     fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: AppTheme.spacingLG),
+              SizedBox(width: AppTheme.spacing.lg),
 
               // Time
               SizedBox(width: 140, child: Text(timeStr,
-                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor))),
-              const SizedBox(width: AppTheme.spacingLG),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor))),
+              SizedBox(width: AppTheme.spacing.lg),
 
               // Flows
               SizedBox(width: 80, child: Text('${task.flowCount ?? 0} flows',
-                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor))),
-              const SizedBox(width: AppTheme.spacingSM),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor))),
+              SizedBox(width: AppTheme.spacing.sm),
 
               // Upload
               SizedBox(width: 80, child: Row(children: [
                 Icon(Icons.arrow_upward, size: 12, color: theme.hintColor),
                 const SizedBox(width: 2),
                 Text(_fmtBytes(task.uploadBytes ?? 0),
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+                    style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
               ])),
 
               // Download
@@ -425,23 +425,23 @@ class _TaskRow extends StatelessWidget {
                 Icon(Icons.arrow_downward, size: 12, color: theme.hintColor),
                 const SizedBox(width: 2),
                 Text(_fmtBytes(task.downloadBytes ?? 0),
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+                    style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
               ])),
 
               const Spacer(),
 
               // Total badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
                 child: Text(_fmtBytes(totalBytes),
-                    style: TextStyle(fontSize: AppTheme.fontSizeXS, color: theme.hintColor)),
+                    style: TextStyle(fontSize: AppTheme.fontSize.xs, color: theme.hintColor)),
               ),
 
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
 
               // More button
               if (!isEditing)

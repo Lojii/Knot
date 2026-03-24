@@ -17,19 +17,19 @@ class BreakpointPanel extends StatelessWidget {
       children: [
         // Toolbar
         Container(
-          height: AppTheme.toolbarHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
+          height: AppTheme.sizing.toolbarHeight,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
           child: Row(
             children: [
               Text('Breakpoints', style: theme.textTheme.titleSmall),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               Obx(() => Text(
                 '${toolsCtrl.breakpointRules.length} rules',
                 style: TextStyle(
-                  fontSize: AppTheme.fontSizeSM,
+                  fontSize: AppTheme.fontSize.sm,
                   color: theme.hintColor,
                 ),
               )),
@@ -40,8 +40,8 @@ class BreakpointPanel extends StatelessWidget {
                 label: const Text('Add Rule'),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
                   ),
                 ),
               ),
@@ -58,20 +58,20 @@ class BreakpointPanel extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.pause_circle_outline, size: 48, color: theme.hintColor),
-                    const SizedBox(height: AppTheme.spacingSM),
+                    SizedBox(height: AppTheme.spacing.sm),
                     Text(
                       'No Breakpoint rules',
                       style: TextStyle(
                         color: theme.hintColor,
-                        fontSize: AppTheme.fontSizeMD,
+                        fontSize: AppTheme.fontSize.md,
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spacingXS),
+                    SizedBox(height: AppTheme.spacing.xs),
                     Text(
                       'Add a rule to pause matching requests for inspection',
                       style: TextStyle(
                         color: theme.hintColor,
-                        fontSize: AppTheme.fontSizeSM,
+                        fontSize: AppTheme.fontSize.sm,
                       ),
                     ),
                   ],
@@ -79,7 +79,7 @@ class BreakpointPanel extends StatelessWidget {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
+              padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: rules.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
@@ -126,9 +126,9 @@ class _RuleRow extends StatelessWidget {
     return InkWell(
       onTap: onEdit,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingLG,
-          vertical: AppTheme.spacingSM,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing.lg,
+          vertical: AppTheme.spacing.sm,
         ),
         child: Row(
           children: [
@@ -141,7 +141,7 @@ class _RuleRow extends StatelessWidget {
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-            const SizedBox(width: AppTheme.spacingSM),
+            SizedBox(width: AppTheme.spacing.sm),
             // Pattern and break type
             Expanded(
               child: Column(
@@ -159,18 +159,18 @@ class _RuleRow extends StatelessWidget {
                           child: Text(
                             rule.method!,
                             style: TextStyle(
-                              fontSize: AppTheme.fontSizeXS,
+                              fontSize: AppTheme.fontSize.xs,
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppTheme.spacingXS),
+                        SizedBox(width: AppTheme.spacing.xs),
                       ],
                       Expanded(
                         child: Text(
                           rule.urlPattern,
-                          style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD).copyWith(
+                          style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md).copyWith(
                             color: rule.enabled ? null : theme.hintColor,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -186,16 +186,16 @@ class _RuleRow extends StatelessWidget {
                       Text(
                         'Break on: ${rule.breakOn}',
                         style: TextStyle(
-                          fontSize: AppTheme.fontSizeSM,
+                          fontSize: AppTheme.fontSize.sm,
                           color: theme.hintColor,
                         ),
                       ),
                       if (rule.comment.isNotEmpty) ...[
-                        const SizedBox(width: AppTheme.spacingSM),
+                        SizedBox(width: AppTheme.spacing.sm),
                         Text(
                           rule.comment,
                           style: TextStyle(
-                            fontSize: AppTheme.fontSizeSM,
+                            fontSize: AppTheme.fontSize.sm,
                             color: theme.hintColor,
                             fontStyle: FontStyle.italic,
                           ),
@@ -295,33 +295,33 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
             Text(
               'URL Pattern',
               style: TextStyle(
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
                 color: theme.hintColor,
               ),
             ),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.xs),
             TextField(
               controller: _patternCtrl,
-              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD),
+              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
               decoration: InputDecoration(
                 hintText: '*.api.com/v1/*',
                 hintStyle: TextStyle(
                   color: theme.hintColor,
-                  fontSize: AppTheme.fontSizeSM,
+                  fontSize: AppTheme.fontSize.sm,
                 ),
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSM,
-                  vertical: AppTheme.spacingSM,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.sm,
+                  vertical: AppTheme.spacing.sm,
                 ),
               ),
               autofocus: true,
             ),
-            const SizedBox(height: AppTheme.spacingLG),
+            SizedBox(height: AppTheme.spacing.lg),
             Row(
               children: [
                 // Method dropdown
@@ -330,7 +330,7 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Method', style: TextStyle(
-                        fontSize: AppTheme.fontSizeXS,
+                        fontSize: AppTheme.fontSize.xs,
                         color: theme.hintColor,
                       )),
                       const SizedBox(height: 2),
@@ -341,18 +341,18 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                           items: _methods
                               .map((m) => DropdownMenuItem(
                                     value: m,
-                                    child: Text(m, style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
+                                    child: Text(m, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                                   ))
                               .toList(),
                           onChanged: (v) => setState(() => _method = v ?? 'Any'),
                           decoration: InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingSM,
-                              vertical: AppTheme.spacingXS,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing.sm,
+                              vertical: AppTheme.spacing.xs,
                             ),
                           ),
                         ),
@@ -360,14 +360,14 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                     ],
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingSM),
+                SizedBox(width: AppTheme.spacing.sm),
                 // Break On dropdown
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Break On', style: TextStyle(
-                        fontSize: AppTheme.fontSizeXS,
+                        fontSize: AppTheme.fontSize.xs,
                         color: theme.hintColor,
                       )),
                       const SizedBox(height: 2),
@@ -378,18 +378,18 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                           items: _breakOptions
                               .map((b) => DropdownMenuItem(
                                     value: b,
-                                    child: Text(b, style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
+                                    child: Text(b, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                                   ))
                               .toList(),
                           onChanged: (v) => setState(() => _breakOn = v ?? 'both'),
                           decoration: InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: AppTheme.spacingSM,
-                              vertical: AppTheme.spacingXS,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing.sm,
+                              vertical: AppTheme.spacing.xs,
                             ),
                           ),
                         ),
@@ -399,9 +399,9 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             Text('Comment', style: TextStyle(
-              fontSize: AppTheme.fontSizeXS,
+              fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
             )),
             const SizedBox(height: 2),
@@ -409,20 +409,20 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
               height: 32,
               child: TextField(
                 controller: _commentCtrl,
-                style: const TextStyle(fontSize: AppTheme.fontSizeSM),
+                style: TextStyle(fontSize: AppTheme.fontSize.sm),
                 decoration: InputDecoration(
                   hintText: 'Optional description',
                   hintStyle: TextStyle(
                     color: theme.hintColor,
-                    fontSize: AppTheme.fontSizeXS,
+                    fontSize: AppTheme.fontSize.xs,
                   ),
                   isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
-                    vertical: AppTheme.spacingXS,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
+                    vertical: AppTheme.spacing.xs,
                   ),
                 ),
               ),

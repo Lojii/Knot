@@ -42,7 +42,7 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
             controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            labelPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
+            labelPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
             tabs: const [
               Tab(text: 'List', height: 32),
               Tab(text: 'Waterfall', height: 32),

@@ -17,19 +17,19 @@ class MapRemotePanel extends StatelessWidget {
       children: [
         // Toolbar
         Container(
-          height: AppTheme.toolbarHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
+          height: AppTheme.sizing.toolbarHeight,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
           child: Row(
             children: [
               Text('Map Remote', style: theme.textTheme.titleSmall),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               Obx(() => Text(
                 '${toolsCtrl.mapRemoteRules.length} rules',
                 style: TextStyle(
-                  fontSize: AppTheme.fontSizeSM,
+                  fontSize: AppTheme.fontSize.sm,
                   color: theme.hintColor,
                 ),
               )),
@@ -40,8 +40,8 @@ class MapRemotePanel extends StatelessWidget {
                 label: const Text('Add Rule'),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
                   ),
                 ),
               ),
@@ -58,20 +58,20 @@ class MapRemotePanel extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.alt_route, size: 48, color: theme.hintColor),
-                    const SizedBox(height: AppTheme.spacingSM),
+                    SizedBox(height: AppTheme.spacing.sm),
                     Text(
                       'No Map Remote rules',
                       style: TextStyle(
                         color: theme.hintColor,
-                        fontSize: AppTheme.fontSizeMD,
+                        fontSize: AppTheme.fontSize.md,
                       ),
                     ),
-                    const SizedBox(height: AppTheme.spacingXS),
+                    SizedBox(height: AppTheme.spacing.xs),
                     Text(
                       'Add a rule to redirect requests to a different server',
                       style: TextStyle(
                         color: theme.hintColor,
-                        fontSize: AppTheme.fontSizeSM,
+                        fontSize: AppTheme.fontSize.sm,
                       ),
                     ),
                   ],
@@ -79,7 +79,7 @@ class MapRemotePanel extends StatelessWidget {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
+              padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: rules.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
@@ -126,9 +126,9 @@ class _RuleRow extends StatelessWidget {
     return InkWell(
       onTap: onEdit,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingLG,
-          vertical: AppTheme.spacingSM,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing.lg,
+          vertical: AppTheme.spacing.sm,
         ),
         child: Row(
           children: [
@@ -141,7 +141,7 @@ class _RuleRow extends StatelessWidget {
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-            const SizedBox(width: AppTheme.spacingSM),
+            SizedBox(width: AppTheme.spacing.sm),
             // Pattern and replacement
             Expanded(
               child: Column(
@@ -149,7 +149,7 @@ class _RuleRow extends StatelessWidget {
                 children: [
                   Text(
                     rule.matchPattern,
-                    style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD).copyWith(
+                    style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md).copyWith(
                       color: rule.enabled ? null : theme.hintColor,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -158,12 +158,12 @@ class _RuleRow extends StatelessWidget {
                   Row(
                     children: [
                       Icon(Icons.arrow_forward, size: 12, color: theme.hintColor),
-                      const SizedBox(width: AppTheme.spacingXS),
+                      SizedBox(width: AppTheme.spacing.xs),
                       Expanded(
                         child: Text(
                           rule.replacementSummary,
                           style: TextStyle(
-                            fontSize: AppTheme.fontSizeSM,
+                            fontSize: AppTheme.fontSize.sm,
                             color: theme.hintColor,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -265,50 +265,50 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
             Text(
               'Match Pattern',
               style: TextStyle(
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
                 color: theme.hintColor,
               ),
             ),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.xs),
             TextField(
               controller: _patternCtrl,
-              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD),
+              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
               decoration: InputDecoration(
                 hintText: 'https://api.example.com/v1/*',
                 hintStyle: TextStyle(
                   color: theme.hintColor,
-                  fontSize: AppTheme.fontSizeSM,
+                  fontSize: AppTheme.fontSize.sm,
                 ),
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSM,
-                  vertical: AppTheme.spacingSM,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.sm,
+                  vertical: AppTheme.spacing.sm,
                 ),
               ),
               autofocus: true,
             ),
-            const SizedBox(height: AppTheme.spacingLG),
+            SizedBox(height: AppTheme.spacing.lg),
             Text(
               'Replace With (empty = keep original)',
               style: TextStyle(
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
                 fontWeight: FontWeight.bold,
                 color: theme.hintColor,
               ),
             ),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             _field('Scheme', _schemeCtrl, 'https'),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             _field('Host', _hostCtrl, 'localhost'),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             Row(
               children: [
                 Expanded(child: _field('Port', _portCtrl, '8080')),
-                const SizedBox(width: AppTheme.spacingSM),
+                SizedBox(width: AppTheme.spacing.sm),
                 Expanded(child: _field('Path', _pathCtrl, '/api/v2/*')),
               ],
             ),
@@ -333,26 +333,26 @@ class _MapRemoteRuleDialogState extends State<_MapRemoteRuleDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: AppTheme.fontSizeXS, color: theme.hintColor)),
+        Text(label, style: TextStyle(fontSize: AppTheme.fontSize.xs, color: theme.hintColor)),
         const SizedBox(height: 2),
         SizedBox(
           height: 32,
           child: TextField(
             controller: ctrl,
-            style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeSM),
+            style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.sm),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(
                 color: theme.hintColor,
-                fontSize: AppTheme.fontSizeXS,
+                fontSize: AppTheme.fontSize.xs,
               ),
               isDense: true,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSM,
-                vertical: AppTheme.spacingXS,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
+                vertical: AppTheme.spacing.xs,
               ),
             ),
           ),

@@ -30,7 +30,7 @@ class _BodyViewerState extends State<BodyViewer> {
     if (widget.body.isEmpty) {
       return Text('(empty)', style: TextStyle(
         color: Theme.of(context).hintColor,
-        fontSize: AppTheme.fontSizeSM,
+        fontSize: AppTheme.fontSize.sm,
       ));
     }
 
@@ -39,7 +39,7 @@ class _BodyViewerState extends State<BodyViewer> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildModeToggle(context),
-        const SizedBox(height: AppTheme.spacingXS),
+        SizedBox(height: AppTheme.spacing.xs),
         _buildBody(context),
       ],
     );
@@ -56,19 +56,19 @@ class _BodyViewerState extends State<BodyViewer> {
           BodyViewMode.hex => 'Hex',
         };
         return Padding(
-          padding: const EdgeInsets.only(right: AppTheme.spacingXS),
+          padding: EdgeInsets.only(right: AppTheme.spacing.xs),
           child: GestureDetector(
             onTap: () => setState(() => _viewMode = mode),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSM,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
                 vertical: 2,
               ),
               decoration: BoxDecoration(
                 color: isActive
                     ? theme.colorScheme.primary.withAlpha(26)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 border: Border.all(
                   color: isActive
                       ? theme.colorScheme.primary
@@ -76,7 +76,7 @@ class _BodyViewerState extends State<BodyViewer> {
                 ),
               ),
               child: Text(label, style: TextStyle(
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
                 color: isActive ? theme.colorScheme.primary : null,
               )),
             ),
@@ -194,15 +194,15 @@ class _BodyViewerState extends State<BodyViewer> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Image Preview (${widget.contentType})',
-              style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
-          const SizedBox(height: AppTheme.spacingSM),
+              style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+          SizedBox(height: AppTheme.spacing.sm),
           Image.memory(Uint8List.fromList(bytes), fit: BoxFit.contain,
             errorBuilder: (_, _, _) => const Text('Cannot preview image')),
         ],
       );
     } catch (_) {
       return Text('Image (${widget.contentType}) \u2014 ${widget.body.length} bytes',
-          style: const TextStyle(fontSize: AppTheme.fontSizeSM));
+          style: TextStyle(fontSize: AppTheme.fontSize.sm));
     }
   }
 

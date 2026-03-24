@@ -14,8 +14,8 @@ class CaptureStatusBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      height: AppTheme.statusBarHeight,
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
+      height: AppTheme.sizing.statusBarHeight,
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         border: Border(top: BorderSide(color: theme.dividerColor)),
@@ -36,12 +36,12 @@ class CaptureStatusBar extends StatelessWidget {
   }
 
   Widget _item(BuildContext context, String text) =>
-      Text(text, style: const TextStyle(fontSize: AppTheme.fontSizeSM));
+      Text(text, style: TextStyle(fontSize: AppTheme.fontSize.sm));
 
   Widget _sep(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+    padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
     child: Text('|', style: TextStyle(
-      fontSize: AppTheme.fontSizeSM,
+      fontSize: AppTheme.fontSize.sm,
       color: Theme.of(context).hintColor,
     )),
   );

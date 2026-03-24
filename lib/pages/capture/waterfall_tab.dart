@@ -12,6 +12,7 @@ class WaterfallTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
     final theme = Theme.of(context);
+    final colors = AppTheme.colors(context);
 
     return Obx(() {
       final flows = flowCtrl.flows.toList();
@@ -27,18 +28,18 @@ class WaterfallTab extends StatelessWidget {
         children: [
           // Legend
           Container(
-            height: AppTheme.tableHeaderHeight,
-            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMD),
+            height: AppTheme.sizing.tableHeaderHeight,
+            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
             child: Row(
               children: [
-                _legend(AppTheme.timingConnect, 'Connect'),
-                _legend(AppTheme.timingTLS, 'TLS'),
-                _legend(AppTheme.timingRequest, 'Request'),
-                _legend(AppTheme.timingTTFB, 'TTFB'),
-                _legend(AppTheme.timingResponse, 'Download'),
+                _legend(colors.timingConnect, 'Connect'),
+                _legend(colors.timingTLS, 'TLS'),
+                _legend(colors.timingRequest, 'Request'),
+                _legend(colors.timingTTFB, 'TTFB'),
+                _legend(colors.timingResponse, 'Download'),
                 const Spacer(),
                 Text('${(totalMs / 1000).toStringAsFixed(1)}s total',
-                    style: TextStyle(fontSize: AppTheme.fontSizeSM, color: theme.hintColor)),
+                    style: TextStyle(fontSize: AppTheme.fontSize.sm, color: theme.hintColor)),
               ],
             ),
           ),
@@ -50,7 +51,16 @@ class WaterfallTab extends StatelessWidget {
                 // Display in chronological order (oldest first)
                 final f = flows[flows.length - 1 - i];
                 final offset = (f.startedAt - firstStart) * 1000;
-                return _WaterfallRow(flow: f, totalMs: totalMs, offsetMs: offset);
+                return _WaterfallRow(
+                  flow: f,
+                  totalMs: totalMs,
+                  offsetMs: offset,
+                  connectColor: colors.timingConnect,
+                  tlsColor: colors.timingTLS,
+                  requestColor: colors.timingRequest,
+                  ttfbColor: colors.timingTTFB,
+                  responseColor: colors.timingResponse,
+                );
               },
             ),
           ),
@@ -60,13 +70,13 @@ class WaterfallTab extends StatelessWidget {
   }
 
   Widget _legend(Color color, String label) => Padding(
-    padding: const EdgeInsets.only(right: AppTheme.spacingMD),
+    padding: EdgeInsets.only(right: AppTheme.spacing.md),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(width: 10, height: 10, color: color),
-        const SizedBox(width: AppTheme.spacingXS),
-        Text(label, style: const TextStyle(fontSize: AppTheme.fontSizeXS)),
+        SizedBox(width: AppTheme.spacing.xs),
+        Text(label, style: TextStyle(fontSize: AppTheme.fontSize.xs)),
       ],
     ),
   );
@@ -76,8 +86,22 @@ class _WaterfallRow extends StatelessWidget {
   final FlowSummary flow;
   final double totalMs;
   final double offsetMs;
+  final Color connectColor;
+  final Color tlsColor;
+  final Color requestColor;
+  final Color ttfbColor;
+  final Color responseColor;
 
-  const _WaterfallRow({required this.flow, required this.totalMs, required this.offsetMs});
+  const _WaterfallRow({
+    required this.flow,
+    required this.totalMs,
+    required this.offsetMs,
+    required this.connectColor,
+    required this.tlsColor,
+    required this.requestColor,
+    required this.ttfbColor,
+    required this.responseColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +112,10 @@ class _WaterfallRow extends StatelessWidget {
           SizedBox(
             width: 200,
             child: Padding(
-              padding: const EdgeInsets.only(left: AppTheme.spacingSM),
+              padding: EdgeInsets.only(left: AppTheme.spacing.sm),
               child: Text(
                 '${flow.method} ${flow.host}${flow.uri}',
-                style: const TextStyle(fontSize: AppTheme.fontSizeXS),
+                style: TextStyle(fontSize: AppTheme.fontSize.xs),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -102,17 +126,22 @@ class _WaterfallRow extends StatelessWidget {
               startOffset: offsetMs,
               connectMs: flow.durationMs != null ? flow.durationMs! * 0.15 : null,
               responseMs: flow.durationMs != null ? flow.durationMs! * 0.85 : null,
+              connectColor: connectColor,
+              tlsColor: tlsColor,
+              requestColor: requestColor,
+              ttfbColor: ttfbColor,
+              responseColor: responseColor,
             ),
           ),
           SizedBox(
             width: 60,
             child: Text(
               flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-              style: const TextStyle(fontSize: AppTheme.fontSizeXS),
+              style: TextStyle(fontSize: AppTheme.fontSize.xs),
               textAlign: TextAlign.right,
             ),
           ),
-          const SizedBox(width: AppTheme.spacingSM),
+          SizedBox(width: AppTheme.spacing.sm),
         ],
       ),
     );

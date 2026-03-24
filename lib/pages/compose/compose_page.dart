@@ -239,7 +239,7 @@ class _ComposePageState extends State<ComposePage> {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.all(AppTheme.spacingMD),
+      padding: EdgeInsets.all(AppTheme.spacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -255,7 +255,7 @@ class _ComposePageState extends State<ComposePage> {
 
   Widget _buildRequestEditor(ThemeData theme) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(right: AppTheme.spacingMD),
+      padding: EdgeInsets.only(right: AppTheme.spacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -265,17 +265,17 @@ class _ComposePageState extends State<ComposePage> {
               // Method dropdown
               Container(
                 height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                 decoration: BoxDecoration(
                   border: Border.all(color: theme.dividerColor),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _method,
                     isDense: true,
                     style: TextStyle(
-                      fontSize: AppTheme.fontSizeMD,
+                      fontSize: AppTheme.fontSize.md,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.methodColor(_method),
                     ),
@@ -287,23 +287,23 @@ class _ComposePageState extends State<ComposePage> {
                   ),
                 ),
               ),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               // URL field
               Expanded(
                 child: SizedBox(
                   height: 36,
                   child: TextField(
                     controller: _urlController,
-                    style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSizeMD),
+                    style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.md),
                     decoration: InputDecoration(
                       hintText: 'https://example.com/api/resource',
-                      hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeMD),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacingSM,
-                        vertical: AppTheme.spacingXS,
+                      hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.md),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing.sm,
+                        vertical: AppTheme.spacing.xs,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                        borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                       ),
                       isDense: true,
                     ),
@@ -311,7 +311,7 @@ class _ComposePageState extends State<ComposePage> {
                   ),
                 ),
               ),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               // Send button
               SizedBox(
                 height: 36,
@@ -324,18 +324,18 @@ class _ComposePageState extends State<ComposePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
-                    textStyle: const TextStyle(fontSize: AppTheme.fontSizeMD, fontWeight: FontWeight.bold),
+                    textStyle: TextStyle(fontSize: AppTheme.fontSize.md, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: AppTheme.spacingLG),
+          SizedBox(height: AppTheme.spacing.lg),
 
           // Headers section
           _sectionTitle('Headers'),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           _buildKeyValueEditor(
             rows: _headerRows,
             onAdd: _addHeaderRow,
@@ -344,11 +344,11 @@ class _ComposePageState extends State<ComposePage> {
             valueHint: 'Value',
           ),
 
-          const SizedBox(height: AppTheme.spacingLG),
+          SizedBox(height: AppTheme.spacing.lg),
 
           // Query Params section
           _sectionTitle('Query Parameters'),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           _buildKeyValueEditor(
             rows: _queryRows,
             onAdd: _addQueryRow,
@@ -358,13 +358,13 @@ class _ComposePageState extends State<ComposePage> {
             onChanged: _syncUrlFromQuery,
           ),
 
-          const SizedBox(height: AppTheme.spacingLG),
+          SizedBox(height: AppTheme.spacing.lg),
 
           // Body section
           _sectionTitle('Body'),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           _buildBodyTabs(theme),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           SizedBox(
             height: 200,
             child: TextField(
@@ -379,11 +379,11 @@ class _ComposePageState extends State<ComposePage> {
                     : _bodyTab == 2
                         ? 'key=value&key2=value2'
                         : 'Request body...',
-                hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeSM),
+                hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
-                contentPadding: const EdgeInsets.all(AppTheme.spacingSM),
+                contentPadding: EdgeInsets.all(AppTheme.spacing.sm),
               ),
             ),
           ),
@@ -393,9 +393,9 @@ class _ComposePageState extends State<ComposePage> {
   }
 
   Widget _sectionTitle(String title) {
-    return Text(title, style: const TextStyle(
+    return Text(title, style: TextStyle(
       fontWeight: FontWeight.bold,
-      fontSize: AppTheme.fontSizeMD,
+      fontSize: AppTheme.fontSize.md,
     ));
   }
 
@@ -405,25 +405,25 @@ class _ComposePageState extends State<ComposePage> {
       children: List.generate(labels.length, (i) {
         final isActive = _bodyTab == i;
         return Padding(
-          padding: const EdgeInsets.only(right: AppTheme.spacingXS),
+          padding: EdgeInsets.only(right: AppTheme.spacing.xs),
           child: GestureDetector(
             onTap: () => setState(() => _bodyTab = i),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSM,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
                 vertical: 2,
               ),
               decoration: BoxDecoration(
                 color: isActive
                     ? theme.colorScheme.primary.withAlpha(26)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 border: Border.all(
                   color: isActive ? theme.colorScheme.primary : theme.dividerColor,
                 ),
               ),
               child: Text(labels[i], style: TextStyle(
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
                 color: isActive ? theme.colorScheme.primary : null,
               )),
             ),
@@ -445,7 +445,7 @@ class _ComposePageState extends State<ComposePage> {
       children: [
         for (int i = 0; i < rows.length; i++)
           Padding(
-            padding: const EdgeInsets.only(bottom: AppTheme.spacingXS),
+            padding: EdgeInsets.only(bottom: AppTheme.spacing.xs),
             child: Row(
               children: [
                 Expanded(
@@ -453,37 +453,37 @@ class _ComposePageState extends State<ComposePage> {
                     height: 30,
                     child: TextField(
                       controller: rows[i].$1,
-                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSizeSM),
+                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
                       decoration: InputDecoration(
                         hintText: keyHint,
-                        hintStyle: TextStyle(fontSize: AppTheme.fontSizeSM),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSM)),
+                        hintStyle: TextStyle(fontSize: AppTheme.fontSize.sm),
+                        contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radius.sm)),
                         isDense: true,
                       ),
                       onChanged: (_) => onChanged?.call(),
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingXS),
+                SizedBox(width: AppTheme.spacing.xs),
                 Expanded(
                   child: SizedBox(
                     height: 30,
                     child: TextField(
                       controller: rows[i].$2,
-                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSizeSM),
+                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
                       decoration: InputDecoration(
                         hintText: valueHint,
-                        hintStyle: TextStyle(fontSize: AppTheme.fontSizeSM),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSM)),
+                        hintStyle: TextStyle(fontSize: AppTheme.fontSize.sm),
+                        contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radius.sm)),
                         isDense: true,
                       ),
                       onChanged: (_) => onChanged?.call(),
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingXS),
+                SizedBox(width: AppTheme.spacing.xs),
                 SizedBox(
                   width: 24,
                   height: 24,
@@ -502,10 +502,10 @@ class _ComposePageState extends State<ComposePage> {
           child: TextButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add, size: 14),
-            label: const Text('Add', style: TextStyle(fontSize: AppTheme.fontSizeSM)),
+            label: Text('Add', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
             style: TextButton.styleFrom(
               visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
             ),
           ),
         ),
@@ -520,10 +520,10 @@ class _ComposePageState extends State<ComposePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.send_outlined, size: 48, color: theme.hintColor),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             Text(
               'Send a request to see the response',
-              style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeMD),
+              style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.md),
             ),
           ],
         ),
@@ -535,7 +535,7 @@ class _ComposePageState extends State<ComposePage> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: AppTheme.spacingMD),
+      padding: EdgeInsets.only(left: AppTheme.spacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -544,38 +544,38 @@ class _ComposePageState extends State<ComposePage> {
             children: [
               if (_responseStatus != null) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
-                    vertical: AppTheme.spacingXS,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
+                    vertical: AppTheme.spacing.xs,
                   ),
                   decoration: BoxDecoration(
                     color: AppTheme.statusColor(_responseStatus!).withAlpha(26),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                   ),
                   child: Text(
                     '$_responseStatus',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: AppTheme.fontSizeLG,
+                      fontSize: AppTheme.fontSize.lg,
                       color: AppTheme.statusColor(_responseStatus!),
                     ),
                   ),
                 ),
-                const SizedBox(width: AppTheme.spacingSM),
+                SizedBox(width: AppTheme.spacing.sm),
                 Text(
                   _httpStatusPhrase(_responseStatus!),
                   style: TextStyle(
-                    fontSize: AppTheme.fontSizeMD,
+                    fontSize: AppTheme.fontSize.md,
                     color: AppTheme.statusColor(_responseStatus!),
                   ),
                 ),
               ],
               if (_responseTime != null) ...[
-                const SizedBox(width: AppTheme.spacingLG),
+                SizedBox(width: AppTheme.spacing.lg),
                 Text(
                   '${_responseTime!.inMilliseconds}ms',
                   style: TextStyle(
-                    fontSize: AppTheme.fontSizeMD,
+                    fontSize: AppTheme.fontSize.md,
                     color: theme.hintColor,
                   ),
                 ),
@@ -583,19 +583,19 @@ class _ComposePageState extends State<ComposePage> {
             ],
           ),
 
-          const SizedBox(height: AppTheme.spacingLG),
+          SizedBox(height: AppTheme.spacing.lg),
 
           // Response Headers
           if (_responseHeaders.isNotEmpty) ...[
             _sectionTitle('Response Headers'),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.xs),
             KeyValueTable(entries: _responseHeaders),
-            const SizedBox(height: AppTheme.spacingLG),
+            SizedBox(height: AppTheme.spacing.lg),
           ],
 
           // Response Body
           _sectionTitle('Response Body'),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           BodyViewer(
             body: _responseBody,
             contentType: _responseContentType,

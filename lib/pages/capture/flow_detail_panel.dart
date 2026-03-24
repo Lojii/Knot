@@ -38,8 +38,8 @@ class FlowDetailPanel extends StatelessWidget {
           children: [
             // Toolbar with cURL export
             Container(
-              height: AppTheme.toolbarHeight,
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+              height: AppTheme.sizing.toolbarHeight,
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
               child: Row(
                 children: [
                   const Spacer(),
@@ -58,7 +58,7 @@ class FlowDetailPanel extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.edit_note, size: 14),
-                    label: const Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSizeSM)),
+                    label: Text('Edit & Resend', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                   ),
                   TextButton.icon(
                     onPressed: () {
@@ -73,7 +73,7 @@ class FlowDetailPanel extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.copy, size: 14),
-                    label: const Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSizeSM)),
+                    label: Text('Copy as cURL', style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                   ),
                 ],
               ),
@@ -81,14 +81,14 @@ class FlowDetailPanel extends StatelessWidget {
             TabBar(
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              tabs: const [
-                Tab(text: 'Headers', height: AppTheme.detailTabHeight),
-                Tab(text: 'Body', height: AppTheme.detailTabHeight),
-                Tab(text: 'Query', height: AppTheme.detailTabHeight),
-                Tab(text: 'Cookies', height: AppTheme.detailTabHeight),
-                Tab(text: 'Timing', height: AppTheme.detailTabHeight),
-                Tab(text: 'Connection', height: AppTheme.detailTabHeight),
-                Tab(text: 'Certificate', height: AppTheme.detailTabHeight),
+              tabs: [
+                Tab(text: 'Headers', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Body', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Query', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Cookies', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Timing', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Connection', height: AppTheme.sizing.detailTabHeight),
+                Tab(text: 'Certificate', height: AppTheme.sizing.detailTabHeight),
               ],
             ),
             Expanded(
@@ -129,21 +129,21 @@ class _HeadersTab extends StatelessWidget {
           .toList() ?? [];
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Request Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            Text('Request Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
             if (reqHeaders.isNotEmpty)
               KeyValueTable(entries: reqHeaders)
             else
-              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeSM)),
-            const SizedBox(height: AppTheme.spacingMD),
-            const Text('Response Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
+            SizedBox(height: AppTheme.spacing.md),
+            Text('Response Headers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
             if (rspHeaders.isNotEmpty)
               KeyValueTable(entries: rspHeaders)
             else
-              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSizeSM)),
+              Text('No headers available', style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
           ],
         ),
       );
@@ -189,16 +189,16 @@ class _BodyTab extends StatelessWidget {
       }
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
-            const SizedBox(height: AppTheme.spacingXS),
+            Text('Request Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: requestContentType),
-            const SizedBox(height: AppTheme.spacingMD),
-            const Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.md),
+            Text('Response Body', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
+            SizedBox(height: AppTheme.spacing.xs),
             BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: responseContentType),
           ],
         ),
@@ -231,7 +231,7 @@ class _TimingTab extends StatelessWidget {
       ];
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: events.map((e) {
@@ -240,7 +240,7 @@ class _TimingTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
                 children: [
-                  SizedBox(width: 120, child: Text(e.$1, style: const TextStyle(fontSize: AppTheme.fontSizeMD))),
+                  SizedBox(width: 120, child: Text(e.$1, style: TextStyle(fontSize: AppTheme.fontSize.md))),
                   Text('${ms}ms', style: AppTheme.mono(context)),
                 ],
               ),
@@ -263,7 +263,7 @@ class _ConnectionTab extends StatelessWidget {
       if (conn == null) return const Center(child: Text('No connection info'));
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: KeyValueTable(entries: [
           ('Source', '${conn.srcIp}:${conn.srcPort}'),
           ('Destination', '${conn.dstIp}:${conn.dstPort}'),
@@ -313,11 +313,11 @@ class _QueryTab extends StatelessWidget {
       }
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            Text('Query Parameters', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
             KeyValueTable(entries: entries),
           ],
         ),
@@ -381,17 +381,17 @@ class _CookiesTab extends StatelessWidget {
       }
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (reqCookies.isNotEmpty) ...[
-              const Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+              Text('Request Cookies', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
               KeyValueTable(entries: reqCookies),
-              const SizedBox(height: AppTheme.spacingMD),
+              SizedBox(height: AppTheme.spacing.md),
             ],
             if (rspCookies.isNotEmpty) ...[
-              const Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+              Text('Response Set-Cookie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
               KeyValueTable(entries: rspCookies),
             ],
           ],
@@ -440,11 +440,11 @@ class _CertificateTab extends StatelessWidget {
       }
 
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(AppTheme.spacingSM),
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSizeMD)),
+            Text('TLS Certificate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppTheme.fontSize.md)),
             KeyValueTable(entries: entries),
           ],
         ),

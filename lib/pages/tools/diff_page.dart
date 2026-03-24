@@ -45,9 +45,9 @@ class _DiffPageState extends State<DiffPage> {
 
   Widget _buildHeader(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingMD,
-        vertical: AppTheme.spacingSM,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing.md,
+        vertical: AppTheme.spacing.sm,
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -56,7 +56,7 @@ class _DiffPageState extends State<DiffPage> {
       child: Row(
         children: [
           Icon(Icons.compare_arrows, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: AppTheme.spacingSM),
+          SizedBox(width: AppTheme.spacing.sm),
           Text('Diff Comparison', style: theme.textTheme.titleSmall),
           const Spacer(),
           TextButton.icon(
@@ -81,17 +81,17 @@ class _DiffPageState extends State<DiffPage> {
     final flows = flowCtrl.flows;
 
     return Padding(
-      padding: const EdgeInsets.all(AppTheme.spacingLG),
+      padding: EdgeInsets.all(AppTheme.spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Diff Tool', style: theme.textTheme.titleMedium),
-          const SizedBox(height: AppTheme.spacingSM),
+          SizedBox(height: AppTheme.spacing.sm),
           Text(
             'Select two flows to compare side by side.',
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
           ),
-          const SizedBox(height: AppTheme.spacingLG),
+          SizedBox(height: AppTheme.spacing.lg),
           if (flows.isEmpty)
             Text(
               'No flows available. Capture some traffic first.',
@@ -99,21 +99,21 @@ class _DiffPageState extends State<DiffPage> {
             )
           else ...[
             Text('Flow A:', style: theme.textTheme.labelLarge),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.xs),
             _FlowDropdown(
               flows: flows,
               selected: _flowA,
               onChanged: (f) => setState(() => _flowA = f),
             ),
-            const SizedBox(height: AppTheme.spacingMD),
+            SizedBox(height: AppTheme.spacing.md),
             Text('Flow B:', style: theme.textTheme.labelLarge),
-            const SizedBox(height: AppTheme.spacingXS),
+            SizedBox(height: AppTheme.spacing.xs),
             _FlowDropdown(
               flows: flows,
               selected: _flowB,
               onChanged: (f) => setState(() => _flowB = f),
             ),
-            const SizedBox(height: AppTheme.spacingLG),
+            SizedBox(height: AppTheme.spacing.lg),
             FilledButton.icon(
               icon: const Icon(Icons.compare_arrows, size: 16),
               label: const Text('Compare'),
@@ -273,7 +273,7 @@ class _DiffColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(AppTheme.spacingSM),
+      padding: EdgeInsets.all(AppTheme.spacing.sm),
       itemCount: sections.length,
       itemBuilder: (context, idx) {
         final section = sections[idx];
@@ -285,9 +285,9 @@ class _DiffColumn extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSM,
-                vertical: AppTheme.spacingXS,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
+                vertical: AppTheme.spacing.xs,
               ),
               color: theme.colorScheme.surfaceContainerHighest,
               child: Text(
@@ -305,8 +305,8 @@ class _DiffColumn extends StatelessWidget {
 
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSM,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.sm,
                   vertical: 2,
                 ),
                 color: isDiff
@@ -325,7 +325,7 @@ class _DiffColumn extends StatelessWidget {
                 ),
               );
             }),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
           ],
         );
       },

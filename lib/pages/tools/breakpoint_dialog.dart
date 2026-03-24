@@ -68,7 +68,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
       title: Row(
         children: [
           Icon(Icons.pause_circle_filled, color: Colors.orange, size: 20),
-          const SizedBox(width: AppTheme.spacingSM),
+          SizedBox(width: AppTheme.spacing.sm),
           Text('Breakpoint Hit ($breakType)'),
         ],
       ),
@@ -80,7 +80,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
           children: [
             // Method
             Text('Method', style: TextStyle(
-              fontSize: AppTheme.fontSizeXS,
+              fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
             )),
@@ -92,48 +92,48 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
                 items: _methods
                     .map((m) => DropdownMenuItem(
                           value: m,
-                          child: Text(m, style: const TextStyle(fontSize: AppTheme.fontSizeSM)),
+                          child: Text(m, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
                         ))
                     .toList(),
                 onChanged: (v) => setState(() => _method = v ?? 'GET'),
                 decoration: InputDecoration(
                   isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
-                    vertical: AppTheme.spacingXS,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
+                    vertical: AppTheme.spacing.xs,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             // URL
             Text('URL', style: TextStyle(
-              fontSize: AppTheme.fontSizeXS,
+              fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
             )),
             const SizedBox(height: 2),
             TextField(
               controller: _urlCtrl,
-              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeSM),
+              style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.sm),
               decoration: InputDecoration(
                 isDense: true,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingSM,
-                  vertical: AppTheme.spacingSM,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.sm,
+                  vertical: AppTheme.spacing.sm,
                 ),
               ),
             ),
-            const SizedBox(height: AppTheme.spacingSM),
+            SizedBox(height: AppTheme.spacing.sm),
             // Headers
             Text('Headers', style: TextStyle(
-              fontSize: AppTheme.fontSizeXS,
+              fontSize: AppTheme.fontSize.xs,
               color: theme.hintColor,
               fontWeight: FontWeight.bold,
             )),
@@ -144,15 +144,15 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
                 controller: _headersCtrl,
                 maxLines: null,
                 expands: true,
-                style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeSM),
+                style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.sm),
                 decoration: InputDecoration(
                   isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
-                    vertical: AppTheme.spacingSM,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
+                    vertical: AppTheme.spacing.sm,
                   ),
                 ),
               ),
@@ -176,7 +176,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
               onPressed: _sending ? null : () => _resume('cancel'),
               child: const Text('Cancel'),
             ),
-            const SizedBox(width: AppTheme.spacingSM),
+            SizedBox(width: AppTheme.spacing.sm),
             // Execute (green) — resume with (optionally modified) request
             ElevatedButton(
               onPressed: _sending ? null : () => _resume('execute'),

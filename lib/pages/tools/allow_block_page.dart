@@ -29,18 +29,18 @@ class _AllowBlockTabBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      height: AppTheme.toolbarHeight,
+      height: AppTheme.sizing.toolbarHeight,
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: theme.dividerColor)),
       ),
-      child: const TabBar(
-        tabs: [
+      child: TabBar(
+        tabs: const [
           Tab(text: 'Allow List'),
           Tab(text: 'Block List'),
         ],
         isScrollable: true,
         tabAlignment: TabAlignment.start,
-        labelPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLG),
+        labelPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
       ),
     );
   }
@@ -73,9 +73,9 @@ class _DomainListTab extends StatelessWidget {
       children: [
         // Description + Add button
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingLG,
-            vertical: AppTheme.spacingSM,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.lg,
+            vertical: AppTheme.spacing.sm,
           ),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerLow,
@@ -88,14 +88,14 @@ class _DomainListTab extends StatelessWidget {
                 size: 16,
                 color: theme.hintColor,
               ),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               Expanded(
                 child: Text(
                   isAllow
                       ? 'Allow List: only show traffic from these domains'
                       : 'Block List: hide traffic from these domains',
                   style: TextStyle(
-                    fontSize: AppTheme.fontSizeSM,
+                    fontSize: AppTheme.fontSize.sm,
                     color: theme.hintColor,
                   ),
                 ),
@@ -106,8 +106,8 @@ class _DomainListTab extends StatelessWidget {
                 label: const Text('Add'),
                 style: TextButton.styleFrom(
                   minimumSize: const Size(0, 28),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacingSM,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacing.sm,
                   ),
                 ),
               ),
@@ -124,13 +124,13 @@ class _DomainListTab extends StatelessWidget {
                   isAllow ? 'No allow list entries' : 'No block list entries',
                   style: TextStyle(
                     color: theme.hintColor,
-                    fontSize: AppTheme.fontSizeMD,
+                    fontSize: AppTheme.fontSize.md,
                   ),
                 ),
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingSM),
+              padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: list.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
@@ -138,7 +138,7 @@ class _DomainListTab extends StatelessWidget {
                   dense: true,
                   title: Text(
                     list[i],
-                    style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD),
+                    style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
                   ),
                   trailing: IconButton(
                     icon: Icon(
@@ -177,20 +177,20 @@ class _DomainListTab extends StatelessWidget {
           child: TextField(
             controller: controller,
             autofocus: true,
-            style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSizeMD),
+            style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
             decoration: InputDecoration(
               hintText: '*.example.com',
               hintStyle: TextStyle(
                 color: Theme.of(context).hintColor,
-                fontSize: AppTheme.fontSizeSM,
+                fontSize: AppTheme.fontSize.sm,
               ),
               isDense: true,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusSM),
+                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingSM,
-                vertical: AppTheme.spacingSM,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
+                vertical: AppTheme.spacing.sm,
               ),
             ),
             onSubmitted: (value) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class WaterfallBar extends StatelessWidget {
   final double totalDuration;  // total time range in ms
@@ -9,6 +8,11 @@ class WaterfallBar extends StatelessWidget {
   final double? requestMs;
   final double? ttfbMs;
   final double? responseMs;
+  final Color connectColor;
+  final Color tlsColor;
+  final Color requestColor;
+  final Color ttfbColor;
+  final Color responseColor;
 
   const WaterfallBar({
     super.key,
@@ -19,6 +23,11 @@ class WaterfallBar extends StatelessWidget {
     this.requestMs,
     this.ttfbMs,
     this.responseMs,
+    required this.connectColor,
+    required this.tlsColor,
+    required this.requestColor,
+    required this.ttfbColor,
+    required this.responseColor,
   });
 
   @override
@@ -37,6 +46,11 @@ class WaterfallBar extends StatelessWidget {
           requestMs: requestMs ?? 0,
           ttfbMs: ttfbMs ?? 0,
           responseMs: responseMs ?? 0,
+          connectColor: connectColor,
+          tlsColor: tlsColor,
+          requestColor: requestColor,
+          ttfbColor: ttfbColor,
+          responseColor: responseColor,
         ),
       ),
     );
@@ -46,12 +60,18 @@ class WaterfallBar extends StatelessWidget {
 class _WaterfallPainter extends CustomPainter {
   final double totalDuration, startOffset;
   final double connectMs, tlsMs, requestMs, ttfbMs, responseMs;
+  final Color connectColor, tlsColor, requestColor, ttfbColor, responseColor;
 
   _WaterfallPainter({
     required this.totalDuration, required this.startOffset,
     required this.connectMs, required this.tlsMs,
     required this.requestMs, required this.ttfbMs,
     required this.responseMs,
+    required this.connectColor,
+    required this.tlsColor,
+    required this.requestColor,
+    required this.ttfbColor,
+    required this.responseColor,
   });
 
   @override
@@ -70,11 +90,11 @@ class _WaterfallPainter extends CustomPainter {
       x += segW;
     }
 
-    drawSegment(connectMs, AppTheme.timingConnect);
-    drawSegment(tlsMs, AppTheme.timingTLS);
-    drawSegment(requestMs, AppTheme.timingRequest);
-    drawSegment(ttfbMs, AppTheme.timingTTFB);
-    drawSegment(responseMs, AppTheme.timingResponse);
+    drawSegment(connectMs, connectColor);
+    drawSegment(tlsMs, tlsColor);
+    drawSegment(requestMs, requestColor);
+    drawSegment(ttfbMs, ttfbColor);
+    drawSegment(responseMs, responseColor);
   }
 
   @override

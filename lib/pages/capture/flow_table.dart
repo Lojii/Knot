@@ -145,13 +145,13 @@ class _FlowTableState extends State<FlowTable> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(label, style: TextStyle(
-            fontSize: AppTheme.fontSizeSM,
+            fontSize: AppTheme.fontSize.sm,
             fontWeight: FontWeight.bold,
             color: isActive ? null : null,
           )),
           if (arrow.isNotEmpty)
             Text(arrow, style: TextStyle(
-              fontSize: AppTheme.fontSizeXS,
+              fontSize: AppTheme.fontSize.xs,
               fontWeight: FontWeight.bold,
             )),
         ],
@@ -165,8 +165,8 @@ class _FlowTableState extends State<FlowTable> {
   }
 
   Widget _tableHeader(ThemeData theme) => Container(
-    height: AppTheme.tableHeaderHeight,
-    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+    height: AppTheme.sizing.tableHeaderHeight,
+    padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
     decoration: BoxDecoration(
       color: theme.colorScheme.surfaceContainerHigh,
     ),
@@ -175,7 +175,7 @@ class _FlowTableState extends State<FlowTable> {
         // Extra space for tag dot
         const SizedBox(width: 14),
         _sortableHeader('Method', _SortColumn.method, width: 60),
-        const SizedBox(width: AppTheme.spacingSM),
+        SizedBox(width: AppTheme.spacing.sm),
         _sortableHeader('Host', _SortColumn.host, flex: 2),
         _sortableHeader('Path', _SortColumn.path, flex: 3),
         _sortableHeader('Status', _SortColumn.status, width: 50),
@@ -213,8 +213,8 @@ class _FlowRow extends StatelessWidget {
           }
         },
         child: Container(
-          height: AppTheme.tableRowHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingSM),
+          height: AppTheme.sizing.tableRowHeight,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
           color: isSelected
               ? theme.colorScheme.primary.withAlpha(26)
               : null,
@@ -238,19 +238,19 @@ class _FlowRow extends StatelessWidget {
                 );
               }),
               SizedBox(width: 60, child: Text(_methodLabel(flow.method),
-                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: AppTheme.methodColor(flow.method)))),
-              const SizedBox(width: AppTheme.spacingSM),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.methodColor(flow.method)))),
+              SizedBox(width: AppTheme.spacing.sm),
               Expanded(flex: 2, child: Text(flow.host,
-                  style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
               Expanded(flex: 3, child: Text(flow.uri,
-                  style: const TextStyle(fontSize: AppTheme.fontSizeSM), overflow: TextOverflow.ellipsis)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
               SizedBox(width: 50, child: Text(flow.statusCode,
-                  style: TextStyle(fontSize: AppTheme.fontSizeSM, color: _statusColor(flow.statusCode)))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: _statusColor(flow.statusCode)))),
               SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
-                  style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
               SizedBox(width: 70, child: Text(
                   flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-                  style: const TextStyle(fontSize: AppTheme.fontSizeSM))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
             ],
           ),
         ),
@@ -280,7 +280,7 @@ class _FlowRow extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.comment_outlined, size: 16),
-              const SizedBox(width: AppTheme.spacingSM),
+              SizedBox(width: AppTheme.spacing.sm),
               Text(tagCtrl.getComment(flow.flowId) != null
                   ? 'Edit Comment' : 'Add Comment'),
             ],
@@ -288,48 +288,48 @@ class _FlowRow extends StatelessWidget {
         ),
         const PopupMenuDivider(),
         // Copy as cURL
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'curl',
           child: Row(
             children: [
-              Icon(Icons.copy, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Copy as cURL'),
+              const Icon(Icons.copy, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Copy as cURL'),
             ],
           ),
         ),
         const PopupMenuDivider(),
         // Repeat
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'repeat',
           child: Row(
             children: [
-              Icon(Icons.replay, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Repeat'),
+              const Icon(Icons.replay, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Repeat'),
             ],
           ),
         ),
         // Open in Compose
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'compose',
           child: Row(
             children: [
-              Icon(Icons.edit_note, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Open in Compose'),
+              const Icon(Icons.edit_note, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Open in Compose'),
             ],
           ),
         ),
         const PopupMenuDivider(),
         // Map Local
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'mapLocal',
           child: Row(
             children: [
-              Icon(Icons.folder_open, size: 16),
-              SizedBox(width: AppTheme.spacingSM),
-              Text('Map Local'),
+              const Icon(Icons.folder_open, size: 16),
+              SizedBox(width: AppTheme.spacing.sm),
+              const Text('Map Local'),
             ],
           ),
         ),
@@ -358,7 +358,7 @@ class _FlowRow extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Flow Comment', style: TextStyle(fontSize: AppTheme.fontSizeLG)),
+        title: Text('Flow Comment', style: TextStyle(fontSize: AppTheme.fontSize.lg)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -489,19 +489,19 @@ class _ColorSubmenu extends StatelessWidget {
     final tagCtrl = Get.find<TagController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingSM,
-        vertical: AppTheme.spacingXS,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing.sm,
+        vertical: AppTheme.spacing.xs,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Color Tag', style: TextStyle(
-            fontSize: AppTheme.fontSizeSM,
+          Text('Color Tag', style: TextStyle(
+            fontSize: AppTheme.fontSize.sm,
             fontWeight: FontWeight.bold,
           )),
-          const SizedBox(height: AppTheme.spacingXS),
+          SizedBox(height: AppTheme.spacing.xs),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -511,7 +511,7 @@ class _ColorSubmenu extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.only(right: AppTheme.spacingXS),
+                  padding: EdgeInsets.only(right: AppTheme.spacing.xs),
                   child: Tooltip(
                     message: entry.key,
                     child: Container(
