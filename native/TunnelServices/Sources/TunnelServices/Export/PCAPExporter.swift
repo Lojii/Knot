@@ -266,11 +266,11 @@ public enum PCAPError: Error, LocalizedError {
 private extension Data {
     mutating func appendUInt16(_ value: UInt16) {
         var v = value.bigEndian
-        append(UnsafeBufferPointer(start: &v, count: 1))
+        Swift.withUnsafeBytes(of: &v) { append(contentsOf: $0) }
     }
     mutating func appendUInt32(_ value: UInt32) {
         var v = value.bigEndian
-        append(UnsafeBufferPointer(start: &v, count: 1))
+        Swift.withUnsafeBytes(of: &v) { append(contentsOf: $0) }
     }
     mutating func appendInt32(_ value: Int32) {
         var v = value.bigEndian

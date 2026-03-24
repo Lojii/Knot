@@ -40,7 +40,7 @@ public class CertStore {
             CertStore.generateAndSave(certDir: certDir)
         }
 
-        cacert = try? NIOSSLCertificate(file: certPath, format: .pem)
+        cacert = try? NIOSSLCertificate.fromPEMFile(certPath).first
         cakey = try? NIOSSLPrivateKey(file: keyPath, format: .pem)
         rsakey = try? NIOSSLPrivateKey(file: rsaPath, format: .pem)
         x509CACert = try? CertGenerator.loadCertificate(fromPEMFile: certPath)

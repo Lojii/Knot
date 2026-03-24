@@ -19,6 +19,11 @@ public final class KnotWebServer: @unchecked Sendable {
     private let ownsGroup: Bool
     private var serverChannel: Channel?
 
+    /// The port the web server is actually bound to (available after `start()`).
+    public var boundPort: Int? {
+        serverChannel?.localAddress?.port
+    }
+
     private let pushManager = LivePushManager()
 
     // MARK: - Init
@@ -58,10 +63,10 @@ public final class KnotWebServer: @unchecked Sendable {
                 // Remove HTTPRouter and HTTPServerProtocolErrorHandler BEFORE
                 // the HTTP codec removal forwards leftover bytes as IOData.
                 if let h = try? channel.pipeline.syncOperations.handler(type: HTTPRouter.self) {
-                    try? channel.pipeline.syncOperations.removeHandler(h)
+                    _ = channel.pipeline.removeHandler(h)
                 }
                 if let h = try? channel.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
-                    try? channel.pipeline.syncOperations.removeHandler(h)
+                    _ = channel.pipeline.removeHandler(h)
                 }
                 return channel.pipeline.addHandler(WebSocketHandler(pushManager: pm))
             }

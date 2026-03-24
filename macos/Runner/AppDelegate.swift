@@ -10,8 +10,8 @@ import FlutterMacOS
 class AppDelegate: FlutterAppDelegate {
 
     // Proxy state — will hold ProxyServer instance once TunnelServices is linked
-    // var proxyServer: ProxyServer?
-    // var captureTask: CaptureTask?
+     var proxyServer: ProxyServer?
+     var captureTask: CaptureTask?
     var proxyProcess: Process?  // Fallback: external binary
 
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -54,19 +54,21 @@ class AppDelegate: FlutterAppDelegate {
     /// 1. In-process (when TunnelServices is linked via Xcode — enables debugging)
     /// 2. External binary (knot-server, fallback)
     private func startProxy(result: @escaping FlutterResult) {
-        // Check if already running
+        // Check if already running — in-process mode
+        if let server = proxyServer, server.localBoundPort != nil {
+            let apiPort = server.webBoundPort ?? 0
+            result(["running": true, "port": apiPort, "proxyPort": server.localBoundPort ?? 0])
+            return
+        }
+        // Check if already running — external binary mode
         if proxyProcess != nil && proxyProcess!.isRunning {
             let port = readPort()
             result(["running": true, "port": port ?? 9090])
             return
         }
 
-        // TODO: When TunnelServices is linked in Xcode, use in-process mode:
-         startInProcess(result: result)
-         return
-
-        // Fallback: run knot-server binary
-        startExternalBinary(result: result)
+        // In-process mode (TunnelServices linked)
+        startInProcess(result: result)
     }
 
     // MARK: - In-Process Mode (uncomment when TunnelServices linked)
@@ -84,7 +86,7 @@ class AppDelegate: FlutterAppDelegate {
         // Create task
         let task = CaptureTask()
         task.localIP = "127.0.0.1"
-        task.localPort = 0
+        task.localPort = 8034
         task.localEnable = 1
         task.wifiEnable = 0
         task.isCACertTrusted = true
@@ -109,16 +111,22 @@ class AppDelegate: FlutterAppDelegate {
         let server = ProxyServer(masterThreads: 1, workerThreads: 2)
         self.proxyServer = server
 
+        var responded = false
         server.start(task: task) { startResult in
-            switch startResult {
-            case .success:
-                let port = server.localBoundPort ?? 0
-                try? "\(port)".write(toFile: "/tmp/knot-proxy-port", atomically: true, encoding: .utf8)
-                NSLog("[Knot] Proxy running on port \(port)")
-                result(["running": true, "port": port])
-            case .failure(let error):
-                NSLog("[Knot] Proxy failed: \(error)")
-                result(FlutterError(code: "START_FAILED", message: "\(error)", details: nil))
+            DispatchQueue.main.async {
+                guard !responded else { return }
+                responded = true
+                switch startResult {
+                case .success:
+                    let proxyPort = server.localBoundPort ?? 0
+                    let apiPort = server.webBoundPort ?? 0
+                    try? "\(apiPort)".write(toFile: "/tmp/knot-proxy-port", atomically: true, encoding: .utf8)
+                    NSLog("[Knot] Proxy on port \(proxyPort), API on port \(apiPort)")
+                    result(["running": true, "port": apiPort, "proxyPort": proxyPort])
+                case .failure(let error):
+                    NSLog("[Knot] Proxy failed: \(error)")
+                    result(FlutterError(code: "START_FAILED", message: "\(error)", details: nil))
+                }
             }
         }
     }
@@ -171,6 +179,13 @@ class AppDelegate: FlutterAppDelegate {
     }
 
     private func getStatus(result: @escaping FlutterResult) {
+        // In-process mode
+        if let server = proxyServer, server.localBoundPort != nil {
+            let apiPort = server.webBoundPort ?? 0
+            result(["running": true, "port": apiPort])
+            return
+        }
+        // External binary mode
         let running = proxyProcess?.isRunning ?? false
         let port = readPort()
         result(["running": running, "port": port ?? 0])

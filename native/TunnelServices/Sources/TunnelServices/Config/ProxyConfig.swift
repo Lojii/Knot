@@ -138,7 +138,7 @@ public enum ProxyConfig {
 
     public enum Dashboard {
         /// HTTP+WebSocket port for real-time dashboard
-        public static var port: Int = 9090
+        public static var port: Int = 0
         /// Enable dashboard server
         public static var enabled: Bool = true
         /// System metrics push interval (ms)

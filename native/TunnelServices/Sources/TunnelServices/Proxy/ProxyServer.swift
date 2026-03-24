@@ -37,6 +37,11 @@ public class ProxyServer {
         udpChannel?.localAddress?.port
     }
 
+    /// The port the web API/WebSocket server is bound to.
+    public var webBoundPort: Int? {
+        webServer?.boundPort
+    }
+
     public init(
         masterThreads: Int = System.coreCount,
         workerThreads: Int = System.coreCount * 3
