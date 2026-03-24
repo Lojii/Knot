@@ -19,6 +19,7 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppTheme.loadFromAsset();
 
   final api = ApiClient();
   final ws = WsClient();
