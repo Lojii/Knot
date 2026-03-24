@@ -62,13 +62,16 @@ public final class KnotWebServer: @unchecked Sendable {
             upgradePipelineHandler: { channel, _ in
                 // Remove HTTPRouter and HTTPServerProtocolErrorHandler BEFORE
                 // the HTTP codec removal forwards leftover bytes as IOData.
-                if let h = try? channel.pipeline.syncOperations.handler(type: HTTPRouter.self) {
-                    _ = channel.pipeline.removeHandler(h)
+                var removeFutures: [EventLoopFuture<Void>] = []
+                if let ctx = try? channel.pipeline.syncOperations.context(handlerType: HTTPRouter.self) {
+                    removeFutures.append(channel.pipeline.removeHandler(context: ctx))
                 }
-                if let h = try? channel.pipeline.syncOperations.handler(type: HTTPServerProtocolErrorHandler.self) {
-                    _ = channel.pipeline.removeHandler(h)
+                if let ctx = try? channel.pipeline.syncOperations.context(handlerType: HTTPServerProtocolErrorHandler.self) {
+                    removeFutures.append(channel.pipeline.removeHandler(context: ctx))
                 }
-                return channel.pipeline.addHandler(WebSocketHandler(pushManager: pm))
+                return EventLoopFuture.andAllSucceed(removeFutures, on: channel.eventLoop).flatMap {
+                    channel.pipeline.addHandler(WebSocketHandler(pushManager: pm))
+                }
             }
         )
 

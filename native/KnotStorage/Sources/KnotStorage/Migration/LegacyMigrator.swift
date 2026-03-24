@@ -78,7 +78,7 @@ public enum LegacyMigrator {
             // created_at is stored as milliseconds (ASModel default) — convert to seconds.
             let createdAtMs = row[2] as? Double ?? (Date().timeIntervalSince1970 * 1000)
             let createdAt = createdAtMs > 1_000_000_000_000 ? createdAtMs / 1000.0 : createdAtMs
-            try? CatalogDAO.insertRule(db: catalogDB, name: name, config: config, createdAt: createdAt)
+            _ = try? CatalogDAO.insertRule(db: catalogDB, name: name, config: config, createdAt: createdAt)
         }
     }
 

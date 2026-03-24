@@ -115,7 +115,6 @@ public enum CatalogDAO {
             guard flowCount == 0 else { continue }
 
             // Try each root to find the protocol.db
-            var found = false
             for root in roots {
                 let protoPath = PathManager.protocolDBPath(taskId, root: root)
                 guard FileManager.default.fileExists(atPath: protoPath) else { continue }
@@ -134,7 +133,6 @@ public enum CatalogDAO {
                             )
                         }
                     }
-                    found = true
                     break
                 } catch {
                     continue
