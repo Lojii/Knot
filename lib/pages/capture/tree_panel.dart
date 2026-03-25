@@ -295,61 +295,55 @@ class _DomainTile extends StatelessWidget {
       onSecondaryTapUp: (details) {
         _showContextMenu(context, details.globalPosition, domain);
       },
-      child: Stack(
-        children: [
-          // Background highlight — Obx-reactive, behind ExpansionTile
-          Positioned.fill(
-            child: Obx(() {
-              final isSelected = treeCtrl.selectedDomain.value == domain;
-              return ColoredBox(
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+          dense: true,
+          title: Obx(() {
+            final isSelected = treeCtrl.selectedDomain.value == domain;
+            return Container(
+              margin: const EdgeInsets.only(left: -8, right: -4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.mode(context).tree.selectedBackground
                     : Colors.transparent,
-              );
-            }),
-          ),
-          // ExpansionTile — NOT inside Obx, preserves expand state
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-              dense: true,
-              title: Obx(() {
-                final isDomainActive = treeCtrl.selectedDomain.value == domain;
-                return Text(
-                  node.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.sm,
-                    color: isDomainActive
-                        ? AppTheme.mode(context).tree.selectedText
-                        : null,
-                  ),
-                );
-              }),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: AppTheme.colors(context).textSecondary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                ),
-                child: Text(
-                  '${node.count}',
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.xs,
-                    color: AppTheme.colors(context).textSecondary,
-                  ),
+                borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
+              ),
+              child: Text(
+                node.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: AppTheme.fontSize.sm,
+                  color: isSelected
+                      ? AppTheme.mode(context).tree.selectedText
+                      : null,
                 ),
               ),
-              onExpansionChanged: (expanded) {
-                treeCtrl.selectDomain(domain);
-                if (expanded) treeCtrl.loadChildren(node);
-              },
-              children: _buildPathTree(context, domain),
+            );
+          }),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            decoration: BoxDecoration(
+              color: AppTheme.colors(context).textSecondary.withAlpha(25),
+              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+            ),
+            child: Text(
+              '${node.count}',
+              style: TextStyle(
+                fontSize: AppTheme.fontSize.xs,
+                color: AppTheme.colors(context).textSecondary,
+              ),
             ),
           ),
-        ],
+          onExpansionChanged: (expanded) {
+            treeCtrl.selectDomain(domain);
+            if (expanded) treeCtrl.loadChildren(node);
+          },
+          children: _buildPathTree(context, domain),
+        ),
       ),
     );
   }
@@ -450,64 +444,59 @@ class _PathTreeTile extends StatelessWidget {
       });
     }
 
-    // Branch node — Stack: Obx background + ExpansionTile (not inside Obx)
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Obx(() {
-            final isSelected = treeCtrl.selectedDomain.value == domain &&
-                treeCtrl.selectedPath.value == node.fullPath;
-            return ColoredBox(
+    // Branch node — ExpansionTile outside Obx, title has Obx highlight
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
+        dense: true,
+        onExpansionChanged: (expanded) {
+          treeCtrl.selectPath(domain, node.fullPath);
+        },
+        title: Obx(() {
+          final isSelected = treeCtrl.selectedDomain.value == domain &&
+              treeCtrl.selectedPath.value == node.fullPath;
+          return Container(
+            margin: const EdgeInsets.only(left: -8, right: -4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
               color: isSelected
                   ? AppTheme.mode(context).tree.selectedBackground
                   : Colors.transparent,
-            );
-          }),
-        ),
-        Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
-            dense: true,
-            onExpansionChanged: (expanded) {
-              treeCtrl.selectPath(domain, node.fullPath);
-            },
-            title: Obx(() {
-              final isSelected = treeCtrl.selectedDomain.value == domain &&
-                  treeCtrl.selectedPath.value == node.fullPath;
-              return Text(
-                '/${node.segment}/',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.xs,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? AppTheme.mode(context).tree.selectedText
-                      : AppTheme.colors(context).textPrimary,
-                ),
-              );
-            }),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).textSecondary.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              ),
-              child: Text(
-                '${node.totalCount}',
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.xs,
-                  color: AppTheme.colors(context).textSecondary,
-                ),
+              borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
+            ),
+            child: Text(
+              '/${node.segment}/',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: AppTheme.fontSize.xs,
+                fontWeight: FontWeight.w500,
+                color: isSelected
+                    ? AppTheme.mode(context).tree.selectedText
+                    : AppTheme.colors(context).textPrimary,
               ),
             ),
-            children: node.children.values.map((child) =>
-              _PathTreeTile(node: child, domain: domain, depth: depth + 1),
-            ).toList(),
+          );
+        }),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          decoration: BoxDecoration(
+            color: AppTheme.colors(context).textSecondary.withAlpha(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+          ),
+          child: Text(
+            '${node.totalCount}',
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              color: AppTheme.colors(context).textSecondary,
+            ),
           ),
         ),
-      ],
+        children: node.children.values.map((child) =>
+          _PathTreeTile(node: child, domain: domain, depth: depth + 1),
+        ).toList(),
+      ),
     );
   }
 }
