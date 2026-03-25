@@ -130,7 +130,7 @@ class _DashboardTabState extends State<DashboardTab> {
         value: e.value.toDouble(),
         title: '${e.key}\n${e.value}',
         titleStyle: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.bold, color: Colors.white),
-        color: themeColors.protocol[e.key] ?? AppTheme.methodColor('default'),
+        color: themeColors.protocol[e.key] ?? AppTheme.methodColorOf(context, 'default'),
         radius: 50,
       )).toList();
 

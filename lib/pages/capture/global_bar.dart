@@ -45,53 +45,51 @@ class GlobalBar extends StatelessWidget {
             ),
           ),
         ),
-        child: Obx(() {
-          return Row(
-            children: [
-              // 1. Logo icon + "NetKnot" text
-              Icon(Icons.hub, size: AppTheme.sizing.iconSize, color: theme.colorScheme.primary),
-              SizedBox(width: AppTheme.spacing.xs),
-              Text(
-                'NetKnot',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.primary,
-                ),
+        child: Row(
+          children: [
+            // 1. Logo icon + "NetKnot" text
+            Icon(Icons.hub, size: AppTheme.sizing.iconSize, color: theme.colorScheme.primary),
+            SizedBox(width: AppTheme.spacing.xs),
+            Text(
+              'NetKnot',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
               ),
+            ),
 
-              // 2. Small spacer
-              SizedBox(width: AppTheme.spacing.lg),
+            // 2. Small spacer
+            SizedBox(width: AppTheme.spacing.lg),
 
-              // 3. Start/Stop toggle switch
-              _StartStopButton(taskCtrl: taskCtrl),
-              SizedBox(width: AppTheme.spacing.sm),
+            // 3. Start/Stop toggle switch
+            _StartStopButton(taskCtrl: taskCtrl),
+            SizedBox(width: AppTheme.spacing.sm),
 
-              // 4. TCP/HTTP mode switch buttons
-              _ProtocolModeButtons(),
+            // 4. TCP/HTTP mode switch buttons
+            _ProtocolModeButtons(),
 
-              // 5. Expanded spacer (left)
-              const Spacer(),
+            // 5. Expanded spacer (left)
+            const Spacer(),
 
-              // 6. Centered task name + rename + history
-              _TaskNameSection(taskCtrl: taskCtrl, pageCtrl: pageCtrl),
+            // 6. Centered task name + rename + history
+            _TaskNameSection(taskCtrl: taskCtrl, pageCtrl: pageCtrl),
 
-              // 7. Expanded spacer (right)
-              const Spacer(),
+            // 7. Expanded spacer (right)
+            const Spacer(),
 
-              // 8. Tools icon button
-              _ToolsMenuButton(pageCtrl: pageCtrl),
-              // 9. Settings icon button
-              IconButton(
-                icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
-                tooltip: 'nav.settings'.tr,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => pageCtrl.isSettings
-                    ? pageCtrl.showCapture()
-                    : pageCtrl.showSettings(),
-              ),
-            ],
-          );
-        }),
+            // 8. Tools icon button
+            _ToolsMenuButton(pageCtrl: pageCtrl),
+            // 9. Settings icon button
+            IconButton(
+              icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
+              tooltip: 'nav.settings'.tr,
+              visualDensity: VisualDensity.compact,
+              onPressed: () => pageCtrl.isSettings
+                  ? pageCtrl.showCapture()
+                  : pageCtrl.showSettings(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -114,8 +112,8 @@ class _StartStopButton extends StatelessWidget {
         height: AppTheme.sizing.iconButtonSize,
         decoration: BoxDecoration(
           color: taskCtrl.isCapturing.value
-              ? AppTheme.methodColor('DELETE')
-              : AppTheme.methodColor('GET'),
+              ? AppTheme.methodColorOf(context, 'DELETE')
+              : AppTheme.methodColorOf(context, 'GET'),
           borderRadius: BorderRadius.circular(5),
         ),
         child: Icon(
@@ -189,31 +187,33 @@ class _TaskNameSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = AppTheme.colors(context);
-    final taskName = taskCtrl.currentTask.value?.name.isNotEmpty == true
-        ? taskCtrl.currentTask.value!.name
-        : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}';
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.sm,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-            border: Border.all(color: colors.divider, width: 0.5),
-          ),
-          child: Text(
-            taskName,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w500,
-              fontSize: AppTheme.fontSize.sm,
+        Obx(() {
+          final taskName = taskCtrl.currentTask.value?.name.isNotEmpty == true
+              ? taskCtrl.currentTask.value!.name
+              : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}';
+          return Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing.sm,
+              vertical: 2,
             ),
-          ),
-        ),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+              border: Border.all(color: colors.divider, width: 0.5),
+            ),
+            child: Text(
+              taskName,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: AppTheme.fontSize.sm,
+              ),
+            ),
+          );
+        }),
         SizedBox(width: AppTheme.spacing.xs),
         IconButton(
           icon: Icon(Icons.edit, size: AppTheme.sizing.iconSize - 2),

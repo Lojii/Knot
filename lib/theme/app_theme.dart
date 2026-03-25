@@ -297,8 +297,8 @@ ModeColors _defaultLightMode() {
       selectedIndicatorWidth: 2.0,
     ),
     tree: const TreeConfig(
-      selectedBackground: Color(0xFF007AFF),
-      selectedText: Color(0xFFFFFFFF),
+      selectedBackground: Color(0xFFE8E8ED),
+      selectedText: Color(0xFF1D1D1F),
       selectedRadius: 5.0,
     ),
     filterChip: const FilterChipConfig(
@@ -374,8 +374,8 @@ ModeColors _defaultDarkMode() {
       selectedIndicatorWidth: 2.0,
     ),
     tree: const TreeConfig(
-      selectedBackground: Color(0xFF0A84FF),
-      selectedText: Color(0xFFFFFFFF),
+      selectedBackground: Color(0xFF38383A),
+      selectedText: Color(0xFFE5E5EA),
       selectedRadius: 5.0,
     ),
     filterChip: const FilterChipConfig(
@@ -583,7 +583,10 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: c.scaffold,
       dividerColor: c.divider,
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
+      textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+        bodyColor: c.textPrimary,
+        displayColor: c.textPrimary,
+      ),
     );
   }
 
@@ -600,7 +603,10 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: c.scaffold,
       dividerColor: c.divider,
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
+      textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+        bodyColor: c.textPrimary,
+        displayColor: c.textPrimary,
+      ),
     );
   }
 

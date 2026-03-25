@@ -277,11 +277,11 @@ class _ComposePageState extends State<ComposePage> {
                     style: TextStyle(
                       fontSize: AppTheme.fontSize.md,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.methodColor(_method),
+                      color: AppTheme.methodColorOf(context, _method),
                     ),
                     items: _methods.map((m) => DropdownMenuItem(
                       value: m,
-                      child: Text(m, style: TextStyle(color: AppTheme.methodColor(m))),
+                      child: Text(m, style: TextStyle(color: AppTheme.methodColorOf(context, m))),
                     )).toList(),
                     onChanged: (v) => setState(() => _method = v ?? 'GET'),
                   ),
@@ -549,7 +549,7 @@ class _ComposePageState extends State<ComposePage> {
                     vertical: AppTheme.spacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.statusColor(_responseStatus!).withAlpha(26),
+                    color: AppTheme.statusColorOf(context, _responseStatus!).withAlpha(26),
                     borderRadius: BorderRadius.circular(AppTheme.radius.sm),
                   ),
                   child: Text(
@@ -557,7 +557,7 @@ class _ComposePageState extends State<ComposePage> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: AppTheme.fontSize.lg,
-                      color: AppTheme.statusColor(_responseStatus!),
+                      color: AppTheme.statusColorOf(context, _responseStatus!),
                     ),
                   ),
                 ),
@@ -566,7 +566,7 @@ class _ComposePageState extends State<ComposePage> {
                   _httpStatusPhrase(_responseStatus!),
                   style: TextStyle(
                     fontSize: AppTheme.fontSize.md,
-                    color: AppTheme.statusColor(_responseStatus!),
+                    color: AppTheme.statusColorOf(context, _responseStatus!),
                   ),
                 ),
               ],
