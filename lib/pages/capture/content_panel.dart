@@ -80,7 +80,7 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.lg,
+                    horizontal: AppTheme.spacing.md,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
