@@ -68,6 +68,8 @@ void main() async {
     if (port > 0) {
       api.baseUrl = 'http://localhost:$port';
       ws.baseUrl = 'ws://localhost:$port';
+      // Pre-load history for the + menu
+      Get.find<HistoryController>().loadTasks();
     }
   });
 }

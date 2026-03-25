@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../controllers/history_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
 import '../../controllers/tab_controller.dart';
+import '../../models/task_model.dart';
 import '../../utils/har_export.dart';
 import '../../utils/har_import.dart';
 import '../../utils/list_export.dart';
@@ -89,15 +91,8 @@ class GlobalBar extends StatelessWidget {
               }),
             ),
 
-            // 5. + button (placeholder for Task 7)
-            IconButton(
-              icon: Icon(Icons.add, size: AppTheme.sizing.iconSize),
-              tooltip: 'New tab',
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              onPressed: () {/* Task 7: show recent history tasks */},
-            ),
+            // 5. + button with history menu
+            const _PlusMenuButton(),
 
             SizedBox(width: AppTheme.spacing.sm),
 
@@ -647,5 +642,87 @@ class _ToolsMenuButton extends StatelessWidget {
         );
       }
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Plus menu button — recent history tasks
+// ─────────────────────────────────────────────────────────────
+
+class _PlusMenuButton extends StatelessWidget {
+  const _PlusMenuButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<dynamic>(
+      icon: Icon(Icons.add, size: AppTheme.sizing.iconSize),
+      tooltip: 'tab.open_task'.tr,
+      padding: EdgeInsets.zero,
+      splashRadius: 14,
+      offset: Offset(0, AppTheme.sizing.globalBarHeight),
+      onOpened: () {
+        // Refresh history when menu opens
+        Get.find<HistoryController>().loadTasks();
+      },
+      itemBuilder: (ctx) {
+        final historyCtrl = Get.find<HistoryController>();
+        final tasks = historyCtrl.tasks.take(10).toList();
+
+        return [
+          if (tasks.isEmpty)
+            PopupMenuItem<String>(
+              enabled: false,
+              child: Text('empty.no_history'.tr,
+                  style: TextStyle(color: AppTheme.colors(ctx).textSecondary, fontSize: AppTheme.fontSize.sm)),
+            ),
+          ...tasks.map((task) => PopupMenuItem<TaskModel>(
+                value: task,
+                height: 36,
+                child: Row(
+                  children: [
+                    Icon(Icons.description_outlined, size: 14,
+                        color: AppTheme.colors(ctx).textSecondary),
+                    SizedBox(width: AppTheme.spacing.sm),
+                    Expanded(
+                      child: Text(
+                        task.name.isNotEmpty ? task.name : 'Task ${task.id}',
+                        style: TextStyle(fontSize: AppTheme.fontSize.sm),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (task.flowCount != null && task.flowCount! > 0)
+                      Text('${task.flowCount}',
+                          style: TextStyle(
+                              fontSize: AppTheme.fontSize.xs,
+                              color: AppTheme.colors(ctx).textSecondary)),
+                  ],
+                ),
+              )),
+          const PopupMenuDivider(),
+          PopupMenuItem<String>(
+            value: '__manage__',
+            height: 36,
+            child: Row(
+              children: [
+                Icon(Icons.history, size: 14,
+                    color: AppTheme.colors(ctx).textSecondary),
+                SizedBox(width: AppTheme.spacing.sm),
+                Text('tab.manage_history'.tr,
+                    style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+              ],
+            ),
+          ),
+        ];
+      },
+      onSelected: (value) {
+        if (value == '__manage__') {
+          Get.find<AppPageController>().showHistory();
+        } else if (value is TaskModel) {
+          final tabMgr = Get.find<TabManager>();
+          tabMgr.openTask(value);
+          Get.find<TaskController>().selectTask(value);
+        }
+      },
+    );
   }
 }
