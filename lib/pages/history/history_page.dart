@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../api/api_client.dart';
 import '../../controllers/history_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/tab_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../models/task_model.dart';
 import '../../theme/app_theme.dart';
@@ -144,6 +145,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
       ],
     ).then((value) {
       if (value == 'open') {
+        Get.find<TabManager>().openTask(task);
         Get.find<TaskController>().selectTask(task);
         Get.find<AppPageController>().showCapture();
       } else if (value == 'delete') {
@@ -282,6 +284,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
                     if (editing) {
                       _toggleSelect(task.id);
                     } else {
+                      Get.find<TabManager>().openTask(task);
                       taskCtrl.selectTask(task);
                       pageCtrl.showCapture();
                     }

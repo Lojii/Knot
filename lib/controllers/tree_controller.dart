@@ -96,13 +96,61 @@ class TreeController extends GetxController {
     } catch (_) {}
   }
 
-  /// Reload tree from API with current filters — preserves full domain list
+  /// Reload tree from the current flow list (already filtered by API + client-side).
+  /// Preserves all known domains — those with 0 matching flows get count 0.
   void reloadWithFilters() {
     if (_taskId == null) return;
+    final flowCtrl = Get.find<FlowController>();
     final filterCtrl = Get.find<FilterController>();
-    // Re-fetch domains from API with the current protocol filter
-    // This preserves the full domain list (API returns all matching domains)
-    loadDomains(_taskId!, protocol: filterCtrl.protocolParam);
+    final flows = flowCtrl.flows.toList();
+
+    // Compute counts from current (filtered) flows
+    final filteredCounts = <String, int>{};
+    final filtered = filterCtrl.activeContentTypes.isEmpty
+        ? flows
+        : flows.where((f) => filterCtrl.matchesContentType(f)).toList();
+    for (final f in filtered) {
+      if (f.host.isNotEmpty) {
+        final h = _normalizeHost(f.host);
+        filteredCounts[h] = (filteredCounts[h] ?? 0) + 1;
+      }
+    }
+
+    // Merge: keep ALL previously known domains, update counts from filtered data
+    // Domains not in filtered flows keep count 0 (still visible in tree)
+    final mergedCounts = <String, int>{};
+    for (final key in _hostCounts.keys) {
+      mergedCounts[key] = filteredCounts[key] ?? 0;
+    }
+    // Also add any new domains from flows that weren't in _hostCounts
+    for (final entry in filteredCounts.entries) {
+      mergedCounts.putIfAbsent(entry.key, () => entry.value);
+    }
+
+    // Rebuild tree with merged counts (don't overwrite _hostCounts — keep full set)
+    final oldNodes = {for (final n in tree) n.domain: n};
+    final nodes = mergedCounts.entries
+        .where((e) => e.value > 0) // hide domains with 0 matching flows
+        .map((e) {
+      final old = oldNodes[e.key];
+      return TreeNode(
+        label: e.key,
+        domain: e.key,
+        isGroup: true,
+        count: e.value,
+        children: old?.children,
+        childrenLoaded: old?.childrenLoaded ?? false,
+      );
+    }).toList();
+
+    nodes.sort((a, b) {
+      final aPinned = pinnedDomains.contains(a.domain);
+      final bPinned = pinnedDomains.contains(b.domain);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return b.count.compareTo(a.count);
+    });
+    tree.value = nodes;
   }
 
   /// Load children (requests) for a domain on expand
@@ -199,13 +247,21 @@ class TreeController extends GetxController {
     appTree.clear();
   }
 
-  /// Build hierarchical path tree from URIs
+  /// Build hierarchical path tree from URIs — directories only (no leaf filenames).
+  /// Each URI's segments are treated as directory levels. The request count is
+  /// attributed to the deepest directory segment (last segment is treated as
+  /// part of its parent directory, not a separate node).
   static PathNode buildPathTree(List<TreeNode> children) {
     final root = PathNode(segment: '', fullPath: '');
     for (final child in children) {
       final parts = child.label.split(' ');
       final uri = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
       final segments = uri.split('/').where((s) => s.isNotEmpty).toList();
+      if (segments.isEmpty) {
+        root.requestCount++;
+        continue;
+      }
+      // Build directory nodes — all segments become directories
       var current = root;
       var path = '';
       for (final seg in segments) {
@@ -215,7 +271,34 @@ class TreeController extends GetxController {
       }
       current.requestCount++;
     }
+    // Collapse single-child chains: /api/ -> /v1/ -> /users/ becomes /api/v1/users/
+    _collapseChains(root);
     return root;
+  }
+
+  /// Collapse nodes that have exactly one child and zero own requests into their child.
+  static void _collapseChains(PathNode node) {
+    // Recurse first so we collapse from leaves up
+    for (final child in node.children.values) {
+      _collapseChains(child);
+    }
+    // Collapse: if this node has exactly 1 child and 0 own requests, merge child into this
+    final keys = node.children.keys.toList();
+    for (final key in keys) {
+      final child = node.children[key]!;
+      if (child.children.length == 1 && child.requestCount == 0) {
+        final grandchild = child.children.values.first;
+        node.children.remove(key);
+        // Merge: combined segment "seg1/seg2"
+        final merged = PathNode(
+          segment: '${child.segment}/${grandchild.segment}',
+          fullPath: grandchild.fullPath,
+          requestCount: grandchild.requestCount,
+        );
+        merged.children.addAll(grandchild.children);
+        node.children[merged.segment] = merged;
+      }
+    }
   }
 
   void _rebuildTree() {
