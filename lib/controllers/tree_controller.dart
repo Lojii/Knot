@@ -253,7 +253,12 @@ class TreeController extends GetxController {
     final root = PathNode(segment: '', fullPath: '');
     for (final child in children) {
       final parts = child.label.split(' ');
-      final uri = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
+      var uri = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
+      // Strip query string and fragment
+      final qIdx = uri.indexOf('?');
+      if (qIdx >= 0) uri = uri.substring(0, qIdx);
+      final hIdx = uri.indexOf('#');
+      if (hIdx >= 0) uri = uri.substring(0, hIdx);
       final segments = uri.split('/').where((s) => s.isNotEmpty).toList();
       if (segments.isEmpty) {
         root.requestCount++;
