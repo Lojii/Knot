@@ -456,8 +456,7 @@ class _PathTreeTile extends StatelessWidget {
           final isSelected = treeCtrl.selectedDomain.value == domain &&
               treeCtrl.selectedPath.value == node.fullPath;
           return Container(
-            margin: const EdgeInsets.only(left: -8, right: -4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppTheme.mode(context).tree.selectedBackground
