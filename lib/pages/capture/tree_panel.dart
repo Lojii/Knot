@@ -291,61 +291,52 @@ class _DomainTile extends StatelessWidget {
     final treeCtrl = Get.find<TreeController>();
     final domain = node.domain ?? '';
 
-    return Obx(() {
-      final isSelected = treeCtrl.selectedDomain.value == domain &&
-          treeCtrl.selectedPath.value == null;
-      final isDomainActive = treeCtrl.selectedDomain.value == domain;
-
-      return GestureDetector(
-        onSecondaryTapUp: (details) {
-          _showContextMenu(context, details.globalPosition, domain);
-        },
-        child: Container(
-          color: isSelected
-              ? AppTheme.mode(context).tree.selectedBackground
-              : null,
-          child: Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-              dense: true,
-              title: Text(
-                node.label,
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.sm,
-                  color: isDomainActive
-                      ? AppTheme.mode(context).tree.selectedText
-                      : null,
-                ),
-                overflow: TextOverflow.ellipsis,
+    // ExpansionTile is OUTSIDE Obx — selection changes won't rebuild/reset it.
+    return GestureDetector(
+      onSecondaryTapUp: (details) {
+        _showContextMenu(context, details.globalPosition, domain);
+      },
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+          dense: true,
+          // Only Obx-wrap the title text (reacts to selection without rebuilding ExpansionTile)
+          title: Obx(() {
+            final isDomainActive = treeCtrl.selectedDomain.value == domain;
+            return Text(
+              node.label,
+              style: TextStyle(
+                fontSize: AppTheme.fontSize.sm,
+                color: isDomainActive
+                    ? AppTheme.mode(context).tree.selectedText
+                    : null,
               ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).textSecondary.withAlpha(25),
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              ),
-              child: Text(
-                '${node.count}',
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.xs,
-                  color: isDomainActive
-                      ? AppTheme.mode(context).tree.selectedText.withAlpha(180)
-                      : AppTheme.colors(context).textSecondary,
-                ),
+              overflow: TextOverflow.ellipsis,
+            );
+          }),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            decoration: BoxDecoration(
+              color: AppTheme.colors(context).textSecondary.withAlpha(25),
+              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+            ),
+            child: Text(
+              '${node.count}',
+              style: TextStyle(
+                fontSize: AppTheme.fontSize.xs,
+                color: AppTheme.colors(context).textSecondary,
               ),
             ),
-            // Every click: select + toggle. ExpansionTile handles toggle itself.
-            onExpansionChanged: (expanded) {
-              treeCtrl.selectDomain(domain);
-              if (expanded) treeCtrl.loadChildren(node);
-            },
-            children: _buildPathTree(context, domain),
           ),
+          onExpansionChanged: (expanded) {
+            treeCtrl.selectDomain(domain);
+            if (expanded) treeCtrl.loadChildren(node);
+          },
+          children: _buildPathTree(context, domain),
         ),
-        ),
-      );
-    });
+      ),
+    );
   }
 
   List<Widget> _buildPathTree(BuildContext context, String domain) {
@@ -443,53 +434,47 @@ class _PathTreeTile extends StatelessWidget {
       });
     }
 
-    // Branch node — ExpansionTile handles toggle, onExpansionChanged selects
-    return Obx(() {
-      final isSelected = treeCtrl.selectedDomain.value == domain &&
-          treeCtrl.selectedPath.value == node.fullPath;
-
-      return Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: Container(
-          color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
-          child: ExpansionTile(
-            tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
-            dense: true,
-            onExpansionChanged: (expanded) {
-              treeCtrl.selectPath(domain, node.fullPath);
-            },
-            title: Text(
-              '/${node.segment}/',
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                fontWeight: FontWeight.w500,
-                color: isSelected
-                    ? AppTheme.mode(context).tree.selectedText
-                    : AppTheme.colors(context).textPrimary,
-              ),
+    // Branch node — ExpansionTile OUTSIDE Obx to preserve expand state
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
+        dense: true,
+        onExpansionChanged: (expanded) {
+          treeCtrl.selectPath(domain, node.fullPath);
+        },
+        title: Obx(() {
+          final isSelected = treeCtrl.selectedDomain.value == domain &&
+              treeCtrl.selectedPath.value == node.fullPath;
+          return Text(
+            '/${node.segment}/',
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              fontWeight: FontWeight.w500,
+              color: isSelected
+                  ? AppTheme.mode(context).tree.selectedText
+                  : AppTheme.colors(context).textPrimary,
             ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).textSecondary.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              ),
-              child: Text(
-                '${node.totalCount}',
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.xs,
-                  color: isSelected
-                      ? AppTheme.mode(context).tree.selectedText.withAlpha(180)
-                      : AppTheme.colors(context).textSecondary,
-                ),
-              ),
+          );
+        }),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          decoration: BoxDecoration(
+            color: AppTheme.colors(context).textSecondary.withAlpha(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+          ),
+          child: Text(
+            '${node.totalCount}',
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              color: AppTheme.colors(context).textSecondary,
             ),
-            children: node.children.values.map((child) =>
-              _PathTreeTile(node: child, domain: domain, depth: depth + 1),
-            ).toList(),
           ),
         ),
-      );
-    });
+        children: node.children.values.map((child) =>
+          _PathTreeTile(node: child, domain: domain, depth: depth + 1),
+        ).toList(),
+      ),
+    );
   }
 }
