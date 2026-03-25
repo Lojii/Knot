@@ -21,12 +21,10 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const _tabCount = 7;
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabCount, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() => setState(() {}));
   }
 
@@ -36,22 +34,11 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
     super.dispose();
   }
 
-  List<String> get _tabs => [
-    'tab.headers'.tr,
-    'tab.body'.tr,
-    'tab.query'.tr,
-    'tab.cookies'.tr,
-    'tab.timing'.tr,
-    'tab.connection'.tr,
-    'tab.certificate'.tr,
-  ];
-
   @override
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
     final detailCtrl = Get.find<DetailController>();
     final theme = Theme.of(context);
-    final detailTab = AppTheme.mode(context).detailTab;
 
     return Obx(() {
       if (flowCtrl.selectedFlow.value == null) {
@@ -61,108 +48,20 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
         );
       }
 
-      // Loading state: show spinner while detail is loading
       if (detailCtrl.isLoadingDetail.value) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      final tabs = _tabs;
-
       return Column(
         children: [
-          // Toolbar with cURL export
-          Container(
-            height: AppTheme.sizing.toolbarHeight,
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-            child: Row(
-              children: [
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () {
-                    final flow = flowCtrl.selectedFlow.value;
-                    if (flow == null) return;
-                    final raw = detailCtrl.detail.value?.raw ?? {};
-                    final headers = RequestSender.extractHeaders(raw);
-                    final url = RequestSender.buildUrl(flow);
-                    final pageCtrl = Get.find<AppPageController>();
-                    pageCtrl.openInCompose(
-                      method: flow.method,
-                      url: url,
-                      headers: headers,
-                    );
-                  },
-                  icon: const Icon(Icons.edit_note, size: 14),
-                  label: Text('detail.edit_resend'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    final raw = detailCtrl.detail.value?.raw ?? {};
-                    final curl = CurlExport.fromFlowDetail(raw);
-                    Clipboard.setData(ClipboardData(text: curl));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('detail.curl_copied'.tr),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.copy, size: 14),
-                  label: Text('detail.copy_curl'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
-                ),
-              ],
-            ),
-          ),
-          // Custom segmented-control tab row
-          Container(
-            height: AppTheme.sizing.detailTabHeight,
-            padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing.sm,
-              vertical: 2,
-            ),
-            child: Row(
-              children: List.generate(tabs.length, (i) {
-                final isActive = _tabController.index == i;
-                return GestureDetector(
-                  onTap: () {
-                    _tabController.animateTo(i);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacing.sm,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? detailTab.activeBackground
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(detailTab.radius),
-                    ),
-                    child: Text(
-                      tabs[i],
-                      style: TextStyle(
-                        fontSize: AppTheme.fontSize.sm,
-                        fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                        color: isActive
-                            ? detailTab.activeText
-                            : detailTab.inactiveText,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
+          _actionBar(context, flowCtrl, detailCtrl),
+          _tabBar(context),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _HeadersTab(detailCtrl: detailCtrl),
-                _BodyTab(detailCtrl: detailCtrl),
-                _QueryTab(detailCtrl: detailCtrl),
-                _CookiesTab(detailCtrl: detailCtrl),
-                _TimingTab(detailCtrl: detailCtrl),
-                _ConnectionTab(detailCtrl: detailCtrl),
-                _CertificateTab(detailCtrl: detailCtrl),
+                _DataTab(detailCtrl: detailCtrl),
+                _DetailsTab(detailCtrl: detailCtrl),
               ],
             ),
           ),
@@ -170,51 +69,267 @@ class _FlowDetailPanelState extends State<FlowDetailPanel>
       );
     });
   }
+
+  Widget _actionBar(BuildContext context, FlowController flowCtrl, DetailController detailCtrl) {
+    return Container(
+      height: AppTheme.sizing.toolbarHeight,
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+      child: Row(
+        children: [
+          const Spacer(),
+          TextButton.icon(
+            onPressed: () {
+              final flow = flowCtrl.selectedFlow.value;
+              if (flow == null) return;
+              final raw = detailCtrl.detail.value?.raw ?? {};
+              final headers = RequestSender.extractHeaders(raw);
+              final url = RequestSender.buildUrl(flow);
+              final pageCtrl = Get.find<AppPageController>();
+              pageCtrl.openInCompose(
+                method: flow.method,
+                url: url,
+                headers: headers,
+              );
+            },
+            icon: const Icon(Icons.edit_note, size: 14),
+            label: Text('detail.edit_resend'.tr,
+                style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+          ),
+          TextButton.icon(
+            onPressed: () {
+              final raw = detailCtrl.detail.value?.raw ?? {};
+              final curl = CurlExport.fromFlowDetail(raw);
+              Clipboard.setData(ClipboardData(text: curl));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('detail.curl_copied'.tr),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy, size: 14),
+            label: Text('detail.copy_curl'.tr,
+                style: TextStyle(fontSize: AppTheme.fontSize.sm)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tabBar(BuildContext context) {
+    final detailTab = AppTheme.mode(context).detailTab;
+    final tabs = ['Data', 'Details'];
+
+    return Container(
+      height: AppTheme.sizing.detailTabHeight,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing.sm,
+        vertical: 2,
+      ),
+      child: Row(
+        children: List.generate(tabs.length, (i) {
+          final isActive = _tabController.index == i;
+          return GestureDetector(
+            onTap: () => _tabController.animateTo(i),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing.sm,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? detailTab.activeBackground
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(detailTab.radius),
+              ),
+              child: Text(
+                tabs[i],
+                style: TextStyle(
+                  fontSize: AppTheme.fontSize.sm,
+                  fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                  color: isActive
+                      ? detailTab.activeText
+                      : detailTab.inactiveText,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
 }
 
-class _HeadersTab extends StatelessWidget {
+// ===========================================================================
+// Data Tab — horizontal split: Request (left) | Response (right)
+// ===========================================================================
+
+class _DataTab extends StatefulWidget {
   final DetailController detailCtrl;
-  const _HeadersTab({required this.detailCtrl});
+  const _DataTab({required this.detailCtrl});
+
+  @override
+  State<_DataTab> createState() => _DataTabState();
+}
+
+class _DataTabState extends State<_DataTab> with TickerProviderStateMixin {
+  late final TabController _reqTabCtrl;
+  late final TabController _rspTabCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _reqTabCtrl = TabController(length: 4, vsync: this);
+    _rspTabCtrl = TabController(length: 3, vsync: this);
+    _reqTabCtrl.addListener(() => setState(() {}));
+    _rspTabCtrl.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _reqTabCtrl.dispose();
+    _rspTabCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return Row(
+      children: [
+        // Left: Request
+        Expanded(
+          child: Column(
+            children: [
+              _subTabBar(context, 'REQUEST', _reqTabCtrl,
+                  ['Headers', 'Body', 'Params', 'Cookies']),
+              Expanded(
+                child: TabBarView(
+                  controller: _reqTabCtrl,
+                  children: [
+                    _RequestHeadersView(detailCtrl: widget.detailCtrl),
+                    _RequestBodyView(detailCtrl: widget.detailCtrl),
+                    _QueryParamsView(detailCtrl: widget.detailCtrl),
+                    _RequestCookiesView(detailCtrl: widget.detailCtrl),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const VerticalDivider(width: 1),
+        // Right: Response
+        Expanded(
+          child: Column(
+            children: [
+              _subTabBar(context, 'RESPONSE', _rspTabCtrl,
+                  ['Headers', 'Body', 'Cookies']),
+              Expanded(
+                child: TabBarView(
+                  controller: _rspTabCtrl,
+                  children: [
+                    _ResponseHeadersView(detailCtrl: widget.detailCtrl),
+                    _ResponseBodyView(detailCtrl: widget.detailCtrl),
+                    _ResponseCookiesView(detailCtrl: widget.detailCtrl),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _subTabBar(BuildContext context, String label,
+      TabController controller, List<String> tabs) {
+    final detailTab = AppTheme.mode(context).detailTab;
+    return Container(
+      height: AppTheme.sizing.detailTabHeight,
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: AppTheme.colors(context).textSecondary,
+            ),
+          ),
+          SizedBox(width: AppTheme.spacing.sm),
+          ...List.generate(tabs.length, (i) {
+            final isActive = controller.index == i;
+            return GestureDetector(
+              onTap: () => controller.animateTo(i),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.sm,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? detailTab.activeBackground
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(detailTab.radius),
+                ),
+                child: Text(
+                  tabs[i],
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.xs,
+                    fontWeight:
+                        isActive ? FontWeight.w500 : FontWeight.normal,
+                    color: isActive
+                        ? detailTab.activeText
+                        : detailTab.inactiveText,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// Request sub-views
+// ===========================================================================
+
+class _RequestHeadersView extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _RequestHeadersView({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
     return Obx(() {
       final raw = detailCtrl.detail.value?.raw ?? {};
       final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
       final reqHeaders = (metadata['requestHeaders'] as List?)
-          ?.map((e) => ((e as List).first as String, e.last as String))
-          .toList() ?? [];
-      final rspHeaders = (metadata['responseHeaders'] as List?)
-          ?.map((e) => ((e as List).first as String, e.last as String))
-          .toList() ?? [];
+              ?.map((e) => ((e as List).first as String, e.last as String))
+              .toList() ??
+          [];
+
+      if (reqHeaders.isEmpty) {
+        return Center(
+          child: Text('detail.no_headers'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor,
+                  fontSize: AppTheme.fontSize.sm)),
+        );
+      }
 
       return SingleChildScrollView(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('detail.request_headers'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            if (reqHeaders.isNotEmpty)
-              KeyValueTable(entries: reqHeaders)
-            else
-              Text('detail.no_headers'.tr, style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
-            SizedBox(height: AppTheme.spacing.md),
-            Text('detail.response_headers'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            if (rspHeaders.isNotEmpty)
-              KeyValueTable(entries: rspHeaders)
-            else
-              Text('detail.no_headers'.tr, style: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm)),
-          ],
-        ),
+        child: KeyValueTable(entries: reqHeaders),
       );
     });
   }
 }
 
-class _BodyTab extends StatelessWidget {
+class _RequestBodyView extends StatelessWidget {
   final DetailController detailCtrl;
-  const _BodyTab({required this.detailCtrl});
+  const _RequestBodyView({required this.detailCtrl});
 
   @override
   Widget build(BuildContext context) {
@@ -223,27 +338,15 @@ class _BodyTab extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      // Extract content-type from metadata
       final raw = detailCtrl.detail.value?.raw ?? {};
       final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
-      final rspHeaders = metadata['responseHeaders'] as List?;
-      String responseContentType = '';
-      String requestContentType = '';
-      if (rspHeaders != null) {
-        for (final h in rspHeaders) {
-          final pair = h as List;
-          if ((pair.first as String).toLowerCase() == 'content-type') {
-            responseContentType = pair.last as String;
-            break;
-          }
-        }
-      }
       final reqHeaders = metadata['requestHeaders'] as List?;
+      String contentType = '';
       if (reqHeaders != null) {
         for (final h in reqHeaders) {
           final pair = h as List;
           if ((pair.first as String).toLowerCase() == 'content-type') {
-            requestContentType = pair.last as String;
+            contentType = pair.last as String;
             break;
           }
         }
@@ -251,118 +354,39 @@ class _BodyTab extends StatelessWidget {
 
       return SingleChildScrollView(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('detail.request_body'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            SizedBox(height: AppTheme.spacing.xs),
-            BodyViewer(body: detailCtrl.requestBody.value, label: 'Request', contentType: requestContentType),
-            SizedBox(height: AppTheme.spacing.md),
-            Text('detail.response_body'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            SizedBox(height: AppTheme.spacing.xs),
-            BodyViewer(body: detailCtrl.responseBody.value, label: 'Response', contentType: responseContentType),
-          ],
+        child: BodyViewer(
+          body: detailCtrl.requestBody.value,
+          label: 'Request',
+          contentType: contentType,
         ),
       );
     });
   }
 }
 
-class _TimingTab extends StatelessWidget {
+class _QueryParamsView extends StatelessWidget {
   final DetailController detailCtrl;
-  const _TimingTab({required this.detailCtrl});
+  const _QueryParamsView({required this.detailCtrl});
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final d = detailCtrl.detail.value;
-      if (d == null) return const SizedBox();
-
-      final raw = d.raw;
-      final started = (raw['startedAt'] as num?)?.toDouble() ?? 0;
-      final ended = (raw['endedAt'] as num?)?.toDouble() ?? started;
-
-      final events = <(String, double?)>[
-        ('timing.connect'.tr, d.connectAt),
-        ('timing.connected'.tr, d.connectedAt),
-        ('timing.tls_done'.tr, d.tlsDoneAt),
-        ('timing.request_end'.tr, d.reqEndAt),
-        ('timing.response_start'.tr, d.rspStartAt),
-        ('timing.response_end'.tr, ended > 0 ? ended : null),
-      ];
-
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: events.map((e) {
-            final ms = e.$2 != null ? ((e.$2! - started) * 1000).toStringAsFixed(1) : '-';
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: [
-                  SizedBox(width: 120, child: Text(e.$1, style: TextStyle(fontSize: AppTheme.fontSize.md))),
-                  Text('${ms}ms', style: AppTheme.mono(context)),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    });
-  }
-}
-
-class _ConnectionTab extends StatelessWidget {
-  final DetailController detailCtrl;
-  const _ConnectionTab({required this.detailCtrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final conn = detailCtrl.detail.value?.connection;
-      if (conn == null) return Center(child: Text('detail.no_connection'.tr));
-
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: KeyValueTable(entries: [
-          ('detail.source'.tr, '${conn.srcIp}:${conn.srcPort}'),
-          ('detail.destination'.tr, '${conn.dstIp}:${conn.dstPort}'),
-          ('detail.state'.tr, conn.state),
-          if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty)
-            ('detail.tls_version'.tr, conn.tlsVersion!),
-          if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty)
-            ('detail.cipher'.tr, conn.tlsCipher!),
-          if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty)
-            ('detail.sni'.tr, conn.tlsSni!),
-        ]),
-      );
-    });
-  }
-}
-
-class _QueryTab extends StatelessWidget {
-  final DetailController detailCtrl;
-  const _QueryTab({required this.detailCtrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Obx(() {
       final raw = detailCtrl.detail.value?.raw ?? {};
       final uriStr = (raw['searchKey2'] as String?) ?? '';
       if (uriStr.isEmpty) {
         return Center(
-          child: Text('detail.no_query'.tr, style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_query'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor)),
         );
       }
 
-      // Parse query parameters from the URI
-      final uri = Uri.tryParse(uriStr.startsWith('http') ? uriStr : 'http://x$uriStr');
+      final uri = Uri.tryParse(
+          uriStr.startsWith('http') ? uriStr : 'http://x$uriStr');
       final params = uri?.queryParametersAll ?? {};
       if (params.isEmpty) {
         return Center(
-          child: Text('detail.no_query'.tr, style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_query'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor)),
         );
       }
 
@@ -375,33 +399,24 @@ class _QueryTab extends StatelessWidget {
 
       return SingleChildScrollView(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('detail.query_params'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            KeyValueTable(entries: entries),
-          ],
-        ),
+        child: KeyValueTable(entries: entries),
       );
     });
   }
 }
 
-class _CookiesTab extends StatelessWidget {
+class _RequestCookiesView extends StatelessWidget {
   final DetailController detailCtrl;
-  const _CookiesTab({required this.detailCtrl});
+  const _RequestCookiesView({required this.detailCtrl});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Obx(() {
       final raw = detailCtrl.detail.value?.raw ?? {};
       final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
       final reqHeaders = (metadata['requestHeaders'] as List?) ?? [];
-      final rspHeaders = (metadata['responseHeaders'] as List?) ?? [];
 
-      // Extract Cookie header from request
-      final reqCookies = <(String, String)>[];
+      final cookies = <(String, String)>[];
       for (final h in reqHeaders) {
         final pair = h as List;
         if ((pair.first as String).toLowerCase() == 'cookie') {
@@ -410,16 +425,113 @@ class _CookiesTab extends StatelessWidget {
             final trimmed = c.trim();
             final eqIdx = trimmed.indexOf('=');
             if (eqIdx > 0) {
-              reqCookies.add((trimmed.substring(0, eqIdx).trim(), trimmed.substring(eqIdx + 1).trim()));
+              cookies.add((trimmed.substring(0, eqIdx).trim(),
+                  trimmed.substring(eqIdx + 1).trim()));
             } else if (trimmed.isNotEmpty) {
-              reqCookies.add((trimmed, ''));
+              cookies.add((trimmed, ''));
             }
           }
         }
       }
 
-      // Extract Set-Cookie headers from response
-      final rspCookies = <(String, String)>[];
+      if (cookies.isEmpty) {
+        return Center(
+          child: Text('detail.no_cookies'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor)),
+        );
+      }
+
+      return SingleChildScrollView(
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
+        child: KeyValueTable(entries: cookies),
+      );
+    });
+  }
+}
+
+// ===========================================================================
+// Response sub-views
+// ===========================================================================
+
+class _ResponseHeadersView extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _ResponseHeadersView({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
+      final rspHeaders = (metadata['responseHeaders'] as List?)
+              ?.map((e) => ((e as List).first as String, e.last as String))
+              .toList() ??
+          [];
+
+      if (rspHeaders.isEmpty) {
+        return Center(
+          child: Text('detail.no_headers'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor,
+                  fontSize: AppTheme.fontSize.sm)),
+        );
+      }
+
+      return SingleChildScrollView(
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
+        child: KeyValueTable(entries: rspHeaders),
+      );
+    });
+  }
+}
+
+class _ResponseBodyView extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _ResponseBodyView({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (detailCtrl.isLoadingBody.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
+      final rspHeaders = metadata['responseHeaders'] as List?;
+      String contentType = '';
+      if (rspHeaders != null) {
+        for (final h in rspHeaders) {
+          final pair = h as List;
+          if ((pair.first as String).toLowerCase() == 'content-type') {
+            contentType = pair.last as String;
+            break;
+          }
+        }
+      }
+
+      return SingleChildScrollView(
+        padding: EdgeInsets.all(AppTheme.spacing.sm),
+        child: BodyViewer(
+          body: detailCtrl.responseBody.value,
+          label: 'Response',
+          contentType: contentType,
+        ),
+      );
+    });
+  }
+}
+
+class _ResponseCookiesView extends StatelessWidget {
+  final DetailController detailCtrl;
+  const _ResponseCookiesView({required this.detailCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final raw = detailCtrl.detail.value?.raw ?? {};
+      final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
+      final rspHeaders = (metadata['responseHeaders'] as List?) ?? [];
+
+      final cookies = <(String, String)>[];
       for (final h in rspHeaders) {
         final pair = h as List;
         if ((pair.first as String).toLowerCase() == 'set-cookie') {
@@ -428,88 +540,229 @@ class _CookiesTab extends StatelessWidget {
           if (eqIdx > 0) {
             final name = cookieStr.substring(0, eqIdx).trim();
             final rest = cookieStr.substring(eqIdx + 1).trim();
-            rspCookies.add((name, rest));
+            cookies.add((name, rest));
           } else {
-            rspCookies.add((cookieStr, ''));
+            cookies.add((cookieStr, ''));
           }
         }
       }
 
-      if (reqCookies.isEmpty && rspCookies.isEmpty) {
+      if (cookies.isEmpty) {
         return Center(
-          child: Text('detail.no_cookies'.tr, style: TextStyle(color: theme.hintColor)),
+          child: Text('detail.no_cookies'.tr,
+              style: TextStyle(color: Theme.of(context).hintColor)),
         );
       }
 
       return SingleChildScrollView(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (reqCookies.isNotEmpty) ...[
-              Text('detail.request_cookies'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-              KeyValueTable(entries: reqCookies),
-              SizedBox(height: AppTheme.spacing.md),
-            ],
-            if (rspCookies.isNotEmpty) ...[
-              Text('detail.response_cookies'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-              KeyValueTable(entries: rspCookies),
-            ],
-          ],
-        ),
+        child: KeyValueTable(entries: cookies),
       );
     });
   }
 }
 
-class _CertificateTab extends StatelessWidget {
+// ===========================================================================
+// Details Tab — card-based wrap view
+// ===========================================================================
+
+class _DetailsTab extends StatelessWidget {
   final DetailController detailCtrl;
-  const _CertificateTab({required this.detailCtrl});
+  const _DetailsTab({required this.detailCtrl});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Obx(() {
-      final conn = detailCtrl.detail.value?.connection;
-      final raw = detailCtrl.detail.value?.raw ?? {};
+      final d = detailCtrl.detail.value;
+      if (d == null) return const SizedBox();
 
-      final hasTls = conn != null &&
-          conn.tlsVersion != null &&
-          conn.tlsVersion!.isNotEmpty;
-      final certChainRef = raw['certChainRef'] as String?;
-
-      if (!hasTls && (certChainRef == null || certChainRef.isEmpty)) {
-        return Center(
-          child: Text('detail.no_certificate'.tr, style: TextStyle(color: theme.hintColor)),
-        );
-      }
-
-      final entries = <(String, String)>[];
-      if (conn != null) {
-        if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty) {
-          entries.add(('detail.tls_version'.tr, conn.tlsVersion!));
-        }
-        if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty) {
-          entries.add(('detail.cipher_suite'.tr, conn.tlsCipher!));
-        }
-        if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty) {
-          entries.add(('detail.sni'.tr, conn.tlsSni!));
-        }
-      }
-      if (certChainRef != null && certChainRef.isNotEmpty) {
-        entries.add(('detail.cert_chain_ref'.tr, certChainRef));
-      }
-
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(AppTheme.spacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('detail.tls_certificate'.tr, style: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTheme.fontSize.md, color: AppTheme.colors(context).textSecondary)),
-            KeyValueTable(entries: entries),
-          ],
-        ),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final cardWidth = (constraints.maxWidth - 12 * 3) / 2; // 2 cols, spacing=12
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildCard(context, 'TLS / SSL', cardWidth, _tlsContent(context, d)),
+                _buildCard(context, 'CONNECTION', cardWidth, _connectionContent(context, d)),
+                _buildCard(context, 'OVERVIEW', cardWidth, _overviewContent(context, d)),
+                _buildCard(context, 'TIMING', cardWidth, _timingContent(context, d)),
+              ],
+            ),
+          );
+        },
       );
     });
+  }
+
+  Widget _buildCard(BuildContext context, String title, double cardWidth,
+      List<Widget> content) {
+    return Container(
+      width: cardWidth,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.colors(context).surface,
+        border: Border.all(color: AppTheme.colors(context).divider),
+        borderRadius: BorderRadius.circular(AppTheme.radius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: AppTheme.colors(context).textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...content,
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _tlsContent(BuildContext context, dynamic d) {
+    final conn = d.connection;
+    final raw = d.raw as Map<String, dynamic>;
+    final certChainRef = raw['certChainRef'] as String?;
+
+    if (conn == null &&
+        (certChainRef == null || certChainRef.isEmpty)) {
+      return [
+        Text('detail.no_certificate'.tr,
+            style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: AppTheme.fontSize.sm)),
+      ];
+    }
+
+    final entries = <(String, String)>[];
+    if (conn != null) {
+      if (conn.tlsVersion != null && conn.tlsVersion!.isNotEmpty) {
+        entries.add(('TLS Version', conn.tlsVersion!));
+      }
+      if (conn.tlsCipher != null && conn.tlsCipher!.isNotEmpty) {
+        entries.add(('Cipher Suite', conn.tlsCipher!));
+      }
+      if (conn.tlsSni != null && conn.tlsSni!.isNotEmpty) {
+        entries.add(('SNI', conn.tlsSni!));
+      }
+    }
+    if (certChainRef != null && certChainRef.isNotEmpty) {
+      entries.add(('Cert Chain', certChainRef));
+    }
+
+    if (entries.isEmpty) {
+      return [
+        Text('detail.no_certificate'.tr,
+            style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: AppTheme.fontSize.sm)),
+      ];
+    }
+
+    return entries
+        .map((e) => _kvRow(context, e.$1, e.$2))
+        .toList();
+  }
+
+  List<Widget> _connectionContent(BuildContext context, dynamic d) {
+    final conn = d.connection;
+    if (conn == null) {
+      return [
+        Text('detail.no_connection'.tr,
+            style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: AppTheme.fontSize.sm)),
+      ];
+    }
+
+    return [
+      _kvRow(context, 'Source', '${conn.srcIp}:${conn.srcPort}'),
+      _kvRow(context, 'Destination', '${conn.dstIp}:${conn.dstPort}'),
+      _kvRow(context, 'State', conn.state),
+    ];
+  }
+
+  List<Widget> _overviewContent(BuildContext context, dynamic d) {
+    final raw = d.raw as Map<String, dynamic>;
+    final started = (raw['startedAt'] as num?)?.toDouble() ?? 0;
+    final ended = (raw['endedAt'] as num?)?.toDouble() ?? 0;
+    final duration = (started > 0 && ended > started)
+        ? '${((ended - started) * 1000).toStringAsFixed(1)} ms'
+        : '-';
+
+    final uploadBytes = raw['uploadBytes'] as num?;
+    final downloadBytes = raw['downloadBytes'] as num?;
+
+    String startedStr = '-';
+    if (started > 0) {
+      final dt = DateTime.fromMillisecondsSinceEpoch(
+          (started * 1000).toInt());
+      startedStr =
+          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}.${dt.millisecond.toString().padLeft(3, '0')}';
+    }
+
+    return [
+      _kvRow(context, 'Started', startedStr),
+      _kvRow(context, 'Duration', duration),
+      _kvRow(context, 'Upload',
+          uploadBytes != null ? _formatBytes(uploadBytes.toInt()) : '-'),
+      _kvRow(context, 'Download',
+          downloadBytes != null ? _formatBytes(downloadBytes.toInt()) : '-'),
+    ];
+  }
+
+  List<Widget> _timingContent(BuildContext context, dynamic d) {
+    final raw = d.raw as Map<String, dynamic>;
+    final started = (raw['startedAt'] as num?)?.toDouble() ?? 0;
+    final ended = (raw['endedAt'] as num?)?.toDouble() ?? started;
+
+    String ms(double? ts) {
+      if (ts == null || started <= 0) return '-';
+      return '${((ts - started) * 1000).toStringAsFixed(1)} ms';
+    }
+
+    return [
+      _kvRow(context, 'Connect', ms(d.connectAt)),
+      _kvRow(context, 'Connected', ms(d.connectedAt)),
+      _kvRow(context, 'TLS Done', ms(d.tlsDoneAt)),
+      _kvRow(context, 'Request End', ms(d.reqEndAt)),
+      _kvRow(context, 'Response Start', ms(d.rspStartAt)),
+      _kvRow(context, 'Response End', ms(ended > 0 ? ended : null)),
+    ];
+  }
+
+  Widget _kvRow(BuildContext context, String key, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(key,
+                style: TextStyle(
+                    fontSize: AppTheme.fontSize.sm,
+                    color: AppTheme.colors(context).textSecondary)),
+          ),
+          Expanded(
+            child: Text(value, style: AppTheme.mono(context)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    }
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
