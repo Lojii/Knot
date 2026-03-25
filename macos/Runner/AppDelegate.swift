@@ -5,6 +5,7 @@ import FlutterMacOS
  import TunnelServices
  import KnotStorage
  import KnotWebService
+ import NIOPosix
 
 @main
 class AppDelegate: FlutterAppDelegate {
