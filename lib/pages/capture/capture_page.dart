@@ -9,7 +9,6 @@ import '../../controllers/task_controller.dart';
 import '../../utils/request_sender.dart';
 import '../../theme/app_theme.dart';
 import 'global_bar.dart';
-import 'toolbar.dart';
 import 'filter_bar.dart';
 import 'tree_panel.dart';
 import 'content_panel.dart';
@@ -195,8 +194,7 @@ class _CaptureContentState extends State<_CaptureContent> {
           autofocus: true,
           child: Column(
             children: [
-              CaptureToolbar(searchFocusNode: _searchFocusNode),
-              const FilterBar(),
+              FilterBar(searchFocusNode: _searchFocusNode),
               Expanded(
                 child: MultiSplitViewTheme(
                   data: MultiSplitViewThemeData(

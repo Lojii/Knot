@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../api/api_client.dart';
 import '../models/flow_summary.dart';
 
 /// Content type category mapping: contentType substring -> label
@@ -16,12 +17,15 @@ const _contentTypeCategories = <String, String>{
 };
 
 class FilterController extends GetxController {
+  static const protocolOptions = ['HTTP', 'HTTPS', 'WS', 'WSS'];
+  static const contentTypeOptions = ['JSON', 'IMG', 'TEXT', 'JS', 'HTML', 'CSS', 'XML'];
+
   final activeProtocols = <String>{}.obs;
   final activeContentTypes = <String>{}.obs;
 
-  /// Protocols present in current flow data
+  /// Available protocols from API
   final availableProtocols = <String>[].obs;
-  /// Content type categories present in current flow data
+  /// Available content type categories from API
   final availableContentTypes = <String>[].obs;
 
   void toggleProtocol(String proto) {
@@ -47,35 +51,37 @@ class FilterController extends GetxController {
   void clearAll() {
     activeProtocols.clear();
     activeContentTypes.clear();
+    availableProtocols.clear();
+    availableContentTypes.clear();
   }
 
-  /// Rebuild available filter options from current flows
-  void updateAvailableFilters(List<FlowSummary> flows) {
-    // Protocols
-    final protos = <String>{};
-    final ctTypes = <String>{};
+  /// Fetch available filter options from API
+  Future<void> loadFilters(int taskId) async {
+    try {
+      final api = Get.find<ApiClient>();
+      final result = await api.getFlowFilters(taskId);
 
-    for (final f in flows) {
-      final proto = f.protocol.toUpperCase();
-      if (proto.isNotEmpty) protos.add(proto);
+      // Protocols: stable ordering
+      const protoOrder = ['HTTP', 'HTTPS', 'H2', 'WS', 'WSS'];
+      final protos = result.protocols.map((p) => p.toUpperCase()).toSet();
+      availableProtocols.value = protoOrder.where(protos.contains).toList();
 
-      final ct = f.contentType.toLowerCase();
-      if (ct.isNotEmpty) {
+      // Content types: categorize raw values into labels
+      const ctOrder = ['JSON', 'IMG', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
+      final ctLabels = <String>{};
+      for (final ct in result.contentTypes) {
+        final lower = ct.toLowerCase();
         for (final entry in _contentTypeCategories.entries) {
-          if (ct.contains(entry.key)) {
-            ctTypes.add(entry.value);
+          if (lower.contains(entry.key)) {
+            ctLabels.add(entry.value);
             break;
           }
         }
       }
+      availableContentTypes.value = ctOrder.where(ctLabels.contains).toList();
+    } catch (_) {
+      // API not available yet — keep current values
     }
-
-    // Stable ordering
-    const protoOrder = ['HTTP', 'HTTPS', 'H2', 'WS', 'WSS'];
-    const ctOrder = ['JSON', 'IMG', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
-
-    availableProtocols.value = protoOrder.where(protos.contains).toList();
-    availableContentTypes.value = ctOrder.where(ctTypes.contains).toList();
   }
 
   String? get protocolParam => activeProtocols.isEmpty ? null : activeProtocols.join(',');
@@ -85,7 +91,6 @@ class FilterController extends GetxController {
     if (activeContentTypes.isEmpty) return true;
     final ct = flow.contentType.toLowerCase();
     for (final active in activeContentTypes) {
-      // Reverse lookup: label -> substring
       for (final entry in _contentTypeCategories.entries) {
         if (entry.value == active && ct.contains(entry.key)) return true;
       }
