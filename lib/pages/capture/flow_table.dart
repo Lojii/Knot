@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/filter_controller.dart';
 import '../../controllers/flow_controller.dart';
-import '../../controllers/tree_controller.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/tag_controller.dart';
@@ -20,7 +19,7 @@ class FlowTable extends StatefulWidget {
   State<FlowTable> createState() => _FlowTableState();
 }
 
-enum _SortColumn { method, host, path, status, size, time }
+enum _SortColumn { protocol, host, path, method, status, time, duration, size }
 
 class _FlowTableState extends State<FlowTable> {
   final _scrollController = ScrollController();
@@ -31,6 +30,12 @@ class _FlowTableState extends State<FlowTable> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    final flowCtrl = Get.find<FlowController>();
+    ever(flowCtrl.scrollToTopSignal, (_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
   }
 
   @override
@@ -68,18 +73,22 @@ class _FlowTableState extends State<FlowTable> {
     final sorted = List<FlowSummary>.from(items);
     int Function(FlowSummary, FlowSummary) comparator;
     switch (_sortColumn!) {
-      case _SortColumn.method:
-        comparator = (a, b) => a.method.compareTo(b.method);
+      case _SortColumn.protocol:
+        comparator = (a, b) => a.protocol.compareTo(b.protocol);
       case _SortColumn.host:
         comparator = (a, b) => a.host.compareTo(b.host);
       case _SortColumn.path:
         comparator = (a, b) => a.uri.compareTo(b.uri);
+      case _SortColumn.method:
+        comparator = (a, b) => a.method.compareTo(b.method);
       case _SortColumn.status:
         comparator = (a, b) => a.statusCode.compareTo(b.statusCode);
+      case _SortColumn.time:
+        comparator = (a, b) => a.startedAt.compareTo(b.startedAt);
+      case _SortColumn.duration:
+        comparator = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
       case _SortColumn.size:
         comparator = (a, b) => a.downloadBytes.compareTo(b.downloadBytes);
-      case _SortColumn.time:
-        comparator = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
     }
     sorted.sort(_sortAscending ? comparator : (a, b) => comparator(b, a));
     return sorted;
@@ -88,17 +97,11 @@ class _FlowTableState extends State<FlowTable> {
   @override
   Widget build(BuildContext context) {
     final flowCtrl = Get.find<FlowController>();
-    final treeCtrl = Get.find<TreeController>();
     final theme = Theme.of(context);
 
     return Obx(() {
       var items = flowCtrl.flows.toList();
-      // Filter by selected domain
-      final domain = treeCtrl.selectedDomain.value;
-      if (domain != null) {
-        items = items.where((f) => f.host == domain).toList();
-      }
-      // Filter by content type (client-side)
+      // Content type filter (client-side, protocol/domain handled by API)
       final filterCtrl = Get.find<FilterController>();
       if (filterCtrl.activeContentTypes.isNotEmpty) {
         items = items.where((f) => filterCtrl.matchesContentType(f)).toList();
@@ -185,15 +188,14 @@ class _FlowTableState extends State<FlowTable> {
     ),
     child: Row(
       children: [
-        // Extra space for tag dot
-        const SizedBox(width: 14),
-        _sortableHeader('col.method'.tr, _SortColumn.method, width: 60),
-        SizedBox(width: AppTheme.spacing.sm),
+        _sortableHeader('Proto', _SortColumn.protocol, width: 55),
         _sortableHeader('col.host'.tr, _SortColumn.host, flex: 2),
         _sortableHeader('col.path'.tr, _SortColumn.path, flex: 3),
+        _sortableHeader('col.method'.tr, _SortColumn.method, width: 60),
         _sortableHeader('col.status'.tr, _SortColumn.status, width: 50),
-        _sortableHeader('col.size'.tr, _SortColumn.size, width: 70),
-        _sortableHeader('col.time'.tr, _SortColumn.time, width: 70),
+        _sortableHeader('Time', _SortColumn.time, width: 70),
+        _sortableHeader('Duration', _SortColumn.duration, width: 70),
+        _sortableHeader('col.size'.tr, _SortColumn.size, width: 65),
       ],
     ),
   );
@@ -209,7 +211,6 @@ class _FlowRow extends StatelessWidget {
     final flowCtrl = Get.find<FlowController>();
     final detailCtrl = Get.find<DetailController>();
     final taskCtrl = Get.find<TaskController>();
-    final tagCtrl = Get.find<TagController>();
 
     return GestureDetector(
       onSecondaryTapUp: (details) {
@@ -241,36 +242,22 @@ class _FlowRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Color tag dot
-              Obx(() {
-                final tagColor = tagCtrl.getTag(flow.flowId);
-                return SizedBox(
-                  width: 14,
-                  child: tagColor != null
-                      ? Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: tagColor,
-                            shape: BoxShape.circle,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                );
-              }),
-              SizedBox(width: 60, child: Text(_methodLabel(flow.method),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600, color: AppTheme.methodColorOf(context, flow.method)))),
-              SizedBox(width: AppTheme.spacing.sm),
+              SizedBox(width: 55, child: Text(flow.protocol,
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
               Expanded(flex: 2, child: Text(flow.host,
                   style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
               Expanded(flex: 3, child: Text(flow.uri,
                   style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
+              SizedBox(width: 60, child: Text(_methodLabel(flow.method),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600, color: AppTheme.methodColorOf(context, flow.method)))),
               SizedBox(width: 50, child: Text(flow.statusCode,
                   style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.statusColorOf(context, int.tryParse(flow.statusCode) ?? 0)))),
-              SizedBox(width: 70, child: Text(_formatSize(flow.downloadBytes),
+              SizedBox(width: 70, child: Text(_formatTime(flow.startedAt),
                   style: TextStyle(fontSize: AppTheme.fontSize.sm))),
               SizedBox(width: 70, child: Text(
                   flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
+              SizedBox(width: 65, child: Text(_formatSize(flow.downloadBytes),
                   style: TextStyle(fontSize: AppTheme.fontSize.sm))),
             ],
           ),
@@ -487,6 +474,17 @@ class _FlowRow extends StatelessWidget {
   }
 
   String _methodLabel(String m) => m.isNotEmpty ? m : '-';
+
+  String _formatTime(double timestamp) {
+    if (timestamp <= 0) return '-';
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      (timestamp * 1000).toInt(),
+      isUtc: false,
+    );
+    return '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}:'
+        '${dt.second.toString().padLeft(2, '0')}';
+  }
 
   String _formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
