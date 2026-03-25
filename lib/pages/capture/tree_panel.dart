@@ -407,6 +407,8 @@ class _PathTreeTile extends StatelessWidget {
 
     if (!hasChildren) {
       // Leaf directory — simple clickable row, no expand arrow
+      // Add 24px to align with ExpansionTile title text (arrow icon width)
+      final leafIndent = indent + 24;
       return Obx(() {
         final isSelected = treeCtrl.selectedDomain.value == domain &&
             treeCtrl.selectedPath.value == node.fullPath;
@@ -418,7 +420,7 @@ class _PathTreeTile extends StatelessWidget {
           onTap: () => treeCtrl.selectPath(domain, node.fullPath),
           child: Container(
             color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
-            padding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm, top: 3, bottom: 3),
+            padding: EdgeInsets.only(left: leafIndent, right: AppTheme.spacing.sm, top: 3, bottom: 3),
             child: Row(
               children: [
                 Expanded(

@@ -262,9 +262,15 @@ class TreeController extends GetxController {
         root.requestCount++;
         continue;
       }
-      // Only create directory nodes — skip the last segment (file/endpoint).
-      // If there's only 1 segment (e.g. "/favicon.ico"), count goes to root.
-      final dirSegments = segments.length > 1 ? segments.sublist(0, segments.length - 1) : segments;
+      // Only skip the last segment if it looks like a filename (has a dot/extension).
+      // e.g. "/static/js/app.js" → skip "app.js", keep "/static/js"
+      // e.g. "/api/v1/users/123" → keep all (no dot = directory/resource)
+      // e.g. "/api/v1/users" → keep all
+      final last = segments.last;
+      final isFile = last.contains('.');
+      final dirSegments = (isFile && segments.length > 1)
+          ? segments.sublist(0, segments.length - 1)
+          : segments;
       var current = root;
       var path = '';
       for (final seg in dirSegments) {
