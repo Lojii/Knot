@@ -48,14 +48,46 @@ class RepeatRequestIntent extends Intent {
   const RepeatRequestIntent();
 }
 
-class CapturePage extends StatelessWidget {
+class CapturePage extends StatefulWidget {
   const CapturePage({super.key});
+
+  @override
+  State<CapturePage> createState() => _CapturePageState();
+}
+
+class _CapturePageState extends State<CapturePage> {
+  late final Worker _tabWorker;
+
+  @override
+  void initState() {
+    super.initState();
+    final tabMgr = Get.find<TabManager>();
+    final taskCtrl = Get.find<TaskController>();
+    // React to tab changes outside of build — avoids setState-during-build
+    _tabWorker = ever(tabMgr.activeTabId, (String tabId) {
+      final tab = tabMgr.findTab(tabId);
+      if (tab != null && !tab.isHome && tab.taskId != null) {
+        final tid = tab.taskId!;
+        if (taskCtrl.currentTask.value?.id != tid) {
+          final task = taskCtrl.tasks.firstWhereOrNull((t) => t.id == tid);
+          if (task != null) {
+            taskCtrl.selectTask(task);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabWorker.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final pageCtrl = Get.find<AppPageController>();
     final tabMgr = Get.find<TabManager>();
-    final taskCtrl = Get.find<TaskController>();
 
     return Scaffold(
       body: Column(
@@ -82,21 +114,9 @@ class CapturePage extends StatelessWidget {
 
               // On capture page: route by active tab
               final activeTab = tabMgr.activeTab;
-
-              // When a task tab is active, ensure its data is loaded
-              if (!activeTab.isHome && activeTab.task != null) {
-                final task = activeTab.task!;
-                if (taskCtrl.currentTask.value?.id != task.id) {
-                  // Schedule after build to avoid setState-during-build
-                  Future.microtask(() => taskCtrl.selectTask(task));
-                }
-                return const _CaptureContent();
-              }
-
               if (activeTab.isHome) {
                 return const _HomePage();
               }
-
               return const _CaptureContent();
             }),
           ),
@@ -282,7 +302,7 @@ class _HomePage extends StatelessWidget {
           ),
           SizedBox(height: AppTheme.spacing.sm),
           Text(
-            'Click Start to begin capturing',
+            'home.start_hint'.tr,
             style: TextStyle(color: colors.textSecondary),
           ),
         ],

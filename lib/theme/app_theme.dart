@@ -520,27 +520,11 @@ class AppTheme {
 
   // ============ Convenience methods ============
 
-  /// Static method color using light mode colors (backward-compatible).
-  static Color methodColor(String method) {
-    final key = method.toUpperCase();
-    return _light.colors.method[key] ?? _light.colors.method['default']!;
-  }
-
   /// Context-aware method color.
   static Color methodColorOf(BuildContext context, String method) {
     final key = method.toUpperCase();
     final c = colors(context);
     return c.method[key] ?? c.method['default']!;
-  }
-
-  /// Static status color using light mode colors (backward-compatible).
-  static Color statusColor(int code) {
-    final statusMap = _light.colors.status;
-    if (code >= 500) return statusMap['5xx']!;
-    if (code >= 400) return statusMap['4xx']!;
-    if (code >= 300) return statusMap['3xx']!;
-    if (code >= 200) return statusMap['2xx']!;
-    return statusMap['default']!;
   }
 
   /// Context-aware status color.

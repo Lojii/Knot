@@ -240,8 +240,12 @@ class _AppTile extends StatelessWidget {
               color: AppTheme.colors(context).textSecondary,
             ),
           ),
-          onExpansionChanged: (_) {
-            treeCtrl.selectApp(node.name);
+          onExpansionChanged: (expanded) {
+            if (expanded) {
+              treeCtrl.selectApp(node.name);
+            } else {
+              treeCtrl.clearSelection();
+            }
           },
           children: node.domains.map((domain) {
             return InkWell(

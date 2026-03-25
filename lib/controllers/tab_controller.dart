@@ -6,14 +6,14 @@ enum TabType { home, task }
 class TabItem {
   final String id;
   final TabType type;
-  final TaskModel? task;
+  final int? taskId;
   final RxString title;
   final RxBool isCapturing;
 
   TabItem._({
     required this.id,
     required this.type,
-    this.task,
+    this.taskId,
     required String title,
     bool isCapturing = false,
   })  : title = title.obs,
@@ -29,8 +29,8 @@ class TabItem {
       TabItem._(
         id: 'task_${task.id}',
         type: TabType.task,
-        task: task,
-        title: task.name,
+        taskId: task.id,
+        title: task.name.isNotEmpty ? task.name : 'Task ${task.id}',
         isCapturing: isCapturing,
       );
 
@@ -44,20 +44,18 @@ class TabManager extends GetxController {
   final activeTabId = '__home__'.obs;
 
   TabItem get activeTab =>
-      tabs.firstWhere((t) => t.id == activeTabId.value);
+      tabs.firstWhereOrNull((t) => t.id == activeTabId.value) ?? tabs.first;
+
+  TabItem? findTab(String tabId) =>
+      tabs.firstWhereOrNull((t) => t.id == tabId);
 
   int? get activeTaskId {
     final tab = activeTab;
-    return tab.type == TabType.task ? tab.task?.id : null;
+    return tab.type == TabType.task ? tab.taskId : null;
   }
 
-  TabItem? get capturingTab {
-    try {
-      return tabs.firstWhere((t) => t.isCapturing.value);
-    } catch (_) {
-      return null;
-    }
-  }
+  TabItem? get capturingTab =>
+      tabs.firstWhereOrNull((t) => t.isCapturing.value);
 
   void activateTab(String tabId) {
     if (tabs.any((t) => t.id == tabId)) {
@@ -67,18 +65,17 @@ class TabManager extends GetxController {
 
   void openTask(TaskModel task, {bool isCapturing = false}) {
     final tabId = 'task_${task.id}';
-    final existing = tabs.indexWhere((t) => t.id == tabId);
+    final existing = tabs.firstWhereOrNull((t) => t.id == tabId);
 
-    if (existing != -1) {
-      // Already open — just activate
+    if (existing != null) {
       activeTabId.value = tabId;
+      if (isCapturing) existing.isCapturing.value = true;
       return;
     }
 
     final tab = TabItem.fromTask(task, isCapturing: isCapturing);
 
     if (isCapturing) {
-      // Insert right after Home (position 1)
       tabs.insert(1, tab);
     } else {
       tabs.add(tab);
@@ -94,7 +91,6 @@ class TabManager extends GetxController {
     final tab = tabs[idx];
     if (!tab.canClose) return;
 
-    // If closing the active tab, activate nearest neighbor
     if (activeTabId.value == tabId) {
       if (idx > 0) {
         activeTabId.value = tabs[idx - 1].id;
@@ -109,17 +105,14 @@ class TabManager extends GetxController {
   void closeAllExcept(String tabId) {
     tabs.removeWhere((t) => t.id != tabId && t.canClose);
 
-    // If active tab was closed, fall back to the kept tab or Home
     if (!tabs.any((t) => t.id == activeTabId.value)) {
       activeTabId.value = tabId;
     }
   }
 
   void renameTab(String tabId, String newName) {
-    try {
-      final tab = tabs.firstWhere((t) => t.id == tabId);
-      tab.title.value = newName;
-    } catch (_) {}
+    final tab = findTab(tabId);
+    if (tab != null) tab.title.value = newName;
   }
 
   void markCapturing(String tabId) {
@@ -129,7 +122,6 @@ class TabManager extends GetxController {
     final tab = tabs[idx];
     tab.isCapturing.value = true;
 
-    // Move to position 1 (right after Home) if not already there
     if (idx != 1) {
       tabs.removeAt(idx);
       tabs.insert(1, tab);
@@ -137,9 +129,7 @@ class TabManager extends GetxController {
   }
 
   void markStopped(String tabId) {
-    try {
-      final tab = tabs.firstWhere((t) => t.id == tabId);
-      tab.isCapturing.value = false;
-    } catch (_) {}
+    final tab = findTab(tabId);
+    if (tab != null) tab.isCapturing.value = false;
   }
 }

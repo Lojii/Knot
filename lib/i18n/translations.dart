@@ -16,6 +16,9 @@ class AppTranslations extends Translations {
     'nav.tools': 'Tools',
     'nav.protocol_toggle': 'Protocol / TCP/UDP',
 
+    // ===== Home =====
+    'home.start_hint': 'Click Start to begin capturing',
+
     // ===== Toolbar =====
     'toolbar.start': 'Start',
     'toolbar.stop': 'Stop',
@@ -303,6 +306,9 @@ class AppTranslations extends Translations {
     'nav.settings': '设置',
     'nav.tools': '工具',
     'nav.protocol_toggle': '协议 / TCP/UDP',
+
+    // ===== Home =====
+    'home.start_hint': '点击开始按钮以启动抓包',
 
     // ===== Toolbar =====
     'toolbar.start': '开始',

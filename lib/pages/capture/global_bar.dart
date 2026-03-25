@@ -247,13 +247,12 @@ class _TabChip extends StatelessWidget {
           position.dx, position.dy, position.dx, position.dy),
       items: [
         if (tab.canClose)
-          const PopupMenuItem(value: 'close', child: Text('Close')),
-        const PopupMenuItem(value: 'closeAll', child: Text('Close All')),
+          PopupMenuItem(value: 'close', child: Text('tab.close'.tr)),
+        PopupMenuItem(value: 'closeAll', child: Text('tab.close_all'.tr)),
         if (!tab.isHome)
-          const PopupMenuItem(value: 'rename', child: Text('Rename')),
+          PopupMenuItem(value: 'rename', child: Text('tab.rename'.tr)),
         if (!tab.isHome && tab.canClose)
-          const PopupMenuItem(
-              value: 'delete', child: Text('Delete Task')),
+          PopupMenuItem(value: 'delete', child: Text('tab.delete_task'.tr)),
       ],
     );
     if (value == null) return;
