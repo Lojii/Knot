@@ -34,6 +34,14 @@ class TaskController extends GetxController {
     Get.find<DetailController>().clear();
   }
 
+  String _formatTaskName() {
+    final now = DateTime.now();
+    return '${now.year}-${_pad(now.month)}-${_pad(now.day)} '
+        '${_pad(now.hour)}:${_pad(now.minute)}:${_pad(now.second)}';
+  }
+
+  String _pad(int n) => n.toString().padLeft(2, '0');
+
   /// Toggle capture on/off — used by both the global bar button and Cmd+E shortcut.
   Future<void> toggleCapture() async {
     if (isCapturing.value) {
@@ -49,6 +57,20 @@ class TaskController extends GetxController {
         }
         isCapturing.value = true;
         await loadTasks();
+        if (currentTask.value != null && currentTask.value!.name.isEmpty) {
+          final named = TaskModel(
+            id: currentTask.value!.id,
+            name: _formatTaskName(),
+            createdAt: currentTask.value!.createdAt,
+            startedAt: currentTask.value!.startedAt,
+            stoppedAt: currentTask.value!.stoppedAt,
+            status: currentTask.value!.status,
+            flowCount: currentTask.value!.flowCount,
+            uploadBytes: currentTask.value!.uploadBytes,
+            downloadBytes: currentTask.value!.downloadBytes,
+          );
+          currentTask.value = named;
+        }
         if (currentTask.value != null) {
           final tid = currentTask.value!.id;
           Get.find<FlowController>().setTaskId(tid);
