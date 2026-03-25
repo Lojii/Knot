@@ -4,14 +4,44 @@ import '../../controllers/filter_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../theme/app_theme.dart';
 
-class FilterBar extends StatelessWidget {
+class FilterBar extends StatefulWidget {
   final FocusNode searchFocusNode;
   const FilterBar({super.key, required this.searchFocusNode});
+
+  @override
+  State<FilterBar> createState() => _FilterBarState();
+}
+
+class _FilterBarState extends State<FilterBar> {
+  bool _searchFocused = false;
+  final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.searchFocusNode.addListener(_onSearchFocusChange);
+  }
+
+  @override
+  void dispose() {
+    widget.searchFocusNode.removeListener(_onSearchFocusChange);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchFocusChange() {
+    setState(() {
+      _searchFocused = widget.searchFocusNode.hasFocus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final filterCtrl = Get.find<FilterController>();
     final flowCtrl = Get.find<FlowController>();
+
+    final searchHasText = _searchController.text.isNotEmpty;
+    final searchExpanded = _searchFocused || searchHasText;
 
     return Container(
       height: AppTheme.sizing.filterBarHeight,
@@ -21,7 +51,7 @@ class FilterBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // HTTP/TCP mode switch - first item in filter bar
+          // HTTP/TCP mode switch
           Obx(() {
             final isTcp = filterCtrl.isTcpMode;
             return Row(
@@ -49,80 +79,97 @@ class FilterBar extends StatelessWidget {
                   fontWeight: isTcp ? FontWeight.w600 : FontWeight.normal,
                   color: isTcp ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
                 )),
-                SizedBox(width: AppTheme.spacing.md),
+                SizedBox(width: AppTheme.spacing.sm),
                 Container(width: 1, height: 16, color: AppTheme.colors(context).divider),
-                SizedBox(width: AppTheme.spacing.md),
+                SizedBox(width: AppTheme.spacing.sm),
               ],
             );
           }),
-          // Group 1: Protocol chips (from API)
-          Obx(() {
-            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
-            final protos = filterCtrl.availableProtocols;
-            if (protos.isEmpty) return const SizedBox.shrink();
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: protos.map((p) => _chip(context, p,
-                isActive: filterCtrl.activeProtocols.contains(p),
-                onTap: () {
-                  filterCtrl.toggleProtocol(p);
-                  flowCtrl.reloadFromFirstPage();
-                },
-              )).toList(),
-            );
-          }),
-          // Vertical divider (only if both groups have data)
-          Obx(() {
-            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
-            if (filterCtrl.availableProtocols.isEmpty || filterCtrl.availableContentTypes.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-              child: Container(
-                width: 1,
-                height: 16,
-                color: AppTheme.colors(context).divider,
-              ),
-            );
-          }),
-          // Group 2: Content type chips (from API)
-          Obx(() {
-            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
-            final types = filterCtrl.availableContentTypes;
-            if (types.isEmpty) return const SizedBox.shrink();
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: types.map((t) => _chip(context, t,
-                isActive: filterCtrl.activeContentTypes.contains(t),
-                onTap: () {
-                  filterCtrl.toggleContentType(t);
-                  flowCtrl.reloadFromFirstPage();
-                },
-              )).toList(),
-            );
-          }),
-          // Spacer pushes search to the right
-          const Spacer(),
-          // Search field (moved from toolbar)
-          SizedBox(
-            width: AppTheme.sizing.searchFieldWidth,
+
+          // Filter chips area — scrollable to prevent overflow
+          Expanded(
+            child: Obx(() {
+              if (filterCtrl.isTcpMode) return const SizedBox.shrink();
+              final protos = filterCtrl.availableProtocols;
+              final types = filterCtrl.availableContentTypes;
+              if (protos.isEmpty && types.isEmpty) return const SizedBox.shrink();
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Protocol group: ALL + chips
+                    if (protos.isNotEmpty) ...[
+                      _chip(context, 'filter.all'.tr,
+                        isActive: filterCtrl.activeProtocols.isEmpty,
+                        onTap: () {
+                          filterCtrl.activeProtocols.clear();
+                          flowCtrl.reloadFromFirstPage();
+                        },
+                      ),
+                      ...protos.map((p) => _chip(context, p,
+                        isActive: filterCtrl.activeProtocols.contains(p),
+                        onTap: () {
+                          filterCtrl.toggleProtocol(p);
+                          flowCtrl.reloadFromFirstPage();
+                        },
+                      )),
+                    ],
+                    // Divider between groups
+                    if (protos.isNotEmpty && types.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+                        child: Container(width: 1, height: 16, color: AppTheme.colors(context).divider),
+                      ),
+                    // Content type group: ALL + chips
+                    if (types.isNotEmpty) ...[
+                      _chip(context, 'filter.all'.tr,
+                        isActive: filterCtrl.activeContentTypes.isEmpty,
+                        onTap: () {
+                          filterCtrl.activeContentTypes.clear();
+                          flowCtrl.reloadFromFirstPage();
+                        },
+                      ),
+                      ...types.map((t) => _chip(context, t,
+                        isActive: filterCtrl.activeContentTypes.contains(t),
+                        onTap: () {
+                          filterCtrl.toggleContentType(t);
+                          flowCtrl.reloadFromFirstPage();
+                        },
+                      )),
+                    ],
+                  ],
+                ),
+              );
+            }),
+          ),
+
+          SizedBox(width: AppTheme.spacing.sm),
+
+          // Search field — compact when empty/unfocused, expands on focus
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: searchExpanded ? AppTheme.sizing.searchFieldWidth : 100,
             height: AppTheme.sizing.searchFieldHeight,
             child: TextField(
-              focusNode: searchFocusNode,
+              controller: _searchController,
+              focusNode: widget.searchFocusNode,
               decoration: InputDecoration(
                 hintText: 'toolbar.search'.tr,
                 prefixIcon: const Icon(Icons.search, size: 16),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Text(
-                    '\u2318F',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSize.xs,
-                      color: AppTheme.colors(context).textSecondary,
-                    ),
-                  ),
-                ),
+                suffixIcon: searchExpanded
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Text(
+                          '\u2318F',
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSize.xs,
+                            color: AppTheme.colors(context).textSecondary,
+                          ),
+                        ),
+                      )
+                    : null,
                 suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                 isDense: true,
                 filled: true,
@@ -130,27 +177,21 @@ class FilterBar extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(
-                    color: AppTheme.colors(context).divider,
-                    width: 0.5,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.colors(context).divider, width: 0.5),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(
-                    color: AppTheme.colors(context).divider,
-                    width: 0.5,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.colors(context).divider, width: 0.5),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(
-                    color: AppTheme.colors(context).divider,
-                    width: 0.5,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 0.5),
                 ),
               ),
-              onChanged: flowCtrl.search,
+              onChanged: (v) {
+                setState(() {}); // update searchHasText for width
+                Get.find<FlowController>().search(v);
+              },
             ),
           ),
         ],

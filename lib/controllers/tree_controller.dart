@@ -96,29 +96,13 @@ class TreeController extends GetxController {
     } catch (_) {}
   }
 
-  /// Rebuild tree from the current (already filtered) flow list — client-side filtering
+  /// Reload tree from API with current filters — preserves full domain list
   void reloadWithFilters() {
-    final flowCtrl = Get.find<FlowController>();
+    if (_taskId == null) return;
     final filterCtrl = Get.find<FilterController>();
-    final flows = flowCtrl.flows.toList();
-
-    // Apply client-side content type filter (protocol is already server-side)
-    final filtered = filterCtrl.activeContentTypes.isEmpty
-        ? flows
-        : flows.where((f) => filterCtrl.matchesContentType(f)).toList();
-
-    // Rebuild host counts from filtered flows
-    final counts = <String, int>{};
-    for (final f in filtered) {
-      if (f.host.isNotEmpty) {
-        final h = _normalizeHost(f.host);
-        counts[h] = (counts[h] ?? 0) + 1;
-      }
-    }
-    _hostCounts
-      ..clear()
-      ..addAll(counts);
-    _rebuildTree();
+    // Re-fetch domains from API with the current protocol filter
+    // This preserves the full domain list (API returns all matching domains)
+    loadDomains(_taskId!, protocol: filterCtrl.protocolParam);
   }
 
   /// Load children (requests) for a domain on expand

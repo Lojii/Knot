@@ -198,33 +198,39 @@ class _TabChip extends StatelessWidget {
         child: Obx(() => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (tab.isHome) Icon(Icons.home, size: 14, color: isActive ? colors.primary : colors.textSecondary),
-            if (tab.isHome) const SizedBox(width: 4),
-            Text(
-              tab.title.value,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? colors.textPrimary : colors.textSecondary,
-                fontSize: AppTheme.fontSize.sm,
-              ),
-            ),
-            if (tab.isCapturing.value) ...[
-              const SizedBox(width: 4),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
+            // Home tab: icon only, no text
+            if (tab.isHome)
+              Icon(Icons.home, size: 14, color: isActive ? colors.primary : colors.textSecondary),
+            // Task tabs: show title
+            if (!tab.isHome) ...[
+              // Capturing indicator dot
+              if (tab.isCapturing.value) ...[
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                tab.title.value,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: isActive ? colors.textPrimary : colors.textSecondary,
+                  fontSize: AppTheme.fontSize.sm,
                 ),
               ),
-            ],
-            if (tab.canClose) ...[
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: () => tabMgr.closeTab(tab.id),
-                child: Icon(Icons.close, size: 12, color: colors.textSecondary),
-              ),
+              // Close button (not for capturing tabs)
+              if (tab.canClose) ...[
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => tabMgr.closeTab(tab.id),
+                  child: Icon(Icons.close, size: 12, color: colors.textSecondary),
+                ),
+              ],
             ],
           ],
         )),
