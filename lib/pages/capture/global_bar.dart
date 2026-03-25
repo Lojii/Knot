@@ -9,6 +9,7 @@ import '../../utils/har_export.dart';
 import '../../utils/har_import.dart';
 import '../../utils/list_export.dart';
 import '../../theme/app_theme.dart';
+import '../settings/settings_page.dart';
 
 class GlobalBar extends StatelessWidget {
   const GlobalBar({super.key});
@@ -81,9 +82,48 @@ class GlobalBar extends StatelessWidget {
               icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
               tooltip: 'nav.settings'.tr,
               visualDensity: VisualDensity.compact,
-              onPressed: () => pageCtrl.isSettings
-                  ? pageCtrl.showCapture()
-                  : pageCtrl.showSettings(),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radius.popup),
+                    ),
+                    child: SizedBox(
+                      width: 480,
+                      height: 400,
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.spacing.lg,
+                              vertical: AppTheme.spacing.md,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(color: AppTheme.colors(ctx).divider),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Text('nav.settings'.tr,
+                                    style: Theme.of(ctx).textTheme.titleMedium),
+                                const Spacer(),
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 18),
+                                  onPressed: () => Navigator.of(ctx).pop(),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Expanded(child: SettingsPanel()),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
