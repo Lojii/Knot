@@ -21,6 +21,16 @@ class LiveController extends GetxController {
   final downloadBytes = 0.obs;
   final memoryMB = 0.0.obs;
   final connectionCount = 0.obs;
+  final listenPort = 8034.obs;
+  final cpuPercent = 0.0.obs;
+  final downloadSpeed = 0.obs;
+  final uploadSpeed = 0.obs;
+  final tcpChannelCount = 0.obs;
+
+  // Speed calculation tracking
+  int _lastDownloadBytes = 0;
+  int _lastUploadBytes = 0;
+  DateTime _lastSpeedUpdate = DateTime.now();
 
   void connectToTask(int taskId) {
     _msgSub?.cancel();
@@ -78,8 +88,26 @@ class LiveController extends GetxController {
   void _updateMetrics(Map<String, dynamic> data) {
     final mem = data['memory'] as Map<String, dynamic>?;
     if (mem != null) memoryMB.value = (mem['rss_mb'] as num?)?.toDouble() ?? 0;
+    final cpu = data['cpu'] as Map<String, dynamic>?;
+    if (cpu != null) cpuPercent.value = (cpu['percent'] as num?)?.toDouble() ?? 0;
     final conn = data['connections'] as Map<String, dynamic>?;
-    if (conn != null) connectionCount.value = (conn['pool_total'] as int?) ?? 0;
+    if (conn != null) {
+      connectionCount.value = (conn['pool_total'] as int?) ?? 0;
+      tcpChannelCount.value = (conn['tcp_channels'] as int?) ?? 0;
+    }
+    _updateSpeed();
+  }
+
+  void _updateSpeed() {
+    final now = DateTime.now();
+    final elapsed = now.difference(_lastSpeedUpdate).inMilliseconds;
+    if (elapsed > 0) {
+      downloadSpeed.value = ((downloadBytes.value - _lastDownloadBytes) * 1000 ~/ elapsed);
+      uploadSpeed.value = ((uploadBytes.value - _lastUploadBytes) * 1000 ~/ elapsed);
+      _lastDownloadBytes = downloadBytes.value;
+      _lastUploadBytes = uploadBytes.value;
+      _lastSpeedUpdate = now;
+    }
   }
 
   void _updateStats(Map<String, dynamic> data) {

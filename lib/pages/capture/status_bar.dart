@@ -40,33 +40,25 @@ class CaptureStatusBar extends StatelessWidget {
           WsStatus.connecting => themeColors.statusConnecting,
           WsStatus.disconnected => themeColors.statusDisconnected,
         };
-        final wsClient = Get.find<WsClient>();
-        final wsUrl = wsClient.baseUrl;
-        final statusLabel = switch (wsStatus) {
-          WsStatus.connected => 'status.connected'.tr,
-          WsStatus.connecting => 'status.connecting'.tr,
-          WsStatus.disconnected => 'status.disconnected'.tr,
-        };
-
         return Row(
           children: [
-            _item(context, 'status.requests'.trParams({'count': '${flowCtrl.total.value}'})),
+            Container(width: 6, height: 6, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+            const SizedBox(width: 4),
+            _item(context, 'Listening on :${liveCtrl.listenPort.value}'),
             _sep(context),
-            _item(context, 'status.up'.trParams({'size': _formatBytes(liveCtrl.uploadBytes.value)})),
-            _item(context, 'status.down'.trParams({'size': _formatBytes(liveCtrl.downloadBytes.value)})),
+            _item(context, 'Mem: ${liveCtrl.memoryMB.value.toStringAsFixed(0)} MB'),
             _sep(context),
-            _item(context, 'status.mem'.trParams({'size': liveCtrl.memoryMB.value.toStringAsFixed(0)})),
+            _item(context, 'CPU: ${liveCtrl.cpuPercent.value.toStringAsFixed(1)}%'),
             _sep(context),
-            _item(context, 'status.conn'.trParams({'count': '${liveCtrl.connectionCount.value}'})),
+            Text('\u2193 ${_formatSpeed(liveCtrl.downloadSpeed.value)}', style: TextStyle(color: themeColors.statusConnected, fontSize: AppTheme.fontSize.sm)),
+            const SizedBox(width: 8),
+            Text('\u2191 ${_formatSpeed(liveCtrl.uploadSpeed.value)}', style: TextStyle(color: themeColors.primary, fontSize: AppTheme.fontSize.sm)),
+            _sep(context),
+            _item(context, 'Connections: ${liveCtrl.connectionCount.value}'),
+            _sep(context),
+            _item(context, 'TCP: ${liveCtrl.tcpChannelCount.value}'),
             const Spacer(),
-            Tooltip(
-              message: '$statusLabel\n$wsUrl',
-              child: Container(
-                width: AppTheme.sizing.connectionDotSize,
-                height: AppTheme.sizing.connectionDotSize,
-                decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-              ),
-            ),
+            _item(context, '${flowCtrl.total.value} requests'),
           ],
         );
       }),
@@ -84,9 +76,9 @@ class CaptureStatusBar extends StatelessWidget {
     )),
   );
 
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+  String _formatSpeed(int bytesPerSec) {
+    if (bytesPerSec < 1024) return '$bytesPerSec B/s';
+    if (bytesPerSec < 1024 * 1024) return '${(bytesPerSec / 1024).toStringAsFixed(1)} KB/s';
+    return '${(bytesPerSec / 1024 / 1024).toStringAsFixed(1)} MB/s';
   }
 }
