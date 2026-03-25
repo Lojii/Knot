@@ -262,15 +262,16 @@ class TreeController extends GetxController {
         root.requestCount++;
         continue;
       }
-      // Only skip the last segment if it looks like a filename (has a dot/extension).
-      // e.g. "/static/js/app.js" → skip "app.js", keep "/static/js"
-      // e.g. "/api/v1/users/123" → keep all (no dot = directory/resource)
-      // e.g. "/api/v1/users" → keep all
-      final last = segments.last;
-      final isFile = last.contains('.');
-      final dirSegments = (isFile && segments.length > 1)
-          ? segments.sublist(0, segments.length - 1)
-          : segments;
+      // Always drop the last segment — it's either a filename or a leaf resource.
+      // Tree shows parent directories only. Requests count toward their parent.
+      // e.g. /api/v1/users/123 → tree: /api/v1/users (count+1)
+      // e.g. /static/js/app.js → tree: /static/js (count+1)
+      // Single-segment like /favicon.ico → count goes to root
+      if (segments.length <= 1) {
+        root.requestCount++;
+        continue;
+      }
+      final dirSegments = segments.sublist(0, segments.length - 1);
       var current = root;
       var path = '';
       for (final seg in dirSegments) {
