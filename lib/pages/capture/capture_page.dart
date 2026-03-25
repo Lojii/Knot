@@ -130,7 +130,7 @@ class _CaptureContentState extends State<_CaptureContent> {
           ),
           ToggleCaptureIntent: CallbackAction<ToggleCaptureIntent>(
             onInvoke: (_) {
-              taskCtrl.isCapturing.value = !taskCtrl.isCapturing.value;
+              taskCtrl.toggleCapture();
               return null;
             },
           ),

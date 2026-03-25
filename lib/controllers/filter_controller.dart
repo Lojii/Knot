@@ -14,6 +14,7 @@ const _contentTypeCategories = <String, String>{
   'video/': 'Video',
   'audio/': 'Audio',
   'pdf': 'PDF',
+  'text/plain': 'TEXT',
 };
 
 class FilterController extends GetxController {

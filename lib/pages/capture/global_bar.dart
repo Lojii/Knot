@@ -1,12 +1,8 @@
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../api/api_client.dart';
-import '../../api/ws_client.dart';
-import '../../api/proxy_channel.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
-import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
 import '../../utils/har_export.dart';
@@ -112,30 +108,7 @@ class _StartStopButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() => GestureDetector(
-      onTap: () async {
-        if (taskCtrl.isCapturing.value) {
-          await ProxyChannel.stopProxy();
-          taskCtrl.isCapturing.value = false;
-        } else {
-          try {
-            final result = await ProxyChannel.startProxy();
-            final port = (result['port'] as int?) ?? 0;
-            if (port > 0) {
-              Get.find<ApiClient>().baseUrl = 'http://localhost:$port';
-              Get.find<WsClient>().baseUrl = 'ws://localhost:$port';
-            }
-            taskCtrl.isCapturing.value = true;
-            await taskCtrl.loadTasks();
-            if (taskCtrl.currentTask.value != null) {
-              final tid = taskCtrl.currentTask.value!.id;
-              Get.find<FlowController>().setTaskId(tid);
-              Get.find<LiveController>().connectToTask(tid);
-            }
-          } catch (e) {
-            Get.snackbar('Error', 'msg.start_failed'.trParams({'error': '$e'}));
-          }
-        }
-      },
+      onTap: () => taskCtrl.toggleCapture(),
       child: Container(
         width: AppTheme.sizing.iconButtonSize,
         height: AppTheme.sizing.iconButtonSize,
