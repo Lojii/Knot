@@ -307,7 +307,10 @@ class _DomainTileState extends State<_DomainTile> {
       return GestureDetector(
         onTap: () {
           treeCtrl.selectDomain(domain);
-          if (!_expanded) {
+          // Toggle expand/collapse
+          if (_expanded) {
+            _controller.collapse();
+          } else {
             _controller.expand();
             treeCtrl.loadChildren(widget.node);
           }
@@ -436,7 +439,7 @@ class _PathTreeTileState extends State<_PathTreeTile> {
     final indent = AppTheme.spacing.xl + (widget.depth * AppTheme.spacing.md);
 
     if (!hasChildren) {
-      // Leaf node — clickable path
+      // Leaf (directory with no sub-dirs) — simple clickable row, no expand arrow
       return Obx(() {
         final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
             treeCtrl.selectedPath.value == widget.node.fullPath;
@@ -460,14 +463,13 @@ class _PathTreeTileState extends State<_PathTreeTile> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (widget.node.requestCount > 0)
-                  Text(
-                    '${widget.node.requestCount}',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSize.xs,
-                      color: AppTheme.colors(context).textSecondary,
-                    ),
+                Text(
+                  '${widget.node.totalCount}',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.xs,
+                    color: AppTheme.colors(context).textSecondary,
                   ),
+                ),
               ],
             ),
           ),
@@ -475,7 +477,7 @@ class _PathTreeTileState extends State<_PathTreeTile> {
       });
     }
 
-    // Branch node — expandable + clickable
+    // Branch node — expandable + clickable, toggle on every click
     _controller ??= ExpansibleController();
     return Obx(() {
       final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
@@ -484,7 +486,9 @@ class _PathTreeTileState extends State<_PathTreeTile> {
       return GestureDetector(
         onTap: () {
           treeCtrl.selectPath(widget.domain, widget.node.fullPath);
-          if (!_expanded) {
+          if (_expanded) {
+            _controller!.collapse();
+          } else {
             _controller!.expand();
           }
         },

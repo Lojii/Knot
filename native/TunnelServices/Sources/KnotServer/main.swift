@@ -26,7 +26,7 @@ if let groupURL = FileManager.default.containerURL(
 
 print("[KnotServer] Root: \(DatabaseManager.rootPath)")
 
-// MARK: - Create Task
+// MARK: - Create or Reuse Task
 
 let task = CaptureTask()
 task.localIP = "127.0.0.1"
@@ -36,21 +36,31 @@ task.wifiEnable = 0
 task.isCACertTrusted = true
 task.ruleEngine = RuleEngine(config: "")
 task.certManager = CertManager()  // Loads certs from CertStore automatically
-task.creatTime = Date().timeIntervalSince1970
-task.startTime = Date().timeIntervalSince1970
 
-let ts = "\(task.creatTime!)".components(separatedBy: ".")
-task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
-
-// Register in catalog DB
+// Reuse the most recent task if it exists; otherwise create a new one.
+// This prevents empty task folders from accumulating on every app restart.
 do {
     let catalogDB = DatabaseManager.shared.catalogDB
-    let rowId = try CatalogDAO.insertFullTask(db: catalogDB, task: task.toCaptureTaskRecord())
-    task.id = rowId
-    let _ = try DatabaseManager.shared.openTask(task.id)
-    print("[KnotServer] Task \(task.id) created")
+    if let existing = CatalogDAO.findLastTask(db: catalogDB) {
+        task.id = existing.id
+        task.creatTime = existing.createdAt
+        task.startTime = existing.startedAt ?? Date().timeIntervalSince1970
+        let ts = "\(existing.createdAt)".components(separatedBy: ".")
+        task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
+        let _ = try DatabaseManager.shared.openTask(task.id)
+        print("[KnotServer] Reusing task \(task.id)")
+    } else {
+        task.creatTime = Date().timeIntervalSince1970
+        task.startTime = Date().timeIntervalSince1970
+        let ts = "\(task.creatTime!)".components(separatedBy: ".")
+        task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
+        let rowId = try CatalogDAO.insertFullTask(db: catalogDB, task: task.toCaptureTaskRecord())
+        task.id = rowId
+        let _ = try DatabaseManager.shared.openTask(task.id)
+        print("[KnotServer] Task \(task.id) created")
+    }
 } catch {
-    print("[KnotServer] Task creation failed: \(error)")
+    print("[KnotServer] Task setup failed: \(error)")
 }
 
 task.loadRules()
