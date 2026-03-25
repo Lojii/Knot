@@ -13,6 +13,7 @@ import 'controllers/history_controller.dart';
 import 'controllers/page_controller.dart';
 import 'controllers/tag_controller.dart';
 import 'controllers/tools_controller.dart';
+import 'controllers/tab_controller.dart';
 import 'api/proxy_channel.dart';
 import 'dart:ui' as ui;
 import 'pages/capture/capture_page.dart';
@@ -39,13 +40,15 @@ void main() async {
   Get.put(AppPageController());
   Get.put(TagController());
   Get.put(ToolsController());
+  Get.put(TabManager());
 
   runApp(const KnotApp());
 
-  // Startup: only initialize web API connection, don't start proxy
+  // Startup: start proxy server (for web API) but don't start capturing
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    // Check if proxy is already running (from a previous session)
     int port = 0;
+
+    // Check if already running
     try {
       final status = await ProxyChannel.getStatus();
       if (status['running'] == true) {
@@ -53,7 +56,15 @@ void main() async {
       }
     } catch (_) {}
 
-    // Set API endpoints if we got a port
+    // If not running, start it (this boots the web API server too)
+    if (port == 0) {
+      try {
+        final result = await ProxyChannel.startProxy();
+        port = (result['port'] as int?) ?? 0;
+      } catch (_) {}
+    }
+
+    // Set API endpoints
     if (port > 0) {
       api.baseUrl = 'http://localhost:$port';
       ws.baseUrl = 'ws://localhost:$port';
