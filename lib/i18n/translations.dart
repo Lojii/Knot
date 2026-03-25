@@ -54,6 +54,14 @@ class AppTranslations extends Translations {
     'tab.form': 'Form',
     'tab.pretty': 'Pretty',
     'tab.hex': 'Hex',
+    'tab.home': 'Home',
+    'tab.tcp_coming_soon': 'TCP view coming soon',
+    'tab.close': 'Close',
+    'tab.close_all': 'Close All',
+    'tab.rename': 'Rename',
+    'tab.delete_task': 'Delete',
+    'tab.open_task': 'Open Task',
+    'tab.manage_history': 'Manage History',
 
     // ===== Table Columns =====
     'col.method': 'Method',
@@ -70,6 +78,8 @@ class AppTranslations extends Translations {
     'tree.apps': 'APPS',
     'tree.pin': 'Pin',
     'tree.unpin': 'Unpin',
+    'tree.devices': 'DEVICES',
+    'tree.source': 'SOURCE',
 
     // ===== Flow Detail =====
     'detail.edit_resend': 'Edit & Resend',
@@ -332,6 +342,14 @@ class AppTranslations extends Translations {
     'tab.form': '表单',
     'tab.pretty': '格式化',
     'tab.hex': '十六进制',
+    'tab.home': '首页',
+    'tab.tcp_coming_soon': 'TCP 视图即将推出',
+    'tab.close': '关闭',
+    'tab.close_all': '关闭所有',
+    'tab.rename': '重命名',
+    'tab.delete_task': '删除',
+    'tab.open_task': '打开任务',
+    'tab.manage_history': '历史任务管理',
 
     // ===== Table Columns =====
     'col.method': '方法',
@@ -348,6 +366,8 @@ class AppTranslations extends Translations {
     'tree.apps': '应用',
     'tree.pin': '置顶',
     'tree.unpin': '取消置顶',
+    'tree.devices': '设备',
+    'tree.source': '来源',
 
     // ===== Flow Detail =====
     'detail.edit_resend': '编辑并重发',
