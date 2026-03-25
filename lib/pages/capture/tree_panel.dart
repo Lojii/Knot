@@ -282,20 +282,38 @@ class _AppTile extends StatelessWidget {
 // Domain Tile (with nested hierarchical path tree)
 // ============================================================
 
-class _DomainTile extends StatelessWidget {
+class _DomainTile extends StatefulWidget {
   final TreeNode node;
   const _DomainTile({required this.node});
 
   @override
+  State<_DomainTile> createState() => _DomainTileState();
+}
+
+class _DomainTileState extends State<_DomainTile> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final treeCtrl = Get.find<TreeController>();
-    final domain = node.domain ?? '';
+    final domain = widget.node.domain ?? '';
 
     return Obx(() {
       final isSelected = treeCtrl.selectedDomain.value == domain &&
           treeCtrl.selectedPath.value == null;
+      // Also highlight if any child path under this domain is selected
+      final isDomainActive = treeCtrl.selectedDomain.value == domain;
 
       return GestureDetector(
+        onTap: () {
+          // Click: always select this domain
+          treeCtrl.selectDomain(domain);
+          // If not expanded, expand and load children
+          if (!_expanded) {
+            setState(() => _expanded = true);
+            treeCtrl.loadChildren(widget.node);
+          }
+        },
         onSecondaryTapUp: (details) {
           _showContextMenu(context, details.globalPosition, domain);
         },
@@ -306,14 +324,15 @@ class _DomainTile extends StatelessWidget {
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
+              key: PageStorageKey(domain),
               tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
               dense: true,
-              initiallyExpanded: false,
+              initiallyExpanded: _expanded,
               title: Text(
-                node.label,
+                widget.node.label,
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.sm,
-                  color: isSelected
+                  color: isDomainActive
                       ? AppTheme.mode(context).tree.selectedText
                       : null,
                 ),
@@ -326,18 +345,22 @@ class _DomainTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTheme.radius.sm),
               ),
               child: Text(
-                '${node.count}',
+                '${widget.node.count}',
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.xs,
-                  color: isSelected
+                  color: isDomainActive
                       ? AppTheme.mode(context).tree.selectedText.withAlpha(180)
                       : AppTheme.colors(context).textSecondary,
                 ),
               ),
             ),
             onExpansionChanged: (expanded) {
-              treeCtrl.selectDomain(domain);
-              if (expanded) treeCtrl.loadChildren(node);
+              setState(() => _expanded = expanded);
+              if (expanded) {
+                treeCtrl.selectDomain(domain);
+                treeCtrl.loadChildren(widget.node);
+              }
+              // Collapse: just collapse, don't change selection
             },
             children: _buildPathTree(context, domain),
           ),
@@ -349,9 +372,9 @@ class _DomainTile extends StatelessWidget {
 
   /// Build hierarchical path tree from loaded children.
   List<Widget> _buildPathTree(BuildContext context, String domain) {
-    if (node.children.isEmpty) return [];
+    if (widget.node.children.isEmpty) return [];
 
-    final pathRoot = TreeController.buildPathTree(node.children);
+    final pathRoot = TreeController.buildPathTree(widget.node.children);
 
     return pathRoot.children.values.map((child) {
       return _PathTreeTile(node: child, domain: domain, depth: 0);
@@ -395,7 +418,7 @@ class _DomainTile extends StatelessWidget {
 // Recursive Path Tree Tile
 // ============================================================
 
-class _PathTreeTile extends StatelessWidget {
+class _PathTreeTile extends StatefulWidget {
   final PathNode node;
   final String domain;
   final int depth;
@@ -403,19 +426,26 @@ class _PathTreeTile extends StatelessWidget {
   const _PathTreeTile({required this.node, required this.domain, required this.depth});
 
   @override
+  State<_PathTreeTile> createState() => _PathTreeTileState();
+}
+
+class _PathTreeTileState extends State<_PathTreeTile> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final treeCtrl = Get.find<TreeController>();
-    final hasChildren = node.children.isNotEmpty;
-    final indent = AppTheme.spacing.xl + (depth * AppTheme.spacing.md);
+    final hasChildren = widget.node.children.isNotEmpty;
+    final indent = AppTheme.spacing.xl + (widget.depth * AppTheme.spacing.md);
 
     if (!hasChildren) {
       // Leaf node — clickable path
       return Obx(() {
-        final isSelected = treeCtrl.selectedDomain.value == domain &&
-            treeCtrl.selectedPath.value == node.fullPath;
+        final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
+            treeCtrl.selectedPath.value == widget.node.fullPath;
 
         return InkWell(
-          onTap: () => treeCtrl.selectPath(domain, node.fullPath),
+          onTap: () => treeCtrl.selectPath(widget.domain, widget.node.fullPath),
           child: Container(
             color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
             padding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm, top: 3, bottom: 3),
@@ -423,7 +453,7 @@ class _PathTreeTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '/${node.segment}',
+                    '/${widget.node.segment}',
                     style: TextStyle(
                       fontSize: AppTheme.fontSize.xs,
                       color: isSelected
@@ -433,9 +463,9 @@ class _PathTreeTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (node.requestCount > 0)
+                if (widget.node.requestCount > 0)
                   Text(
-                    '${node.requestCount}',
+                    '${widget.node.requestCount}',
                     style: TextStyle(
                       fontSize: AppTheme.fontSize.xs,
                       color: AppTheme.colors(context).textSecondary,
@@ -448,48 +478,61 @@ class _PathTreeTile extends StatelessWidget {
       });
     }
 
-    // Branch node — expandable + clickable to select this path
+    // Branch node — expandable + clickable
     return Obx(() {
-      final isSelected = treeCtrl.selectedDomain.value == domain &&
-          treeCtrl.selectedPath.value == node.fullPath;
+      final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
+          treeCtrl.selectedPath.value == widget.node.fullPath;
 
-      return Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: Container(
-          color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
-          child: ExpansionTile(
-            tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
-            dense: true,
-            onExpansionChanged: (_) {
-              treeCtrl.selectPath(domain, node.fullPath);
-            },
-            title: Text(
-              '/${node.segment}/',
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? AppTheme.mode(context).tree.selectedText : null,
-              ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).textSecondary.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              ),
-              child: Text(
-                '${node.totalCount}',
+      return GestureDetector(
+        onTap: () {
+          treeCtrl.selectPath(widget.domain, widget.node.fullPath);
+          if (!_expanded) {
+            setState(() => _expanded = true);
+          }
+        },
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: Container(
+            color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
+            child: ExpansionTile(
+              key: PageStorageKey(widget.node.fullPath),
+              tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
+              dense: true,
+              initiallyExpanded: _expanded,
+              onExpansionChanged: (expanded) {
+                setState(() => _expanded = expanded);
+                if (expanded) {
+                  treeCtrl.selectPath(widget.domain, widget.node.fullPath);
+                }
+              },
+              title: Text(
+                '/${widget.node.segment}/',
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.xs,
-                  color: isSelected
-                      ? AppTheme.mode(context).tree.selectedText.withAlpha(180)
-                      : AppTheme.colors(context).textSecondary,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? AppTheme.mode(context).tree.selectedText : null,
                 ),
               ),
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: AppTheme.colors(context).textSecondary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+                ),
+                child: Text(
+                  '${widget.node.totalCount}',
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.xs,
+                    color: isSelected
+                        ? AppTheme.mode(context).tree.selectedText.withAlpha(180)
+                        : AppTheme.colors(context).textSecondary,
+                  ),
+                ),
+              ),
+              children: widget.node.children.values.map((child) =>
+                _PathTreeTile(node: child, domain: widget.domain, depth: widget.depth + 1),
+              ).toList(),
             ),
-            children: node.children.values.map((child) =>
-              _PathTreeTile(node: child, domain: domain, depth: depth + 1),
-            ).toList(),
           ),
         ),
       );
