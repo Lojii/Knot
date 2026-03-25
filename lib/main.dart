@@ -14,6 +14,7 @@ import 'controllers/page_controller.dart';
 import 'controllers/tag_controller.dart';
 import 'controllers/tools_controller.dart';
 import 'controllers/tab_controller.dart';
+import 'controllers/theme_controller.dart';
 import 'api/proxy_channel.dart';
 import 'dart:ui' as ui;
 import 'pages/capture/capture_page.dart';
@@ -41,6 +42,7 @@ void main() async {
   Get.put(TagController());
   Get.put(ToolsController());
   Get.put(TabManager());
+  Get.put(ThemeController());
 
   runApp(const KnotApp());
 
@@ -85,15 +87,17 @@ class KnotApp extends StatelessWidget {
         ? const Locale('zh', 'CN')
         : const Locale('en', 'US');
 
-    return GetMaterialApp(
+    final themeCtrl = Get.find<ThemeController>();
+
+    return Obx(() => GetMaterialApp(
       title: 'Knot',
-      themeMode: ThemeMode.system,
+      themeMode: themeCtrl.themeMode.value,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       translations: AppTranslations(),
       locale: locale,
       fallbackLocale: const Locale('en', 'US'),
       home: const CapturePage(),
-    );
+    ));
   }
 }

@@ -1,32 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controllers/theme_controller.dart';
 import '../../theme/app_theme.dart';
 
-/// Embeddable settings panel — displayed inside the main layout
-/// when the user clicks the Settings button in GlobalBar.
-/// No Scaffold or AppBar — GlobalBar stays on top.
 class SettingsPanel extends StatelessWidget {
   const SettingsPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final themeCtrl = Get.find<ThemeController>();
 
     return ListView(
       padding: EdgeInsets.all(AppTheme.spacing.lg),
       children: [
+        _section(theme, 'settings.appearance'.tr, [
+          Obx(() => ListTile(
+            title: Text('settings.theme'.tr),
+            trailing: SegmentedButton<ThemeMode>(
+              segments: [
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  icon: const Icon(Icons.light_mode, size: 16),
+                  label: Text('settings.light'.tr),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  icon: const Icon(Icons.brightness_auto, size: 16),
+                  label: Text('settings.follow_system'.tr),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  icon: const Icon(Icons.dark_mode, size: 16),
+                  label: Text('settings.dark'.tr),
+                ),
+              ],
+              selected: {themeCtrl.themeMode.value},
+              onSelectionChanged: (modes) {
+                themeCtrl.setThemeMode(modes.first);
+              },
+              style: ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            dense: true,
+          )),
+        ]),
+        SizedBox(height: AppTheme.spacing.lg),
         _section(theme, 'settings.connection'.tr, [
           _infoTile(theme, 'settings.api_endpoint'.tr, 'http://localhost:9090'),
           _infoTile(theme, 'settings.websocket'.tr, 'ws://localhost:9090/ws'),
-        ]),
-        SizedBox(height: AppTheme.spacing.lg),
-        _section(theme, 'settings.appearance'.tr, [
-          ListTile(
-            title: Text('settings.theme'.tr),
-            subtitle: Text('settings.follow_system'.tr),
-            trailing: const Icon(Icons.brightness_auto),
-            dense: true,
-          ),
         ]),
         SizedBox(height: AppTheme.spacing.lg),
         _section(theme, 'settings.about'.tr, [

@@ -15,6 +15,9 @@ class MainFlutterWindow: NSWindow {
     self.isMovableByWindowBackground = false
     self.toolbar = nil
 
+    // Follow system dark/light mode (nil = inherit from system)
+    self.appearance = nil
+
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()
