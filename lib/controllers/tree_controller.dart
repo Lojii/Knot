@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../api/api_client.dart';
 import '../models/flow_summary.dart';
+import 'filter_controller.dart';
 import 'flow_controller.dart';
 
 // ============================================================
@@ -42,6 +43,21 @@ class AppNode {
       : domains = domains ?? [];
 }
 
+class PathNode {
+  final String segment;
+  final String fullPath;
+  final Map<String, PathNode> children;
+  int requestCount;
+
+  PathNode({required this.segment, required this.fullPath, this.requestCount = 0})
+      : children = {};
+
+  int get totalCount {
+    if (children.isEmpty) return requestCount;
+    return children.values.fold(requestCount, (sum, child) => sum + child.totalCount);
+  }
+}
+
 // ============================================================
 // Controller
 // ============================================================
@@ -50,6 +66,7 @@ class TreeController extends GetxController {
   final tree = <TreeNode>[].obs;
   final selectedDomain = Rxn<String>();
   final selectedPath = Rxn<String>();
+  final selectedApp = Rxn<String>();
   final pinnedDomains = <String>{}.obs;
   final pinnedItems = <PinnedItem>[].obs;
   final appTree = <AppNode>[].obs;
@@ -57,18 +74,51 @@ class TreeController extends GetxController {
   int? _taskId;
   final _hostCounts = <String, int>{};
 
-  /// Load domain tree from API
-  Future<void> loadDomains(int taskId) async {
+  /// Strip default ports (:443, :80) from host for grouping
+  static String _normalizeHost(String host) {
+    if (host.endsWith(':443')) return host.substring(0, host.length - 4);
+    if (host.endsWith(':80')) return host.substring(0, host.length - 3);
+    return host;
+  }
+
+  /// Load domain tree from API, optionally filtered
+  Future<void> loadDomains(int taskId, {String? protocol, String? keyword}) async {
     _taskId = taskId;
     try {
       final api = Get.find<ApiClient>();
-      final items = await api.getFlowDomains(taskId);
+      final items = await api.getFlowDomains(taskId, protocol: protocol, keyword: keyword);
       _hostCounts.clear();
       for (final item in items) {
-        _hostCounts[item.host] = item.count;
+        final h = _normalizeHost(item.host);
+        _hostCounts[h] = (_hostCounts[h] ?? 0) + item.count;
       }
       _rebuildTree();
     } catch (_) {}
+  }
+
+  /// Rebuild tree from the current (already filtered) flow list — client-side filtering
+  void reloadWithFilters() {
+    final flowCtrl = Get.find<FlowController>();
+    final filterCtrl = Get.find<FilterController>();
+    final flows = flowCtrl.flows.toList();
+
+    // Apply client-side content type filter (protocol is already server-side)
+    final filtered = filterCtrl.activeContentTypes.isEmpty
+        ? flows
+        : flows.where((f) => filterCtrl.matchesContentType(f)).toList();
+
+    // Rebuild host counts from filtered flows
+    final counts = <String, int>{};
+    for (final f in filtered) {
+      if (f.host.isNotEmpty) {
+        final h = _normalizeHost(f.host);
+        counts[h] = (counts[h] ?? 0) + 1;
+      }
+    }
+    _hostCounts
+      ..clear()
+      ..addAll(counts);
+    _rebuildTree();
   }
 
   /// Load children (requests) for a domain on expand
@@ -95,7 +145,8 @@ class TreeController extends GetxController {
   /// Incrementally update from WS push
   void addDomainFromPush(FlowSummary flow) {
     if (flow.host.isEmpty) return;
-    _hostCounts[flow.host] = (_hostCounts[flow.host] ?? 0) + 1;
+    final h = _normalizeHost(flow.host);
+    _hostCounts[h] = (_hostCounts[h] ?? 0) + 1;
     _rebuildTree();
   }
 
@@ -121,6 +172,7 @@ class TreeController extends GetxController {
     if (selectedDomain.value == domain && selectedPath.value == null) return;
     selectedDomain.value = domain;
     selectedPath.value = null;
+    selectedApp.value = null;
     _notifyFlowReload();
   }
 
@@ -128,6 +180,21 @@ class TreeController extends GetxController {
     if (selectedDomain.value == domain && selectedPath.value == path) return;
     selectedDomain.value = domain;
     selectedPath.value = path;
+    selectedApp.value = null;
+    _notifyFlowReload();
+  }
+
+  void selectApp(String appName) {
+    selectedApp.value = appName;
+    selectedDomain.value = null;
+    selectedPath.value = null;
+    _notifyFlowReload();
+  }
+
+  void clearSelection() {
+    selectedDomain.value = null;
+    selectedPath.value = null;
+    selectedApp.value = null;
     _notifyFlowReload();
   }
 
@@ -141,9 +208,30 @@ class TreeController extends GetxController {
     _hostCounts.clear();
     tree.clear();
     selectedDomain.value = null;
+    selectedPath.value = null;
+    selectedApp.value = null;
     pinnedItems.clear();
     pinnedDomains.clear();
     appTree.clear();
+  }
+
+  /// Build hierarchical path tree from URIs
+  static PathNode buildPathTree(List<TreeNode> children) {
+    final root = PathNode(segment: '', fullPath: '');
+    for (final child in children) {
+      final parts = child.label.split(' ');
+      final uri = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
+      final segments = uri.split('/').where((s) => s.isNotEmpty).toList();
+      var current = root;
+      var path = '';
+      for (final seg in segments) {
+        path += '/$seg';
+        current.children.putIfAbsent(seg, () => PathNode(segment: seg, fullPath: path));
+        current = current.children[seg]!;
+      }
+      current.requestCount++;
+    }
+    return root;
   }
 
   void _rebuildTree() {

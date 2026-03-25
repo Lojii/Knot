@@ -22,27 +22,37 @@ class TreePanel extends StatelessWidget {
               final pinned = treeCtrl.pinnedItems;
               final apps = treeCtrl.appTree;
               final allDomains = treeCtrl.tree;
-              // Domain section: only unpinned domains
               final domains = allDomains
                   .where((n) => !treeCtrl.isPinned(n.domain ?? ''))
                   .toList();
+              final hasData = pinned.isNotEmpty || apps.isNotEmpty || domains.isNotEmpty;
+
+              if (!hasData) {
+                return Center(
+                  child: Text('empty.no_data'.tr,
+                    style: TextStyle(color: AppTheme.colors(context).textSecondary)),
+                );
+              }
 
               return ListView(
                 children: [
-                  // ---- Pinned Section ----
-                  _SectionHeader(title: 'tree.pinned'.tr, count: pinned.length),
-                  ...pinned.map((item) => _PinnedTile(item: item)),
-                  Divider(height: 1, color: AppTheme.colors(context).divider),
-
-                  // ---- Apps Section ----
-                  _SectionHeader(title: 'tree.apps'.tr, count: apps.length),
-                  ...apps.map((app) => _AppTile(node: app)),
-                  Divider(height: 1, color: AppTheme.colors(context).divider),
-
-                  // ---- Domains Section ----
-                  _SectionHeader(
-                      title: 'tree.domains'.tr, count: domains.length),
-                  ...domains.map((node) => _DomainTile(node: node)),
+                  // Pinned — ONLY if non-empty
+                  if (pinned.isNotEmpty) ...[
+                    _SectionHeader(title: 'tree.pinned'.tr, count: pinned.length),
+                    ...pinned.map((item) => _PinnedTile(item: item)),
+                    Divider(height: 1, color: AppTheme.colors(context).divider),
+                  ],
+                  // Apps — ONLY if non-empty
+                  if (apps.isNotEmpty) ...[
+                    _SectionHeader(title: 'tree.apps'.tr, count: apps.length),
+                    ...apps.map((app) => _AppTile(node: app)),
+                    Divider(height: 1, color: AppTheme.colors(context).divider),
+                  ],
+                  // Domains — ONLY if non-empty
+                  if (domains.isNotEmpty) ...[
+                    _SectionHeader(title: 'tree.domains'.tr, count: domains.length),
+                    ...domains.map((node) => _DomainTile(node: node)),
+                  ],
                 ],
               );
             }),
@@ -202,49 +212,70 @@ class _AppTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-        dense: true,
-        leading: Icon(Icons.apps, size: 14, color: AppTheme.colors(context).textSecondary),
-        title: Text(
-          node.name,
-          style: TextStyle(fontSize: AppTheme.fontSize.sm),
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Text(
-          '${node.count}',
-          style: TextStyle(
-            fontSize: AppTheme.fontSize.xs,
-            color: AppTheme.colors(context).textSecondary,
+    final treeCtrl = Get.find<TreeController>();
+
+    return Obx(() {
+      final isSelected = treeCtrl.selectedApp.value == node.name;
+
+      return Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+          dense: true,
+          leading: Icon(Icons.apps, size: 14, color: AppTheme.colors(context).textSecondary),
+          title: Text(
+            node.name,
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.sm,
+              color: isSelected
+                  ? AppTheme.mode(context).tree.selectedText
+                  : null,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        children: node.domains.map((domain) {
-          return Padding(
-            padding: EdgeInsets.only(
-              left: AppTheme.spacing.xl,
-              right: AppTheme.spacing.sm,
-              top: 2,
-              bottom: 2,
+          trailing: Text(
+            '${node.count}',
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              color: AppTheme.colors(context).textSecondary,
             ),
-            child: Text(
-              domain.label,
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                color: AppTheme.colors(context).textSecondary,
+          ),
+          onExpansionChanged: (_) {
+            treeCtrl.selectApp(node.name);
+          },
+          children: node.domains.map((domain) {
+            return InkWell(
+              onTap: () {
+                if (domain.domain != null) {
+                  treeCtrl.selectDomain(domain.domain);
+                }
+              },
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: AppTheme.spacing.xl,
+                  right: AppTheme.spacing.sm,
+                  top: 2,
+                  bottom: 2,
+                ),
+                child: Text(
+                  domain.label,
+                  style: TextStyle(
+                    fontSize: AppTheme.fontSize.xs,
+                    color: AppTheme.colors(context).textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          );
-        }).toList(),
-      ),
-    );
+            );
+          }).toList(),
+        ),
+      );
+    });
   }
 }
 
 // ============================================================
-// Domain Tile (with nested path groups and request leaves)
+// Domain Tile (with nested hierarchical path tree)
 // ============================================================
 
 class _DomainTile extends StatelessWidget {
@@ -264,23 +295,17 @@ class _DomainTile extends StatelessWidget {
         onSecondaryTapUp: (details) {
           _showContextMenu(context, details.globalPosition, domain);
         },
-        child: Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-            dense: true,
-            initiallyExpanded: false,
-            title: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacing.xs, vertical: 2),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.mode(context).tree.selectedBackground
-                    : null,
-                borderRadius: BorderRadius.circular(
-                    AppTheme.mode(context).tree.selectedRadius),
-              ),
-              child: Text(
+        child: Container(
+          color: isSelected
+              ? AppTheme.mode(context).tree.selectedBackground
+              : null,
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+              dense: true,
+              initiallyExpanded: false,
+              title: Text(
                 node.label,
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.sm,
@@ -290,7 +315,6 @@ class _DomainTile extends StatelessWidget {
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
-            ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
@@ -311,112 +335,22 @@ class _DomainTile extends StatelessWidget {
               treeCtrl.selectDomain(domain);
               if (expanded) treeCtrl.loadChildren(node);
             },
-            children: _buildPathGroups(context, domain),
+            children: _buildPathTree(context, domain),
           ),
+        ),
         ),
       );
     });
   }
 
-  /// Group children by path prefix and build nested tiles.
-  List<Widget> _buildPathGroups(BuildContext context, String domain) {
-    final treeCtrl = Get.find<TreeController>();
+  /// Build hierarchical path tree from loaded children.
+  List<Widget> _buildPathTree(BuildContext context, String domain) {
     if (node.children.isEmpty) return [];
 
-    // Group by path directory (first path segment)
-    final groups = <String, List<TreeNode>>{};
-    for (final child in node.children) {
-      final parts = child.label.split(' ');
-      final uri = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
-      final segments = uri.split('/').where((s) => s.isNotEmpty).toList();
-      final groupKey = segments.isNotEmpty ? '/${segments.first}/' : '/';
-      groups.putIfAbsent(groupKey, () => []).add(child);
-    }
+    final pathRoot = TreeController.buildPathTree(node.children);
 
-    // If only one group, show flat list
-    if (groups.length <= 1) {
-      return node.children.map((child) {
-        final parts = child.label.split(' ');
-        final path = parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
-        return InkWell(
-          onTap: () => treeCtrl.selectPath(domain, path),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: AppTheme.spacing.xl,
-              right: AppTheme.spacing.sm,
-              top: 2,
-              bottom: 2,
-            ),
-            child: Text(
-              child.label,
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                color: AppTheme.colors(context).textSecondary,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        );
-      }).toList();
-    }
-
-    // Multiple groups: show path group tiles (Level 1) with request leaves (Level 2)
-    return groups.entries.map((entry) {
-      return Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.only(
-            left: AppTheme.spacing.xl,
-            right: AppTheme.spacing.sm,
-          ),
-          dense: true,
-          title: Text(
-            entry.key,
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: AppTheme.colors(context).textSecondary.withAlpha(20),
-              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-            ),
-            child: Text(
-              '${entry.value.length}',
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                color: AppTheme.colors(context).textSecondary,
-              ),
-            ),
-          ),
-          children: entry.value.map((child) {
-            final parts = child.label.split(' ');
-            final path =
-                parts.length > 1 ? parts.sublist(1).join(' ') : child.label;
-            return InkWell(
-              onTap: () => treeCtrl.selectPath(domain, path),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: AppTheme.spacing.xl + AppTheme.spacing.lg,
-                  right: AppTheme.spacing.sm,
-                  top: 2,
-                  bottom: 2,
-                ),
-                child: Text(
-                  child.label,
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.xs,
-                    color: AppTheme.colors(context).textSecondary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      );
+    return pathRoot.children.values.map((child) {
+      return _PathTreeTile(node: child, domain: domain, depth: 0);
     }).toList();
   }
 
@@ -450,5 +384,97 @@ class _DomainTile extends StatelessWidget {
         treeCtrl.togglePin(domain);
       }
     });
+  }
+}
+
+// ============================================================
+// Recursive Path Tree Tile
+// ============================================================
+
+class _PathTreeTile extends StatelessWidget {
+  final PathNode node;
+  final String domain;
+  final int depth;
+
+  const _PathTreeTile({required this.node, required this.domain, required this.depth});
+
+  @override
+  Widget build(BuildContext context) {
+    final treeCtrl = Get.find<TreeController>();
+    final hasChildren = node.children.isNotEmpty;
+    final indent = AppTheme.spacing.xl + (depth * AppTheme.spacing.md);
+
+    if (!hasChildren) {
+      // Leaf node — clickable path
+      return Obx(() {
+        final isSelected = treeCtrl.selectedDomain.value == domain &&
+            treeCtrl.selectedPath.value == node.fullPath;
+
+        return InkWell(
+          onTap: () => treeCtrl.selectPath(domain, node.fullPath),
+          child: Container(
+            color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
+            padding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm, top: 3, bottom: 3),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '/${node.segment}',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSize.xs,
+                      color: isSelected
+                          ? AppTheme.mode(context).tree.selectedText
+                          : AppTheme.colors(context).textSecondary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (node.requestCount > 0)
+                  Text(
+                    '${node.requestCount}',
+                    style: TextStyle(
+                      fontSize: AppTheme.fontSize.xs,
+                      color: AppTheme.colors(context).textSecondary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      });
+    }
+
+    // Branch node — expandable
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
+        dense: true,
+        title: Text(
+          '/${node.segment}/',
+          style: TextStyle(
+            fontSize: AppTheme.fontSize.xs,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          decoration: BoxDecoration(
+            color: AppTheme.colors(context).textSecondary.withAlpha(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+          ),
+          child: Text(
+            '${node.totalCount}',
+            style: TextStyle(
+              fontSize: AppTheme.fontSize.xs,
+              color: AppTheme.colors(context).textSecondary,
+            ),
+          ),
+        ),
+        children: node.children.values.map((child) =>
+          _PathTreeTile(node: child, domain: domain, depth: depth + 1),
+        ).toList(),
+      ),
+    );
   }
 }
