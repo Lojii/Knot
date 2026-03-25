@@ -154,13 +154,35 @@ class TreeController extends GetxController {
       return true;
     }).toList();
 
+    // Debug: print raw URIs
+    print('──── loadChildren($domain): ${items.length} flows ────');
+    for (final f in items) {
+      print('  ${f.method} ${f.uri}');
+    }
+
     node.children.clear();
     node.children.addAll(items.map((f) => TreeNode(
       label: '${f.method} ${f.uri}',
       domain: domain,
     )));
     node.childrenLoaded = true;
+
+    // Debug: print the built path tree
+    final pathRoot = buildPathTree(node.children);
+    _printPathTree(pathRoot, '');
+
     tree.refresh();
+  }
+
+  static void _printPathTree(PathNode node, String indent) {
+    if (node.segment.isNotEmpty) {
+      print('$indent/${node.segment}  (requests: ${node.requestCount}, total: ${node.totalCount}, children: ${node.children.length})');
+    } else {
+      print('${indent}ROOT  (requests: ${node.requestCount}, total: ${node.totalCount}, children: ${node.children.length})');
+    }
+    for (final child in node.children.values) {
+      _printPathTree(child, '$indent  ');
+    }
   }
 
   // ── Selection ─────────────────────────────────────────────
@@ -253,23 +275,33 @@ class TreeController extends GetxController {
     return root;
   }
 
+  /// Collapse single-child chains: if a node has exactly 1 child, merge them.
+  /// e.g. /obj → /tiktok_web_login_static → /tiktok → ... becomes one node.
+  /// requestCount is accumulated during merge.
   static void _collapseChains(PathNode node) {
+    // Recurse first
     for (final child in node.children.values) {
       _collapseChains(child);
     }
+    // Collapse: if a child has exactly 1 grandchild, merge child+grandchild
     final keys = node.children.keys.toList();
     for (final key in keys) {
-      final child = node.children[key]!;
-      if (child.children.length == 1 && child.requestCount == 0) {
+      var child = node.children[key]!;
+      // Keep merging as long as the child has exactly 1 sub-child
+      while (child.children.length == 1) {
         final grandchild = child.children.values.first;
-        node.children.remove(key);
         final merged = PathNode(
           segment: '${child.segment}/${grandchild.segment}',
           fullPath: grandchild.fullPath,
-          requestCount: grandchild.requestCount,
+          requestCount: child.requestCount + grandchild.requestCount,
         );
         merged.children.addAll(grandchild.children);
-        node.children[merged.segment] = merged;
+        child = merged;
+      }
+      // Replace original child with the collapsed version
+      if (child.segment != key) {
+        node.children.remove(key);
+        node.children[child.segment] = child;
       }
     }
   }
