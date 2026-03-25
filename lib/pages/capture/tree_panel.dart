@@ -439,10 +439,13 @@ class _PathTreeTileState extends State<_PathTreeTile> {
     final indent = AppTheme.spacing.xl + (widget.depth * AppTheme.spacing.md);
 
     if (!hasChildren) {
-      // Leaf (directory with no sub-dirs) — simple clickable row, no expand arrow
+      // Leaf directory — simple clickable row, no expand arrow
       return Obx(() {
         final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
             treeCtrl.selectedPath.value == widget.node.fullPath;
+        final textColor = isSelected
+            ? AppTheme.mode(context).tree.selectedText
+            : AppTheme.colors(context).textPrimary;
 
         return InkWell(
           onTap: () => treeCtrl.selectPath(widget.domain, widget.node.fullPath),
@@ -454,12 +457,7 @@ class _PathTreeTileState extends State<_PathTreeTile> {
                 Expanded(
                   child: Text(
                     '/${widget.node.segment}',
-                    style: TextStyle(
-                      fontSize: AppTheme.fontSize.xs,
-                      color: isSelected
-                          ? AppTheme.mode(context).tree.selectedText
-                          : AppTheme.colors(context).textSecondary,
-                    ),
+                    style: TextStyle(fontSize: AppTheme.fontSize.xs, color: textColor),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -511,7 +509,9 @@ class _PathTreeTileState extends State<_PathTreeTile> {
                 style: TextStyle(
                   fontSize: AppTheme.fontSize.xs,
                   fontWeight: FontWeight.w500,
-                  color: isSelected ? AppTheme.mode(context).tree.selectedText : null,
+                  color: isSelected
+                      ? AppTheme.mode(context).tree.selectedText
+                      : AppTheme.colors(context).textPrimary,
                 ),
               ),
               trailing: Container(

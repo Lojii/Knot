@@ -226,7 +226,9 @@ class TreeController extends GetxController {
 
   // ── Path tree builder ─────────────────────────────────────
 
-  /// Build hierarchical path tree from URIs — directories only.
+  /// Build hierarchical path tree from URIs — directory nodes only, no file/endpoint leaves.
+  /// e.g. "GET /api/v1/users/123" → directories: /api, /v1, /users — "123" is NOT a node.
+  /// The request count is attributed to the deepest directory.
   static PathNode buildPathTree(List<TreeNode> children) {
     final root = PathNode(segment: '', fullPath: '');
     for (final child in children) {
@@ -237,9 +239,12 @@ class TreeController extends GetxController {
         root.requestCount++;
         continue;
       }
+      // Only create directory nodes — skip the last segment (file/endpoint).
+      // If there's only 1 segment (e.g. "/favicon.ico"), count goes to root.
+      final dirSegments = segments.length > 1 ? segments.sublist(0, segments.length - 1) : segments;
       var current = root;
       var path = '';
-      for (final seg in segments) {
+      for (final seg in dirSegments) {
         path += '/$seg';
         current.children.putIfAbsent(seg, () => PathNode(segment: seg, fullPath: path));
         current = current.children[seg]!;
