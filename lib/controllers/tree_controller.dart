@@ -96,15 +96,25 @@ class TreeController extends GetxController {
     } catch (_) {}
   }
 
-  /// Reload tree from the current flow list (already filtered by API + client-side).
-  /// Preserves all known domains — those with 0 matching flows get count 0.
+  /// Reload tree after filter changes.
+  /// - No filters active → re-fetch full domain list from API (restores all data)
+  /// - Filters active → rebuild counts from current filtered flows
   void reloadWithFilters() {
     if (_taskId == null) return;
-    final flowCtrl = Get.find<FlowController>();
     final filterCtrl = Get.find<FilterController>();
-    final flows = flowCtrl.flows.toList();
+    final hasFilters = filterCtrl.activeProtocols.isNotEmpty ||
+        filterCtrl.activeContentTypes.isNotEmpty;
 
-    // Compute counts from current (filtered) flows
+    if (!hasFilters) {
+      // No filters — restore full data from API
+      _invalidateChildren();
+      loadDomains(_taskId!);
+      return;
+    }
+
+    // Has filters — compute display counts from current flows
+    final flowCtrl = Get.find<FlowController>();
+    final flows = flowCtrl.flows.toList();
     final filteredCounts = <String, int>{};
     final filtered = filterCtrl.activeContentTypes.isEmpty
         ? flows
@@ -116,30 +126,15 @@ class TreeController extends GetxController {
       }
     }
 
-    // Merge: keep ALL previously known domains, update counts from filtered data
-    // Domains not in filtered flows keep count 0 (still visible in tree)
-    final mergedCounts = <String, int>{};
-    for (final key in _hostCounts.keys) {
-      mergedCounts[key] = filteredCounts[key] ?? 0;
-    }
-    // Also add any new domains from flows that weren't in _hostCounts
-    for (final entry in filteredCounts.entries) {
-      mergedCounts.putIfAbsent(entry.key, () => entry.value);
-    }
-
-    // Rebuild tree with merged counts (don't overwrite _hostCounts — keep full set)
-    final oldNodes = {for (final n in tree) n.domain: n};
-    final nodes = mergedCounts.entries
-        .where((e) => e.value > 0) // hide domains with 0 matching flows
-        .map((e) {
-      final old = oldNodes[e.key];
+    // Rebuild tree: show only domains with matches, invalidate cached children
+    final nodes = filteredCounts.entries.map((e) {
       return TreeNode(
         label: e.key,
         domain: e.key,
         isGroup: true,
         count: e.value,
-        children: old?.children,
-        childrenLoaded: old?.childrenLoaded ?? false,
+        // Don't reuse old children — they were loaded without filter
+        childrenLoaded: false,
       );
     }).toList();
 
@@ -153,19 +148,33 @@ class TreeController extends GetxController {
     tree.value = nodes;
   }
 
-  /// Load children (requests) for a domain on expand
+  /// Clear cached children so they re-fetch with current filters on next expand.
+  void _invalidateChildren() {
+    for (final node in tree) {
+      node.children.clear();
+      node.childrenLoaded = false;
+    }
+  }
+
+  /// Load children (requests) for a domain on expand — respects current filters.
   Future<void> loadChildren(TreeNode node) async {
     if (node.childrenLoaded || _taskId == null || node.domain == null) return;
     try {
       final api = Get.find<ApiClient>();
+      final filterCtrl = Get.find<FilterController>();
       final result = await api.getFlows(
         taskId: _taskId!,
         page: 1,
         size: 200,
         host: node.domain,
+        protocol: filterCtrl.protocolParam,
       );
+      // Apply client-side content type filter
+      final items = filterCtrl.activeContentTypes.isEmpty
+          ? result.items
+          : result.items.where((f) => filterCtrl.matchesContentType(f)).toList();
       node.children.clear();
-      node.children.addAll(result.items.map((f) => TreeNode(
+      node.children.addAll(items.map((f) => TreeNode(
         label: '${f.method} ${f.uri}',
         domain: node.domain,
       )));
