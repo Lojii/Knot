@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../api/api_client.dart';
+import '../../api/ws_client.dart';
+import '../../api/proxy_channel.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
+import '../../controllers/live_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
 import '../../utils/har_export.dart';
@@ -48,53 +52,39 @@ class GlobalBar extends StatelessWidget {
         child: Obx(() {
           return Row(
             children: [
-              // Home button — always visible
-              IconButton(
-                icon: Icon(Icons.home_outlined, size: AppTheme.sizing.iconSize,
-                  color: pageCtrl.isCapture ? theme.hintColor : theme.colorScheme.primary),
-                tooltip: 'nav.home'.tr,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => pageCtrl.showCapture(),
-              ),
+              // 1. Logo icon + "NetKnot" text
+              Icon(Icons.hub, size: AppTheme.sizing.iconSize, color: theme.colorScheme.primary),
               SizedBox(width: AppTheme.spacing.xs),
-
-              // === Left group: Task name + connection + TCP toggle ===
               Text(
-                taskCtrl.currentTask.value?.name.isNotEmpty == true
-                  ? taskCtrl.currentTask.value!.name
-                  : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}',
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              SizedBox(width: AppTheme.spacing.sm),
-              // Protocol / TCP toggle — only on capture page
-              if (pageCtrl.isCapture)
-                IconButton(
-                  icon: Icon(Icons.swap_horiz, size: AppTheme.sizing.iconSize),
-                  tooltip: 'nav.protocol_toggle'.tr,
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {/* P2 */},
+                'NetKnot',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
                 ),
+              ),
 
+              // 2. Small spacer
+              SizedBox(width: AppTheme.spacing.lg),
+
+              // 3. Start/Stop toggle switch
+              _StartStopButton(taskCtrl: taskCtrl),
+              SizedBox(width: AppTheme.spacing.sm),
+
+              // 4. TCP/HTTP mode switch buttons
+              _ProtocolModeButtons(),
+
+              // 5. Expanded spacer (left)
               const Spacer(),
 
-              // === Right group: Compose + Tools + History + Settings ===
-              IconButton(
-                icon: Icon(Icons.edit_note, size: AppTheme.sizing.iconSize),
-                tooltip: 'nav.compose'.tr,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => pageCtrl.isCompose
-                    ? pageCtrl.showCapture()
-                    : pageCtrl.showCompose(),
-              ),
+              // 6. Centered task name + rename + history
+              _TaskNameSection(taskCtrl: taskCtrl, pageCtrl: pageCtrl),
+
+              // 7. Expanded spacer (right)
+              const Spacer(),
+
+              // 8. Tools icon button
               _ToolsMenuButton(pageCtrl: pageCtrl),
-              IconButton(
-                icon: Icon(Icons.history, size: AppTheme.sizing.iconSize),
-                tooltip: 'nav.history'.tr,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => pageCtrl.isHistory
-                    ? pageCtrl.showCapture()
-                    : pageCtrl.showHistory(),
-              ),
+              // 9. Settings icon button
               IconButton(
                 icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
                 tooltip: 'nav.settings'.tr,
@@ -110,6 +100,174 @@ class GlobalBar extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────
+// Start / Stop toggle button (moved from toolbar.dart)
+// ─────────────────────────────────────────────────────────────
+
+class _StartStopButton extends StatelessWidget {
+  final TaskController taskCtrl;
+  const _StartStopButton({required this.taskCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => GestureDetector(
+      onTap: () async {
+        if (taskCtrl.isCapturing.value) {
+          await ProxyChannel.stopProxy();
+          taskCtrl.isCapturing.value = false;
+        } else {
+          try {
+            final result = await ProxyChannel.startProxy();
+            final port = (result['port'] as int?) ?? 0;
+            if (port > 0) {
+              Get.find<ApiClient>().baseUrl = 'http://localhost:$port';
+              Get.find<WsClient>().baseUrl = 'ws://localhost:$port';
+            }
+            taskCtrl.isCapturing.value = true;
+            await taskCtrl.loadTasks();
+            if (taskCtrl.currentTask.value != null) {
+              final tid = taskCtrl.currentTask.value!.id;
+              Get.find<FlowController>().setTaskId(tid);
+              Get.find<LiveController>().connectToTask(tid);
+            }
+          } catch (e) {
+            Get.snackbar('Error', 'msg.start_failed'.trParams({'error': '$e'}));
+          }
+        }
+      },
+      child: Container(
+        width: AppTheme.sizing.iconButtonSize,
+        height: AppTheme.sizing.iconButtonSize,
+        decoration: BoxDecoration(
+          color: taskCtrl.isCapturing.value
+              ? AppTheme.methodColor('DELETE')
+              : AppTheme.methodColor('GET'),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Icon(
+          taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow,
+          size: 14,
+          color: Colors.white,
+        ),
+      ),
+    ));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// TCP / HTTP segmented mode buttons
+// ─────────────────────────────────────────────────────────────
+
+class _ProtocolModeButtons extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _modeChip(context, 'HTTP', isActive: true, isLeft: true, theme: theme),
+        _modeChip(context, 'TCP', isActive: false, isLeft: false, theme: theme),
+      ],
+    );
+  }
+
+  Widget _modeChip(BuildContext context, String label,
+      {required bool isActive, required bool isLeft, required ThemeData theme}) {
+    final colors = AppTheme.colors(context);
+    return GestureDetector(
+      onTap: () {/* placeholder */},
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
+        decoration: BoxDecoration(
+          color: isActive ? colors.primary.withAlpha(30) : Colors.transparent,
+          border: Border.all(
+            color: isActive ? colors.primary : colors.divider,
+            width: 0.5,
+          ),
+          borderRadius: BorderRadius.horizontal(
+            left: isLeft ? Radius.circular(AppTheme.radius.sm) : Radius.zero,
+            right: !isLeft ? Radius.circular(AppTheme.radius.sm) : Radius.zero,
+          ),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontSize: AppTheme.fontSize.xs,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+            color: isActive ? colors.primary : colors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Center: Task name + rename + history
+// ─────────────────────────────────────────────────────────────
+
+class _TaskNameSection extends StatelessWidget {
+  final TaskController taskCtrl;
+  final AppPageController pageCtrl;
+  const _TaskNameSection({required this.taskCtrl, required this.pageCtrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = AppTheme.colors(context);
+    final taskName = taskCtrl.currentTask.value?.name.isNotEmpty == true
+        ? taskCtrl.currentTask.value!.name
+        : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}';
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing.sm,
+            vertical: 2,
+          ),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
+            border: Border.all(color: colors.divider, width: 0.5),
+          ),
+          child: Text(
+            taskName,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: AppTheme.fontSize.sm,
+            ),
+          ),
+        ),
+        SizedBox(width: AppTheme.spacing.xs),
+        IconButton(
+          icon: Icon(Icons.edit, size: AppTheme.sizing.iconSize - 2),
+          tooltip: 'Rename',
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+          onPressed: () {/* placeholder rename */},
+        ),
+        IconButton(
+          icon: Icon(Icons.schedule, size: AppTheme.sizing.iconSize - 2),
+          tooltip: 'nav.history'.tr,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+          onPressed: () => pageCtrl.isHistory
+              ? pageCtrl.showCapture()
+              : pageCtrl.showHistory(),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tools popup menu button (preserved from original)
+// ─────────────────────────────────────────────────────────────
 
 class _ToolsMenuButton extends StatelessWidget {
   final AppPageController pageCtrl;
