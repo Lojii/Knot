@@ -44,7 +44,7 @@ void main() async {
 
   runApp(const KnotApp());
 
-  // Startup: start proxy server (for web API) but don't start capturing
+  // Startup: start web API server only — no task creation, no capture
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     int port = 0;
 

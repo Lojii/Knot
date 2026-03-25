@@ -5,6 +5,8 @@
 import Foundation
 import TunnelServices
 import KnotStorage
+import KnotWebService
+import NIOPosix
 
 let portFile = "/tmp/knot-proxy-port"
 
@@ -26,60 +28,20 @@ if let groupURL = FileManager.default.containerURL(
 
 print("[KnotServer] Root: \(DatabaseManager.rootPath)")
 
-// MARK: - Create or Reuse Task
+// MARK: - Start Web API only (no task, no proxy)
+// Tasks and proxy capture are started on-demand via the Flutter UI.
 
-let task = CaptureTask()
-task.localIP = "127.0.0.1"
-task.localPort = 0
-task.localEnable = 1
-task.wifiEnable = 0
-task.isCACertTrusted = true
-task.ruleEngine = RuleEngine(config: "")
-task.certManager = CertManager()  // Loads certs from CertStore automatically
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 2)
+let webServer = KnotWebServer(preferredPort: 9090, eventLoopGroup: elg)
 
-// Reuse the most recent task if it exists; otherwise create a new one.
-// This prevents empty task folders from accumulating on every app restart.
 do {
-    let catalogDB = DatabaseManager.shared.catalogDB
-    if let existing = CatalogDAO.findLastTask(db: catalogDB) {
-        task.id = existing.id
-        task.creatTime = existing.createdAt
-        task.startTime = existing.startedAt ?? Date().timeIntervalSince1970
-        let ts = "\(existing.createdAt)".components(separatedBy: ".")
-        task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
-        let _ = try DatabaseManager.shared.openTask(task.id)
-        print("[KnotServer] Reusing task \(task.id)")
-    } else {
-        task.creatTime = Date().timeIntervalSince1970
-        task.startTime = Date().timeIntervalSince1970
-        let ts = "\(task.creatTime!)".components(separatedBy: ".")
-        task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
-        let rowId = try CatalogDAO.insertFullTask(db: catalogDB, task: task.toCaptureTaskRecord())
-        task.id = rowId
-        let _ = try DatabaseManager.shared.openTask(task.id)
-        print("[KnotServer] Task \(task.id) created")
-    }
+    let webPort = try webServer.start()
+    // Write port so the Flutter app can find us
+    try? "\(webPort)".write(toFile: portFile, atomically: true, encoding: .utf8)
+    print("[KnotServer] API: http://127.0.0.1:\(webPort)")
 } catch {
-    print("[KnotServer] Task setup failed: \(error)")
-}
-
-task.loadRules()
-
-// MARK: - Start Server
-
-let server = ProxyServer(masterThreads: 1, workerThreads: 2)
-
-server.start(task: task) { result in
-    switch result {
-    case .success:
-        let port = server.localBoundPort ?? 0
-        try? "\(port)".write(toFile: portFile, atomically: true, encoding: .utf8)
-        print("[KnotServer] Proxy: 127.0.0.1:\(port)")
-        print("[KnotServer] API:   http://127.0.0.1:9090")
-    case .failure(let error):
-        print("[KnotServer] Failed: \(error)")
-        exit(1)
-    }
+    print("[KnotServer] Web server failed: \(error)")
+    exit(1)
 }
 
 // MARK: - Signal handling
@@ -93,5 +55,5 @@ signal(SIGTERM) { _ in
     exit(0)
 }
 
-print("[KnotServer] Running. Ctrl+C to stop.")
+print("[KnotServer] Running (API only, no capture). Ctrl+C to stop.")
 dispatchMain()
