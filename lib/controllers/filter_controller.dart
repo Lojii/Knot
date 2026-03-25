@@ -24,6 +24,14 @@ class FilterController extends GetxController {
   final activeProtocols = <String>{}.obs;
   final activeContentTypes = <String>{}.obs;
 
+  final protocolMode = 'HTTP'.obs; // 'HTTP' or 'TCP'
+
+  void toggleProtocolMode() {
+    protocolMode.value = protocolMode.value == 'HTTP' ? 'TCP' : 'HTTP';
+  }
+
+  bool get isTcpMode => protocolMode.value == 'TCP';
+
   /// Available protocols from API
   final availableProtocols = <String>[].obs;
   /// Available content type categories from API
@@ -68,7 +76,7 @@ class FilterController extends GetxController {
       availableProtocols.value = protoOrder.where(protos.contains).toList();
 
       // Content types: categorize raw values into labels
-      const ctOrder = ['JSON', 'IMG', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
+      const ctOrder = ['JSON', 'IMG', 'TEXT', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
       final ctLabels = <String>{};
       for (final ct in result.contentTypes) {
         final lower = ct.toLowerCase();

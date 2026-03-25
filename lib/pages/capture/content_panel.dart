@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import '../../controllers/filter_controller.dart';
 import '../../theme/app_theme.dart';
 import 'flow_table.dart';
 import 'flow_detail_panel.dart';
@@ -39,11 +40,26 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final filterCtrl = Get.find<FilterController>();
     final theme = Theme.of(context);
     final detailTab = AppTheme.mode(context).detailTab;
     final tabs = _tabs;
 
-    return Column(
+    return Obx(() {
+      if (filterCtrl.isTcpMode) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.dns_outlined, size: 48, color: AppTheme.colors(context).textSecondary),
+              SizedBox(height: AppTheme.spacing.md),
+              Text('tab.tcp_coming_soon'.tr,
+                style: TextStyle(color: AppTheme.colors(context).textSecondary, fontSize: AppTheme.fontSize.lg)),
+            ],
+          ),
+        );
+      }
+      return Column(
       children: [
         // Custom segmented-control tab bar
         Container(
@@ -91,6 +107,7 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
         // Tab content
         Expanded(
           child: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
             controller: _tabController,
             children: [
               // List tab: split into table + detail
@@ -141,5 +158,6 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
         ),
       ],
     );
+    });
   }
 }

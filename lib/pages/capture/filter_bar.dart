@@ -8,9 +8,6 @@ class FilterBar extends StatelessWidget {
   final FocusNode searchFocusNode;
   const FilterBar({super.key, required this.searchFocusNode});
 
-  static const _protocols = ['HTTP', 'HTTPS', 'WS', 'WSS'];
-  static const _contentTypes = ['JSON', 'IMG', 'TEXT', 'JS', 'HTML', 'CSS', 'XML'];
-
   @override
   Widget build(BuildContext context) {
     final filterCtrl = Get.find<FilterController>();
@@ -24,37 +21,87 @@ class FilterBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Group 1: Protocol chips
-          Obx(() => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: _protocols.map((p) => _chip(context, p,
-              isActive: filterCtrl.activeProtocols.contains(p),
-              onTap: () {
-                filterCtrl.toggleProtocol(p);
-                flowCtrl.reloadFromFirstPage();
-              },
-            )).toList(),
-          )),
-          // Vertical divider
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-            child: Container(
-              width: 1,
-              height: 16,
-              color: AppTheme.colors(context).divider,
-            ),
-          ),
-          // Group 2: Content type chips
-          Obx(() => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: _contentTypes.map((t) => _chip(context, t,
-              isActive: filterCtrl.activeContentTypes.contains(t),
-              onTap: () {
-                filterCtrl.toggleContentType(t);
-                flowCtrl.reloadFromFirstPage();
-              },
-            )).toList(),
-          )),
+          // HTTP/TCP mode switch - first item in filter bar
+          Obx(() {
+            final isTcp = filterCtrl.isTcpMode;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('HTTP', style: TextStyle(
+                  fontSize: AppTheme.fontSize.sm,
+                  fontWeight: isTcp ? FontWeight.normal : FontWeight.w600,
+                  color: isTcp ? AppTheme.colors(context).textSecondary : AppTheme.colors(context).primary,
+                )),
+                SizedBox(
+                  height: 20,
+                  width: 36,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Switch(
+                      value: isTcp,
+                      onChanged: (_) => filterCtrl.toggleProtocolMode(),
+                      activeThumbColor: AppTheme.colors(context).primary,
+                    ),
+                  ),
+                ),
+                Text('TCP', style: TextStyle(
+                  fontSize: AppTheme.fontSize.sm,
+                  fontWeight: isTcp ? FontWeight.w600 : FontWeight.normal,
+                  color: isTcp ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
+                )),
+                SizedBox(width: AppTheme.spacing.md),
+                Container(width: 1, height: 16, color: AppTheme.colors(context).divider),
+                SizedBox(width: AppTheme.spacing.md),
+              ],
+            );
+          }),
+          // Group 1: Protocol chips (from API)
+          Obx(() {
+            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
+            final protos = filterCtrl.availableProtocols;
+            if (protos.isEmpty) return const SizedBox.shrink();
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: protos.map((p) => _chip(context, p,
+                isActive: filterCtrl.activeProtocols.contains(p),
+                onTap: () {
+                  filterCtrl.toggleProtocol(p);
+                  flowCtrl.reloadFromFirstPage();
+                },
+              )).toList(),
+            );
+          }),
+          // Vertical divider (only if both groups have data)
+          Obx(() {
+            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
+            if (filterCtrl.availableProtocols.isEmpty || filterCtrl.availableContentTypes.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+              child: Container(
+                width: 1,
+                height: 16,
+                color: AppTheme.colors(context).divider,
+              ),
+            );
+          }),
+          // Group 2: Content type chips (from API)
+          Obx(() {
+            if (filterCtrl.isTcpMode) return const SizedBox.shrink();
+            final types = filterCtrl.availableContentTypes;
+            if (types.isEmpty) return const SizedBox.shrink();
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: types.map((t) => _chip(context, t,
+                isActive: filterCtrl.activeContentTypes.contains(t),
+                onTap: () {
+                  filterCtrl.toggleContentType(t);
+                  flowCtrl.reloadFromFirstPage();
+                },
+              )).toList(),
+            );
+          }),
           // Spacer pushes search to the right
           const Spacer(),
           // Search field (moved from toolbar)

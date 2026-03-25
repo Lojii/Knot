@@ -65,10 +65,7 @@ class GlobalBar extends StatelessWidget {
             _StartStopButton(taskCtrl: taskCtrl),
             SizedBox(width: AppTheme.spacing.sm),
 
-            // 4. TCP/HTTP mode switch buttons
-            _ProtocolModeButtons(),
-
-            // 5. Expanded spacer (left)
+            // 4. Expanded spacer (left)
             const Spacer(),
 
             // 6. Centered task name + rename + history
@@ -123,54 +120,6 @@ class _StartStopButton extends StatelessWidget {
         ),
       ),
     ));
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// TCP / HTTP segmented mode buttons
-// ─────────────────────────────────────────────────────────────
-
-class _ProtocolModeButtons extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _modeChip(context, 'HTTP', isActive: true, isLeft: true, theme: theme),
-        _modeChip(context, 'TCP', isActive: false, isLeft: false, theme: theme),
-      ],
-    );
-  }
-
-  Widget _modeChip(BuildContext context, String label,
-      {required bool isActive, required bool isLeft, required ThemeData theme}) {
-    final colors = AppTheme.colors(context);
-    return GestureDetector(
-      onTap: () {/* placeholder */},
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
-        decoration: BoxDecoration(
-          color: isActive ? colors.primary.withAlpha(30) : Colors.transparent,
-          border: Border.all(
-            color: isActive ? colors.primary : colors.divider,
-            width: 0.5,
-          ),
-          borderRadius: BorderRadius.horizontal(
-            left: isLeft ? Radius.circular(AppTheme.radius.sm) : Radius.zero,
-            right: !isLeft ? Radius.circular(AppTheme.radius.sm) : Radius.zero,
-          ),
-        ),
-        child: Text(
-          label,
-          style: theme.textTheme.labelSmall?.copyWith(
-            fontSize: AppTheme.fontSize.xs,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-            color: isActive ? colors.primary : colors.textSecondary,
-          ),
-        ),
-      ),
-    );
   }
 }
 
