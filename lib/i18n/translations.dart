@@ -67,6 +67,7 @@ class AppTranslations extends Translations {
     'tree.domains': 'DOMAINS',
     'tree.all_domains': 'All Domains',
     'tree.pinned': 'PINNED',
+    'tree.apps': 'APPS',
     'tree.pin': 'Pin',
     'tree.unpin': 'Unpin',
 
@@ -344,6 +345,7 @@ class AppTranslations extends Translations {
     'tree.domains': '域名',
     'tree.all_domains': '全部域名',
     'tree.pinned': '已置顶',
+    'tree.apps': '应用',
     'tree.pin': '置顶',
     'tree.unpin': '取消置顶',
 
