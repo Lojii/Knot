@@ -83,51 +83,20 @@ class AppDelegate: FlutterAppDelegate {
             MitmService.storeFolder = groupURL.path.hasSuffix("/") ? groupURL.path : "\(groupURL.path)/"
         }
 
-        // Create task
-        let task = CaptureTask()
-        task.localIP = "127.0.0.1"
-        task.localPort = 8034
-        task.localEnable = 1
-        task.wifiEnable = 0
-        task.isCACertTrusted = true
-        task.ruleEngine = RuleEngine(config: "")
-        task.certManager = CertManager()
-        task.creatTime = Date().timeIntervalSince1970
-        task.startTime = Date().timeIntervalSince1970
-        let ts = "\(task.creatTime!)".components(separatedBy: ".")
-        task.fileFolder = "task_\(ts.first ?? "0")\(ts.last ?? "0")"
-
+        // Start Web API only — NO task creation, NO proxy capture.
+        // Tasks are created on-demand when user clicks Start in the UI.
+        let webServer = KnotWebServer(
+            preferredPort: 9090,
+            eventLoopGroup: MultiThreadedEventLoopGroup(numberOfThreads: 2)
+        )
         do {
-            let rowId = try CatalogDAO.insertFullTask(db: DatabaseManager.shared.catalogDB, task: task.toCaptureTaskRecord())
-            task.id = rowId
-            let _ = try DatabaseManager.shared.openTask(task.id)
+            let webPort = try webServer.start()
+            try? "\(webPort)".write(toFile: "/tmp/knot-proxy-port", atomically: true, encoding: .utf8)
+            NSLog("[Knot] API on port \(webPort)")
+            result(["running": true, "port": webPort])
         } catch {
-            NSLog("[Knot] Task creation failed: \(error)")
-        }
-        task.loadRules()
-        self.captureTask = task
-
-        // Start server
-        let server = ProxyServer(masterThreads: 1, workerThreads: 2)
-        self.proxyServer = server
-
-        var responded = false
-        server.start(task: task) { startResult in
-            DispatchQueue.main.async {
-                guard !responded else { return }
-                responded = true
-                switch startResult {
-                case .success:
-                    let proxyPort = server.localBoundPort ?? 0
-                    let apiPort = server.webBoundPort ?? 0
-                    try? "\(apiPort)".write(toFile: "/tmp/knot-proxy-port", atomically: true, encoding: .utf8)
-                    NSLog("[Knot] Proxy on port \(proxyPort), API on port \(apiPort)")
-                    result(["running": true, "port": apiPort, "proxyPort": proxyPort])
-                case .failure(let error):
-                    NSLog("[Knot] Proxy failed: \(error)")
-                    result(FlutterError(code: "START_FAILED", message: "\(error)", details: nil))
-                }
-            }
+            NSLog("[Knot] Web server failed: \(error)")
+            result(FlutterError(code: "START_FAILED", message: "\(error)", details: nil))
         }
     }
     

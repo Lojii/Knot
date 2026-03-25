@@ -406,9 +406,9 @@ class _PathTreeTile extends StatelessWidget {
     final indent = AppTheme.spacing.xl + (depth * AppTheme.spacing.md);
 
     if (!hasChildren) {
-      // Leaf directory — simple clickable row, no expand arrow
-      // Add 24px to align with ExpansionTile title text (arrow icon width)
-      final leafIndent = indent + 24;
+      // Leaf directory — simple clickable row
+      // Same left indent as ExpansionTile tilePadding for alignment
+      final leafIndent = indent;
       return Obx(() {
         final isSelected = treeCtrl.selectedDomain.value == domain &&
             treeCtrl.selectedPath.value == node.fullPath;

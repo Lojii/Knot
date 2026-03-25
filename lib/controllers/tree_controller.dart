@@ -298,12 +298,13 @@ class TreeController extends GetxController {
     for (final key in keys) {
       var child = node.children[key]!;
       // Keep merging as long as the child has exactly 1 sub-child
-      while (child.children.length == 1) {
+      // BUT stop if the child has its own requests (files at this level)
+      while (child.children.length == 1 && child.requestCount == 0) {
         final grandchild = child.children.values.first;
         final merged = PathNode(
           segment: '${child.segment}/${grandchild.segment}',
           fullPath: grandchild.fullPath,
-          requestCount: child.requestCount + grandchild.requestCount,
+          requestCount: grandchild.requestCount,
         );
         merged.children.addAll(grandchild.children);
         child = merged;
