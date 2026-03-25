@@ -184,7 +184,6 @@ class TreeController extends GetxController {
   bool isPinned(String domain) => pinnedDomains.contains(domain);
 
   void selectDomain(String? domain) {
-    if (selectedDomain.value == domain && selectedPath.value == null) return;
     selectedDomain.value = domain;
     selectedPath.value = null;
     selectedApp.value = null;
@@ -192,7 +191,6 @@ class TreeController extends GetxController {
   }
 
   void selectPath(String domain, String path) {
-    if (selectedDomain.value == domain && selectedPath.value == path) return;
     selectedDomain.value = domain;
     selectedPath.value = path;
     selectedApp.value = null;
