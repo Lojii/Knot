@@ -117,8 +117,23 @@ class _ContentPanelState extends State<ContentPanel> with SingleTickerProviderSt
                   ],
                 ),
               ),
-              // Waterfall tab
-              const WaterfallTab(),
+              // Waterfall tab: split into waterfall + detail
+              MultiSplitViewTheme(
+                data: MultiSplitViewThemeData(
+                  dividerPainter: DividerPainters.background(
+                    color: AppTheme.colors(context).divider,
+                    highlightedColor: AppTheme.colors(context).primary.withAlpha(80),
+                  ),
+                  dividerThickness: 1,
+                ),
+                child: MultiSplitView(
+                  axis: Axis.vertical,
+                  initialAreas: [
+                    Area(min: 100, size: 300, builder: (ctx, area) => const WaterfallTab()),
+                    Area(min: 100, builder: (ctx, area) => const FlowDetailPanel()),
+                  ],
+                ),
+              ),
               // Dashboard tab
               const DashboardTab(),
             ],
