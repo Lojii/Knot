@@ -291,6 +291,7 @@ class _DomainTile extends StatefulWidget {
 }
 
 class _DomainTileState extends State<_DomainTile> {
+  final _controller = ExpansibleController();
   bool _expanded = false;
 
   @override
@@ -301,16 +302,13 @@ class _DomainTileState extends State<_DomainTile> {
     return Obx(() {
       final isSelected = treeCtrl.selectedDomain.value == domain &&
           treeCtrl.selectedPath.value == null;
-      // Also highlight if any child path under this domain is selected
       final isDomainActive = treeCtrl.selectedDomain.value == domain;
 
       return GestureDetector(
         onTap: () {
-          // Click: always select this domain
           treeCtrl.selectDomain(domain);
-          // If not expanded, expand and load children
           if (!_expanded) {
-            setState(() => _expanded = true);
+            _controller.expand();
             treeCtrl.loadChildren(widget.node);
           }
         },
@@ -324,10 +322,9 @@ class _DomainTileState extends State<_DomainTile> {
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              key: PageStorageKey(domain),
+              controller: _controller,
               tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
               dense: true,
-              initiallyExpanded: _expanded,
               title: Text(
                 widget.node.label,
                 style: TextStyle(
@@ -355,12 +352,11 @@ class _DomainTileState extends State<_DomainTile> {
               ),
             ),
             onExpansionChanged: (expanded) {
-              setState(() => _expanded = expanded);
+              _expanded = expanded;
               if (expanded) {
                 treeCtrl.selectDomain(domain);
                 treeCtrl.loadChildren(widget.node);
               }
-              // Collapse: just collapse, don't change selection
             },
             children: _buildPathTree(context, domain),
           ),
@@ -430,6 +426,7 @@ class _PathTreeTile extends StatefulWidget {
 }
 
 class _PathTreeTileState extends State<_PathTreeTile> {
+  ExpansibleController? _controller;
   bool _expanded = false;
 
   @override
@@ -479,6 +476,7 @@ class _PathTreeTileState extends State<_PathTreeTile> {
     }
 
     // Branch node — expandable + clickable
+    _controller ??= ExpansibleController();
     return Obx(() {
       final isSelected = treeCtrl.selectedDomain.value == widget.domain &&
           treeCtrl.selectedPath.value == widget.node.fullPath;
@@ -487,7 +485,7 @@ class _PathTreeTileState extends State<_PathTreeTile> {
         onTap: () {
           treeCtrl.selectPath(widget.domain, widget.node.fullPath);
           if (!_expanded) {
-            setState(() => _expanded = true);
+            _controller!.expand();
           }
         },
         child: Theme(
@@ -495,12 +493,11 @@ class _PathTreeTileState extends State<_PathTreeTile> {
           child: Container(
             color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
             child: ExpansionTile(
-              key: PageStorageKey(widget.node.fullPath),
+              controller: _controller,
               tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
               dense: true,
-              initiallyExpanded: _expanded,
               onExpansionChanged: (expanded) {
-                setState(() => _expanded = expanded);
+                _expanded = expanded;
                 if (expanded) {
                   treeCtrl.selectPath(widget.domain, widget.node.fullPath);
                 }
