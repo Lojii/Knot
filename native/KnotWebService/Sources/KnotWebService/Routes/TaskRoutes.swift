@@ -93,6 +93,32 @@ enum TaskRoutes {
         }
     }
 
+    // MARK: - Rename
+
+    /// PATCH /api/tasks/{id} — update task properties (name)
+    /// Body: {"name": "new name"}
+    static func update(context: ChannelHandlerContext, taskId: String, bodyData: Data?) {
+        guard let id = Int64(taskId) else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")
+            return
+        }
+        guard let data = bodyData,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Expected JSON body")
+            return
+        }
+        do {
+            let db = DatabaseManager.shared.catalogDB
+            if let name = json["name"] as? String {
+                try CatalogDAO.renameTask(db: db, taskId: id, name: name)
+            }
+            ResponseHelper.jsonResponse(context: context, body: ["updated": id])
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to update task: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Delete
 
     /// DELETE /api/tasks/{id} — delete a single task and all its data

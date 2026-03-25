@@ -91,6 +91,12 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
             return
         }
 
+        // PATCH /api/tasks/{id} — rename / update
+        if method == .PATCH && n == 3 {
+            TaskRoutes.update(context: context, taskId: taskId, bodyData: bodyData)
+            return
+        }
+
         // GET /api/tasks/{id}
         if method == .GET && n == 3 {
             TaskRoutes.detail(context: context, taskId: taskId, queryParams: queryParams)
@@ -124,6 +130,18 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
         // GET /api/tasks/{id}/flows/stats
         if n == 5 && seg4 == "stats" {
             FlowRoutes.stats(context: context, taskId: taskId, queryParams: queryParams)
+            return
+        }
+
+        // GET /api/tasks/{id}/flows/filters
+        if n == 5 && seg4 == "filters" {
+            FlowRoutes.filters(context: context, taskId: taskId, queryParams: queryParams)
+            return
+        }
+
+        // GET /api/tasks/{id}/flows/domains
+        if n == 5 && seg4 == "domains" {
+            FlowRoutes.domains(context: context, taskId: taskId, queryParams: queryParams)
             return
         }
 

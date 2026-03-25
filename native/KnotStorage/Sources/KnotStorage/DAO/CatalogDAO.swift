@@ -141,6 +141,10 @@ public enum CatalogDAO {
         }
     }
 
+    public static func renameTask(db: Connection, taskId: Int64, name: String) throws {
+        try db.run("UPDATE capture_task SET name = ? WHERE id = ?", name, taskId)
+    }
+
     public static func deleteTask(db: Connection, taskId: Int64) throws {
         try db.run("DELETE FROM capture_task WHERE id = ?", taskId)
     }

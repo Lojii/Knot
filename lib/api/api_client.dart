@@ -46,6 +46,34 @@ class ApiClient {
     return (items: items, total: (data['total'] as int?) ?? 0);
   }
 
+  /// GET /api/tasks/{id}/flows/filters
+  Future<({List<String> protocols, List<String> contentTypes})> getFlowFilters(int taskId) async {
+    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks/$taskId/flows/filters'))
+        .timeout(const Duration(seconds: 10));
+    final json = jsonDecode(resp.body) as Map<String, dynamic>;
+    final data = json['data'] as Map<String, dynamic>? ?? json;
+    final protocols = (data['protocols'] as List?)?.map((e) => e as String).toList() ?? [];
+    final contentTypes = (data['contentTypes'] as List?)?.map((e) => e as String).toList() ?? [];
+    return (protocols: protocols, contentTypes: contentTypes);
+  }
+
+  /// GET /api/tasks/{id}/flows/domains — host list with counts
+  Future<List<({String host, int count})>> getFlowDomains(int taskId, {String? protocol, String? keyword}) async {
+    final params = <String, String>{};
+    if (protocol != null) params['protocol'] = protocol;
+    if (keyword != null) params['keyword'] = keyword;
+    final uri = Uri.parse('$baseUrl/api/tasks/$taskId/flows/domains').replace(queryParameters: params.isEmpty ? null : params);
+    final resp = await _client.get(uri)
+        .timeout(const Duration(seconds: 10));
+    final json = jsonDecode(resp.body) as Map<String, dynamic>;
+    final data = json['data'] as Map<String, dynamic>? ?? json;
+    final items = data['items'] as List? ?? [];
+    return items.map((e) {
+      final m = e as Map<String, dynamic>;
+      return (host: m['host'] as String? ?? '', count: (m['count'] as int?) ?? 0);
+    }).toList();
+  }
+
   Future<FlowDetail> getFlowDetail(int taskId, String flowId) async {
     final resp = await _client.get(
       Uri.parse('$baseUrl/api/tasks/$taskId/flows/$flowId'),
@@ -57,7 +85,13 @@ class ApiClient {
   Future<String> getPayload(int taskId, String flowId, String direction, {bool preview = false}) async {
     final url = '$baseUrl/api/tasks/$taskId/flows/$flowId/$direction${preview ? "?preview=true" : ""}';
     final resp = await _client.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
-    return resp.body;
+    // Decode as UTF-8 from raw bytes (resp.body uses Latin-1 by default)
+    try {
+      return utf8.decode(resp.bodyBytes);
+    } catch (_) {
+      // Binary data that isn't valid UTF-8 — return as Latin-1 fallback
+      return resp.body;
+    }
   }
 
   Future<Map<String, dynamic>> getFlowStats(int taskId) async {
@@ -74,6 +108,14 @@ class ApiClient {
     } catch (_) {
       return false;
     }
+  }
+
+  Future<void> renameTask(int taskId, String name) async {
+    await _client.patch(
+      Uri.parse('$baseUrl/api/tasks/$taskId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'name': name}),
+    ).timeout(const Duration(seconds: 10));
   }
 
   Future<void> deleteTask(int taskId) async {

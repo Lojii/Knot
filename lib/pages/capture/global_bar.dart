@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../api/api_client.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../controllers/history_controller.dart';
@@ -265,8 +266,8 @@ class _TabChip extends StatelessWidget {
         if (!context.mounted) return;
         _showRenameDialog(context, tab);
       case 'delete':
-        // TODO: delete task via API
-        break;
+        if (!context.mounted) return;
+        _deleteTask(context, tab);
     }
   }
 
@@ -277,7 +278,7 @@ class _TabChip extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rename'),
+        title: Text('tab.rename'.tr),
         content: TextField(controller: controller, autofocus: true),
         actions: [
           TextButton(
@@ -285,15 +286,57 @@ class _TabChip extends StatelessWidget {
             child: Text('action.cancel'.tr),
           ),
           TextButton(
-            onPressed: () {
-              tabMgr.renameTab(tab.id, controller.text.trim());
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isEmpty) return;
               Navigator.pop(ctx);
+              tabMgr.renameTab(tab.id, newName);
+              // Persist to backend
+              if (tab.taskId != null) {
+                try {
+                  await Get.find<ApiClient>().renameTask(tab.taskId!, newName);
+                } catch (_) {}
+              }
             },
             child: Text('action.save'.tr),
           ),
         ],
       ),
     );
+  }
+
+  void _deleteTask(BuildContext context, TabItem tab) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('tab.delete_task'.tr),
+        content: Text('history.confirm_delete_one'.trParams({'id': '${tab.taskId ?? ""}'})),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('action.cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text('action.delete'.tr),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || tab.taskId == null) return;
+    try {
+      final tabMgr = Get.find<TabManager>();
+      tabMgr.closeTab(tab.id);
+      await Get.find<ApiClient>().deleteTask(tab.taskId!);
+      Get.find<HistoryController>().loadTasks();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('history.delete_failed'.trParams({'error': '$e'}))),
+        );
+      }
+    }
   }
 }
 
