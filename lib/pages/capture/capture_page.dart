@@ -6,6 +6,7 @@ import '../../controllers/page_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/tab_controller.dart';
 import '../../utils/request_sender.dart';
 import '../../theme/app_theme.dart';
 import 'global_bar.dart';
@@ -53,22 +54,50 @@ class CapturePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pageCtrl = Get.find<AppPageController>();
+    final tabMgr = Get.find<TabManager>();
+    final taskCtrl = Get.find<TaskController>();
 
     return Scaffold(
       body: Column(
         children: [
           const GlobalBar(),
           Expanded(
-            child: Obx(() => switch (pageCtrl.currentPage.value) {
-              AppPage.capture => const _CaptureContent(),
-              AppPage.history => const HistoryPanel(),
-              AppPage.settings => const SettingsPanel(),
-              AppPage.compose => const ComposePage(),
-              AppPage.mapRemote => const MapRemotePanel(),
-              AppPage.mapLocal => const MapLocalPanel(),
-              AppPage.allowBlock => const AllowBlockPanel(),
-              AppPage.diff => const DiffPage(),
-              AppPage.breakpointMgmt => const BreakpointPanel(),
+            child: Obx(() {
+              final page = pageCtrl.currentPage.value;
+
+              // Sub-pages (history, tools, etc.) take priority
+              if (page != AppPage.capture) {
+                return switch (page) {
+                  AppPage.history => const HistoryPanel(),
+                  AppPage.settings => const SettingsPanel(),
+                  AppPage.compose => const ComposePage(),
+                  AppPage.mapRemote => const MapRemotePanel(),
+                  AppPage.mapLocal => const MapLocalPanel(),
+                  AppPage.allowBlock => const AllowBlockPanel(),
+                  AppPage.diff => const DiffPage(),
+                  AppPage.breakpointMgmt => const BreakpointPanel(),
+                  _ => const SizedBox.shrink(),
+                };
+              }
+
+              // On capture page: route by active tab
+              final activeTab = tabMgr.activeTab;
+
+              // When a task tab is active, ensure its data is loaded
+              if (!activeTab.isHome && activeTab.task != null) {
+                final task = activeTab.task!;
+                if (taskCtrl.currentTask.value?.id != task.id) {
+                  // Schedule after build to avoid setState-during-build
+                  Future.microtask(() => taskCtrl.selectTask(task));
+                }
+                return const _CaptureContent();
+              }
+
+              if (activeTab.isHome) {
+                return const _HomePage();
+              }
+
+              return const _CaptureContent();
             }),
           ),
           const CaptureStatusBar(),
@@ -223,6 +252,40 @@ class _CaptureContentState extends State<_CaptureContent> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Home / Welcome page shown when Home tab is active
+// ─────────────────────────────────────────────────────────────
+
+class _HomePage extends StatelessWidget {
+  const _HomePage();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colors(context);
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.hub, size: 64, color: colors.primary.withAlpha(100)),
+          SizedBox(height: AppTheme.spacing.lg),
+          Text(
+            'NetKnot',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: colors.textSecondary,
+            ),
+          ),
+          SizedBox(height: AppTheme.spacing.sm),
+          Text(
+            'Click Start to begin capturing',
+            style: TextStyle(color: colors.textSecondary),
+          ),
+        ],
       ),
     );
   }

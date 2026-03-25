@@ -6,6 +6,7 @@ import '../models/task_model.dart';
 import 'flow_controller.dart';
 import 'live_controller.dart';
 import 'detail_controller.dart';
+import 'tab_controller.dart';
 
 class TaskController extends GetxController {
   final ApiClient api;
@@ -47,6 +48,9 @@ class TaskController extends GetxController {
     if (isCapturing.value) {
       await ProxyChannel.stopProxy();
       isCapturing.value = false;
+      final tabMgr = Get.find<TabManager>();
+      final capTab = tabMgr.capturingTab;
+      if (capTab != null) tabMgr.markStopped(capTab.id);
     } else {
       try {
         final result = await ProxyChannel.startProxy();
@@ -75,6 +79,8 @@ class TaskController extends GetxController {
           final tid = currentTask.value!.id;
           Get.find<FlowController>().setTaskId(tid);
           Get.find<LiveController>().connectToTask(tid);
+          final tabMgr = Get.find<TabManager>();
+          tabMgr.openTask(currentTask.value!, isCapturing: true);
         }
       } catch (e) {
         Get.snackbar('Error', 'Start failed: $e');

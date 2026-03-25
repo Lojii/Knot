@@ -5,6 +5,7 @@ import '../../controllers/task_controller.dart';
 import '../../controllers/flow_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
+import '../../controllers/tab_controller.dart';
 import '../../utils/har_export.dart';
 import '../../utils/har_import.dart';
 import '../../utils/list_export.dart';
@@ -18,6 +19,7 @@ class GlobalBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final taskCtrl = Get.find<TaskController>();
     final pageCtrl = Get.find<AppPageController>();
+    final tabMgr = Get.find<TabManager>();
     final theme = Theme.of(context);
     final isMacOS = defaultTargetPlatform == TargetPlatform.macOS;
 
@@ -48,7 +50,7 @@ class GlobalBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 1. Logo icon + "NetKnot" text
+            // 1. Logo
             Icon(Icons.hub, size: AppTheme.sizing.iconSize, color: theme.colorScheme.primary),
             SizedBox(width: AppTheme.spacing.xs),
             Text(
@@ -58,26 +60,51 @@ class GlobalBar extends StatelessWidget {
                 color: theme.colorScheme.primary,
               ),
             ),
+            SizedBox(width: AppTheme.spacing.md),
 
-            // 2. Small spacer
-            SizedBox(width: AppTheme.spacing.lg),
+            // 2. Home tab
+            Obx(() => _TabChip(
+              tab: tabMgr.tabs.first,
+              isActive: tabMgr.activeTabId.value == '__home__',
+            )),
 
-            // 3. Start/Stop toggle switch
+            // 3. Start/Stop button
+            SizedBox(width: AppTheme.spacing.xs),
             _StartStopButton(taskCtrl: taskCtrl),
+            SizedBox(width: AppTheme.spacing.xs),
+
+            // 4. Task tabs (scrollable)
+            Expanded(
+              child: Obx(() {
+                final taskTabs = tabMgr.tabs.where((t) => !t.isHome).toList();
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: taskTabs.map((tab) => _TabChip(
+                      tab: tab,
+                      isActive: tabMgr.activeTabId.value == tab.id,
+                    )).toList(),
+                  ),
+                );
+              }),
+            ),
+
+            // 5. + button (placeholder for Task 7)
+            IconButton(
+              icon: Icon(Icons.add, size: AppTheme.sizing.iconSize),
+              tooltip: 'New tab',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              onPressed: () {/* Task 7: show recent history tasks */},
+            ),
+
             SizedBox(width: AppTheme.spacing.sm),
 
-            // 4. Expanded spacer (left)
-            const Spacer(),
-
-            // 6. Centered task name + rename + history
-            _TaskNameSection(taskCtrl: taskCtrl, pageCtrl: pageCtrl),
-
-            // 7. Expanded spacer (right)
-            const Spacer(),
-
-            // 8. Tools icon button
+            // 6. Tools button
             _ToolsMenuButton(pageCtrl: pageCtrl),
-            // 9. Settings icon button
+
+            // 7. Settings button
             IconButton(
               icon: Icon(Icons.settings, size: AppTheme.sizing.iconSize),
               tooltip: 'nav.settings'.tr,
@@ -133,7 +160,145 @@ class GlobalBar extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Start / Stop toggle button (moved from toolbar.dart)
+// Tab chip widget
+// ─────────────────────────────────────────────────────────────
+
+class _TabChip extends StatelessWidget {
+  final TabItem tab;
+  final bool isActive;
+  const _TabChip({required this.tab, required this.isActive});
+
+  @override
+  Widget build(BuildContext context) {
+    final tabMgr = Get.find<TabManager>();
+    final colors = AppTheme.colors(context);
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () {
+        tabMgr.activateTab(tab.id);
+        // When activating Home, switch to capture page view
+        final pageCtrl = Get.find<AppPageController>();
+        if (pageCtrl.isSubPage) {
+          pageCtrl.showCapture();
+        }
+      },
+      onSecondaryTapUp: (details) =>
+          _showContextMenu(context, details.globalPosition, tab),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        margin: const EdgeInsets.only(right: 2),
+        decoration: BoxDecoration(
+          color: isActive ? colors.surface : Colors.transparent,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(6),
+            topRight: Radius.circular(6),
+          ),
+          border: isActive
+              ? Border(
+                  top: BorderSide(color: colors.primary, width: 2),
+                )
+              : null,
+        ),
+        child: Obx(() => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (tab.isHome) Icon(Icons.home, size: 14, color: isActive ? colors.primary : colors.textSecondary),
+            if (tab.isHome) const SizedBox(width: 4),
+            Text(
+              tab.title.value,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive ? colors.textPrimary : colors.textSecondary,
+                fontSize: AppTheme.fontSize.sm,
+              ),
+            ),
+            if (tab.isCapturing.value) ...[
+              const SizedBox(width: 4),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+            if (tab.canClose) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => tabMgr.closeTab(tab.id),
+                child: Icon(Icons.close, size: 12, color: colors.textSecondary),
+              ),
+            ],
+          ],
+        )),
+      ),
+    );
+  }
+
+  void _showContextMenu(BuildContext context, Offset position, TabItem tab) async {
+    final tabMgr = Get.find<TabManager>();
+
+    final value = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx, position.dy),
+      items: [
+        if (tab.canClose)
+          const PopupMenuItem(value: 'close', child: Text('Close')),
+        const PopupMenuItem(value: 'closeAll', child: Text('Close All')),
+        if (!tab.isHome)
+          const PopupMenuItem(value: 'rename', child: Text('Rename')),
+        if (!tab.isHome && tab.canClose)
+          const PopupMenuItem(
+              value: 'delete', child: Text('Delete Task')),
+      ],
+    );
+    if (value == null) return;
+    switch (value) {
+      case 'close':
+        tabMgr.closeTab(tab.id);
+      case 'closeAll':
+        tabMgr.closeAllExcept(tab.id);
+      case 'rename':
+        if (!context.mounted) return;
+        _showRenameDialog(context, tab);
+      case 'delete':
+        // TODO: delete task via API
+        break;
+    }
+  }
+
+  void _showRenameDialog(BuildContext context, TabItem tab) {
+    final tabMgr = Get.find<TabManager>();
+    final controller = TextEditingController(text: tab.title.value);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rename'),
+        content: TextField(controller: controller, autofocus: true),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('action.cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () {
+              tabMgr.renameTab(tab.id, controller.text.trim());
+              Navigator.pop(ctx);
+            },
+            child: Text('action.save'.tr),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Start / Stop toggle button
 // ─────────────────────────────────────────────────────────────
 
 class _StartStopButton extends StatelessWidget {
@@ -160,70 +325,6 @@ class _StartStopButton extends StatelessWidget {
         ),
       ),
     ));
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Center: Task name + rename + history
-// ─────────────────────────────────────────────────────────────
-
-class _TaskNameSection extends StatelessWidget {
-  final TaskController taskCtrl;
-  final AppPageController pageCtrl;
-  const _TaskNameSection({required this.taskCtrl, required this.pageCtrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = AppTheme.colors(context);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Obx(() {
-          final taskName = taskCtrl.currentTask.value?.name.isNotEmpty == true
-              ? taskCtrl.currentTask.value!.name
-              : 'Task ${taskCtrl.currentTask.value?.id ?? "-"}';
-          return Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing.sm,
-              vertical: 2,
-            ),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              border: Border.all(color: colors.divider, width: 0.5),
-            ),
-            child: Text(
-              taskName,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                fontSize: AppTheme.fontSize.sm,
-              ),
-            ),
-          );
-        }),
-        SizedBox(width: AppTheme.spacing.xs),
-        IconButton(
-          icon: Icon(Icons.edit, size: AppTheme.sizing.iconSize - 2),
-          tooltip: 'Rename',
-          visualDensity: VisualDensity.compact,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-          onPressed: () {/* placeholder rename */},
-        ),
-        IconButton(
-          icon: Icon(Icons.schedule, size: AppTheme.sizing.iconSize - 2),
-          tooltip: 'nav.history'.tr,
-          visualDensity: VisualDensity.compact,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-          onPressed: () => pageCtrl.isHistory
-              ? pageCtrl.showCapture()
-              : pageCtrl.showHistory(),
-        ),
-      ],
-    );
   }
 }
 
