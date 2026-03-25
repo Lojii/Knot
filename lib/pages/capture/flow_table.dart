@@ -47,7 +47,7 @@ class _FlowTableState extends State<FlowTable> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      Get.find<FlowController>().loadMore();
+      // All flows are loaded locally — no pagination needed
     }
   }
 

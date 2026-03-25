@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../api/api_client.dart';
 import '../models/flow_summary.dart';
 
 /// Content type category mapping: contentType substring -> label
@@ -18,13 +17,10 @@ const _contentTypeCategories = <String, String>{
 };
 
 class FilterController extends GetxController {
-  static const protocolOptions = ['HTTP', 'HTTPS', 'WS', 'WSS'];
-  static const contentTypeOptions = ['JSON', 'IMG', 'TEXT', 'JS', 'HTML', 'CSS', 'XML'];
-
   final activeProtocols = <String>{}.obs;
   final activeContentTypes = <String>{}.obs;
 
-  final protocolMode = 'HTTP'.obs; // 'HTTP' or 'TCP'
+  final protocolMode = 'HTTP'.obs;
 
   void toggleProtocolMode() {
     protocolMode.value = protocolMode.value == 'HTTP' ? 'TCP' : 'HTTP';
@@ -32,9 +28,10 @@ class FilterController extends GetxController {
 
   bool get isTcpMode => protocolMode.value == 'TCP';
 
-  /// Available protocols from API
+  /// Available protocols — computed from local flows
   final availableProtocols = <String>[].obs;
-  /// Available content type categories from API
+
+  /// Available content type categories — computed from local flows
   final availableContentTypes = <String>[].obs;
 
   void toggleProtocol(String proto) {
@@ -64,32 +61,66 @@ class FilterController extends GetxController {
     availableContentTypes.clear();
   }
 
-  /// Fetch available filter options from API
-  Future<void> loadFilters(int taskId) async {
-    try {
-      final api = Get.find<ApiClient>();
-      final result = await api.getFlowFilters(taskId);
+  /// Recompute available filter options from the full local flow list.
+  /// No API call — pure local computation.
+  void recomputeFromFlows(List<FlowSummary> allFlows) {
+    // Protocols: stable ordering
+    const protoOrder = ['HTTP', 'HTTPS', 'H2', 'WS', 'WSS'];
+    final protos = <String>{};
+    final ctLabels = <String>{};
 
-      // Protocols: stable ordering
-      const protoOrder = ['HTTP', 'HTTPS', 'H2', 'WS', 'WSS'];
-      final protos = result.protocols.map((p) => p.toUpperCase()).toSet();
-      availableProtocols.value = protoOrder.where(protos.contains).toList();
+    for (final f in allFlows) {
+      // Protocol
+      final p = f.protocol.toUpperCase();
+      if (p.isNotEmpty) protos.add(p);
 
-      // Content types: categorize raw values into labels
-      const ctOrder = ['JSON', 'IMG', 'TEXT', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
-      final ctLabels = <String>{};
-      for (final ct in result.contentTypes) {
-        final lower = ct.toLowerCase();
+      // Content type
+      final ct = f.contentType.toLowerCase();
+      if (ct.isNotEmpty) {
         for (final entry in _contentTypeCategories.entries) {
-          if (lower.contains(entry.key)) {
+          if (ct.contains(entry.key)) {
             ctLabels.add(entry.value);
             break;
           }
         }
       }
-      availableContentTypes.value = ctOrder.where(ctLabels.contains).toList();
-    } catch (_) {
-      // API not available yet — keep current values
+    }
+
+    availableProtocols.value = protoOrder.where(protos.contains).toList();
+
+    const ctOrder = ['JSON', 'IMG', 'TEXT', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
+    availableContentTypes.value = ctOrder.where(ctLabels.contains).toList();
+  }
+
+  /// Incrementally add a single flow's protocol/contentType to available filters.
+  /// No API call.
+  void addFlowToFilters(FlowSummary flow) {
+    // Protocol
+    final p = flow.protocol.toUpperCase();
+    if (p.isNotEmpty && !availableProtocols.contains(p)) {
+      const protoOrder = ['HTTP', 'HTTPS', 'H2', 'WS', 'WSS'];
+      if (protoOrder.contains(p)) {
+        final newList = [...availableProtocols, p];
+        newList.sort((a, b) => protoOrder.indexOf(a).compareTo(protoOrder.indexOf(b)));
+        availableProtocols.value = newList;
+      }
+    }
+
+    // Content type
+    final ct = flow.contentType.toLowerCase();
+    if (ct.isNotEmpty) {
+      for (final entry in _contentTypeCategories.entries) {
+        if (ct.contains(entry.key)) {
+          final label = entry.value;
+          if (!availableContentTypes.contains(label)) {
+            const ctOrder = ['JSON', 'IMG', 'TEXT', 'JS', 'CSS', 'HTML', 'XML', 'Font', 'Video', 'Audio', 'PDF'];
+            final newList = [...availableContentTypes, label];
+            newList.sort((a, b) => ctOrder.indexOf(a).compareTo(ctOrder.indexOf(b)));
+            availableContentTypes.value = newList;
+          }
+          break;
+        }
+      }
     }
   }
 

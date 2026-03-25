@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../api/api_client.dart';
 import '../models/flow_summary.dart';
 import 'filter_controller.dart';
 import 'flow_controller.dart';
@@ -59,7 +58,7 @@ class PathNode {
 }
 
 // ============================================================
-// Controller
+// Controller — all computation is local, NO API calls
 // ============================================================
 
 class TreeController extends GetxController {
@@ -71,125 +70,100 @@ class TreeController extends GetxController {
   final pinnedItems = <PinnedItem>[].obs;
   final appTree = <AppNode>[].obs;
 
-  int? _taskId;
-  final _hostCounts = <String, int>{};
+  /// Full host→count map from ALL flows (unfiltered baseline).
+  final _fullHostCounts = <String, int>{};
 
   /// Strip default ports (:443, :80) from host for grouping
-  static String _normalizeHost(String host) {
+  static String normalizeHost(String host) {
     if (host.endsWith(':443')) return host.substring(0, host.length - 4);
     if (host.endsWith(':80')) return host.substring(0, host.length - 3);
     return host;
   }
 
-  /// Load domain tree from API, optionally filtered
-  Future<void> loadDomains(int taskId, {String? protocol, String? keyword}) async {
-    _taskId = taskId;
-    try {
-      final api = Get.find<ApiClient>();
-      final items = await api.getFlowDomains(taskId, protocol: protocol, keyword: keyword);
-      _hostCounts.clear();
-      for (final item in items) {
-        final h = _normalizeHost(item.host);
-        _hostCounts[h] = (_hostCounts[h] ?? 0) + item.count;
-      }
-      _rebuildTree();
-    } catch (_) {}
-  }
+  // ── Compute from local flows (no API) ─────────────────────
 
-  /// Reload tree after filter changes.
-  /// - No filters active → re-fetch full domain list from API (restores all data)
-  /// - Filters active → rebuild counts from current filtered flows
-  void reloadWithFilters() {
-    if (_taskId == null) return;
-    final filterCtrl = Get.find<FilterController>();
-    final hasFilters = filterCtrl.activeProtocols.isNotEmpty ||
-        filterCtrl.activeContentTypes.isNotEmpty;
-
-    if (!hasFilters) {
-      // No filters — restore full data from API
-      _invalidateChildren();
-      loadDomains(_taskId!);
-      return;
-    }
-
-    // Has filters — compute display counts from current flows
-    final flowCtrl = Get.find<FlowController>();
-    final flows = flowCtrl.flows.toList();
-    final filteredCounts = <String, int>{};
-    final filtered = filterCtrl.activeContentTypes.isEmpty
-        ? flows
-        : flows.where((f) => filterCtrl.matchesContentType(f)).toList();
-    for (final f in filtered) {
+  /// Recompute domain tree from the full local flow list.
+  /// Called after initial load and after filter changes.
+  void recomputeFromFlows(List<FlowSummary> allFlows) {
+    // Rebuild full host counts from ALL flows (unfiltered)
+    _fullHostCounts.clear();
+    for (final f in allFlows) {
       if (f.host.isNotEmpty) {
-        final h = _normalizeHost(f.host);
-        filteredCounts[h] = (filteredCounts[h] ?? 0) + 1;
+        final h = normalizeHost(f.host);
+        _fullHostCounts[h] = (_fullHostCounts[h] ?? 0) + 1;
       }
     }
 
-    // Rebuild tree: show only domains with matches, invalidate cached children
-    final nodes = filteredCounts.entries.map((e) {
-      return TreeNode(
-        label: e.key,
-        domain: e.key,
-        isGroup: true,
-        count: e.value,
-        // Don't reuse old children — they were loaded without filter
-        childrenLoaded: false,
-      );
-    }).toList();
+    // Now compute display counts from the current FILTERED flow list
+    final filterCtrl = Get.find<FilterController>();
+    final flowCtrl = Get.find<FlowController>();
+    final displayFlows = flowCtrl.flows; // already filtered
 
-    nodes.sort((a, b) {
-      final aPinned = pinnedDomains.contains(a.domain);
-      final bPinned = pinnedDomains.contains(b.domain);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
-      return b.count.compareTo(a.count);
-    });
-    tree.value = nodes;
-  }
-
-  /// Clear cached children so they re-fetch with current filters on next expand.
-  void _invalidateChildren() {
-    for (final node in tree) {
-      node.children.clear();
-      node.childrenLoaded = false;
+    final displayCounts = <String, int>{};
+    for (final f in displayFlows) {
+      if (f.host.isNotEmpty) {
+        final h = normalizeHost(f.host);
+        displayCounts[h] = (displayCounts[h] ?? 0) + 1;
+      }
     }
+
+    final hasFilters = filterCtrl.activeProtocols.isNotEmpty ||
+        filterCtrl.activeContentTypes.isNotEmpty ||
+        flowCtrl.searchQuery.value.isNotEmpty;
+
+    // Use display counts if filtered, full counts if not
+    final countsToUse = hasFilters ? displayCounts : _fullHostCounts;
+
+    _rebuildTree(countsToUse, invalidateChildren: hasFilters);
   }
 
-  /// Load children (requests) for a domain on expand — respects current filters.
-  Future<void> loadChildren(TreeNode node) async {
-    if (node.childrenLoaded || _taskId == null || node.domain == null) return;
-    try {
-      final api = Get.find<ApiClient>();
-      final filterCtrl = Get.find<FilterController>();
-      final result = await api.getFlows(
-        taskId: _taskId!,
-        page: 1,
-        size: 200,
-        host: node.domain,
-        protocol: filterCtrl.protocolParam,
-      );
-      // Apply client-side content type filter
-      final items = filterCtrl.activeContentTypes.isEmpty
-          ? result.items
-          : result.items.where((f) => filterCtrl.matchesContentType(f)).toList();
-      node.children.clear();
-      node.children.addAll(items.map((f) => TreeNode(
-        label: '${f.method} ${f.uri}',
-        domain: node.domain,
-      )));
-      node.childrenLoaded = true;
-      tree.refresh();
-    } catch (_) {}
-  }
-
-  /// Incrementally update from WS push
+  /// Incrementally add a single flow from WS push — no API.
   void addDomainFromPush(FlowSummary flow) {
     if (flow.host.isEmpty) return;
-    final h = _normalizeHost(flow.host);
-    _hostCounts[h] = (_hostCounts[h] ?? 0) + 1;
-    _rebuildTree();
+    final h = normalizeHost(flow.host);
+    _fullHostCounts[h] = (_fullHostCounts[h] ?? 0) + 1;
+
+    // Update tree node count in-place if it exists, otherwise rebuild
+    final existing = tree.firstWhereOrNull((n) => n.domain == h);
+    if (existing != null) {
+      existing.count = _fullHostCounts[h]!;
+      // Mark children as stale so next expand re-computes
+      existing.childrenLoaded = false;
+      existing.children.clear();
+      tree.refresh();
+    } else {
+      _rebuildTree(_fullHostCounts, invalidateChildren: false);
+    }
   }
+
+  /// Get children (paths) for a domain from local flows — no API.
+  void loadChildren(TreeNode node) {
+    if (node.childrenLoaded || node.domain == null) return;
+
+    final flowCtrl = Get.find<FlowController>();
+    final filterCtrl = Get.find<FilterController>();
+    final domain = node.domain!;
+
+    // Filter from local allFlows by domain + current filters
+    final items = flowCtrl.allFlows.where((f) {
+      if (normalizeHost(f.host) != domain) return false;
+      if (filterCtrl.activeProtocols.isNotEmpty) {
+        if (!filterCtrl.activeProtocols.contains(f.protocol.toUpperCase())) return false;
+      }
+      if (!filterCtrl.matchesContentType(f)) return false;
+      return true;
+    }).toList();
+
+    node.children.clear();
+    node.children.addAll(items.map((f) => TreeNode(
+      label: '${f.method} ${f.uri}',
+      domain: domain,
+    )));
+    node.childrenLoaded = true;
+    tree.refresh();
+  }
+
+  // ── Selection ─────────────────────────────────────────────
 
   void togglePin(String domain) {
     if (pinnedDomains.contains(domain)) {
@@ -204,7 +178,7 @@ class TreeController extends GetxController {
         identifier: domain,
       ));
     }
-    _rebuildTree();
+    _rebuildTree(_fullHostCounts, invalidateChildren: false);
   }
 
   bool isPinned(String domain) => pinnedDomains.contains(domain);
@@ -214,7 +188,7 @@ class TreeController extends GetxController {
     selectedDomain.value = domain;
     selectedPath.value = null;
     selectedApp.value = null;
-    _notifyFlowReload();
+    Get.find<FlowController>().reloadForTreeSelection();
   }
 
   void selectPath(String domain, String path) {
@@ -222,31 +196,25 @@ class TreeController extends GetxController {
     selectedDomain.value = domain;
     selectedPath.value = path;
     selectedApp.value = null;
-    _notifyFlowReload();
+    Get.find<FlowController>().reloadForTreeSelection();
   }
 
   void selectApp(String appName) {
     selectedApp.value = appName;
     selectedDomain.value = null;
     selectedPath.value = null;
-    _notifyFlowReload();
+    Get.find<FlowController>().reloadForTreeSelection();
   }
 
   void clearSelection() {
     selectedDomain.value = null;
     selectedPath.value = null;
     selectedApp.value = null;
-    _notifyFlowReload();
-  }
-
-  void _notifyFlowReload() {
-    // FlowController listens and reloads
     Get.find<FlowController>().reloadForTreeSelection();
   }
 
   void clear() {
-    _taskId = null;
-    _hostCounts.clear();
+    _fullHostCounts.clear();
     tree.clear();
     selectedDomain.value = null;
     selectedPath.value = null;
@@ -256,10 +224,9 @@ class TreeController extends GetxController {
     appTree.clear();
   }
 
-  /// Build hierarchical path tree from URIs — directories only (no leaf filenames).
-  /// Each URI's segments are treated as directory levels. The request count is
-  /// attributed to the deepest directory segment (last segment is treated as
-  /// part of its parent directory, not a separate node).
+  // ── Path tree builder ─────────────────────────────────────
+
+  /// Build hierarchical path tree from URIs — directories only.
   static PathNode buildPathTree(List<TreeNode> children) {
     final root = PathNode(segment: '', fullPath: '');
     for (final child in children) {
@@ -270,7 +237,6 @@ class TreeController extends GetxController {
         root.requestCount++;
         continue;
       }
-      // Build directory nodes — all segments become directories
       var current = root;
       var path = '';
       for (final seg in segments) {
@@ -280,25 +246,20 @@ class TreeController extends GetxController {
       }
       current.requestCount++;
     }
-    // Collapse single-child chains: /api/ -> /v1/ -> /users/ becomes /api/v1/users/
     _collapseChains(root);
     return root;
   }
 
-  /// Collapse nodes that have exactly one child and zero own requests into their child.
   static void _collapseChains(PathNode node) {
-    // Recurse first so we collapse from leaves up
     for (final child in node.children.values) {
       _collapseChains(child);
     }
-    // Collapse: if this node has exactly 1 child and 0 own requests, merge child into this
     final keys = node.children.keys.toList();
     for (final key in keys) {
       final child = node.children[key]!;
       if (child.children.length == 1 && child.requestCount == 0) {
         final grandchild = child.children.values.first;
         node.children.remove(key);
-        // Merge: combined segment "seg1/seg2"
         final merged = PathNode(
           segment: '${child.segment}/${grandchild.segment}',
           fullPath: grandchild.fullPath,
@@ -310,19 +271,22 @@ class TreeController extends GetxController {
     }
   }
 
-  void _rebuildTree() {
-    // Preserve expanded/loaded state
+  // ── Private ───────────────────────────────────────────────
+
+  void _rebuildTree(Map<String, int> counts, {required bool invalidateChildren}) {
     final oldNodes = {for (final n in tree) n.domain: n};
 
-    final nodes = _hostCounts.entries.map((e) {
+    final nodes = counts.entries
+        .where((e) => e.value > 0)
+        .map((e) {
       final old = oldNodes[e.key];
       return TreeNode(
         label: e.key,
         domain: e.key,
         isGroup: true,
         count: e.value,
-        children: old?.children,
-        childrenLoaded: old?.childrenLoaded ?? false,
+        children: invalidateChildren ? null : old?.children,
+        childrenLoaded: invalidateChildren ? false : (old?.childrenLoaded ?? false),
       );
     }).toList();
 
