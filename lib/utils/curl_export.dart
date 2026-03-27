@@ -1,3 +1,5 @@
+import '../controllers/detail_controller.dart';
+
 /// Builds a cURL command string from flow detail data.
 class CurlExport {
   /// Constructs a cURL command from the raw flow detail JSON map.
@@ -5,7 +7,6 @@ class CurlExport {
   /// Includes method, URL, request headers, and body hint for
   /// POST/PUT/PATCH requests.
   static String fromFlowDetail(Map<String, dynamic> raw) {
-    final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
     final method = (raw['searchKey1'] as String?) ?? 'GET';
     final uri = (raw['searchKey2'] as String?) ?? '/';
     final host = (raw['host'] as String?) ?? '';
@@ -31,14 +32,11 @@ class CurlExport {
     parts.add("'${_escapeShell(fullUrl)}'");
 
     // Request headers
-    final reqHeaders = (metadata['requestHeaders'] as List?) ?? [];
+    final reqHeaders = DetailController.parseHeaders(raw, 'reqHeaders');
     for (final h in reqHeaders) {
-      final pair = h as List;
-      final name = pair.first as String;
-      final value = pair.last as String;
       // Skip pseudo-headers and host (already in URL)
-      if (name.startsWith(':')) continue;
-      parts.add("-H '${_escapeShell('$name: $value')}'");
+      if (h.$1.startsWith(':')) continue;
+      parts.add("-H '${_escapeShell('${h.$1}: ${h.$2}')}'");
     }
 
     // Body hint for methods that typically have a body

@@ -79,3 +79,7 @@ node_modules/
 
 # Build artifacts
 build/
+tmp/
+.superpowers/
+docs/
+.claude/

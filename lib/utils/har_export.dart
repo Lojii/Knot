@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import '../api/api_client.dart';
+import '../controllers/detail_controller.dart';
 import '../models/flow_summary.dart';
 import '../models/flow_detail.dart';
 
@@ -47,32 +48,25 @@ class HarExport {
     int bodySizeLimit,
   ) async {
     final raw = detail.raw;
-    final metadata = raw['metadata'] as Map<String, dynamic>? ?? {};
 
     // Build started datetime from epoch seconds
     final startedMs = (flow.startedAt * 1000).round();
     final startedDt = DateTime.fromMillisecondsSinceEpoch(startedMs, isUtc: true);
 
     // Request headers
-    final reqHeadersList = (metadata['requestHeaders'] as List?) ?? [];
+    final reqHeadersList = DetailController.parseHeaders(raw, 'reqHeaders');
     final reqHeaders = <Map<String, String>>[];
     for (final h in reqHeadersList) {
-      final pair = h as List;
-      final name = pair.first as String;
-      final value = pair.last as String;
-      if (name.startsWith(':')) continue; // skip pseudo-headers
-      reqHeaders.add({'name': name, 'value': value});
+      if (h.$1.startsWith(':')) continue; // skip pseudo-headers
+      reqHeaders.add({'name': h.$1, 'value': h.$2});
     }
 
     // Response headers
-    final rspHeadersList = (metadata['responseHeaders'] as List?) ?? [];
+    final rspHeadersList = DetailController.parseHeaders(raw, 'rspHeaders');
     final rspHeaders = <Map<String, String>>[];
     for (final h in rspHeadersList) {
-      final pair = h as List;
-      final name = pair.first as String;
-      final value = pair.last as String;
-      if (name.startsWith(':')) continue;
-      rspHeaders.add({'name': name, 'value': value});
+      if (h.$1.startsWith(':')) continue;
+      rspHeaders.add({'name': h.$1, 'value': h.$2});
     }
 
     // Parse query string from URI
@@ -105,7 +99,8 @@ class HarExport {
     String? responseText;
     if (flow.downloadBytes <= bodySizeLimit && flow.downloadBytes > 0) {
       try {
-        responseText = await api.getPayload(taskId, flow.flowId, 'response', preview: true);
+        final bytes = await api.getPayloadBytes(taskId, flow.flowId, 'response', preview: true);
+        responseText = utf8.decode(bytes, allowMalformed: true);
       } catch (_) {}
     }
 

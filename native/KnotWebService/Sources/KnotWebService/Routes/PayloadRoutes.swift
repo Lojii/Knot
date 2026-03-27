@@ -53,6 +53,82 @@ enum PayloadRoutes {
         }
     }
 
+    /// Stream the decoded (decompressed) payload bytes for a given direction.
+    /// Falls back to raw payload if decoded file doesn't exist.
+    static func decodedPayload(context: ChannelHandlerContext, taskId: String, flowId: String, direction: String, queryParams: [String: String]) {
+        guard let tid = Int64(taskId) else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")
+            return
+        }
+
+        let payloadDir: PayloadDirection
+        switch direction {
+        case "request": payloadDir = .request
+        case "response": payloadDir = .response
+        default:
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid direction")
+            return
+        }
+
+        do {
+            let group = try DatabaseManager.shared.openTask(tid)
+            defer { DatabaseManager.shared.closeTask(tid) }
+
+            // Try decoded file first
+            let decodedPath = PathManager.decodedPayloadPath(taskId: tid, flowId: flowId, direction: payloadDir)
+            var filePath = decodedPath
+
+            if !FileManager.default.fileExists(atPath: filePath) {
+                // Fall back to raw payload
+                guard let flow = try FlowDAO.find(db: group.proto, flowId: flowId) else {
+                    ResponseHelper.errorResponse(context: context, status: .notFound, message: "Flow not found")
+                    return
+                }
+                let ref = payloadDir == .request ? flow.reqPayloadRef : flow.rspPayloadRef
+                guard !ref.isEmpty else {
+                    ResponseHelper.errorResponse(context: context, status: .notFound, message: "No payload available")
+                    return
+                }
+                filePath = PathManager.rawPayloadPath(taskId: tid, ref: ref)
+            }
+
+            guard FileManager.default.fileExists(atPath: filePath) else {
+                ResponseHelper.errorResponse(context: context, status: .notFound, message: "Payload file not found")
+                return
+            }
+
+            let reader: PayloadReader
+            do {
+                reader = try PayloadReader(filePath: filePath)
+            } catch {
+                ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                             message: "Cannot open payload: \(error.localizedDescription)")
+                return
+            }
+            defer { reader.close() }
+
+            // Stream full file via chunked transfer
+            var headers = HTTPHeaders()
+            headers.add(name: "content-type", value: "application/octet-stream")
+            headers.add(name: "transfer-encoding", value: "chunked")
+            headers.add(name: "access-control-allow-origin", value: "*")
+
+            let head = HTTPResponseHead(version: .http1_1, status: .ok, headers: headers)
+            context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
+
+            for chunk in reader.chunks() {
+                var buffer = context.channel.allocator.buffer(capacity: chunk.count)
+                buffer.writeBytes(chunk)
+                context.write(NIOAny(HTTPServerResponsePart.body(.byteBuffer(buffer))), promise: nil)
+            }
+
+            context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to read payload: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Private
 
     private static func streamPayload(

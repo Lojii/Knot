@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/tree_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
+
+// ============================================================
+// Shared constants for unified tree row styling
+// ============================================================
+
+const double _rowHeight = 24.0;
+const double _arrowSize = 14.0;
+const double _arrowSpace = 18.0; // width reserved for arrow column
+const double _baseIndent = 8.0;
+const double _indentStep = 16.0;
 
 class TreePanel extends StatelessWidget {
   const TreePanel({super.key});
@@ -14,489 +25,619 @@ class TreePanel extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(right: BorderSide(color: theme.dividerColor)),
       ),
-      child: Column(
-        children: [
-          Expanded(
-            child: Obx(() {
-              final treeCtrl = Get.find<TreeController>();
-              final pinned = treeCtrl.pinnedItems;
-              final apps = treeCtrl.appTree;
-              final allDomains = treeCtrl.tree;
-              final domains = allDomains
-                  .where((n) => !treeCtrl.isPinned(n.domain ?? ''))
-                  .toList();
-              final hasData = pinned.isNotEmpty || apps.isNotEmpty || domains.isNotEmpty;
+      child: Obx(() {
+        final treeCtrl = TaskScope.tree;
+        final pinned = treeCtrl.pinnedItems;
+        final apps = treeCtrl.appTree;
+        final allDomains = treeCtrl.tree;
+        final domains = allDomains
+            .where((n) => !treeCtrl.isPinned(n.domain ?? ''))
+            .toList();
+        final hasData =
+            pinned.isNotEmpty || apps.isNotEmpty || domains.isNotEmpty;
 
-              if (!hasData) {
-                return Center(
-                  child: Text('empty.no_data'.tr,
-                    style: TextStyle(color: AppTheme.colors(context).textSecondary)),
-                );
+        // Also depend on expandedNodes, selectedDomain, selectedPath so we rebuild
+        treeCtrl.expandedNodes.length;
+        treeCtrl.selectedDomain.value;
+        treeCtrl.selectedPath.value;
+        treeCtrl.selectedApp.value;
+
+        if (!hasData) {
+          return Center(
+            child: Text('empty.no_data'.tr,
+                style: TextStyle(
+                    color: AppTheme.colors(context).textSecondary)),
+          );
+        }
+
+        // Build slivers with sticky section headers
+        final slivers = <Widget>[];
+
+        if (pinned.isNotEmpty) {
+          final pinnedRows = <Widget>[];
+          for (final item in pinned) {
+            pinnedRows.add(_PinnedRow(item: item));
+          }
+          slivers.add(_stickyHeader(context,
+              title: 'tree.pinned'.tr,
+              count: pinned.length,
+              onTap: () => treeCtrl.clearSelection()));
+          slivers.add(SliverList(
+              delegate: SliverChildListDelegate(pinnedRows)));
+          slivers.add(SliverToBoxAdapter(child: Divider(
+              height: 1, color: AppTheme.colors(context).divider)));
+        }
+
+        if (apps.isNotEmpty) {
+          final appRows = <Widget>[];
+          for (final app in apps) {
+            appRows.add(_AppRow(node: app));
+            if (treeCtrl.isExpanded('app:${app.name}')) {
+              for (final domain in app.domains) {
+                appRows.add(_AppDomainRow(
+                    appName: app.name, node: domain));
               }
+            }
+          }
+          slivers.add(_stickyHeader(context,
+              title: 'tree.apps'.tr,
+              count: apps.length,
+              onTap: () => treeCtrl.clearSelection()));
+          slivers.add(SliverList(
+              delegate: SliverChildListDelegate(appRows)));
+          slivers.add(SliverToBoxAdapter(child: Divider(
+              height: 1, color: AppTheme.colors(context).divider)));
+        }
 
-              return ListView(
-                children: [
-                  // Pinned — ONLY if non-empty
-                  if (pinned.isNotEmpty) ...[
-                    _SectionHeader(title: 'tree.pinned'.tr, count: pinned.length),
-                    ...pinned.map((item) => _PinnedTile(item: item)),
-                    Divider(height: 1, color: AppTheme.colors(context).divider),
-                  ],
-                  // Apps — ONLY if non-empty
-                  if (apps.isNotEmpty) ...[
-                    _SectionHeader(title: 'tree.apps'.tr, count: apps.length),
-                    ...apps.map((app) => _AppTile(node: app)),
-                    Divider(height: 1, color: AppTheme.colors(context).divider),
-                  ],
-                  // Domains — ONLY if non-empty
-                  if (domains.isNotEmpty) ...[
-                    _SectionHeader(title: 'tree.domains'.tr, count: domains.length),
-                    ...domains.map((node) => _DomainTile(node: node)),
-                  ],
-                ],
-              );
-            }),
-          ),
-        ],
+        if (domains.isNotEmpty) {
+          final domainRows = <Widget>[];
+          for (final node in domains) {
+            _buildDomainRows(domainRows, treeCtrl, node);
+          }
+          slivers.add(_stickyHeader(context,
+              title: 'tree.domains'.tr,
+              count: domains.length,
+              onTap: () => treeCtrl.clearSelection()));
+          slivers.add(SliverList(
+              delegate: SliverChildListDelegate(domainRows)));
+        }
+
+        return CustomScrollView(slivers: slivers);
+      }),
+    );
+  }
+
+  Widget _stickyHeader(BuildContext context,
+      {required String title, required int count, required VoidCallback onTap}) {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _StickyHeaderDelegate(
+        title: title,
+        count: count,
+        onTap: onTap,
+        height: AppTheme.sizing.tableHeaderHeight,
       ),
     );
+  }
+
+  void _buildDomainRows(
+      List<Widget> rows, TreeController treeCtrl, TreeNode node) {
+    final domain = node.domain ?? '';
+
+    // Eagerly load children so we know if there are sub-paths to show arrow
+    if (!node.childrenLoaded) {
+      treeCtrl.loadChildren(node);
+    }
+
+    rows.add(_DomainRow(node: node));
+
+    if (treeCtrl.isExpanded(domain) && node.pathRoot != null) {
+      final root = node.pathRoot!;
+      for (final child in root.children.values) {
+        _buildPathRows(rows, treeCtrl, domain, child, 1);
+      }
+      // "others" for root-level requests not in any subdirectory
+      if (root.requestCount > 0 && root.children.isNotEmpty) {
+        rows.add(_OthersRow(
+            count: root.requestCount, domain: domain, depth: 1, parentPath: ''));
+      }
+    }
+  }
+
+  void _buildPathRows(List<Widget> rows, TreeController treeCtrl,
+      String domain, PathNode node, int depth) {
+    rows.add(_PathRow(node: node, domain: domain, depth: depth));
+
+    if (node.children.isNotEmpty &&
+        treeCtrl.isExpanded(domain, node.fullPath)) {
+      for (final child in node.children.values) {
+        _buildPathRows(rows, treeCtrl, domain, child, depth + 1);
+      }
+      // "others" for requests at this directory level (not in deeper subdirectories)
+      if (node.requestCount > 0) {
+        rows.add(_OthersRow(
+            count: node.requestCount, domain: domain, depth: depth + 1, parentPath: node.fullPath));
+      }
+    }
   }
 }
 
 // ============================================================
-// Section Header
+// Unified Tree Row — base widget for consistent styling
 // ============================================================
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final int count;
-  const _SectionHeader({required this.title, required this.count});
+class _TreeRow extends StatefulWidget {
+  final int depth;
+  final bool hasChildren;
+  final bool isExpanded;
+  final bool isSelected;
+  final String text;
+  final String? trailingText;
+  final Widget? leadingIcon;
+  final VoidCallback onTap;
+  final VoidCallback? onArrowTap;
+  final GestureTapUpCallback? onSecondaryTapUp;
+
+  const _TreeRow({
+    required this.depth,
+    required this.hasChildren,
+    required this.isExpanded,
+    required this.isSelected,
+    required this.text,
+    this.trailingText,
+    this.leadingIcon,
+    required this.onTap,
+    this.onArrowTap,
+    this.onSecondaryTapUp,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: AppTheme.sizing.tableHeaderHeight,
-      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-      alignment: Alignment.centerLeft,
-      child: Row(
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-              color: AppTheme.colors(context).textSecondary,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              color: AppTheme.colors(context).textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  State<_TreeRow> createState() => _TreeRowState();
 }
 
-// ============================================================
-// Pinned Tile
-// ============================================================
-
-class _PinnedTile extends StatelessWidget {
-  final PinnedItem item;
-  const _PinnedTile({required this.item});
+class _TreeRowState extends State<_TreeRow> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final treeCtrl = Get.find<TreeController>();
+    final indent = _baseIndent + (widget.depth * _indentStep);
+    final selectedBg = AppTheme.mode(context).tree.selectedBackground;
+    final selectedTx = AppTheme.mode(context).tree.selectedText;
+    final hoverBg = AppTheme.colors(context).textSecondary.withAlpha(20);
+    final textColor = widget.isSelected
+        ? selectedTx
+        : AppTheme.colors(context).textPrimary;
+    final countColor = AppTheme.colors(context).textSecondary;
 
-    return Obx(() {
-      final isSelected = item.type == PinType.domain &&
-          treeCtrl.selectedDomain.value == item.identifier &&
-          treeCtrl.selectedPath.value == null;
+    Color? bgColor;
+    if (widget.isSelected) {
+      bgColor = selectedBg;
+    } else if (_hovered) {
+      bgColor = hoverBg;
+    }
 
-      return GestureDetector(
-        onTap: () {
-          if (item.type == PinType.domain && item.identifier != null) {
-            treeCtrl.selectDomain(item.identifier);
-          }
-        },
-        onSecondaryTapUp: (details) {
-          if (item.type == PinType.domain && item.identifier != null) {
-            _showUnpinMenu(context, details.globalPosition, item.identifier!);
-          }
-        },
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onSecondaryTapUp: widget.onSecondaryTapUp,
         child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.sm,
-            vertical: 4,
-          ),
-          margin: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing.xs,
-            vertical: 1,
-          ),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppTheme.mode(context).tree.selectedBackground
-                : null,
-            borderRadius:
-                BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
-          ),
+          height: _rowHeight,
+          color: bgColor,
+          padding: EdgeInsets.only(left: indent, right: 8),
           child: Row(
             children: [
-              const Icon(Icons.star, size: 12, color: Color(0xFFFFC107)),
-              SizedBox(width: AppTheme.spacing.xs),
-              Expanded(
-                child: Text(
-                  item.label,
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.sm,
-                    color: isSelected
-                        ? AppTheme.mode(context).tree.selectedText
+              // Arrow column — separate tap target, does NOT trigger row selection
+              MouseRegion(
+                cursor: widget.hasChildren && widget.onArrowTap != null
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.hasChildren && widget.onArrowTap != null
+                      ? widget.onArrowTap
+                      : null,
+                  child: SizedBox(
+                    width: _arrowSpace,
+                    height: _rowHeight,
+                    child: widget.hasChildren
+                        ? Icon(
+                            widget.isExpanded
+                                ? Icons.arrow_drop_down
+                                : Icons.arrow_right,
+                            size: _arrowSize,
+                            color: textColor,
+                          )
                         : null,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Rest of the row — triggers selection on tap
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.onTap,
+                  child: SizedBox(
+                    height: _rowHeight,
+                    child: Row(
+                    children: [
+                      if (widget.leadingIcon != null) ...[
+                        widget.leadingIcon!,
+                        const SizedBox(width: 4),
+                      ],
+                      Expanded(
+                        child: Text(
+                          widget.text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: AppTheme.fontSize.xs,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      if (widget.trailingText != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Text(
+                            widget.trailingText!,
+                            style: TextStyle(
+                              fontSize: AppTheme.fontSize.xs,
+                              color: countColor,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
-      );
-    });
+      ),
+    );
+  }
+}
+
+// ============================================================
+// Sticky Section Header Delegate
+// ============================================================
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String title;
+  final int count;
+  final VoidCallback onTap;
+  final double height;
+
+  _StickyHeaderDelegate({
+    required this.title,
+    required this.count,
+    required this.onTap,
+    required this.height,
+  });
+
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext ctx, double shrinkOffset, bool overlapsContent) {
+    final treeCtrl = TaskScope.tree;
+    final isAllSelected = treeCtrl.selectedDomain.value == null &&
+        treeCtrl.selectedPath.value == null &&
+        treeCtrl.selectedApp.value == null;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          height: height,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+          color: isAllSelected
+              ? AppTheme.mode(ctx).tree.selectedBackground
+              : AppTheme.colors(ctx).surface,
+          alignment: Alignment.centerLeft,
+          child: Row(
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: AppTheme.fontSize.xs,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: AppTheme.colors(ctx).textSecondary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: AppTheme.fontSize.xs,
+                  color: AppTheme.colors(ctx).textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) =>
+      title != oldDelegate.title ||
+      count != oldDelegate.count;
+}
+
+// ============================================================
+// Pinned Row
+// ============================================================
+
+class _PinnedRow extends StatelessWidget {
+  final PinnedItem item;
+  const _PinnedRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final treeCtrl = TaskScope.tree;
+    final isSelected = item.type == PinType.domain &&
+        treeCtrl.selectedDomain.value == item.identifier &&
+        treeCtrl.selectedPath.value == null;
+
+    return _TreeRow(
+      depth: 0,
+      hasChildren: false,
+      isExpanded: false,
+      isSelected: isSelected,
+      text: item.label,
+      leadingIcon:
+          const Icon(Icons.star, size: 12, color: Color(0xFFFFC107)),
+      onTap: () {
+        if (item.type == PinType.domain && item.identifier != null) {
+          treeCtrl.selectDomain(item.identifier);
+        }
+      },
+      onSecondaryTapUp: (details) {
+        if (item.type == PinType.domain && item.identifier != null) {
+          _showUnpinMenu(
+              context, details.globalPosition, item.identifier!);
+        }
+      },
+    );
   }
 
   void _showUnpinMenu(
       BuildContext context, Offset position, String identifier) {
-    final treeCtrl = Get.find<TreeController>();
+    final treeCtrl = TaskScope.tree;
     showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+          position.dx, position.dy, position.dx, position.dy),
       items: [
         PopupMenuItem(
           value: 'unpin',
-          child: Row(
-            children: [
-              const Icon(Icons.star_border, size: 16),
-              SizedBox(width: AppTheme.spacing.sm),
-              Text('tree.unpin'.tr),
-            ],
-          ),
+          child: Row(children: [
+            const Icon(Icons.star_border, size: 16),
+            SizedBox(width: AppTheme.spacing.sm),
+            Text('tree.unpin'.tr),
+          ]),
         ),
       ],
     ).then((value) {
-      if (value == 'unpin') {
-        treeCtrl.togglePin(identifier);
-      }
+      if (value == 'unpin') treeCtrl.togglePin(identifier);
     });
   }
 }
 
 // ============================================================
-// App Tile
+// App Row
 // ============================================================
 
-class _AppTile extends StatelessWidget {
+class _AppRow extends StatelessWidget {
   final AppNode node;
-  const _AppTile({required this.node});
+  const _AppRow({required this.node});
 
   @override
   Widget build(BuildContext context) {
-    final treeCtrl = Get.find<TreeController>();
+    final treeCtrl = TaskScope.tree;
+    final isSelected = treeCtrl.selectedApp.value == node.name;
+    final isExpanded = treeCtrl.isExpanded('app:${node.name}');
 
-    return Obx(() {
-      final isSelected = treeCtrl.selectedApp.value == node.name;
+    return _TreeRow(
+      depth: 0,
+      hasChildren: node.domains.isNotEmpty,
+      isExpanded: isExpanded,
+      isSelected: isSelected,
+      text: node.name,
+      trailingText: '${node.count}',
+      leadingIcon: Icon(Icons.apps,
+          size: 12, color: AppTheme.colors(context).textSecondary),
+      onTap: () {
+        treeCtrl.toggleExpand('app:${node.name}');
+        treeCtrl.selectApp(node.name);
+      },
+    );
+  }
+}
 
-      return Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-          dense: true,
-          leading: Icon(Icons.apps, size: 14, color: AppTheme.colors(context).textSecondary),
-          title: Text(
-            node.name,
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.sm,
-              color: isSelected
-                  ? AppTheme.mode(context).tree.selectedText
-                  : null,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: Text(
-            '${node.count}',
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              color: AppTheme.colors(context).textSecondary,
-            ),
-          ),
-          onExpansionChanged: (expanded) {
-            if (expanded) {
-              treeCtrl.selectApp(node.name);
-            } else {
-              treeCtrl.clearSelection();
-            }
-          },
-          children: node.domains.map((domain) {
-            return InkWell(
-              onTap: () {
-                if (domain.domain != null) {
-                  treeCtrl.selectDomain(domain.domain);
-                }
-              },
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: AppTheme.spacing.xl,
-                  right: AppTheme.spacing.sm,
-                  top: 2,
-                  bottom: 2,
-                ),
-                child: Text(
-                  domain.label,
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.xs,
-                    color: AppTheme.colors(context).textSecondary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    });
+class _AppDomainRow extends StatelessWidget {
+  final String appName;
+  final TreeNode node;
+  const _AppDomainRow({required this.appName, required this.node});
+
+  @override
+  Widget build(BuildContext context) {
+    final treeCtrl = TaskScope.tree;
+    final isSelected = treeCtrl.selectedDomain.value == node.domain;
+
+    return _TreeRow(
+      depth: 1,
+      hasChildren: false,
+      isExpanded: false,
+      isSelected: isSelected,
+      text: node.label,
+      trailingText: '${node.count}',
+      onTap: () {
+        if (node.domain != null) {
+          treeCtrl.selectDomain(node.domain);
+        }
+      },
+    );
   }
 }
 
 // ============================================================
-// Domain Tile (with nested hierarchical path tree)
+// Domain Row
 // ============================================================
 
-class _DomainTile extends StatelessWidget {
+class _DomainRow extends StatelessWidget {
   final TreeNode node;
-  const _DomainTile({required this.node});
+  const _DomainRow({required this.node});
 
   @override
   Widget build(BuildContext context) {
-    final treeCtrl = Get.find<TreeController>();
+    final treeCtrl = TaskScope.tree;
     final domain = node.domain ?? '';
+    final isSelected = treeCtrl.selectedDomain.value == domain &&
+        treeCtrl.selectedPath.value == null;
+    final hasSubPaths = node.hasPathChildren;
+    final isExpanded = hasSubPaths && treeCtrl.isExpanded(domain);
 
-    return GestureDetector(
+    return _TreeRow(
+      depth: 0,
+      hasChildren: hasSubPaths,
+      isExpanded: isExpanded,
+      isSelected: isSelected,
+      text: node.label,
+      trailingText: '${node.count}',
+      onTap: () {
+        if (isSelected && hasSubPaths) {
+          treeCtrl.toggleExpand(domain);
+        } else {
+          treeCtrl.selectDomain(domain);
+          if (!node.childrenLoaded) {
+            treeCtrl.loadChildren(node);
+          }
+        }
+      },
+      onArrowTap: hasSubPaths ? () {
+        treeCtrl.toggleExpand(domain);
+      } : null,
       onSecondaryTapUp: (details) {
         _showContextMenu(context, details.globalPosition, domain);
       },
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-          dense: true,
-          title: Obx(() {
-            final isSelected = treeCtrl.selectedDomain.value == domain;
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.mode(context).tree.selectedBackground
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
-              ),
-              child: Text(
-                node.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.sm,
-                  color: isSelected
-                      ? AppTheme.mode(context).tree.selectedText
-                      : null,
-                ),
-              ),
-            );
-          }),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-            decoration: BoxDecoration(
-              color: AppTheme.colors(context).textSecondary.withAlpha(25),
-              borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-            ),
-            child: Text(
-              '${node.count}',
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                color: AppTheme.colors(context).textSecondary,
-              ),
-            ),
-          ),
-          onExpansionChanged: (expanded) {
-            treeCtrl.selectDomain(domain);
-            if (expanded) treeCtrl.loadChildren(node);
-          },
-          children: _buildPathTree(context, domain),
-        ),
-      ),
     );
-  }
-
-  List<Widget> _buildPathTree(BuildContext context, String domain) {
-    if (node.children.isEmpty) return [];
-    final pathRoot = TreeController.buildPathTree(node.children);
-    return pathRoot.children.values.map((child) {
-      return _PathTreeTile(node: child, domain: domain, depth: 0);
-    }).toList();
   }
 
   void _showContextMenu(
       BuildContext context, Offset position, String domain) {
-    final treeCtrl = Get.find<TreeController>();
+    final treeCtrl = TaskScope.tree;
     final pinned = treeCtrl.isPinned(domain);
 
     showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+          position.dx, position.dy, position.dx, position.dy),
       items: [
         PopupMenuItem(
           value: 'toggle_pin',
-          child: Row(
-            children: [
-              Icon(pinned ? Icons.star_border : Icons.star, size: 16),
-              SizedBox(width: AppTheme.spacing.sm),
-              Text(pinned ? 'tree.unpin'.tr : 'tree.pin'.tr),
-            ],
-          ),
+          child: Row(children: [
+            Icon(pinned ? Icons.star_border : Icons.star, size: 16),
+            SizedBox(width: AppTheme.spacing.sm),
+            Text(pinned ? 'tree.unpin'.tr : 'tree.pin'.tr),
+          ]),
         ),
       ],
     ).then((value) {
-      if (value == 'toggle_pin') {
-        treeCtrl.togglePin(domain);
-      }
+      if (value == 'toggle_pin') treeCtrl.togglePin(domain);
     });
   }
 }
 
 // ============================================================
-// Recursive Path Tree Tile
+// Path Row (sub-directory under a domain)
 // ============================================================
 
-class _PathTreeTile extends StatelessWidget {
+class _PathRow extends StatelessWidget {
   final PathNode node;
   final String domain;
   final int depth;
 
-  const _PathTreeTile({required this.node, required this.domain, required this.depth});
+  const _PathRow(
+      {required this.node, required this.domain, required this.depth});
 
   @override
   Widget build(BuildContext context) {
-    final treeCtrl = Get.find<TreeController>();
+    final treeCtrl = TaskScope.tree;
     final hasChildren = node.children.isNotEmpty;
-    final indent = AppTheme.spacing.xl + (depth * AppTheme.spacing.md);
+    final isSelected = treeCtrl.selectedDomain.value == domain &&
+        treeCtrl.selectedPath.value == node.fullPath;
+    final isExpanded =
+        hasChildren && treeCtrl.isExpanded(domain, node.fullPath);
 
-    if (!hasChildren) {
-      // Leaf directory — simple clickable row
-      // Same left indent as ExpansionTile tilePadding for alignment
-      final leafIndent = indent;
-      return Obx(() {
-        final isSelected = treeCtrl.selectedDomain.value == domain &&
-            treeCtrl.selectedPath.value == node.fullPath;
-        final textColor = isSelected
-            ? AppTheme.mode(context).tree.selectedText
-            : AppTheme.colors(context).textPrimary;
-
-        return InkWell(
-          onTap: () => treeCtrl.selectPath(domain, node.fullPath),
-          child: Container(
-            color: isSelected ? AppTheme.mode(context).tree.selectedBackground : null,
-            padding: EdgeInsets.only(left: leafIndent, right: AppTheme.spacing.sm, top: 3, bottom: 3),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '/${node.segment}',
-                    maxLines: 1,
-                    style: TextStyle(fontSize: AppTheme.fontSize.xs, color: textColor),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '${node.totalCount}',
-                  style: TextStyle(
-                    fontSize: AppTheme.fontSize.xs,
-                    color: AppTheme.colors(context).textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
-    }
-
-    // Branch node — ExpansionTile outside Obx, title has Obx highlight
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.only(left: indent, right: AppTheme.spacing.sm),
-        dense: true,
-        onExpansionChanged: (expanded) {
+    return _TreeRow(
+      depth: depth,
+      hasChildren: hasChildren,
+      isExpanded: isExpanded,
+      isSelected: isSelected,
+      text: '/${node.segment}',
+      trailingText: '${node.totalCount}',
+      onTap: () {
+        if (isSelected && hasChildren) {
+          treeCtrl.toggleExpand(domain, node.fullPath);
+        } else {
           treeCtrl.selectPath(domain, node.fullPath);
-        },
-        title: Obx(() {
-          final isSelected = treeCtrl.selectedDomain.value == domain &&
-              treeCtrl.selectedPath.value == node.fullPath;
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppTheme.mode(context).tree.selectedBackground
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppTheme.mode(context).tree.selectedRadius),
-            ),
-            child: Text(
-              '/${node.segment}/',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                fontWeight: FontWeight.w500,
-                color: isSelected
-                    ? AppTheme.mode(context).tree.selectedText
-                    : AppTheme.colors(context).textPrimary,
-              ),
-            ),
-          );
-        }),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-          decoration: BoxDecoration(
-            color: AppTheme.colors(context).textSecondary.withAlpha(20),
-            borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-          ),
-          child: Text(
-            '${node.totalCount}',
-            style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              color: AppTheme.colors(context).textSecondary,
-            ),
-          ),
-        ),
-        children: node.children.values.map((child) =>
-          _PathTreeTile(node: child, domain: domain, depth: depth + 1),
-        ).toList(),
-      ),
+        }
+      },
+      onArrowTap: hasChildren ? () {
+        treeCtrl.toggleExpand(domain, node.fullPath);
+      } : null,
+    );
+  }
+}
+
+// ============================================================
+// Others Row — uncategorized requests at a directory level
+// ============================================================
+
+class _OthersRow extends StatelessWidget {
+  final int count;
+  final String domain;
+  final int depth;
+  /// Parent path — "" for domain root, or the parent PathNode's fullPath.
+  final String parentPath;
+
+  const _OthersRow({
+    required this.count,
+    required this.domain,
+    required this.depth,
+    required this.parentPath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final treeCtrl = TaskScope.tree;
+    // Use "parentPath/*" as a special marker for "others" selection
+    final othersPath = '$parentPath/*';
+    final isSelected = treeCtrl.selectedDomain.value == domain &&
+        treeCtrl.selectedPath.value == othersPath;
+
+    return _TreeRow(
+      depth: depth,
+      hasChildren: false,
+      isExpanded: false,
+      isSelected: isSelected,
+      text: '',
+      trailingText: '$count',
+      leadingIcon: Icon(Icons.more_horiz,
+          size: 14, color: AppTheme.colors(context).textSecondary),
+      onTap: () {
+        treeCtrl.selectPath(domain, othersPath);
+      },
     );
   }
 }

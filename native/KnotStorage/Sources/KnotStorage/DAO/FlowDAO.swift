@@ -154,8 +154,15 @@ public enum FlowDAO {
         var bindings: [Binding?] = []
 
         if let proto = protocolFilter {
-            conditions.append("protocol = ?")
-            bindings.append(proto)
+            let parts = proto.split(separator: ",").map(String.init)
+            if parts.count == 1 {
+                conditions.append("protocol = ?")
+                bindings.append(parts[0])
+            } else {
+                let placeholders = parts.map { _ in "?" }.joined(separator: ",")
+                conditions.append("protocol IN (\(placeholders))")
+                for p in parts { bindings.append(p) }
+            }
         }
         if let host = hostContains {
             conditions.append("host LIKE ?")
@@ -179,6 +186,30 @@ public enum FlowDAO {
         for row in stmt {
             let record = try mapRow(row, stmt: stmt)
             results.append(record)
+        }
+        return results
+    }
+
+    /// Lightweight query: returns all flows with minimal fields for tree building.
+    public static func querySummary(db: Connection) throws -> [[String: Any]] {
+        let sql = """
+            SELECT flow_id, host, protocol, search_key1, search_key2, search_key3, search_key4, status
+            FROM flow ORDER BY started_at DESC
+            """
+        let stmt = try db.prepare(sql)
+        var results: [[String: Any]] = []
+        for row in stmt {
+            let dict: [String: Any] = [
+                "flowId": row[0] as? String ?? "",
+                "host": row[1] as? String ?? "",
+                "protocol": row[2] as? String ?? "",
+                "method": row[3] as? String ?? "",
+                "path": row[4] as? String ?? "",
+                "statusCode": row[5] as? String ?? "",
+                "contentType": row[6] as? String ?? "",
+                "status": Int(row[7] as? Int64 ?? 0),
+            ]
+            results.append(dict)
         }
         return results
     }

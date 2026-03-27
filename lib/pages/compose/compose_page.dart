@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -597,7 +599,7 @@ class _ComposePageState extends State<ComposePage> {
           _sectionTitle('compose.response_body'.tr),
           SizedBox(height: AppTheme.spacing.xs),
           BodyViewer(
-            body: _responseBody,
+            bytes: Uint8List.fromList(utf8.encode(_responseBody)),
             contentType: _responseContentType,
             label: 'Response',
           ),

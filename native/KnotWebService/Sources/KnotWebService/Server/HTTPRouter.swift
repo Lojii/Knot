@@ -154,28 +154,32 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
             return
         }
 
-        guard n == 6 else {
-            send404(context: context)
-            return
+        if n == 6 {
+            let seg5 = seg[5]
+
+            // GET /api/tasks/{id}/flows/{fid}/request
+            if seg5 == "request" {
+                PayloadRoutes.request(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
+                return
+            }
+
+            // GET /api/tasks/{id}/flows/{fid}/response
+            if seg5 == "response" {
+                PayloadRoutes.response(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
+                return
+            }
+
+            // GET /api/tasks/{id}/flows/{fid}/decoded (metadata)
+            if seg5 == "decoded" {
+                PayloadRoutes.decoded(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
+                return
+            }
         }
 
-        let seg5 = seg[5]
-
-        // GET /api/tasks/{id}/flows/{fid}/request
-        if seg5 == "request" {
-            PayloadRoutes.request(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
-            return
-        }
-
-        // GET /api/tasks/{id}/flows/{fid}/response
-        if seg5 == "response" {
-            PayloadRoutes.response(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
-            return
-        }
-
-        // GET /api/tasks/{id}/flows/{fid}/decoded
-        if seg5 == "decoded" {
-            PayloadRoutes.decoded(context: context, taskId: taskId, flowId: flowId, queryParams: queryParams)
+        // GET /api/tasks/{id}/flows/{fid}/decoded/{direction} (streamed decoded bytes)
+        if n == 7 && seg[5] == "decoded" {
+            let direction = seg[6]
+            PayloadRoutes.decodedPayload(context: context, taskId: taskId, flowId: flowId, direction: direction, queryParams: queryParams)
             return
         }
 

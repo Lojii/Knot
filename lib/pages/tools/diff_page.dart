@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/flow_controller.dart';
-import '../../controllers/task_controller.dart';
+import '../../controllers/detail_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../models/flow_summary.dart';
 import '../../models/flow_detail.dart';
 import '../../theme/app_theme.dart';
@@ -77,8 +78,8 @@ class _DiffPageState extends State<DiffPage> {
   }
 
   Widget _buildPicker(BuildContext context, ThemeData theme) {
-    final flowCtrl = Get.find<FlowController>();
-    final flows = flowCtrl.flows;
+    final tableCtrl = TaskScope.table;
+    final flows = tableCtrl.flows;
 
     return Padding(
       padding: EdgeInsets.all(AppTheme.spacing.lg),
@@ -129,22 +130,23 @@ class _DiffPageState extends State<DiffPage> {
     if (_flowA == null || _flowB == null) return;
     setState(() => _isLoading = true);
 
-    final taskCtrl = Get.find<TaskController>();
-    final taskId = taskCtrl.currentTask.value?.id;
+    final taskId = TaskScope.activeTaskId;
     if (taskId == null) {
       setState(() => _isLoading = false);
       return;
     }
 
-    final api = Get.find<FlowController>().api;
+    final api = TaskScope.flow.api;
 
     try {
       final results = await Future.wait([
         api.getFlowDetail(taskId, _flowA!.flowId),
         api.getFlowDetail(taskId, _flowB!.flowId),
-        api.getPayload(taskId, _flowA!.flowId, 'response', preview: true)
+        api.getPayloadBytes(taskId, _flowA!.flowId, 'response', preview: true)
+            .then((b) => utf8.decode(b, allowMalformed: true))
             .catchError((_) => ''),
-        api.getPayload(taskId, _flowB!.flowId, 'response', preview: true)
+        api.getPayloadBytes(taskId, _flowB!.flowId, 'response', preview: true)
+            .then((b) => utf8.decode(b, allowMalformed: true))
             .catchError((_) => ''),
       ]);
 
@@ -200,7 +202,6 @@ class _DiffPageState extends State<DiffPage> {
     Map<String, dynamic> detail,
     String body,
   ) {
-    final metadata = detail['metadata'] as Map<String, dynamic>? ?? {};
     final sections = <_DiffSection>[];
 
     // URL section
@@ -216,27 +217,21 @@ class _DiffPageState extends State<DiffPage> {
     ));
 
     // Request headers
-    final reqHeaders = (metadata['requestHeaders'] as List?) ?? [];
+    final reqHeaders = DetailController.parseHeaders(detail, 'reqHeaders');
     final reqLines = <String>[];
     for (final h in reqHeaders) {
-      final pair = h as List;
-      final name = pair.first as String;
-      final value = pair.last as String;
-      if (name.startsWith(':')) continue;
-      reqLines.add('$name: $value');
+      if (h.$1.startsWith(':')) continue;
+      reqLines.add('${h.$1}: ${h.$2}');
     }
     reqLines.sort();
     sections.add(_DiffSection(title: 'detail.request_headers'.tr, lines: reqLines));
 
     // Response headers
-    final rspHeaders = (metadata['responseHeaders'] as List?) ?? [];
+    final rspHeaders = DetailController.parseHeaders(detail, 'rspHeaders');
     final rspLines = <String>[];
     for (final h in rspHeaders) {
-      final pair = h as List;
-      final name = pair.first as String;
-      final value = pair.last as String;
-      if (name.startsWith(':')) continue;
-      rspLines.add('$name: $value');
+      if (h.$1.startsWith(':')) continue;
+      rspLines.add('${h.$1}: ${h.$2}');
     }
     rspLines.sort();
     sections.add(_DiffSection(title: 'detail.response_headers'.tr, lines: rspLines));

@@ -3,10 +3,9 @@ import '../api/api_client.dart';
 import '../api/ws_client.dart';
 import '../api/proxy_channel.dart';
 import '../models/task_model.dart';
-import 'flow_controller.dart';
 import 'live_controller.dart';
-import 'detail_controller.dart';
 import 'tab_controller.dart';
+import 'task_scope.dart';
 
 class TaskController extends GetxController {
   final ApiClient api;
@@ -30,9 +29,10 @@ class TaskController extends GetxController {
 
   void selectTask(TaskModel task) {
     currentTask.value = task;
-    Get.find<FlowController>().setTaskId(task.id);
+    TaskScope.ensure(task.id);
+    TaskScope.flowCtrl(task.id).setTaskId(task.id);
     Get.find<LiveController>().ws.switchTask(task.id);
-    Get.find<DetailController>().clear();
+    TaskScope.detailCtrl(task.id).clear();
   }
 
   String _formatTaskName() {
@@ -77,10 +77,10 @@ class TaskController extends GetxController {
         }
         if (currentTask.value != null) {
           final tid = currentTask.value!.id;
-          Get.find<FlowController>().setTaskId(tid);
-          Get.find<LiveController>().connectToTask(tid);
           final tabMgr = Get.find<TabManager>();
           tabMgr.openTask(currentTask.value!, isCapturing: true);
+          TaskScope.flowCtrl(tid).setTaskId(tid);
+          Get.find<LiveController>().connectToTask(tid);
         }
       } catch (e) {
         Get.snackbar('Error', 'Start failed: $e');

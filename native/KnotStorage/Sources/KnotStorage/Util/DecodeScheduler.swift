@@ -47,7 +47,7 @@ public class DecodeScheduler {
     ) {
         decodeQueue.async { [self] in
             do {
-                let result = try decodeFlow(flowId: flowId)
+                let (result, _, _) = try decodeFlow(flowId: flowId)
                 callbackQueue.async { completion(.success(result)) }
             } catch {
                 callbackQueue.async { completion(.failure(error)) }
@@ -59,8 +59,8 @@ public class DecodeScheduler {
 
     private func decodeAndStore(flowId: String, completion: @escaping () -> Void) {
         do {
-            let result = try decodeFlow(flowId: flowId)
-            storeDecodedEntries(flowId: flowId, result: result)
+            let (result, reqEnc, rspEnc) = try decodeFlow(flowId: flowId)
+            storeDecodedEntries(flowId: flowId, result: result, reqEncoding: reqEnc, rspEncoding: rspEnc)
             completion()
         } catch {
             completion()
@@ -68,10 +68,10 @@ public class DecodeScheduler {
     }
 
     /// Decode a single flow (request + response payloads)
-    private func decodeFlow(flowId: String) throws -> DecodedPayload {
+    private func decodeFlow(flowId: String) throws -> (DecodedPayload, String, String) {
         // Read flow metadata from protocol.db
         guard let flow = try FlowDAO.find(db: dbGroup.proto, flowId: flowId) else {
-            return DecodedPayload()
+            return (DecodedPayload(), "", "")
         }
 
         var reqResult: DecodeResult?
@@ -99,15 +99,16 @@ public class DecodeScheduler {
             }
         }
 
-        return DecodedPayload(request: reqResult, response: rspResult)
+        return (DecodedPayload(request: reqResult, response: rspResult), reqEncoding, rspEncoding)
     }
 
-    private func storeDecodedEntries(flowId: String, result: DecodedPayload) {
+    private func storeDecodedEntries(flowId: String, result: DecodedPayload, reqEncoding: String, rspEncoding: String) {
         dbGroup.decodedWriteQueue.async { [self] in
             if let req = result.request {
                 let entry = DecodedEntry(
                     flowId: flowId,
                     direction: 0,
+                    originalEncoding: reqEncoding,
                     decodedType: req.detectedType,
                     decodedSize: req.decodedSize,
                     payloadRef: req.payloadRef,
@@ -122,6 +123,7 @@ public class DecodeScheduler {
                 let entry = DecodedEntry(
                     flowId: flowId,
                     direction: 1,
+                    originalEncoding: rspEncoding,
                     decodedType: rsp.detectedType,
                     decodedSize: rsp.decodedSize,
                     payloadRef: rsp.payloadRef,

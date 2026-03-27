@@ -38,6 +38,12 @@ class AppDelegate: FlutterAppDelegate {
                 self?.stopProxy(result: result)
             case "getStatus":
                 self?.getStatus(result: result)
+            case "getCertStatus":
+                self?.getCertStatus(result: result)
+            case "installCert":
+                self?.installCert(result: result)
+            case "exportCertDER":
+                self?.exportCertDER(result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -172,6 +178,120 @@ class AppDelegate: FlutterAppDelegate {
     private func readPort() -> Int? {
         guard let content = try? String(contentsOfFile: "/tmp/knot-proxy-port", encoding: .utf8) else { return nil }
         return Int(content.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    // MARK: - Certificate Management
+
+    /// Get CA cert trust status: "none" / "installed" / "trusted"
+    private func getCertStatus(result: @escaping FlutterResult) {
+        guard let certDir = CertStore.certDirectoryURL() else {
+            result(["status": "none", "path": ""])
+            return
+        }
+        let derPath = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER).path
+        guard FileManager.default.fileExists(atPath: derPath),
+              let derData = try? Data(contentsOf: URL(fileURLWithPath: derPath)),
+              let secCert = SecCertificateCreateWithData(nil, derData as CFData) else {
+            result(["status": "none", "path": derPath])
+            return
+        }
+
+        // Check if trusted via SecTrustSettings
+        var trustResult: SecTrustSettingsResult = .invalid
+        var trustSettings: CFArray?
+        let status = SecTrustSettingsCopyTrustSettings(secCert, .user, &trustSettings)
+
+        if status == errSecSuccess, let settings = trustSettings as? [[String: Any]] {
+            for dict in settings {
+                if let resultValue = dict[kSecTrustSettingsResult as String] as? Int {
+                    trustResult = SecTrustSettingsResult(rawValue: UInt32(resultValue)) ?? .invalid
+                }
+            }
+            if trustResult == .trustRoot || trustResult == .trustAsRoot {
+                result(["status": "trusted", "path": derPath])
+                return
+            }
+        }
+
+        // Check if cert exists in keychain at all
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassCertificate,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecAttrSubjectKeyID as String: derData.prefix(20), // rough check
+        ]
+        var item: CFTypeRef?
+        let findStatus = SecItemCopyMatching(query as CFDictionary, &item)
+        if findStatus == errSecSuccess {
+            result(["status": "installed", "path": derPath])
+        } else {
+            result(["status": "none", "path": derPath])
+        }
+    }
+
+    /// Install CA cert to macOS Keychain + set as trusted.
+    /// This will trigger a system password prompt.
+    private func installCert(result: @escaping FlutterResult) {
+        guard let certDir = CertStore.certDirectoryURL() else {
+            result(FlutterError(code: "NO_CERT", message: "Certificate directory not found", details: nil))
+            return
+        }
+        let derPath = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER).path
+        guard let derData = try? Data(contentsOf: URL(fileURLWithPath: derPath)),
+              let secCert = SecCertificateCreateWithData(nil, derData as CFData) else {
+            result(FlutterError(code: "NO_CERT", message: "CA certificate not found or invalid", details: nil))
+            return
+        }
+
+        // Add to Keychain
+        let addQuery: [String: Any] = [
+            kSecClass as String: kSecClassCertificate,
+            kSecValueRef as String: secCert,
+        ]
+        var addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+        if addStatus == errSecDuplicateItem {
+            addStatus = errSecSuccess // Already installed
+        }
+
+        if addStatus != errSecSuccess {
+            result(FlutterError(code: "KEYCHAIN_FAIL",
+                                message: "Failed to add cert to Keychain: \(addStatus)",
+                                details: nil))
+            return
+        }
+
+        // Set as trusted root — this triggers system password dialog
+        let trustSettings: [String: Any] = [
+            kSecTrustSettingsResult as String: SecTrustSettingsResult.trustRoot.rawValue
+        ]
+        let trustStatus = SecTrustSettingsSetTrustSettings(secCert, .user, [trustSettings] as CFArray)
+
+        if trustStatus == errSecSuccess {
+            NSLog("[Knot] CA certificate installed and trusted")
+            result(["status": "trusted"])
+        } else if trustStatus == errSecAuthFailed {
+            // User cancelled the password prompt
+            NSLog("[Knot] User cancelled trust authorization")
+            result(["status": "installed"]) // Cert is in keychain but not trusted
+        } else {
+            NSLog("[Knot] Trust settings failed: \(trustStatus)")
+            result(FlutterError(code: "TRUST_FAIL",
+                                message: "Failed to set trust: \(trustStatus)",
+                                details: nil))
+        }
+    }
+
+    /// Export CA cert DER bytes (for manual installation / saving to file).
+    private func exportCertDER(result: @escaping FlutterResult) {
+        guard let certDir = CertStore.certDirectoryURL() else {
+            result(FlutterError(code: "NO_CERT", message: "Certificate directory not found", details: nil))
+            return
+        }
+        let derPath = certDir.appendingPathComponent(ProxyConfig.CertFiles.caCertDER).path
+        guard let derData = try? Data(contentsOf: URL(fileURLWithPath: derPath)) else {
+            result(FlutterError(code: "NO_CERT", message: "CA certificate not found", details: nil))
+            return
+        }
+        result(FlutterStandardTypedData(bytes: derData))
     }
 
     /// Find knot-server binary: app bundle first, then project build output

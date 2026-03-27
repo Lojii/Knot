@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../api/api_client.dart';
 import '../../controllers/task_controller.dart';
-import '../../controllers/flow_controller.dart';
 import '../../controllers/history_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
 import '../../controllers/tab_controller.dart';
@@ -547,10 +547,9 @@ class _ToolsMenuButton extends StatelessWidget {
   }
 
   void _exportHar(BuildContext context) async {
-    final flowCtrl = Get.find<FlowController>();
-    final taskCtrl = Get.find<TaskController>();
-    final taskId = taskCtrl.currentTask.value?.id;
-    if (taskId == null || flowCtrl.flows.isEmpty) {
+    final tableCtrl = TaskScope.table;
+    final taskId = TaskScope.activeTaskId;
+    if (taskId == null || tableCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
@@ -561,8 +560,8 @@ class _ToolsMenuButton extends StatelessWidget {
     );
     try {
       final harJson = await HarExport.fromFlows(
-        flowCtrl.flows.toList(),
-        flowCtrl.api,
+        tableCtrl.flows.toList(),
+        TaskScope.flow.api,
         taskId,
       );
       final path = await HarExport.writeToDesktop(harJson);
@@ -607,12 +606,12 @@ class _ToolsMenuButton extends StatelessWidget {
               final path = controller.text.trim();
               if (path.isEmpty) return;
               try {
-                final flowCtrl = Get.find<FlowController>();
+                final tblCtrl = TaskScope.table;
                 final imported = await HarImport.importFromFile(path);
                 for (final flow in imported) {
-                  flowCtrl.flows.insert(0, flow);
+                  tblCtrl.flows.insert(0, flow);
                 }
-                flowCtrl.total.value = flowCtrl.total.value + imported.length;
+                tblCtrl.total.value = tblCtrl.total.value + imported.length;
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -637,15 +636,15 @@ class _ToolsMenuButton extends StatelessWidget {
   }
 
   void _exportListCsv(BuildContext context) async {
-    final flowCtrl = Get.find<FlowController>();
-    if (flowCtrl.flows.isEmpty) {
+    final tableCtrl = TaskScope.table;
+    if (tableCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
       return;
     }
     try {
-      final csv = ListExport.toCsv(flowCtrl.flows.toList());
+      final csv = ListExport.toCsv(tableCtrl.flows.toList());
       final path = await ListExport.writeToDesktop(csv, 'csv');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -665,15 +664,15 @@ class _ToolsMenuButton extends StatelessWidget {
   }
 
   void _exportListJson(BuildContext context) async {
-    final flowCtrl = Get.find<FlowController>();
-    if (flowCtrl.flows.isEmpty) {
+    final tableCtrl = TaskScope.table;
+    if (tableCtrl.flows.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('empty.no_flows_export'.tr)),
       );
       return;
     }
     try {
-      final json = ListExport.toJson(flowCtrl.flows.toList());
+      final json = ListExport.toJson(tableCtrl.flows.toList());
       final path = await ListExport.writeToDesktop(json, 'json');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

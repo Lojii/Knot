@@ -59,8 +59,8 @@
       "selectedIndicatorColor": "#007AFF"
     },
     "tree": {
-      "selectedBackground": "#007AFF",
-      "selectedText": "#FFFFFF",
+      "selectedBackground": "#E8E8ED",
+      "selectedText": "#1D1D1F",
       "selectedRadius": 5
     },
     "filterChip": {
@@ -137,8 +137,8 @@
       "selectedIndicatorColor": "#0A84FF"
     },
     "tree": {
-      "selectedBackground": "#0A84FF",
-      "selectedText": "#FFFFFF",
+      "selectedBackground": "#38383A",
+      "selectedText": "#E5E5EA",
       "selectedRadius": 5
     },
     "filterChip": {

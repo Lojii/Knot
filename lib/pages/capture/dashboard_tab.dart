@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../controllers/task_scope.dart';
 import '../../controllers/dashboard_controller.dart';
-import '../../controllers/task_controller.dart';
 import '../../theme/app_theme.dart';
 
 class DashboardTab extends StatefulWidget {
@@ -16,14 +16,13 @@ class _DashboardTabState extends State<DashboardTab> {
   @override
   void initState() {
     super.initState();
-    final dc = Get.find<DashboardController>();
-    final tid = Get.find<TaskController>().currentTask.value?.id;
-    if (tid != null) dc.loadStats(tid);
+    final tid = TaskScope.activeTaskId;
+    if (tid != null) TaskScope.dashCtrl(tid).loadStats(tid);
   }
 
   @override
   Widget build(BuildContext context) {
-    final dc = Get.find<DashboardController>();
+    final dc = TaskScope.dash;
     final theme = Theme.of(context);
 
     return SingleChildScrollView(

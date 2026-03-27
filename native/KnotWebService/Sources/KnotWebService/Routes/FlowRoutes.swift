@@ -122,6 +122,52 @@ enum FlowRoutes {
         }
     }
 
+    /// Returns domain (host) list with request counts.
+    static func domains(context: ChannelHandlerContext, taskId: String, queryParams: [String: String]) {
+        guard let tid = Int64(taskId) else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")
+            return
+        }
+
+        do {
+            let group = try DatabaseManager.shared.openTask(tid)
+            defer { DatabaseManager.shared.closeTask(tid) }
+
+            let hostCounts = try FlowDAO.countByHost(db: group.proto)
+            let items: [[String: Any]] = hostCounts.map { ["host": $0.key, "count": $0.value] }
+                .sorted { ($0["count"] as! Int) > ($1["count"] as! Int) }
+
+            ResponseHelper.jsonResponse(context: context, body: ["items": items])
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to get domains: \(error.localizedDescription)")
+        }
+    }
+
+    static func filters(context: ChannelHandlerContext, taskId: String, queryParams: [String: String]) {
+        guard let tid = Int64(taskId) else {
+            ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")
+            return
+        }
+
+        do {
+            let group = try DatabaseManager.shared.openTask(tid)
+            defer { DatabaseManager.shared.closeTask(tid) }
+
+            let protocolCounts = try FlowDAO.countByProtocol(db: group.proto)
+            let contentTypes = try FlowDAO.distinctContentTypes(db: group.proto)
+
+            let body: [String: Any] = [
+                "protocols": Array(protocolCounts.keys),
+                "contentTypes": contentTypes,
+            ]
+            ResponseHelper.jsonResponse(context: context, body: body)
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to get filters: \(error.localizedDescription)")
+        }
+    }
+
     static func detail(context: ChannelHandlerContext, taskId: String, flowId: String, queryParams: [String: String]) {
         guard let tid = Int64(taskId) else {
             ResponseHelper.errorResponse(context: context, status: .badRequest, message: "Invalid task id")

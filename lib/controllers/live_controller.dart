@@ -4,8 +4,7 @@ import 'package:get/get.dart';
 import '../api/ws_client.dart';
 import '../models/flow_summary.dart';
 import '../pages/tools/breakpoint_dialog.dart';
-import 'flow_controller.dart';
-import 'dashboard_controller.dart';
+import 'task_scope.dart';
 
 class LiveController extends GetxController {
   final WsClient ws;
@@ -36,6 +35,16 @@ class LiveController extends GetxController {
     _msgSub?.cancel();
     _statusSub?.cancel();
 
+    // Reset per-task counters
+    requestCount.value = 0;
+    uploadBytes.value = 0;
+    downloadBytes.value = 0;
+    downloadSpeed.value = 0;
+    uploadSpeed.value = 0;
+    _lastDownloadBytes = 0;
+    _lastUploadBytes = 0;
+    _lastSpeedUpdate = DateTime.now();
+
     ws.connect(taskId: taskId);
 
     _statusSub = ws.statusStream.listen((s) {
@@ -43,27 +52,27 @@ class LiveController extends GetxController {
       wsStatus.value = s;
       // On reconnect: reload flow list (may have missed events during disconnect)
       if (s == WsStatus.connected && wasDisconnected) {
-        Get.find<FlowController>().reloadFromFirstPage();
+        TaskScope.flowCtrl(taskId).setTaskId(taskId);
       }
     });
     _msgSub = ws.messages.listen((msg) {
       switch (msg.type) {
         case 'flow':
           final flow = FlowSummary.fromJson(msg.data);
-          Get.find<FlowController>().addFlowFromPush(flow);
+          TaskScope.flowCtrl(taskId).addFlowFromPush(flow);
           requestCount.value++;
           final up = msg.data['uploadBytes'] as int? ?? 0;
           final down = msg.data['downloadBytes'] as int? ?? 0;
           uploadBytes.value += up;
           downloadBytes.value += down;
-          Get.find<DashboardController>().addTrafficPoint(up + down);
+          TaskScope.dashCtrl(taskId).addTrafficPoint(up + down);
           break;
         case 'flow_update':
-          Get.find<FlowController>().updateFlowFromPush(msg.data);
+          TaskScope.flowCtrl(taskId).updateFlowFromPush(msg.data);
           break;
         case 'metrics':
           _updateMetrics(msg.data);
-          Get.find<DashboardController>().updateFromMetrics(msg.data);
+          TaskScope.dashCtrl(taskId).updateFromMetrics(msg.data);
           break;
         case 'stats':
           _updateStats(msg.data);

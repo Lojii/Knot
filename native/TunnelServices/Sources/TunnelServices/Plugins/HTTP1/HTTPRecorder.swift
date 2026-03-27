@@ -26,7 +26,8 @@ public class HTTPRecorder: ProtocolRecorder {
     private var statusCode: Int = 0
     private var rspHeaders: [(String, String)] = []
     private var contentType: String = ""
-    private var contentEncoding: String = ""
+    private var reqContentEncoding: String = ""
+    private var rspContentEncoding: String = ""
 
     // Timing
     private var connectAt: TimeInterval?
@@ -77,13 +78,14 @@ public class HTTPRecorder: ProtocolRecorder {
         self.uri = uri
         self.httpVersion = httpVersion
         self.reqHeaders = headers
+        self.reqContentEncoding = headers.first { $0.0.lowercased() == "content-encoding" }?.1 ?? ""
     }
 
     public func recordResponseHead(statusCode: Int, headers: [(String, String)]) {
         self.statusCode = statusCode
         self.rspHeaders = headers
         self.contentType = headers.first { $0.0.lowercased() == "content-type" }?.1 ?? ""
-        self.contentEncoding = headers.first { $0.0.lowercased() == "content-encoding" }?.1 ?? ""
+        self.rspContentEncoding = headers.first { $0.0.lowercased() == "content-encoding" }?.1 ?? ""
     }
 
     public func recordConnected(at time: TimeInterval) { connectedAt = time }
@@ -137,9 +139,10 @@ public class HTTPRecorder: ProtocolRecorder {
         // Metadata
         record.metadata = [
             "httpVersion": httpVersion,
-            "reqHeaders": reqHeaders.map { ["\($0.0)": "\($0.1)"] },
-            "rspHeaders": rspHeaders.map { ["\($0.0)": "\($0.1)"] },
-            "contentEncoding": contentEncoding,
+            "reqHeaders": reqHeaders.map { [$0.0, $0.1] },
+            "rspHeaders": rspHeaders.map { [$0.0, $0.1] },
+            "reqEncoding": reqContentEncoding,
+            "rspEncoding": rspContentEncoding,
         ]
         record.metadata.merge(extraMetadata) { _, new in new }
 

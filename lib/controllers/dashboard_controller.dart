@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../api/api_client.dart';
 
@@ -34,7 +35,7 @@ class DashboardController extends GetxController {
 
       totalUpload.value = (stats['totalUploadBytes'] as int?) ?? 0;
       totalDownload.value = (stats['totalDownloadBytes'] as int?) ?? 0;
-    } catch (_) {}
+    } catch (e) { debugPrint("[Knot] Error: $e"); }
   }
 
   void updateFromMetrics(Map<String, dynamic> data) {

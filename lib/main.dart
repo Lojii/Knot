@@ -3,18 +3,13 @@ import 'package:get/get.dart';
 import 'api/api_client.dart';
 import 'api/ws_client.dart';
 import 'controllers/task_controller.dart';
-import 'controllers/flow_controller.dart';
 import 'controllers/live_controller.dart';
-import 'controllers/tree_controller.dart';
-import 'controllers/detail_controller.dart';
-import 'controllers/filter_controller.dart';
-import 'controllers/dashboard_controller.dart';
 import 'controllers/history_controller.dart';
 import 'controllers/page_controller.dart';
-import 'controllers/tag_controller.dart';
 import 'controllers/tools_controller.dart';
 import 'controllers/tab_controller.dart';
 import 'controllers/theme_controller.dart';
+import 'controllers/cert_controller.dart';
 import 'api/proxy_channel.dart';
 import 'dart:ui' as ui;
 import 'pages/capture/capture_page.dart';
@@ -30,19 +25,14 @@ void main() async {
 
   Get.put(api);
   Get.put(ws);
-  Get.put(FilterController());
   Get.put(TaskController(api));
-  Get.put(FlowController(api));
   Get.put(LiveController(ws));
-  Get.put(TreeController());
-  Get.put(DetailController(api));
-  Get.put(DashboardController(api));
   Get.put(HistoryController(api));
   Get.put(AppPageController());
-  Get.put(TagController());
   Get.put(ToolsController());
   Get.put(TabManager());
   Get.put(ThemeController());
+  Get.put(CertController());
 
   runApp(const KnotApp());
 
@@ -56,14 +46,14 @@ void main() async {
       if (status['running'] == true) {
         port = (status['port'] as int?) ?? 0;
       }
-    } catch (_) {}
+    } catch (e) { debugPrint("[Knot] Error: $e"); }
 
     // If not running, start it (this boots the web API server too)
     if (port == 0) {
       try {
         final result = await ProxyChannel.startProxy();
         port = (result['port'] as int?) ?? 0;
-      } catch (_) {}
+      } catch (e) { debugPrint("[Knot] Error: $e"); }
     }
 
     // Set API endpoints

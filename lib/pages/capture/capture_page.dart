@@ -3,10 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import '../../controllers/page_controller.dart';
-import '../../controllers/flow_controller.dart';
-import '../../controllers/detail_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/tab_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../utils/request_sender.dart';
 import '../../theme/app_theme.dart';
 import 'global_bar.dart';
@@ -63,7 +62,8 @@ class _CapturePageState extends State<CapturePage> {
     super.initState();
     final tabMgr = Get.find<TabManager>();
     final taskCtrl = Get.find<TaskController>();
-    // React to tab changes outside of build — avoids setState-during-build
+    // React to tab changes — just update currentTask reference.
+    // Per-task controllers live independently, no data reload needed on switch.
     _tabWorker = ever(tabMgr.activeTabId, (String tabId) {
       final tab = tabMgr.findTab(tabId);
       if (tab != null && !tab.isHome && tab.taskId != null) {
@@ -71,7 +71,7 @@ class _CapturePageState extends State<CapturePage> {
         if (taskCtrl.currentTask.value?.id != tid) {
           final task = taskCtrl.tasks.firstWhereOrNull((t) => t.id == tid);
           if (task != null) {
-            taskCtrl.selectTask(task);
+            taskCtrl.currentTask.value = task;
           }
         }
       }
@@ -117,7 +117,9 @@ class _CapturePageState extends State<CapturePage> {
               if (activeTab.isHome) {
                 return const _HomePage();
               }
-              return const _CaptureContent();
+              // Key by taskId — forces full rebuild when switching tabs,
+              // so all Obx widgets re-subscribe to the new task's controllers.
+              return _CaptureContent(key: ValueKey(activeTab.taskId));
             }),
           ),
           const CaptureStatusBar(),
@@ -128,7 +130,7 @@ class _CapturePageState extends State<CapturePage> {
 }
 
 class _CaptureContent extends StatefulWidget {
-  const _CaptureContent();
+  const _CaptureContent({super.key});
 
   @override
   State<_CaptureContent> createState() => _CaptureContentState();
@@ -145,7 +147,6 @@ class _CaptureContentState extends State<_CaptureContent> {
 
   @override
   Widget build(BuildContext context) {
-    final flowCtrl = Get.find<FlowController>();
     final taskCtrl = Get.find<TaskController>();
 
     return Shortcuts(
@@ -173,7 +174,8 @@ class _CaptureContentState extends State<_CaptureContent> {
           ),
           ClearFlowsIntent: CallbackAction<ClearFlowsIntent>(
             onInvoke: (_) {
-              flowCtrl.flows.clear();
+              final tid = TaskScope.activeTaskId;
+              if (tid != null) TaskScope.tableCtrl(tid).flows.clear();
               return null;
             },
           ),
@@ -185,13 +187,16 @@ class _CaptureContentState extends State<_CaptureContent> {
           ),
           DeselectFlowIntent: CallbackAction<DeselectFlowIntent>(
             onInvoke: (_) {
-              flowCtrl.selectedFlow.value = null;
+              final tid = TaskScope.activeTaskId;
+              if (tid != null) TaskScope.selectionCtrl(tid).clear();
               return null;
             },
           ),
           CopyAsCurlIntent: CallbackAction<CopyAsCurlIntent>(
             onInvoke: (_) {
-              final flow = flowCtrl.selectedFlow.value;
+              final tid = TaskScope.activeTaskId;
+              if (tid == null) return null;
+              final flow = TaskScope.selectionCtrl(tid).selectedFlow.value;
               if (flow != null) {
                 final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
                 Clipboard.setData(ClipboardData(text: curl));
@@ -201,18 +206,17 @@ class _CaptureContentState extends State<_CaptureContent> {
           ),
           RepeatRequestIntent: CallbackAction<RepeatRequestIntent>(
             onInvoke: (_) {
-              final flow = flowCtrl.selectedFlow.value;
+              final tid = TaskScope.activeTaskId;
+              if (tid == null) return null;
+              final flow = TaskScope.selectionCtrl(tid).selectedFlow.value;
               if (flow == null) return null;
-              final detailCtrl = Get.find<DetailController>();
-              final tid = taskCtrl.currentTask.value?.id;
+              final detailCtrl = TaskScope.detailCtrl(tid);
 
               () async {
                 Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
                 if (detail.isEmpty || detail['flowId'] != flow.flowId) {
-                  if (tid != null) {
-                    await detailCtrl.loadDetail(tid, flow.flowId);
-                    detail = detailCtrl.detail.value?.raw ?? {};
-                  }
+                  await detailCtrl.loadDetail(tid, flow.flowId);
+                  detail = detailCtrl.detail.value?.raw ?? {};
                 }
                 try {
                   final result = await RequestSender.repeat(flow, detail);
@@ -259,11 +263,11 @@ class _CaptureContentState extends State<_CaptureContent> {
                       Area(
                         min: 150,
                         size: AppTheme.sizing.treeDefaultWidth,
-                        builder: (context, area) => const TreePanel(),
+                        builder: (context, area) => TreePanel(key: ValueKey('tree_${TaskScope.activeTaskId}')),
                       ),
                       Area(
                         min: 300,
-                        builder: (context, area) => const ContentPanel(),
+                        builder: (context, area) => ContentPanel(key: ValueKey('content_${TaskScope.activeTaskId}')),
                       ),
                     ],
                   ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/filter_controller.dart';
-import '../../controllers/flow_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
 
 class FilterBar extends StatefulWidget {
@@ -20,6 +19,11 @@ class _FilterBarState extends State<FilterBar> {
   void initState() {
     super.initState();
     widget.searchFocusNode.addListener(_onSearchFocusChange);
+    // Restore search text from controller (survives tab switch)
+    final existing = TaskScope.table.searchQuery.value;
+    if (existing.isNotEmpty) {
+      _searchController.text = existing;
+    }
   }
 
   @override
@@ -37,8 +41,9 @@ class _FilterBarState extends State<FilterBar> {
 
   @override
   Widget build(BuildContext context) {
-    final filterCtrl = Get.find<FilterController>();
-    final flowCtrl = Get.find<FlowController>();
+    final filterCtrl = TaskScope.filter;
+    final filterBarCtrl = TaskScope.filterBar;
+    final tableCtrl = TaskScope.table;
 
     final searchHasText = _searchController.text.isNotEmpty;
     final searchExpanded = _searchFocused || searchHasText;
@@ -104,15 +109,13 @@ class _FilterBarState extends State<FilterBar> {
                       _chip(context, 'filter.all'.tr,
                         isActive: filterCtrl.activeProtocols.isEmpty,
                         onTap: () {
-                          filterCtrl.activeProtocols.clear();
-                          flowCtrl.reloadFromFirstPage();
+                          filterBarCtrl.clearAll();
                         },
                       ),
                       ...protos.map((p) => _chip(context, p,
                         isActive: filterCtrl.activeProtocols.contains(p),
                         onTap: () {
-                          filterCtrl.toggleProtocol(p);
-                          flowCtrl.reloadFromFirstPage();
+                          filterBarCtrl.toggleProtocol(p);
                         },
                       )),
                     ],
@@ -127,15 +130,13 @@ class _FilterBarState extends State<FilterBar> {
                       _chip(context, 'filter.all'.tr,
                         isActive: filterCtrl.activeContentTypes.isEmpty,
                         onTap: () {
-                          filterCtrl.activeContentTypes.clear();
-                          flowCtrl.reloadFromFirstPage();
+                          filterBarCtrl.clearAll();
                         },
                       ),
                       ...types.map((t) => _chip(context, t,
                         isActive: filterCtrl.activeContentTypes.contains(t),
                         onTap: () {
-                          filterCtrl.toggleContentType(t);
-                          flowCtrl.reloadFromFirstPage();
+                          filterBarCtrl.toggleContentType(t);
                         },
                       )),
                     ],
@@ -190,7 +191,7 @@ class _FilterBarState extends State<FilterBar> {
               ),
               onChanged: (v) {
                 setState(() {}); // update searchHasText for width
-                Get.find<FlowController>().search(v);
+                tableCtrl.search(v);
               },
             ),
           ),

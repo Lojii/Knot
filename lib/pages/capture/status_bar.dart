@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../api/ws_client.dart';
 import '../../controllers/live_controller.dart';
-import '../../controllers/flow_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
 
 class CaptureStatusBar extends StatelessWidget {
@@ -11,7 +11,6 @@ class CaptureStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final liveCtrl = Get.find<LiveController>();
-    final flowCtrl = Get.find<FlowController>();
 
     return Container(
       height: AppTheme.sizing.statusBarHeight,
@@ -58,7 +57,7 @@ class CaptureStatusBar extends StatelessWidget {
             _sep(context),
             _item(context, 'TCP: ${liveCtrl.tcpChannelCount.value}'),
             const Spacer(),
-            _item(context, '${flowCtrl.total.value} requests'),
+            _item(context, '${TaskScope.activeTaskId != null ? TaskScope.table.total.value : 0} requests'),
           ],
         );
       }),

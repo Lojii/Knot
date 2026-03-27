@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import '../controllers/detail_controller.dart';
 import '../models/flow_summary.dart';
 
 /// Result of a repeated request.
@@ -34,23 +35,19 @@ class RequestSender {
     final method = flow.method.isNotEmpty ? flow.method : 'GET';
 
     // Extract headers from detail metadata
-    final metadata = detail['metadata'] as Map<String, dynamic>? ?? {};
     final reqHeaders = <String, String>{};
-    final headersList = metadata['requestHeaders'] as List?;
-    if (headersList != null) {
-      for (final h in headersList) {
-        final pair = h as List;
-        final key = (pair.first as String).toLowerCase();
-        // Skip hop-by-hop and proxy headers
-        if (key == 'host' ||
-            key == 'connection' ||
-            key == 'proxy-connection' ||
-            key == 'transfer-encoding' ||
-            key == 'content-length') {
-          continue;
-        }
-        reqHeaders[pair.first as String] = pair.last as String;
+    final headersList = DetailController.parseHeaders(detail, 'reqHeaders');
+    for (final h in headersList) {
+      final key = h.$1.toLowerCase();
+      // Skip hop-by-hop and proxy headers
+      if (key == 'host' ||
+          key == 'connection' ||
+          key == 'proxy-connection' ||
+          key == 'transfer-encoding' ||
+          key == 'content-length') {
+        continue;
       }
+      reqHeaders[h.$1] = h.$2;
     }
 
     // Build and send request
@@ -72,18 +69,14 @@ class RequestSender {
 
   /// Extract headers map from detail metadata for pre-filling compose.
   static Map<String, String> extractHeaders(Map<String, dynamic> detail) {
-    final metadata = detail['metadata'] as Map<String, dynamic>? ?? {};
     final headers = <String, String>{};
-    final headersList = metadata['requestHeaders'] as List?;
-    if (headersList != null) {
-      for (final h in headersList) {
-        final pair = h as List;
-        final key = (pair.first as String).toLowerCase();
-        if (key == 'host' || key == 'connection' || key == 'transfer-encoding' || key == 'content-length') {
-          continue;
-        }
-        headers[pair.first as String] = pair.last as String;
+    final headersList = DetailController.parseHeaders(detail, 'reqHeaders');
+    for (final h in headersList) {
+      final key = h.$1.toLowerCase();
+      if (key == 'host' || key == 'connection' || key == 'transfer-encoding' || key == 'content-length') {
+        continue;
       }
+      headers[h.$1] = h.$2;
     }
     return headers;
   }

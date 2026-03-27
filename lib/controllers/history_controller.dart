@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../api/api_client.dart';
 import '../models/task_model.dart';
@@ -13,7 +14,7 @@ class HistoryController extends GetxController {
     isLoading.value = true;
     try {
       tasks.value = await api.getTasks();
-    } catch (_) {}
+    } catch (e) { debugPrint("[Knot] Error: $e"); }
     isLoading.value = false;
   }
 }

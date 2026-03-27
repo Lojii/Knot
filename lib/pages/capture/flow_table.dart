@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import '../../controllers/filter_controller.dart';
-import '../../controllers/flow_controller.dart';
-import '../../controllers/detail_controller.dart';
-import '../../controllers/task_controller.dart';
+import '../../controllers/task_scope.dart';
+import '../../controllers/flow_table_controller.dart';
 import '../../controllers/tag_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../controllers/tools_controller.dart';
@@ -19,19 +17,15 @@ class FlowTable extends StatefulWidget {
   State<FlowTable> createState() => _FlowTableState();
 }
 
-enum _SortColumn { protocol, host, path, method, status, time, duration, size }
-
 class _FlowTableState extends State<FlowTable> {
   final _scrollController = ScrollController();
-  _SortColumn? _sortColumn;
-  bool _sortAscending = true;
+  late final Worker _scrollWorker;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-    final flowCtrl = Get.find<FlowController>();
-    ever(flowCtrl.scrollToTopSignal, (_) {
+    final tableCtrl = TaskScope.table;
+    _scrollWorker = ever(tableCtrl.scrollToTopSignal, (_) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(0);
       }
@@ -40,192 +34,179 @@ class _FlowTableState extends State<FlowTable> {
 
   @override
   void dispose() {
+    _scrollWorker.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // All flows are loaded locally — no pagination needed
-    }
-  }
-
-  void _onSortTap(_SortColumn col) {
-    setState(() {
-      if (_sortColumn == col) {
-        if (_sortAscending) {
-          _sortAscending = false;
-        } else {
-          // Third tap: reset to no sort
-          _sortColumn = null;
-          _sortAscending = true;
-        }
-      } else {
-        _sortColumn = col;
-        _sortAscending = true;
-      }
-    });
-  }
-
-  List<FlowSummary> _applySorting(List<FlowSummary> items) {
-    if (_sortColumn == null) return items;
+  List<FlowSummary> _applySorting(List<FlowSummary> items, SortColumn? col, bool asc) {
+    if (col == null) return items;
     final sorted = List<FlowSummary>.from(items);
     int Function(FlowSummary, FlowSummary) comparator;
-    switch (_sortColumn!) {
-      case _SortColumn.protocol:
+    switch (col) {
+      case SortColumn.protocol:
         comparator = (a, b) => a.protocol.compareTo(b.protocol);
-      case _SortColumn.host:
+      case SortColumn.host:
         comparator = (a, b) => a.host.compareTo(b.host);
-      case _SortColumn.path:
+      case SortColumn.path:
         comparator = (a, b) => a.uri.compareTo(b.uri);
-      case _SortColumn.method:
+      case SortColumn.method:
         comparator = (a, b) => a.method.compareTo(b.method);
-      case _SortColumn.status:
+      case SortColumn.status:
         comparator = (a, b) => a.statusCode.compareTo(b.statusCode);
-      case _SortColumn.time:
+      case SortColumn.time:
         comparator = (a, b) => a.startedAt.compareTo(b.startedAt);
-      case _SortColumn.duration:
+      case SortColumn.duration:
         comparator = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
-      case _SortColumn.size:
+      case SortColumn.size:
         comparator = (a, b) => a.downloadBytes.compareTo(b.downloadBytes);
     }
-    sorted.sort(_sortAscending ? comparator : (a, b) => comparator(b, a));
+    sorted.sort(asc ? comparator : (a, b) => comparator(b, a));
     return sorted;
   }
 
+  static const _columns = <(String, SortColumn)>[
+    ('Proto', SortColumn.protocol),
+    ('col.host', SortColumn.host),
+    ('col.path', SortColumn.path),
+    ('col.method', SortColumn.method),
+    ('col.status', SortColumn.status),
+    ('Time', SortColumn.time),
+    ('Duration', SortColumn.duration),
+    ('col.size', SortColumn.size),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final flowCtrl = Get.find<FlowController>();
+    final tableCtrl = TaskScope.table;
+    final flowCtrl = TaskScope.flow;
+    final selCtrl = TaskScope.selection;
     final theme = Theme.of(context);
 
-    return Obx(() {
-      var items = flowCtrl.flows.toList();
-      // Content type filter (client-side, protocol/domain handled by API)
-      final filterCtrl = Get.find<FilterController>();
-      if (filterCtrl.activeContentTypes.isNotEmpty) {
-        items = items.where((f) => filterCtrl.matchesContentType(f)).toList();
-      }
+    return LayoutBuilder(builder: (context, constraints) {
+      // Available width for columns = total - padding - resize handles (7px × 7 gaps)
+      final totalWidth = constraints.maxWidth - AppTheme.spacing.sm * 2 - 7 * 7;
 
-      items = _applySorting(items);
+      return Obx(() {
+        selCtrl.selectedFlow.value;
+        final weights = tableCtrl.columnWeights.toList();
+        final totalWeight = weights.fold<double>(0, (s, w) => s + w);
 
-      if (items.isEmpty && !flowCtrl.isLoading.value) {
+        var items = tableCtrl.flows.toList();
+        items = _applySorting(items, tableCtrl.sortColumn.value, tableCtrl.sortAscending.value);
+
+        List<double> colWidths = weights.map((w) => w / totalWeight * totalWidth).toList();
+
+        if (items.isEmpty && !flowCtrl.isLoading.value) {
+          return Column(
+            children: [
+              _buildHeader(theme, tableCtrl, colWidths, totalWidth),
+              Expanded(
+                child: Center(child: Text('empty.no_requests'.tr,
+                    style: TextStyle(color: theme.hintColor))),
+              ),
+            ],
+          );
+        }
+
         return Column(
           children: [
-            _tableHeader(theme),
+            _buildHeader(theme, tableCtrl, colWidths, totalWidth),
+            if (flowCtrl.isLoading.value)
+              const LinearProgressIndicator(minHeight: 2),
             Expanded(
-              child: Center(child: Text('empty.no_requests'.tr,
-                  style: TextStyle(color: theme.hintColor))),
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: items.length,
+                itemBuilder: (ctx, i) {
+                  final f = items[i];
+                  final isSelected = selCtrl.selectedFlow.value?.flowId == f.flowId;
+                  return _buildRow(context, f, isSelected, colWidths);
+                },
+              ),
             ),
           ],
         );
-      }
-
-      return Column(
-        children: [
-          _tableHeader(theme),
-          // Loading indicator
-          if (flowCtrl.isLoading.value)
-            const LinearProgressIndicator(minHeight: 2),
-          // Table body
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: items.length,
-              itemBuilder: (ctx, i) {
-                final f = items[i];
-                final isSelected = flowCtrl.selectedFlow.value?.flowId == f.flowId;
-                return _FlowRow(flow: f, isSelected: isSelected);
-              },
-            ),
-          ),
-        ],
-      );
+      });
     });
   }
 
-  Widget _sortableHeader(String label, _SortColumn col, {double? width, int? flex}) {
-    final isActive = _sortColumn == col;
-    final arrow = isActive ? (_sortAscending ? ' \u25B2' : ' \u25BC') : '';
-    final child = GestureDetector(
-      onTap: () => _onSortTap(col),
-      behavior: HitTestBehavior.opaque,
+  Widget _buildHeader(ThemeData theme, FlowTableController tableCtrl, List<double> colWidths, double totalWidth) {
+    return Container(
+      height: AppTheme.sizing.tableHeaderHeight,
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.mode(context).table.headerGradientStart,
+            AppTheme.mode(context).table.headerGradientEnd,
+          ],
+        ),
+      ),
+      clipBehavior: Clip.hardEdge,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: TextStyle(
-            fontSize: AppTheme.fontSize.sm,
-            fontWeight: FontWeight.bold,
-            color: isActive ? null : null,
-          )),
-          if (arrow.isNotEmpty)
-            Text(arrow, style: TextStyle(
-              fontSize: AppTheme.fontSize.xs,
-              fontWeight: FontWeight.bold,
-            )),
+          for (int i = 0; i < _columns.length; i++) ...[
+            _headerCell(tableCtrl, _columns[i].$1, _columns[i].$2, colWidths[i]),
+            if (i < _columns.length - 1)
+              _resizeHandle(tableCtrl, i, totalWidth),
+          ],
         ],
       ),
     );
-
-    if (flex != null) {
-      return Expanded(flex: flex, child: child);
-    }
-    return SizedBox(width: width, child: child);
   }
 
-  Widget _tableHeader(ThemeData theme) => Container(
-    height: AppTheme.sizing.tableHeaderHeight,
-    padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          AppTheme.mode(context).table.headerGradientStart,
-          AppTheme.mode(context).table.headerGradientEnd,
-        ],
+  Widget _headerCell(FlowTableController tableCtrl, String labelKey, SortColumn col, double width) {
+    final isActive = tableCtrl.sortColumn.value == col;
+    final arrow = isActive ? (tableCtrl.sortAscending.value ? ' \u25B2' : ' \u25BC') : '';
+    final label = labelKey.contains('.') ? labelKey.tr : labelKey;
+
+    return SizedBox(
+      width: width,
+      child: GestureDetector(
+        onTap: () => tableCtrl.toggleSort(col),
+        behavior: HitTestBehavior.opaque,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,
+                style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.bold))),
+            if (arrow.isNotEmpty)
+              Text(arrow, style: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
-    ),
-    clipBehavior: Clip.hardEdge,
-    child: Row(
-      children: [
-        _sortableHeader('Proto', _SortColumn.protocol, width: 50),
-        _sortableHeader('col.host'.tr, _SortColumn.host, flex: 2),
-        _sortableHeader('col.path'.tr, _SortColumn.path, flex: 3),
-        _sortableHeader('col.method'.tr, _SortColumn.method, width: 52),
-        _sortableHeader('col.status'.tr, _SortColumn.status, width: 44),
-        _sortableHeader('Time', _SortColumn.time, width: 62),
-        _sortableHeader('Duration', _SortColumn.duration, width: 62),
-        _sortableHeader('col.size'.tr, _SortColumn.size, width: 55),
-      ],
-    ),
-  );
-}
+    );
+  }
 
-class _FlowRow extends StatelessWidget {
-  final FlowSummary flow;
-  final bool isSelected;
-  const _FlowRow({required this.flow, required this.isSelected});
+  Widget _resizeHandle(FlowTableController tableCtrl, int colIndex, double totalWidth) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.resizeColumn,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (details) {
+          tableCtrl.resizeColumns(colIndex, details.delta.dx, totalWidth);
+        },
+        child: SizedBox(
+          width: 7,
+          height: AppTheme.sizing.tableHeaderHeight,
+          child: Center(
+            child: Container(width: 1, height: 12, color: AppTheme.colors(context).divider),
+          ),
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final flowCtrl = Get.find<FlowController>();
-    final detailCtrl = Get.find<DetailController>();
-    final taskCtrl = Get.find<TaskController>();
-
+  Widget _buildRow(BuildContext context, FlowSummary flow, bool isSelected, List<double> colWidths) {
     return GestureDetector(
       onSecondaryTapUp: (details) {
-        _showContextMenu(context, details.globalPosition, flow);
+        _FlowRow._showContextMenu(context, details.globalPosition, flow);
       },
       child: InkWell(
-        onTap: () {
-          flowCtrl.selectFlow(flow);
-          final tid = taskCtrl.currentTask.value?.id;
-          if (tid != null) {
-            detailCtrl.loadDetail(tid, flow.flowId);
-            detailCtrl.loadBodies(tid, flow.flowId);
-          }
-        },
+        onTap: () => TaskScope.selection.select(flow),
         child: Container(
           height: AppTheme.sizing.tableRowHeight,
           padding: EdgeInsets.only(
@@ -244,32 +225,47 @@ class _FlowRow extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           child: Row(
             children: [
-              SizedBox(width: 50, child: Text(flow.protocol,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
-              Expanded(flex: 2, child: Text(flow.host,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
-              Expanded(flex: 3, child: Text(flow.uri,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
-              SizedBox(width: 52, child: Text(_methodLabel(flow.method),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600, color: AppTheme.methodColorOf(context, flow.method)))),
-              SizedBox(width: 44, child: Text(flow.statusCode,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.statusColorOf(context, int.tryParse(flow.statusCode) ?? 0)))),
-              SizedBox(width: 62, child: Text(_formatTime(flow.startedAt),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis)),
-              SizedBox(width: 62, child: Text(
+              SizedBox(width: colWidths[0], child: Text(flow.protocol,
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[1], child: Text(flow.host,
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[2], child: Tooltip(
+                  message: flow.uri,
+                  waitDuration: const Duration(milliseconds: 500),
+                  child: Text(flow.uri,
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1))),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[3], child: Text(_FlowRow._methodLabel(flow.method),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600, color: AppTheme.methodColorOf(context, flow.method)), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[4], child: Text(flow.statusCode,
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.statusColorOf(context, int.tryParse(flow.statusCode) ?? 0)), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[5], child: Text(_FlowRow._formatTime(flow.startedAt),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[6], child: Text(
                   flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
-              SizedBox(width: 55, child: Text(_formatSize(flow.downloadBytes),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm))),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              const SizedBox(width: 7),
+              SizedBox(width: colWidths[7], child: Text(_FlowRow._formatSize(flow.downloadBytes),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  void _showContextMenu(BuildContext context, Offset position, FlowSummary flow) {
-    final tagCtrl = Get.find<TagController>();
+/// Static utility methods for flow table rows (context menu, formatting).
+class _FlowRow {
+  _FlowRow._();
+
+  static void _showContextMenu(BuildContext context, Offset position, FlowSummary flow) {
+    final tagCtrl = TaskScope.tag;
 
     showMenu<String>(
       context: context,
@@ -361,8 +357,8 @@ class _FlowRow extends StatelessWidget {
     });
   }
 
-  void _showCommentDialog(BuildContext context, String flowId) {
-    final tagCtrl = Get.find<TagController>();
+  static void _showCommentDialog(BuildContext context, String flowId) {
+    final tagCtrl = TaskScope.tag;
     final controller = TextEditingController(text: tagCtrl.getComment(flowId) ?? '');
 
     showDialog(
@@ -400,10 +396,9 @@ class _FlowRow extends StatelessWidget {
     );
   }
 
-  Future<void> _repeatRequest(BuildContext context, FlowSummary flow) async {
-    final taskCtrl = Get.find<TaskController>();
-    final detailCtrl = Get.find<DetailController>();
-    final tid = taskCtrl.currentTask.value?.id;
+  static Future<void> _repeatRequest(BuildContext context, FlowSummary flow) async {
+    final detailCtrl = TaskScope.detail;
+    final tid = TaskScope.activeTaskId;
 
     // Load detail if needed
     Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
@@ -436,11 +431,10 @@ class _FlowRow extends StatelessWidget {
     }
   }
 
-  Future<void> _openInCompose(BuildContext context, FlowSummary flow) async {
-    final taskCtrl = Get.find<TaskController>();
-    final detailCtrl = Get.find<DetailController>();
+  static Future<void> _openInCompose(BuildContext context, FlowSummary flow) async {
+    final detailCtrl = TaskScope.detail;
     final pageCtrl = Get.find<AppPageController>();
-    final tid = taskCtrl.currentTask.value?.id;
+    final tid = TaskScope.activeTaskId;
 
     // Load detail if needed
     Map<String, dynamic> detail = detailCtrl.detail.value?.raw ?? {};
@@ -461,7 +455,7 @@ class _FlowRow extends StatelessWidget {
     );
   }
 
-  void _openMapLocalWithUrl(BuildContext context, FlowSummary flow) {
+  static void _openMapLocalWithUrl(BuildContext context, FlowSummary flow) {
     final pageCtrl = Get.find<AppPageController>();
     final toolsCtrl = Get.find<ToolsController>();
     final protocol = flow.protocol.toLowerCase();
@@ -475,9 +469,9 @@ class _FlowRow extends StatelessWidget {
     pageCtrl.showMapLocal();
   }
 
-  String _methodLabel(String m) => m.isNotEmpty ? m : '-';
+  static String _methodLabel(String m) => m.isNotEmpty ? m : '-';
 
-  String _formatTime(double timestamp) {
+  static String _formatTime(double timestamp) {
     if (timestamp <= 0) return '-';
     final dt = DateTime.fromMillisecondsSinceEpoch(
       (timestamp * 1000).toInt(),
@@ -488,7 +482,7 @@ class _FlowRow extends StatelessWidget {
         '${dt.second.toString().padLeft(2, '0')}';
   }
 
-  String _formatSize(int bytes) {
+  static String _formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}K';
     return '${(bytes / 1024 / 1024).toStringAsFixed(1)}M';
@@ -502,7 +496,7 @@ class _ColorSubmenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tagCtrl = Get.find<TagController>();
+    final tagCtrl = TaskScope.tag;
 
     return Padding(
       padding: EdgeInsets.symmetric(

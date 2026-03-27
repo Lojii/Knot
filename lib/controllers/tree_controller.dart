@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../models/flow_summary.dart';
 import 'filter_controller.dart';
 import 'flow_controller.dart';
+import 'flow_table_controller.dart';
 
 // ============================================================
 // Data models
@@ -14,6 +15,8 @@ class TreeNode {
   final List<TreeNode> children;
   int count;
   bool childrenLoaded;
+  /// Cached path tree root built from children — set by loadChildren.
+  PathNode? pathRoot;
 
   TreeNode({
     required this.label,
@@ -22,7 +25,11 @@ class TreeNode {
     List<TreeNode>? children,
     this.count = 0,
     this.childrenLoaded = false,
+    this.pathRoot,
   }) : children = children ?? [];
+
+  /// Whether this domain has expandable sub-paths (only valid after loadChildren).
+  bool get hasPathChildren => pathRoot != null && pathRoot!.children.isNotEmpty;
 }
 
 enum PinType { domain, app, device, request }
@@ -62,6 +69,13 @@ class PathNode {
 // ============================================================
 
 class TreeController extends GetxController {
+  int? taskId;
+
+  String get _tag => 'task_$taskId';
+  FlowController get _flowCtrl => Get.find<FlowController>(tag: _tag);
+  FilterController get _filterCtrl => Get.find<FilterController>(tag: _tag);
+  FlowTableController get _tableCtrl => Get.find<FlowTableController>(tag: _tag);
+
   final tree = <TreeNode>[].obs;
   final selectedDomain = Rxn<String>();
   final selectedPath = Rxn<String>();
@@ -70,8 +84,16 @@ class TreeController extends GetxController {
   final pinnedItems = <PinnedItem>[].obs;
   final appTree = <AppNode>[].obs;
 
+  /// Expand/collapse state keyed by node id (domain or "domain:path")
+  final expandedNodes = <String>{}.obs;
+
   /// Full host→count map from ALL flows (unfiltered baseline).
   final _fullHostCounts = <String, int>{};
+
+  /// Domain first-seen order — lower index = appeared earlier.
+  /// Used for sorting: newer (higher index) domains appear first.
+  final _domainOrder = <String, int>{};
+  int _orderCounter = 0;
 
   /// Strip default ports (:443, :80) from host for grouping
   static String normalizeHost(String host) {
@@ -84,37 +106,58 @@ class TreeController extends GetxController {
 
   /// Recompute domain tree from the full local flow list.
   /// Called after initial load and after filter changes.
+  /// Tree counts reflect filter bar (protocol/contentType/search) only,
+  /// NOT the tree's own selection — so selecting a domain doesn't hide others.
   void recomputeFromFlows(List<FlowSummary> allFlows) {
-    // Rebuild full host counts from ALL flows (unfiltered)
+    // Rebuild full host counts and first-seen order from ALL flows (unfiltered)
     _fullHostCounts.clear();
+    _domainOrder.clear();
+    _orderCounter = 0;
     for (final f in allFlows) {
       if (f.host.isNotEmpty) {
         final h = normalizeHost(f.host);
         _fullHostCounts[h] = (_fullHostCounts[h] ?? 0) + 1;
+        _domainOrder.putIfAbsent(h, () => _orderCounter++);
       }
     }
 
-    // Now compute display counts from the current FILTERED flow list
-    final filterCtrl = Get.find<FilterController>();
-    final flowCtrl = Get.find<FlowController>();
-    final displayFlows = flowCtrl.flows; // already filtered
-
-    final displayCounts = <String, int>{};
-    for (final f in displayFlows) {
-      if (f.host.isNotEmpty) {
-        final h = normalizeHost(f.host);
-        displayCounts[h] = (displayCounts[h] ?? 0) + 1;
-      }
-    }
+    final filterCtrl = _filterCtrl;
 
     final hasFilters = filterCtrl.activeProtocols.isNotEmpty ||
         filterCtrl.activeContentTypes.isNotEmpty ||
-        flowCtrl.searchQuery.value.isNotEmpty;
+        _tableCtrl.searchQuery.value.isNotEmpty;
 
-    // Use display counts if filtered, full counts if not
-    final countsToUse = hasFilters ? displayCounts : _fullHostCounts;
+    if (!hasFilters) {
+      _rebuildTree(_fullHostCounts, invalidateChildren: false);
+      return;
+    }
 
-    _rebuildTree(countsToUse, invalidateChildren: hasFilters);
+    // Compute display counts by filtering allFlows with filter bar only
+    // (protocol + contentType + search), excluding tree selection
+    final query = _tableCtrl.searchQuery.value.toLowerCase();
+    final displayCounts = <String, int>{};
+    for (final f in allFlows) {
+      if (f.host.isEmpty) continue;
+      // Protocol filter
+      if (filterCtrl.activeProtocols.isNotEmpty &&
+          !filterCtrl.activeProtocols.contains(f.protocol.toUpperCase())) {
+        continue;
+      }
+      // Content type filter
+      if (filterCtrl.activeContentTypes.isNotEmpty &&
+          !filterCtrl.matchesContentType(f)) {
+        continue;
+      }
+      // Search query
+      if (query.isNotEmpty) {
+        final haystack = '${f.host} ${f.uri} ${f.method} ${f.statusCode}'.toLowerCase();
+        if (!haystack.contains(query)) continue;
+      }
+      final h = normalizeHost(f.host);
+      displayCounts[h] = (displayCounts[h] ?? 0) + 1;
+    }
+
+    _rebuildTree(displayCounts, invalidateChildren: true);
   }
 
   /// Incrementally add a single flow from WS push — no API.
@@ -122,6 +165,7 @@ class TreeController extends GetxController {
     if (flow.host.isEmpty) return;
     final h = normalizeHost(flow.host);
     _fullHostCounts[h] = (_fullHostCounts[h] ?? 0) + 1;
+    _domainOrder.putIfAbsent(h, () => _orderCounter++);
 
     // Update tree node count in-place if it exists, otherwise rebuild
     final existing = tree.firstWhereOrNull((n) => n.domain == h);
@@ -140,8 +184,8 @@ class TreeController extends GetxController {
   void loadChildren(TreeNode node) {
     if (node.childrenLoaded || node.domain == null) return;
 
-    final flowCtrl = Get.find<FlowController>();
-    final filterCtrl = Get.find<FilterController>();
+    final flowCtrl = _flowCtrl;
+    final filterCtrl = _filterCtrl;
     final domain = node.domain!;
 
     // Filter from local allFlows by domain + current filters
@@ -154,34 +198,29 @@ class TreeController extends GetxController {
       return true;
     }).toList();
 
-    // Debug: print raw URIs
-    print('──── loadChildren($domain): ${items.length} flows ────');
-    for (final f in items) {
-      print('  ${f.method} ${f.uri}');
-    }
-
     node.children.clear();
     node.children.addAll(items.map((f) => TreeNode(
       label: '${f.method} ${f.uri}',
       domain: domain,
     )));
+    node.pathRoot = buildPathTree(node.children);
     node.childrenLoaded = true;
-
-    // Debug: print the built path tree
-    final pathRoot = buildPathTree(node.children);
-    _printPathTree(pathRoot, '');
-
-    tree.refresh();
   }
 
-  static void _printPathTree(PathNode node, String indent) {
-    if (node.segment.isNotEmpty) {
-      print('$indent/${node.segment}  (requests: ${node.requestCount}, total: ${node.totalCount}, children: ${node.children.length})');
+  // ── Expand/Collapse ──────────────────────────────────────
+
+  String nodeKey(String domain, [String? path]) =>
+      path != null ? '$domain:$path' : domain;
+
+  bool isExpanded(String domain, [String? path]) =>
+      expandedNodes.contains(nodeKey(domain, path));
+
+  void toggleExpand(String domain, [String? path]) {
+    final key = nodeKey(domain, path);
+    if (expandedNodes.contains(key)) {
+      expandedNodes.remove(key);
     } else {
-      print('${indent}ROOT  (requests: ${node.requestCount}, total: ${node.totalCount}, children: ${node.children.length})');
-    }
-    for (final child in node.children.values) {
-      _printPathTree(child, '$indent  ');
+      expandedNodes.add(key);
     }
   }
 
@@ -209,32 +248,34 @@ class TreeController extends GetxController {
     selectedDomain.value = domain;
     selectedPath.value = null;
     selectedApp.value = null;
-    Get.find<FlowController>().reloadForTreeSelection();
+    _tableCtrl.refilterForTreeSelection();
   }
 
   void selectPath(String domain, String path) {
     selectedDomain.value = domain;
     selectedPath.value = path;
     selectedApp.value = null;
-    Get.find<FlowController>().reloadForTreeSelection();
+    _tableCtrl.refilterForTreeSelection();
   }
 
   void selectApp(String appName) {
     selectedApp.value = appName;
     selectedDomain.value = null;
     selectedPath.value = null;
-    Get.find<FlowController>().reloadForTreeSelection();
+    _tableCtrl.refilterForTreeSelection();
   }
 
   void clearSelection() {
     selectedDomain.value = null;
     selectedPath.value = null;
     selectedApp.value = null;
-    Get.find<FlowController>().reloadForTreeSelection();
+    _tableCtrl.refilterForTreeSelection();
   }
 
   void clear() {
     _fullHostCounts.clear();
+    _domainOrder.clear();
+    _orderCounter = 0;
     tree.clear();
     selectedDomain.value = null;
     selectedPath.value = null;
@@ -242,6 +283,7 @@ class TreeController extends GetxController {
     pinnedItems.clear();
     pinnedDomains.clear();
     appTree.clear();
+    expandedNodes.clear();
   }
 
   // ── Path tree builder ─────────────────────────────────────
@@ -333,6 +375,7 @@ class TreeController extends GetxController {
         count: e.value,
         children: invalidateChildren ? null : old?.children,
         childrenLoaded: invalidateChildren ? false : (old?.childrenLoaded ?? false),
+        pathRoot: invalidateChildren ? null : old?.pathRoot,
       );
     }).toList();
 
@@ -341,7 +384,10 @@ class TreeController extends GetxController {
       final bPinned = pinnedDomains.contains(b.domain);
       if (aPinned && !bPinned) return -1;
       if (!aPinned && bPinned) return 1;
-      return b.count.compareTo(a.count);
+      // Sort by first-seen order: newer (higher index) first
+      final aOrder = _domainOrder[a.domain] ?? 0;
+      final bOrder = _domainOrder[b.domain] ?? 0;
+      return aOrder.compareTo(bOrder);
     });
     tree.value = nodes;
   }

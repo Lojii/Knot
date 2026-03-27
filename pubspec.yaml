@@ -40,6 +40,9 @@ dependencies:
   multi_split_view: ^3.1.0
   google_fonts: ^6.1.0
   fl_chart: ^0.69.0
+  brotli: ^0.6.0
+  flutter_svg: ^2.2.4
+  flutter_avif: ^1.0.1
 
 dev_dependencies:
   flutter_test:

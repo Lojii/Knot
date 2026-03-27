@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/flow_controller.dart';
+import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
 
 /// Modal dialog that appears when a breakpoint is hit.
@@ -50,7 +50,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
     setState(() => _sending = true);
 
     try {
-      final api = Get.find<FlowController>().api;
+      final api = TaskScope.flow.api;
       await api.resumeBreakpoint(flowId, action);
     } catch (_) {
       // Best effort — dialog closes regardless

@@ -85,6 +85,8 @@ class AppTranslations extends Translations {
     'tree.source': 'SOURCE',
 
     // ===== Flow Detail =====
+    'detail.data': 'Data',
+    'detail.details': 'Details',
     'detail.edit_resend': 'Edit & Resend',
     'detail.copy_curl': 'Copy as cURL',
     'detail.curl_copied': 'cURL command copied to clipboard',
@@ -122,6 +124,9 @@ class AppTranslations extends Translations {
     'timing.request': 'Request',
     'timing.ttfb': 'TTFB',
     'timing.download': 'Download',
+
+    // ===== Waterfall =====
+    'waterfall.expand_gap': 'Click to expand (@duration)',
 
     // ===== Context Menu =====
     'menu.color_tag': 'Color Tag',
@@ -286,6 +291,19 @@ class AppTranslations extends Translations {
     'settings.follow_system': 'System',
     'settings.light': 'Light',
     'settings.dark': 'Dark',
+    'settings.certificate': 'HTTPS Certificate',
+    'settings.ca_certificate': 'CA Certificate',
+    'settings.cert_trusted': 'Trusted',
+    'settings.cert_installed': 'Installed but not trusted',
+    'settings.cert_not_installed': 'Not installed',
+    'settings.cert_checking': 'Checking...',
+    'settings.install': 'Install',
+    'settings.export': 'Export',
+    'settings.cert_hint': 'Install the CA certificate to decrypt HTTPS traffic. macOS will ask for your password.',
+    'settings.cert_install_success': 'CA certificate installed and trusted',
+    'settings.cert_install_cancelled': 'Certificate added to Keychain but trust was cancelled',
+    'settings.cert_exported': 'Certificate exported to @path',
+    'settings.cert_export_failed': 'Failed to export certificate',
     'settings.api_endpoint': 'API Endpoint',
     'settings.websocket': 'WebSocket',
     'settings.version': 'Version',
@@ -378,6 +396,8 @@ class AppTranslations extends Translations {
     'tree.source': '来源',
 
     // ===== Flow Detail =====
+    'detail.data': '数据',
+    'detail.details': '详情',
     'detail.edit_resend': '编辑并重发',
     'detail.copy_curl': '复制为 cURL',
     'detail.curl_copied': '已复制 cURL 命令到剪贴板',
@@ -415,6 +435,9 @@ class AppTranslations extends Translations {
     'timing.request': '请求',
     'timing.ttfb': 'TTFB',
     'timing.download': '下载',
+
+    // ===== Waterfall =====
+    'waterfall.expand_gap': '点击展开 (@duration)',
 
     // ===== Context Menu =====
     'menu.color_tag': '颜色标记',
@@ -579,6 +602,19 @@ class AppTranslations extends Translations {
     'settings.follow_system': '跟随系统',
     'settings.light': '浅色',
     'settings.dark': '深色',
+    'settings.certificate': 'HTTPS 证书',
+    'settings.ca_certificate': 'CA 根证书',
+    'settings.cert_trusted': '已信任',
+    'settings.cert_installed': '已安装但未信任',
+    'settings.cert_not_installed': '未安装',
+    'settings.cert_checking': '检查中...',
+    'settings.install': '安装',
+    'settings.export': '导出',
+    'settings.cert_hint': '安装 CA 证书以解密 HTTPS 流量。macOS 会要求输入密码。',
+    'settings.cert_install_success': 'CA 证书已安装并信任',
+    'settings.cert_install_cancelled': '证书已添加到钥匙串但信任被取消',
+    'settings.cert_exported': '证书已导出到 @path',
+    'settings.cert_export_failed': '导出证书失败',
     'settings.api_endpoint': 'API 地址',
     'settings.websocket': 'WebSocket',
     'settings.version': '版本',

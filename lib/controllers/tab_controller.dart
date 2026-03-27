@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../models/task_model.dart';
+import 'task_scope.dart';
 
 enum TabType { home, task }
 
@@ -58,14 +59,16 @@ class TabManager extends GetxController {
       tabs.firstWhereOrNull((t) => t.isCapturing.value);
 
   void activateTab(String tabId) {
-    if (tabs.any((t) => t.id == tabId)) {
-      activeTabId.value = tabId;
-    }
+    if (!tabs.any((t) => t.id == tabId)) return;
+    activeTabId.value = tabId;
   }
 
   void openTask(TaskModel task, {bool isCapturing = false}) {
     final tabId = 'task_${task.id}';
     final existing = tabs.firstWhereOrNull((t) => t.id == tabId);
+
+    // Ensure per-task controllers exist
+    TaskScope.ensure(task.id);
 
     if (existing != null) {
       activeTabId.value = tabId;
@@ -100,10 +103,28 @@ class TabManager extends GetxController {
     }
 
     tabs.removeAt(idx);
+
+    // Destroy per-task controllers
+    if (tab.taskId != null) {
+      // Only destroy if no other tab uses the same task
+      final stillUsed = tabs.any((t) => t.taskId == tab.taskId);
+      if (!stillUsed) {
+        TaskScope.destroy(tab.taskId!);
+      }
+    }
   }
 
   void closeAllExcept(String tabId) {
-    tabs.removeWhere((t) => t.id != tabId && t.canClose);
+    final closeable = tabs.where((t) => t.id != tabId && t.canClose).toList();
+    for (final t in closeable) {
+      tabs.remove(t);
+      if (t.taskId != null) {
+        final stillUsed = tabs.any((tab) => tab.taskId == t.taskId);
+        if (!stillUsed) {
+          TaskScope.destroy(t.taskId!);
+        }
+      }
+    }
 
     if (!tabs.any((t) => t.id == activeTabId.value)) {
       activeTabId.value = tabId;
