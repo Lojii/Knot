@@ -403,7 +403,7 @@ class _RequestBodyView extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      return SingleChildScrollView(
+      return Padding(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: BodyViewer(
           bytes: detailCtrl.requestBodyBytes.value,
@@ -540,7 +540,7 @@ class _ResponseBodyView extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       }
 
-      return SingleChildScrollView(
+      return Padding(
         padding: EdgeInsets.all(AppTheme.spacing.sm),
         child: BodyViewer(
           bytes: detailCtrl.responseBodyBytes.value,

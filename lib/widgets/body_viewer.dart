@@ -47,9 +47,10 @@ ContentCategory _resolveCategory(Uint8List bytes, String contentType) {
     if (fromMagic != ContentCategory.binary) return fromMagic;
   }
 
-  // Text heuristic
+  // Text heuristic (sniff only the head — bodies can be huge)
   if (_looksLikeText(bytes)) {
-    final text = _decodeText(bytes).trimLeft();
+    final head = bytes.length > 512 ? Uint8List.sublistView(bytes, 0, 512) : bytes;
+    final text = _decodeText(head).trimLeft();
     if (text.startsWith('{') || text.startsWith('[')) return ContentCategory.json;
     return ContentCategory.text;
   }
@@ -80,14 +81,24 @@ class _BodyViewerState extends State<BodyViewer> {
         color: Theme.of(context).hintColor, fontSize: AppTheme.fontSize.sm));
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _modeToggle(context),
-        SizedBox(height: AppTheme.spacing.xs),
-        Expanded(child: _body(context)),
-      ],
-    );
+    // Viewers scroll internally (virtualized), so they need bounded height.
+    // Inside an unbounded parent (e.g. SingleChildScrollView) fall back to a
+    // fixed-height box instead of Expanded.
+    return LayoutBuilder(builder: (context, constraints) {
+      final bounded = constraints.hasBoundedHeight;
+      return Column(
+        mainAxisSize: bounded ? MainAxisSize.max : MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _modeToggle(context),
+          SizedBox(height: AppTheme.spacing.xs),
+          if (bounded)
+            Expanded(child: _body(context))
+          else
+            SizedBox(height: 400, child: _body(context)),
+        ],
+      );
+    });
   }
 
   Widget _modeToggle(BuildContext context) {
@@ -130,8 +141,7 @@ class _BodyViewerState extends State<BodyViewer> {
 
     switch (_viewMode) {
       case BodyViewMode.raw:
-        return SingleChildScrollView(
-          child: SelectableText(_decodeText(bytes), style: AppTheme.mono(context)));
+        return CodeViewer(bytes: bytes, formatJson: false, showLineNumbers: false);
       case BodyViewMode.hex:
         return SingleChildScrollView(child: HexViewer(bytes: bytes));
       case BodyViewMode.pretty:
@@ -167,8 +177,7 @@ class _BodyViewerState extends State<BodyViewer> {
       case ContentCategory.formUrlEncoded:
         return FormViewer(bytes: bytes);
       case ContentCategory.text:
-        return SingleChildScrollView(
-          child: SelectableText(_decodeText(bytes), style: AppTheme.mono(context)));
+        return CodeViewer(bytes: bytes, formatJson: false, showLineNumbers: false);
       case ContentCategory.binary:
         return UnsupportedViewer(bytes: bytes, contentType: ct);
     }

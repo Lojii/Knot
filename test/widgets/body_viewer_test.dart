@@ -64,8 +64,8 @@ void main() {
     testWidgets('detects JSON by body starting with [', (tester) async {
       await tester.pumpWidget(buildWidget(body: '[1, 2, 3]'));
 
-      // Should render as formatted JSON
-      expect(find.textContaining('1'), findsOneWidget);
+      // Should render as formatted JSON (per-line rendering may match several)
+      expect(find.textContaining('1'), findsWidgets);
     });
 
     testWidgets('handles invalid JSON gracefully (shows raw text)',

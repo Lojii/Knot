@@ -62,7 +62,8 @@ void main() {
     testWidgets('JSON array is auto-formatted in Pretty mode', (tester) async {
       final jsonBody = '[1,2,3]';
       await tester.pumpWidget(buildWidget(body: jsonBody));
-      expect(find.textContaining('1'), findsOneWidget);
+      // Per-line rendering: line numbers/content may both contain "1"
+      expect(find.textContaining('1'), findsWidgets);
     });
 
     testWidgets('XML content handled in Pretty mode', (tester) async {
