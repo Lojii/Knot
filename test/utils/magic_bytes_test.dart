@@ -282,7 +282,6 @@ void main() {
     });
 
     test('GZIP', () {
-      final bytes = Uint8List.fromList([0x1F, 0x8B, 0x08]);
       // Need 4 bytes minimum
       final padded = Uint8List.fromList([0x1F, 0x8B, 0x08, 0x00]);
       final result = detectFileType(padded);

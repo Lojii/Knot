@@ -1,6 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:knot/controllers/filter_controller.dart';
+import 'package:knot/models/flow_summary.dart';
+
+FlowSummary _flow({
+  String flowId = 'f1',
+  String protocol = 'HTTP',
+  String host = 'example.com',
+  String contentType = '',
+}) {
+  return FlowSummary(
+    flowId: flowId,
+    protocol: protocol,
+    host: host,
+    startedAt: 100.0,
+    searchKey4: contentType,
+  );
+}
 
 void main() {
   late FilterController controller;
@@ -13,100 +29,132 @@ void main() {
   tearDown(() => Get.reset());
 
   group('FilterController - toggleProtocol', () {
-    test('adds protocol when not present', () {
-      controller.toggleProtocol('HTTP/1.1');
-      expect(controller.activeProtocols, contains('HTTP/1.1'));
+    test('adds and removes a protocol', () {
+      controller.toggleProtocol('HTTP');
+      expect(controller.activeProtocols, {'HTTP'});
+
+      controller.toggleProtocol('HTTP');
+      expect(controller.activeProtocols, isEmpty);
     });
 
-    test('removes protocol when already present', () {
-      controller.toggleProtocol('HTTP/2');
-      expect(controller.activeProtocols, contains('HTTP/2'));
-      controller.toggleProtocol('HTTP/2');
-      expect(controller.activeProtocols, isNot(contains('HTTP/2')));
-    });
-
-    test('handles multiple protocols', () {
-      controller.toggleProtocol('HTTP/1.1');
-      controller.toggleProtocol('HTTP/2');
-      controller.toggleProtocol('WebSocket');
-      expect(controller.activeProtocols.length, 3);
+    test('"All" clears active protocols', () {
+      controller.toggleProtocol('HTTP');
+      controller.toggleProtocol('WS');
+      controller.toggleProtocol('All');
+      expect(controller.activeProtocols, isEmpty);
     });
   });
 
-  group('FilterController - toggleType', () {
-    test('adds type when not present', () {
-      controller.toggleType('json');
-      expect(controller.activeTypes, contains('json'));
+  group('FilterController - toggleContentType', () {
+    test('adds and removes a content type', () {
+      controller.toggleContentType('JSON');
+      expect(controller.activeContentTypes, {'JSON'});
+
+      controller.toggleContentType('JSON');
+      expect(controller.activeContentTypes, isEmpty);
     });
 
-    test('removes type when already present', () {
-      controller.toggleType('html');
-      controller.toggleType('html');
-      expect(controller.activeTypes, isEmpty);
+    test('"All" clears active content types', () {
+      controller.toggleContentType('JSON');
+      controller.toggleContentType('IMG');
+      controller.toggleContentType('All');
+      expect(controller.activeContentTypes, isEmpty);
     });
   });
 
-  group('FilterController - toggleStatus', () {
-    test('adds status when not present', () {
-      controller.toggleStatus('2xx');
-      expect(controller.activeStatuses, contains('2xx'));
+  group('FilterController - protocolParam', () {
+    test('is null when no protocol is active', () {
+      expect(controller.protocolParam, isNull);
     });
 
-    test('removes status when already present', () {
-      controller.toggleStatus('4xx');
-      controller.toggleStatus('4xx');
-      expect(controller.activeStatuses, isEmpty);
+    test('joins active protocols with comma', () {
+      controller.toggleProtocol('HTTP');
+      controller.toggleProtocol('WS');
+      expect(controller.protocolParam!.split(','), containsAll(['HTTP', 'WS']));
+    });
+  });
+
+  group('FilterController - protocolMode', () {
+    test('defaults to HTTP mode', () {
+      expect(controller.protocolMode.value, 'HTTP');
+      expect(controller.isTcpMode, isFalse);
+    });
+
+    test('toggleProtocolMode switches between HTTP and TCP', () {
+      controller.toggleProtocolMode();
+      expect(controller.isTcpMode, isTrue);
+      controller.toggleProtocolMode();
+      expect(controller.isTcpMode, isFalse);
+    });
+  });
+
+  group('FilterController - recomputeFromFlows', () {
+    test('computes available protocols in stable order', () {
+      controller.recomputeFromFlows([
+        _flow(flowId: 'a', protocol: 'WS'),
+        _flow(flowId: 'b', protocol: 'HTTP'),
+        _flow(flowId: 'c', protocol: 'HTTPS'),
+      ]);
+      expect(controller.availableProtocols, ['HTTP', 'HTTPS', 'WS']);
+    });
+
+    test('maps content types to category labels', () {
+      controller.recomputeFromFlows([
+        _flow(flowId: 'a', contentType: 'application/json'),
+        _flow(flowId: 'b', contentType: 'image/png'),
+        _flow(flowId: 'c', contentType: 'text/html'),
+      ]);
+      expect(controller.availableContentTypes, ['JSON', 'IMG', 'HTML']);
+    });
+
+    test('empty flows produce empty availability', () {
+      controller.recomputeFromFlows([]);
+      expect(controller.availableProtocols, isEmpty);
+      expect(controller.availableContentTypes, isEmpty);
+    });
+  });
+
+  group('FilterController - addFlowToFilters', () {
+    test('incrementally adds protocol and content type once', () {
+      controller.addFlowToFilters(
+          _flow(protocol: 'HTTPS', contentType: 'application/json'));
+      controller.addFlowToFilters(
+          _flow(protocol: 'HTTPS', contentType: 'application/json'));
+
+      expect(controller.availableProtocols, ['HTTPS']);
+      expect(controller.availableContentTypes, ['JSON']);
+    });
+  });
+
+  group('FilterController - matchesContentType', () {
+    test('matches everything when no filter is active', () {
+      expect(controller.matchesContentType(_flow(contentType: 'text/html')),
+          isTrue);
+    });
+
+    test('matches flows in the active category only', () {
+      controller.toggleContentType('JSON');
+      expect(
+          controller
+              .matchesContentType(_flow(contentType: 'application/json')),
+          isTrue);
+      expect(controller.matchesContentType(_flow(contentType: 'text/html')),
+          isFalse);
     });
   });
 
   group('FilterController - clearAll', () {
-    test('clears all filters', () {
-      controller.toggleProtocol('HTTP/1.1');
-      controller.toggleType('json');
-      controller.toggleStatus('2xx');
+    test('clears active and available filters', () {
+      controller.toggleProtocol('HTTP');
+      controller.toggleContentType('JSON');
+      controller.recomputeFromFlows([_flow(contentType: 'application/json')]);
 
       controller.clearAll();
 
       expect(controller.activeProtocols, isEmpty);
-      expect(controller.activeTypes, isEmpty);
-      expect(controller.activeStatuses, isEmpty);
-    });
-
-    test('clearAll on empty filters does not throw', () {
-      expect(() => controller.clearAll(), returnsNormally);
-    });
-  });
-
-  group('FilterController - param getters', () {
-    test('protocolParam is null when no protocols selected', () {
-      expect(controller.protocolParam, isNull);
-    });
-
-    test('protocolParam returns single protocol', () {
-      controller.toggleProtocol('HTTP/2');
-      expect(controller.protocolParam, 'HTTP/2');
-    });
-
-    test('protocolParam returns comma-separated protocols', () {
-      controller.toggleProtocol('HTTP/1.1');
-      controller.toggleProtocol('HTTP/2');
-      final param = controller.protocolParam!;
-      expect(param.contains('HTTP/1.1'), isTrue);
-      expect(param.contains('HTTP/2'), isTrue);
-      expect(param.contains(','), isTrue);
-    });
-
-    test('statusParam is null when no statuses selected', () {
-      expect(controller.statusParam, isNull);
-    });
-
-    test('statusParam returns comma-separated statuses', () {
-      controller.toggleStatus('2xx');
-      controller.toggleStatus('4xx');
-      final param = controller.statusParam!;
-      expect(param.contains('2xx'), isTrue);
-      expect(param.contains('4xx'), isTrue);
-      expect(param.contains(','), isTrue);
+      expect(controller.activeContentTypes, isEmpty);
+      expect(controller.availableProtocols, isEmpty);
+      expect(controller.availableContentTypes, isEmpty);
     });
   });
 }

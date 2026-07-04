@@ -4,7 +4,7 @@ import 'package:knot/utils/list_export.dart';
 import 'package:knot/models/flow_summary.dart';
 
 void main() {
-  FlowSummary _makeFlow({
+  FlowSummary makeFlow({
     String flowId = 'f-1',
     String method = 'GET',
     String host = 'example.com',
@@ -44,7 +44,7 @@ void main() {
     });
 
     test('single flow produces header + one data row', () {
-      final csv = ListExport.toCsv([_makeFlow()]);
+      final csv = ListExport.toCsv([makeFlow()]);
       final lines = csv.trim().split('\n');
       expect(lines.length, 2);
       expect(lines[1], 'GET,example.com,/api/data,200,1024,150,HTTPS');
@@ -52,9 +52,9 @@ void main() {
 
     test('multiple flows produce correct number of rows', () {
       final flows = [
-        _makeFlow(flowId: 'f-1', method: 'GET', host: 'a.com', uri: '/1', status: 200),
-        _makeFlow(flowId: 'f-2', method: 'POST', host: 'b.com', uri: '/2', status: 201),
-        _makeFlow(flowId: 'f-3', method: 'DELETE', host: 'c.com', uri: '/3', status: 204),
+        makeFlow(flowId: 'f-1', method: 'GET', host: 'a.com', uri: '/1', status: 200),
+        makeFlow(flowId: 'f-2', method: 'POST', host: 'b.com', uri: '/2', status: 201),
+        makeFlow(flowId: 'f-3', method: 'DELETE', host: 'c.com', uri: '/3', status: 204),
       ];
       final csv = ListExport.toCsv(flows);
       final lines = csv.trim().split('\n');
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('field mapping is correct (method, host, path, status, size, time, protocol)', () {
-      final flow = _makeFlow(
+      final flow = makeFlow(
         method: 'PUT',
         host: 'api.io',
         uri: '/v2/resource',
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('null durationMs produces empty time field', () {
-      final flow = _makeFlow(durationMs: null);
+      final flow = makeFlow(durationMs: null);
       final csv = ListExport.toCsv([flow]);
       final lines = csv.trim().split('\n');
       // Should have empty time field: GET,example.com,/api/data,200,1024,,HTTPS
@@ -86,26 +86,26 @@ void main() {
 
     test('host with comma is escaped in quotes', () {
       // Unlikely but tests CSV escaping
-      final flow = _makeFlow(host: 'host,with,commas');
+      final flow = makeFlow(host: 'host,with,commas');
       final csv = ListExport.toCsv([flow]);
       expect(csv, contains('"host,with,commas"'));
     });
 
     test('path with comma is escaped in quotes', () {
-      final flow = _makeFlow(uri: '/path?a=1,2');
+      final flow = makeFlow(uri: '/path?a=1,2');
       final csv = ListExport.toCsv([flow]);
       expect(csv, contains('"'));
     });
 
     test('host with double quotes is escaped', () {
-      final flow = _makeFlow(host: 'host"with"quotes');
+      final flow = makeFlow(host: 'host"with"quotes');
       final csv = ListExport.toCsv([flow]);
       // Double quotes should be doubled inside CSV
       expect(csv, contains('"host""with""quotes"'));
     });
 
     test('host with newline is escaped', () {
-      final flow = _makeFlow(host: 'host\nwith\nnewlines');
+      final flow = makeFlow(host: 'host\nwith\nnewlines');
       final csv = ListExport.toCsv([flow]);
       expect(csv, contains('"host\nwith\nnewlines"'));
     });
@@ -119,16 +119,16 @@ void main() {
     });
 
     test('single flow returns array with one object', () {
-      final json = ListExport.toJson([_makeFlow()]);
+      final json = ListExport.toJson([makeFlow()]);
       final parsed = jsonDecode(json) as List;
       expect(parsed.length, 1);
     });
 
     test('multiple flows return correct count', () {
       final flows = [
-        _makeFlow(flowId: 'f-1'),
-        _makeFlow(flowId: 'f-2'),
-        _makeFlow(flowId: 'f-3'),
+        makeFlow(flowId: 'f-1'),
+        makeFlow(flowId: 'f-2'),
+        makeFlow(flowId: 'f-3'),
       ];
       final json = ListExport.toJson(flows);
       final parsed = jsonDecode(json) as List;
@@ -136,7 +136,7 @@ void main() {
     });
 
     test('JSON includes all expected fields', () {
-      final flow = _makeFlow(
+      final flow = makeFlow(
         flowId: 'f-42',
         method: 'POST',
         host: 'api.example.com',
@@ -164,14 +164,14 @@ void main() {
     });
 
     test('null durationMs produces null time in JSON', () {
-      final flow = _makeFlow(durationMs: null);
+      final flow = makeFlow(durationMs: null);
       final json = ListExport.toJson([flow]);
       final parsed = (jsonDecode(json) as List).first as Map<String, dynamic>;
       expect(parsed['time'], isNull);
     });
 
     test('output is valid JSON with indentation', () {
-      final flow = _makeFlow();
+      final flow = makeFlow();
       final json = ListExport.toJson([flow]);
       // Should contain indentation
       expect(json, contains('  '));
@@ -180,7 +180,7 @@ void main() {
     });
 
     test('startedAt is included', () {
-      final flow = _makeFlow(startedAt: 1700000000.0);
+      final flow = makeFlow(startedAt: 1700000000.0);
       final json = ListExport.toJson([flow]);
       final parsed = (jsonDecode(json) as List).first as Map<String, dynamic>;
       expect(parsed['startedAt'], 1700000000.0);

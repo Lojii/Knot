@@ -81,7 +81,7 @@ class BreakpointPanel extends StatelessWidget {
             return ListView.separated(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: rules.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
                 final rule = rules[i];
                 return _RuleRow(

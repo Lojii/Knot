@@ -136,19 +136,6 @@ class TabManager extends GetxController {
     if (tab != null) tab.title.value = newName;
   }
 
-  void markCapturing(String tabId) {
-    final idx = tabs.indexWhere((t) => t.id == tabId);
-    if (idx == -1) return;
-
-    final tab = tabs[idx];
-    tab.isCapturing.value = true;
-
-    if (idx != 1) {
-      tabs.removeAt(idx);
-      tabs.insert(1, tab);
-    }
-  }
-
   void markStopped(String tabId) {
     final tab = findTab(tabId);
     if (tab != null) tab.isCapturing.value = false;

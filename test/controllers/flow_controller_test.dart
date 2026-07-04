@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:knot/api/api_client.dart';
 import 'package:knot/controllers/filter_controller.dart';
 import 'package:knot/controllers/flow_controller.dart';
+import 'package:knot/controllers/flow_table_controller.dart';
+import 'package:knot/controllers/tree_controller.dart';
 import 'package:knot/models/flow_summary.dart';
 
 FlowSummary _flow({
@@ -13,7 +15,7 @@ FlowSummary _flow({
 }) {
   return FlowSummary(
     flowId: flowId,
-    protocol: 'HTTP/1.1',
+    protocol: 'HTTP',
     host: host,
     startedAt: 100.0,
     searchKey1: method,
@@ -22,130 +24,93 @@ FlowSummary _flow({
 }
 
 void main() {
+  const taskId = 1;
+  const tag = 'task_$taskId';
   late FlowController controller;
+  late FlowTableController tableCtrl;
 
   setUp(() {
     Get.testMode = true;
-    // FlowController needs ApiClient but we won't call HTTP methods
+    // FlowController resolves its sibling controllers via Get.find(tag:)
     final api = ApiClient(baseUrl: 'http://localhost:9999');
-    controller = FlowController(api);
-    // Register FilterController since loadFlows uses Get.find<FilterController>()
-    Get.put(FilterController());
+    Get.put(FilterController(), tag: tag);
+    Get.put(TreeController()..taskId = taskId, tag: tag);
+    tableCtrl = Get.put(FlowTableController()..taskId = taskId, tag: tag);
+    controller = Get.put(FlowController(api)..taskId = taskId, tag: tag);
   });
 
   tearDown(() => Get.reset());
 
   group('FlowController - addFlowFromPush', () {
-    test('inserts flow at beginning of list', () {
-      final f1 = _flow(flowId: 'a');
-      final f2 = _flow(flowId: 'b');
+    test('inserts flow at beginning of allFlows', () {
+      controller.addFlowFromPush(_flow(flowId: 'a'));
+      controller.addFlowFromPush(_flow(flowId: 'b'));
 
-      controller.addFlowFromPush(f1);
-      controller.addFlowFromPush(f2);
-
-      expect(controller.flows.length, 2);
-      expect(controller.flows[0].flowId, 'b');
-      expect(controller.flows[1].flowId, 'a');
+      expect(controller.allFlows.length, 2);
+      expect(controller.allFlows[0].flowId, 'b');
+      expect(controller.allFlows[1].flowId, 'a');
     });
 
-    test('increments total count', () {
-      expect(controller.total.value, 0);
-      controller.addFlowFromPush(_flow());
-      expect(controller.total.value, 1);
-      controller.addFlowFromPush(_flow());
-      expect(controller.total.value, 2);
+    test('registers the flow domain in the tree', () {
+      controller.addFlowFromPush(_flow(host: 'api.example.com'));
+
+      final treeCtrl = Get.find<TreeController>(tag: tag);
+      expect(treeCtrl.tree.any((n) => n.domain == 'api.example.com'), isTrue);
     });
   });
 
   group('FlowController - updateFlowFromPush', () {
-    test('updates existing flow by flowId', () {
-      controller.addFlowFromPush(_flow(flowId: 'x', host: 'old.com'));
+    test('replaces the matching flow', () {
+      controller.addFlowFromPush(_flow(flowId: 'a', method: 'GET'));
 
       controller.updateFlowFromPush({
-        'flowId': 'x',
-        'protocol': 'HTTP/2',
-        'host': 'new.com',
-        'startedAt': 200.0,
-        'searchKey3': '200',
+        'flowId': 'a',
+        'protocol': 'HTTP',
+        'host': 'example.com',
+        'startedAt': 100.0,
+        'searchKey1': 'POST',
       });
 
-      expect(controller.flows[0].host, 'new.com');
-      expect(controller.flows[0].protocol, 'HTTP/2');
-      expect(controller.flows[0].statusCode, '200');
+      expect(controller.allFlows.length, 1);
+      expect(controller.allFlows[0].method, 'POST');
     });
 
-    test('does nothing when flowId not found', () {
-      controller.addFlowFromPush(_flow(flowId: 'existing'));
+    test('ignores unknown flowId', () {
+      controller.addFlowFromPush(_flow(flowId: 'a'));
 
-      controller.updateFlowFromPush({
-        'flowId': 'nonexistent',
-        'host': 'new.com',
-        'startedAt': 200.0,
-      });
+      controller.updateFlowFromPush({'flowId': 'missing'});
 
-      expect(controller.flows.length, 1);
-      expect(controller.flows[0].flowId, 'existing');
+      expect(controller.allFlows.length, 1);
+      expect(controller.allFlows[0].flowId, 'a');
     });
 
-    test('does nothing when flowId is null', () {
-      controller.addFlowFromPush(_flow(flowId: 'test'));
-      controller.updateFlowFromPush({'host': 'no-id.com', 'startedAt': 1.0});
+    test('ignores payload without flowId', () {
+      controller.addFlowFromPush(_flow(flowId: 'a'));
 
-      expect(controller.flows.length, 1);
-      expect(controller.flows[0].host, 'example.com');
-    });
-
-    test('does nothing on empty data', () {
-      controller.addFlowFromPush(_flow());
-      controller.updateFlowFromPush({});
-      expect(controller.flows.length, 1);
+      expect(() => controller.updateFlowFromPush({}), returnsNormally);
+      expect(controller.allFlows.length, 1);
     });
   });
 
-  group('FlowController - selectFlow', () {
-    test('sets selectedFlow', () {
-      final flow = _flow(flowId: 'sel');
-      controller.selectFlow(flow);
-      expect(controller.selectedFlow.value?.flowId, 'sel');
-    });
-  });
+  group('FlowTableController - reapplyFilters', () {
+    test('mirrors allFlows into the displayed list', () {
+      controller.addFlowFromPush(_flow(flowId: 'a'));
+      controller.addFlowFromPush(_flow(flowId: 'b'));
 
-  group('FlowController - search', () {
-    test('search sets up debounce (does not throw)', () {
-      expect(() => controller.search('test query'), returnsNormally);
+      tableCtrl.reapplyFilters();
+
+      expect(tableCtrl.flows.length, 2);
+      expect(tableCtrl.total.value, 2);
     });
 
-    test('multiple rapid searches only debounce (no crash)', () {
-      for (var i = 0; i < 10; i++) {
-        controller.search('query $i');
-      }
-      // Just verifying no exceptions from rapid calls
-    });
-  });
+    test('applies protocol filter', () {
+      controller.addFlowFromPush(_flow(flowId: 'a'));
+      final filterCtrl = Get.find<FilterController>(tag: tag);
+      filterCtrl.toggleProtocol('WSS');
 
-  group('FlowController - initial state', () {
-    test('starts with empty flows', () {
-      expect(controller.flows, isEmpty);
-    });
+      tableCtrl.reapplyFilters();
 
-    test('starts with null selectedFlow', () {
-      expect(controller.selectedFlow.value, isNull);
-    });
-
-    test('starts with total 0', () {
-      expect(controller.total.value, 0);
-    });
-
-    test('starts with isLoading false', () {
-      expect(controller.isLoading.value, isFalse);
-    });
-
-    test('starts with empty searchQuery', () {
-      expect(controller.searchQuery.value, '');
-    });
-
-    test('starts with hasNewFlows false', () {
-      expect(controller.hasNewFlows.value, isFalse);
+      expect(tableCtrl.flows, isEmpty);
     });
   });
 }

@@ -13,34 +13,6 @@ import Foundation
 import NIO
 import NIOHTTP1
 
-// MARK: - Breakpoint Rule
-
-@available(*, deprecated, renamed: "KnotStorage.BreakpointRule")
-public struct LegacyBreakpointRule: Codable {
-    public var id: String
-    public var urlPattern: String
-    public var method: String?           // nil = match all
-    public var breakOnRequest: Bool
-    public var breakOnResponse: Bool
-    public var enabled: Bool
-
-    public init(urlPattern: String, breakOnRequest: Bool = true, breakOnResponse: Bool = false) {
-        self.id = UUID().uuidString
-        self.urlPattern = urlPattern
-        self.method = nil
-        self.breakOnRequest = breakOnRequest
-        self.breakOnResponse = breakOnResponse
-        self.enabled = true
-    }
-
-    func matches(url: String, httpMethod: String) -> Bool {
-        guard enabled else { return false }
-        if let m = method, m.uppercased() != httpMethod.uppercased() { return false }
-        let pattern = urlPattern.replacingOccurrences(of: ".", with: "\\.").replacingOccurrences(of: "*", with: ".*")
-        return url.range(of: "^\(pattern)$", options: .regularExpression) != nil
-    }
-}
-
 // MARK: - Rewrite Rule
 
 public struct RewriteRule: Codable {

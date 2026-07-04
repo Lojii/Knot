@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
+import 'package:knot/i18n/translations.dart';
 import 'package:knot/widgets/body_viewer.dart';
 
 void main() {
@@ -9,10 +12,17 @@ void main() {
     String contentType = '',
     String label = '',
   }) {
-    return MaterialApp(
+    return GetMaterialApp(
+      translations: AppTranslations(),
+      locale: const Locale('en', 'US'),
       home: Scaffold(
-        body: SingleChildScrollView(
-          child: BodyViewer(body: body, contentType: contentType, label: label),
+        body: SizedBox(
+          height: 600,
+          child: BodyViewer(
+            bytes: Uint8List.fromList(utf8.encode(body)),
+            contentType: contentType,
+            label: label,
+          ),
         ),
       ),
     );

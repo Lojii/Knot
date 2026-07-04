@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:knot/api/api_client.dart';
+import 'package:knot/controllers/filter_controller.dart';
+import 'package:knot/controllers/flow_controller.dart';
+import 'package:knot/controllers/flow_table_controller.dart';
 import 'package:knot/controllers/tree_controller.dart';
 import 'package:knot/models/flow_summary.dart';
 
@@ -10,7 +14,7 @@ FlowSummary _flow({
 }) {
   return FlowSummary(
     flowId: '${host}_$uri',
-    protocol: 'HTTP/1.1',
+    protocol: 'HTTP',
     host: host,
     startedAt: 100.0,
     searchKey1: method,
@@ -19,102 +23,143 @@ FlowSummary _flow({
 }
 
 void main() {
+  const taskId = 1;
+  const tag = 'task_$taskId';
   late TreeController controller;
 
   setUp(() {
     Get.testMode = true;
-    controller = TreeController();
+    // TreeController resolves its sibling controllers via Get.find(tag:)
+    final api = ApiClient(baseUrl: 'http://localhost:9999');
+    Get.put(FilterController(), tag: tag);
+    controller = Get.put(TreeController()..taskId = taskId, tag: tag);
+    Get.put(FlowTableController()..taskId = taskId, tag: tag);
+    Get.put(FlowController(api)..taskId = taskId, tag: tag);
   });
 
   tearDown(() => Get.reset());
 
-  group('TreeController - buildTree', () {
+  group('TreeController.normalizeHost', () {
+    test('strips default HTTPS port', () {
+      expect(TreeController.normalizeHost('example.com:443'), 'example.com');
+    });
+
+    test('strips default HTTP port', () {
+      expect(TreeController.normalizeHost('example.com:80'), 'example.com');
+    });
+
+    test('keeps non-default ports', () {
+      expect(TreeController.normalizeHost('example.com:8080'), 'example.com:8080');
+    });
+  });
+
+  group('TreeController - recomputeFromFlows', () {
     test('empty flow list produces empty tree', () {
-      controller.buildTree([]);
+      controller.recomputeFromFlows([]);
       expect(controller.tree, isEmpty);
     });
 
-    test('single flow creates one group node', () {
-      controller.buildTree([_flow(host: 'example.com', uri: '/api')]);
-
-      expect(controller.tree.length, 1);
-      expect(controller.tree[0].label, 'example.com');
-      expect(controller.tree[0].isGroup, isTrue);
-      expect(controller.tree[0].domain, 'example.com');
-      expect(controller.tree[0].children.length, 1);
-      expect(controller.tree[0].children[0].label, 'GET /api');
-    });
-
-    test('groups flows by host', () {
-      controller.buildTree([
+    test('groups flows by host with counts', () {
+      controller.recomputeFromFlows([
         _flow(host: 'a.com', uri: '/1'),
         _flow(host: 'b.com', uri: '/2'),
         _flow(host: 'a.com', uri: '/3'),
       ]);
 
       expect(controller.tree.length, 2);
-      final aNode = controller.tree.firstWhere((n) => n.label == 'a.com');
-      final bNode = controller.tree.firstWhere((n) => n.label == 'b.com');
-      expect(aNode.children.length, 2);
-      expect(bNode.children.length, 1);
+      final aNode = controller.tree.firstWhere((n) => n.domain == 'a.com');
+      final bNode = controller.tree.firstWhere((n) => n.domain == 'b.com');
+      expect(aNode.count, 2);
+      expect(bNode.count, 1);
+      expect(aNode.isGroup, isTrue);
     });
 
-    test('sorts groups by request count descending', () {
-      controller.buildTree([
-        _flow(host: 'few.com', uri: '/1'),
-        _flow(host: 'many.com', uri: '/a'),
-        _flow(host: 'many.com', uri: '/b'),
-        _flow(host: 'many.com', uri: '/c'),
-        _flow(host: 'mid.com', uri: '/x'),
-        _flow(host: 'mid.com', uri: '/y'),
+    test('merges hosts that differ only by default port', () {
+      controller.recomputeFromFlows([
+        _flow(host: 'a.com:443', uri: '/1'),
+        _flow(host: 'a.com', uri: '/2'),
       ]);
 
-      expect(controller.tree[0].label, 'many.com');
-      expect(controller.tree[0].children.length, 3);
-      expect(controller.tree[1].label, 'mid.com');
-      expect(controller.tree[1].children.length, 2);
-      expect(controller.tree[2].label, 'few.com');
-      expect(controller.tree[2].children.length, 1);
-    });
-
-    test('child nodes have correct labels with method and uri', () {
-      controller.buildTree([
-        _flow(host: 'api.com', method: 'POST', uri: '/users'),
-        _flow(host: 'api.com', method: 'DELETE', uri: '/users/1'),
-      ]);
-
-      final children = controller.tree[0].children;
-      expect(children[0].label, 'POST /users');
-      expect(children[1].label, 'DELETE /users/1');
-    });
-
-    test('child nodes have domain set to parent host', () {
-      controller.buildTree([_flow(host: 'test.com')]);
-
-      expect(controller.tree[0].children[0].domain, 'test.com');
-    });
-
-    test('group nodes are expanded by default', () {
-      controller.buildTree([_flow(host: 'test.com')]);
-      expect(controller.tree[0].expanded, isTrue);
-    });
-
-    test('child nodes are not groups', () {
-      controller.buildTree([_flow(host: 'test.com')]);
-      expect(controller.tree[0].children[0].isGroup, isFalse);
+      expect(controller.tree.length, 1);
+      expect(controller.tree[0].count, 2);
     });
   });
 
-  group('TreeController - selectDomain', () {
-    test('sets selectedDomain', () {
-      controller.selectDomain('example.com');
-      expect(controller.selectedDomain.value, 'example.com');
+  group('TreeController - addDomainFromPush', () {
+    test('increments count of an existing domain', () {
+      controller.recomputeFromFlows([_flow(host: 'a.com', uri: '/1')]);
+      controller.addDomainFromPush(_flow(host: 'a.com', uri: '/2'));
+
+      final node = controller.tree.firstWhere((n) => n.domain == 'a.com');
+      expect(node.count, 2);
     });
 
-    test('clears selectedDomain with null', () {
+    test('adds a new domain node', () {
+      controller.recomputeFromFlows([_flow(host: 'a.com')]);
+      controller.addDomainFromPush(_flow(host: 'b.com'));
+
+      expect(controller.tree.any((n) => n.domain == 'b.com'), isTrue);
+    });
+  });
+
+  group('TreeController - selection', () {
+    test('selectDomain sets selectedDomain and clears path/app', () {
+      controller.selectApp('MyApp');
+      controller.selectDomain('example.com');
+
+      expect(controller.selectedDomain.value, 'example.com');
+      expect(controller.selectedPath.value, isNull);
+      expect(controller.selectedApp.value, isNull);
+    });
+
+    test('selectDomain(null) clears the selection', () {
       controller.selectDomain('example.com');
       controller.selectDomain(null);
       expect(controller.selectedDomain.value, isNull);
+    });
+
+    test('selectPath sets domain and path', () {
+      controller.selectPath('example.com', '/api');
+      expect(controller.selectedDomain.value, 'example.com');
+      expect(controller.selectedPath.value, '/api');
+    });
+
+    test('clearSelection resets everything', () {
+      controller.selectPath('example.com', '/api');
+      controller.clearSelection();
+      expect(controller.selectedDomain.value, isNull);
+      expect(controller.selectedPath.value, isNull);
+      expect(controller.selectedApp.value, isNull);
+    });
+  });
+
+  group('TreeController - expand/collapse', () {
+    test('toggleExpand flips expansion state', () {
+      expect(controller.isExpanded('a.com'), isFalse);
+      controller.toggleExpand('a.com');
+      expect(controller.isExpanded('a.com'), isTrue);
+      controller.toggleExpand('a.com');
+      expect(controller.isExpanded('a.com'), isFalse);
+    });
+
+    test('path expansion is keyed independently of the domain', () {
+      controller.toggleExpand('a.com', '/api');
+      expect(controller.isExpanded('a.com', '/api'), isTrue);
+      expect(controller.isExpanded('a.com'), isFalse);
+    });
+  });
+
+  group('TreeController - pinning', () {
+    test('togglePin adds and removes a pinned domain', () {
+      controller.recomputeFromFlows([_flow(host: 'a.com')]);
+
+      controller.togglePin('a.com');
+      expect(controller.isPinned('a.com'), isTrue);
+      expect(controller.pinnedItems.length, 1);
+
+      controller.togglePin('a.com');
+      expect(controller.isPinned('a.com'), isFalse);
+      expect(controller.pinnedItems, isEmpty);
     });
   });
 
@@ -123,7 +168,8 @@ void main() {
       final node = TreeNode(label: 'test');
       expect(node.isGroup, isFalse);
       expect(node.children, isEmpty);
-      expect(node.expanded, isTrue);
+      expect(node.count, 0);
+      expect(node.childrenLoaded, isFalse);
       expect(node.domain, isNull);
     });
   });

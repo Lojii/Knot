@@ -137,7 +137,7 @@ class HarExport {
         'content': {
           'size': flow.downloadBytes,
           'mimeType': flow.contentType.isNotEmpty ? flow.contentType : 'application/octet-stream',
-          if (responseText != null) 'text': responseText,
+          'text': ?responseText,
         },
         'bodySize': flow.downloadBytes,
       },

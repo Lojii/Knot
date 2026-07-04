@@ -5,7 +5,7 @@ import 'package:knot/models/flow_summary.dart';
 /// The diff page compares two FlowSummary objects field-by-field.
 /// We test the comparison logic directly without rendering widgets.
 void main() {
-  FlowSummary _makeFlow({
+  FlowSummary makeFlow({
     String flowId = 'f-1',
     String method = 'GET',
     String host = 'example.com',
@@ -54,16 +54,16 @@ void main() {
 
   group('Flow diff comparison', () {
     test('two identical flows show no differences', () {
-      final a = _makeFlow();
-      final b = _makeFlow(flowId: 'f-2'); // Different ID but same content
+      final a = makeFlow();
+      final b = makeFlow(flowId: 'f-2'); // Different ID but same content
       final diff = diffFlows(a, b);
       // All fields should be the same
       expect(diff.values.every((same) => same), isTrue);
     });
 
     test('different methods are detected', () {
-      final a = _makeFlow(method: 'GET');
-      final b = _makeFlow(method: 'POST');
+      final a = makeFlow(method: 'GET');
+      final b = makeFlow(method: 'POST');
       final diff = diffFlows(a, b);
       expect(diff['method'], isFalse);
       // Other fields still same
@@ -72,69 +72,69 @@ void main() {
     });
 
     test('different URLs (host) are detected', () {
-      final a = _makeFlow(host: 'a.com');
-      final b = _makeFlow(host: 'b.com');
+      final a = makeFlow(host: 'a.com');
+      final b = makeFlow(host: 'b.com');
       final diff = diffFlows(a, b);
       expect(diff['host'], isFalse);
     });
 
     test('different URLs (path) are detected', () {
-      final a = _makeFlow(uri: '/api/v1');
-      final b = _makeFlow(uri: '/api/v2');
+      final a = makeFlow(uri: '/api/v1');
+      final b = makeFlow(uri: '/api/v2');
       final diff = diffFlows(a, b);
       expect(diff['uri'], isFalse);
     });
 
     test('different status codes are detected', () {
-      final a = _makeFlow(status: 200);
-      final b = _makeFlow(status: 404);
+      final a = makeFlow(status: 200);
+      final b = makeFlow(status: 404);
       final diff = diffFlows(a, b);
       expect(diff['status'], isFalse);
     });
 
     test('different protocols are detected', () {
-      final a = _makeFlow(protocol: 'HTTPS');
-      final b = _makeFlow(protocol: 'H2');
+      final a = makeFlow(protocol: 'HTTPS');
+      final b = makeFlow(protocol: 'H2');
       final diff = diffFlows(a, b);
       expect(diff['protocol'], isFalse);
     });
 
     test('different download sizes are detected', () {
-      final a = _makeFlow(downloadBytes: 1024);
-      final b = _makeFlow(downloadBytes: 2048);
+      final a = makeFlow(downloadBytes: 1024);
+      final b = makeFlow(downloadBytes: 2048);
       final diff = diffFlows(a, b);
       expect(diff['downloadBytes'], isFalse);
     });
 
     test('different upload sizes are detected', () {
-      final a = _makeFlow(uploadBytes: 0);
-      final b = _makeFlow(uploadBytes: 512);
+      final a = makeFlow(uploadBytes: 0);
+      final b = makeFlow(uploadBytes: 512);
       final diff = diffFlows(a, b);
       expect(diff['uploadBytes'], isFalse);
     });
 
     test('different content types are detected', () {
-      final a = _makeFlow(contentType: 'application/json');
-      final b = _makeFlow(contentType: 'text/html');
+      final a = makeFlow(contentType: 'application/json');
+      final b = makeFlow(contentType: 'text/html');
       final diff = diffFlows(a, b);
       expect(diff['contentType'], isFalse);
     });
 
     test('different durations are detected', () {
-      final a = _makeFlow(durationMs: 100.0);
-      final b = _makeFlow(durationMs: 500.0);
+      final a = makeFlow(durationMs: 100.0);
+      final b = makeFlow(durationMs: 500.0);
       final diff = diffFlows(a, b);
       expect(diff['durationMs'], isFalse);
     });
 
     test('multiple differences at once', () {
-      final a = _makeFlow(
+      final a = makeFlow(
         method: 'GET',
         host: 'a.com',
         status: 200,
         protocol: 'HTTP',
       );
-      final b = _makeFlow(
+      final b = makeFlow(
         method: 'POST',
         host: 'b.com',
         status: 500,
@@ -150,15 +150,15 @@ void main() {
     });
 
     test('one flow with null durationMs vs non-null', () {
-      final a = _makeFlow(durationMs: null);
-      final b = _makeFlow(durationMs: 150.0);
+      final a = makeFlow(durationMs: null);
+      final b = makeFlow(durationMs: 150.0);
       final diff = diffFlows(a, b);
       expect(diff['durationMs'], isFalse);
     });
 
     test('both flows with null durationMs are same', () {
-      final a = _makeFlow(durationMs: null);
-      final b = _makeFlow(durationMs: null);
+      final a = makeFlow(durationMs: null);
+      final b = makeFlow(durationMs: null);
       final diff = diffFlows(a, b);
       expect(diff['durationMs'], isTrue);
     });

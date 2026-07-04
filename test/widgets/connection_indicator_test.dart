@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 import 'package:knot/api/ws_client.dart';
+import 'package:knot/i18n/translations.dart';
 import 'package:knot/widgets/connection_indicator.dart';
 import 'package:knot/theme/app_theme.dart';
 
@@ -10,7 +12,9 @@ void main() {
   });
 
   Widget buildWidget(WsStatus status) {
-    return MaterialApp(
+    return GetMaterialApp(
+      translations: AppTranslations(),
+      locale: const Locale('en', 'US'),
       home: Scaffold(
         body: ConnectionIndicator(status: status),
       ),

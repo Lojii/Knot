@@ -20,4 +20,4 @@ echo ">>> Building lsquic..."
 
 echo ""
 echo "=== All XCFrameworks rebuilt ==="
-ls -lh "$SCRIPT_DIR/../Frameworks/"*.xcframework/*/lib*.a 2>/dev/null || true
+ls -lh "$SCRIPT_DIR/../frameworks/"*.xcframework/*/lib*.a 2>/dev/null || true

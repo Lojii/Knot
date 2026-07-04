@@ -37,10 +37,10 @@ packages:
     dependency: transitive
     description:
       name: characters
-      sha256: f71061c654a3380576a52b451dd5532377954cf9dbd272a78fc8479606670803
+      sha256: faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.1"
   clock:
     dependency: transitive
     description:
@@ -73,14 +73,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.8"
   equatable:
     dependency: transitive
     description:
@@ -126,62 +118,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_avif:
-    dependency: "direct main"
-    description:
-      name: flutter_avif
-      sha256: "61832f24bc41f2a5cb55f0ff35fbd001261e18b6529f49f55761d50e1102aebd"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_android:
-    dependency: transitive
-    description:
-      name: flutter_avif_android
-      sha256: "89e7b9f9e3f2a1872491c97fca01cbec20a193fae8a6a0c1a866b392cfcd132e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_ios:
-    dependency: transitive
-    description:
-      name: flutter_avif_ios
-      sha256: "7e083d5b880aca40d954f3344413220a2d473126d07ea8ac0051e1c3f19c69ed"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_linux:
-    dependency: transitive
-    description:
-      name: flutter_avif_linux
-      sha256: ac511d62dee19484fb8822c80a2bbc92ce96893b7d53b831ac67af23df107aed
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_macos:
-    dependency: transitive
-    description:
-      name: flutter_avif_macos
-      sha256: eee0d16ec8e427e0f51c2e8cbba33f29661e474a11ff1997df8cf85b535c49b9
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_platform_interface:
-    dependency: transitive
-    description:
-      name: flutter_avif_platform_interface
-      sha256: "4762d0dbbc5474110d362a26447c579a863af47b4cec465271c5ed31057a1dbf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  flutter_avif_windows:
-    dependency: transitive
-    description:
-      name: flutter_avif_windows
-      sha256: "927681fa9b13e0e782f57bc21ca014537308df64ecd15f68682c65ac619b2cd0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -190,14 +126,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-  flutter_rust_bridge:
-    dependency: transitive
-    description:
-      name: flutter_rust_bridge
-      sha256: "2b2979113501a5ec84e7379f78432307ae587d6a180bdfb3b8de136a309d94a0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.44.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -303,26 +231,26 @@ packages:
     dependency: transitive
     description:
       name: matcher
-      sha256: dc58c723c3c24bf8d3e2d3ad3f2f9d7bd9cf43ec6feaa64181775e60190153f2
+      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.17"
+    version: "0.12.19"
   material_color_utilities:
     dependency: transitive
     description:
       name: material_color_utilities
-      sha256: f7142bb1154231d7ea5f96bc7bde4bda2a0945d2806bb11670e30b850d56bdec
+      sha256: "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   meta:
     dependency: transitive
     description:
       name: meta
-      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
+      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"
       url: "https://pub.dev"
     source: hosted
-    version: "1.17.0"
+    version: "1.18.0"
   multi_split_view:
     dependency: "direct main"
     description:
@@ -492,10 +420,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: ab2726c1a94d3176a45960b6234466ec367179b87dd74f1611adb1f3b5fb9d55
+      sha256: "949a932224383300f01be9221c39180316445ecb8e7547f70a41a35bf421fb9e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.7"
+    version: "0.7.11"
   typed_data:
     dependency: transitive
     description:

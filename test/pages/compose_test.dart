@@ -3,7 +3,7 @@ import 'package:knot/utils/request_sender.dart';
 import 'package:knot/models/flow_summary.dart';
 
 void main() {
-  FlowSummary _makeFlow({
+  FlowSummary makeFlow({
     String protocol = 'HTTPS',
     String host = 'example.com',
     int port = 443,
@@ -23,52 +23,52 @@ void main() {
 
   group('RequestSender.buildUrl', () {
     test('builds https URL for HTTPS protocol', () {
-      final flow = _makeFlow(protocol: 'HTTPS', host: 'example.com', uri: '/api');
+      final flow = makeFlow(protocol: 'HTTPS', host: 'example.com', uri: '/api');
       expect(RequestSender.buildUrl(flow), 'https://example.com/api');
     });
 
     test('builds https URL for H2 protocol', () {
-      final flow = _makeFlow(protocol: 'H2', host: 'example.com', uri: '/data');
+      final flow = makeFlow(protocol: 'H2', host: 'example.com', uri: '/data');
       expect(RequestSender.buildUrl(flow), 'https://example.com/data');
     });
 
     test('builds http URL for HTTP protocol', () {
-      final flow = _makeFlow(protocol: 'HTTP', host: 'example.com', uri: '/page');
+      final flow = makeFlow(protocol: 'HTTP', host: 'example.com', uri: '/page');
       expect(RequestSender.buildUrl(flow), 'http://example.com/page');
     });
 
     test('builds http URL for unknown protocol', () {
-      final flow = _makeFlow(protocol: 'UNKNOWN', host: 'example.com', uri: '/');
+      final flow = makeFlow(protocol: 'UNKNOWN', host: 'example.com', uri: '/');
       expect(RequestSender.buildUrl(flow), 'http://example.com/');
     });
 
     test('includes query parameters in URI', () {
-      final flow = _makeFlow(uri: '/search?q=hello&page=2');
+      final flow = makeFlow(uri: '/search?q=hello&page=2');
       expect(RequestSender.buildUrl(flow), 'https://example.com/search?q=hello&page=2');
     });
 
     test('handles special characters in path', () {
-      final flow = _makeFlow(uri: '/path/with%20spaces/file%26name');
+      final flow = makeFlow(uri: '/path/with%20spaces/file%26name');
       expect(RequestSender.buildUrl(flow), 'https://example.com/path/with%20spaces/file%26name');
     });
 
     test('handles root URI', () {
-      final flow = _makeFlow(uri: '/');
+      final flow = makeFlow(uri: '/');
       expect(RequestSender.buildUrl(flow), 'https://example.com/');
     });
 
     test('handles empty URI', () {
-      final flow = _makeFlow(uri: '');
+      final flow = makeFlow(uri: '');
       expect(RequestSender.buildUrl(flow), 'https://example.com');
     });
 
     test('case-insensitive protocol check (https)', () {
-      final flow = _makeFlow(protocol: 'Https', host: 'api.io', uri: '/v1');
+      final flow = makeFlow(protocol: 'Https', host: 'api.io', uri: '/v1');
       expect(RequestSender.buildUrl(flow), 'https://api.io/v1');
     });
 
     test('case-insensitive protocol check (h2)', () {
-      final flow = _makeFlow(protocol: 'h2', host: 'api.io', uri: '/v1');
+      final flow = makeFlow(protocol: 'h2', host: 'api.io', uri: '/v1');
       expect(RequestSender.buildUrl(flow), 'https://api.io/v1');
     });
   });
@@ -79,16 +79,16 @@ void main() {
       expect(headers, isEmpty);
     });
 
-    test('returns empty map when metadata has no requestHeaders', () {
+    test('returns empty map when metadata has no reqHeaders', () {
       final headers = RequestSender.extractHeaders({
         'metadata': <String, dynamic>{},
       });
       expect(headers, isEmpty);
     });
 
-    test('returns empty map when requestHeaders is null', () {
+    test('returns empty map when reqHeaders is null', () {
       final headers = RequestSender.extractHeaders({
-        'metadata': {'requestHeaders': null},
+        'metadata': {'reqHeaders': null},
       });
       expect(headers, isEmpty);
     });
@@ -96,7 +96,7 @@ void main() {
     test('extracts single header', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Accept', 'application/json'],
           ],
         },
@@ -107,7 +107,7 @@ void main() {
     test('extracts multiple headers', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Accept', 'text/html'],
             ['Authorization', 'Bearer token123'],
             ['X-Custom', 'value'],
@@ -123,7 +123,7 @@ void main() {
     test('skips hop-by-hop headers (host)', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Host', 'example.com'],
             ['Accept', 'text/html'],
           ],
@@ -136,7 +136,7 @@ void main() {
     test('skips connection header', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Connection', 'keep-alive'],
             ['Accept', '*/*'],
           ],
@@ -149,7 +149,7 @@ void main() {
     test('skips transfer-encoding header', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Transfer-Encoding', 'chunked'],
             ['Accept', '*/*'],
           ],
@@ -161,7 +161,7 @@ void main() {
     test('skips content-length header', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Content-Length', '42'],
             ['Accept', '*/*'],
           ],
@@ -170,10 +170,10 @@ void main() {
       expect(headers.containsKey('Content-Length'), isFalse);
     });
 
-    test('handles empty requestHeaders list', () {
+    test('handles empty reqHeaders list', () {
       final headers = RequestSender.extractHeaders({
         'metadata': {
-          'requestHeaders': [],
+          'reqHeaders': [],
         },
       });
       expect(headers, isEmpty);

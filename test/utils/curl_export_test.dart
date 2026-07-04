@@ -72,7 +72,7 @@ void main() {
         'host': 'example.com',
         'protocol': 'HTTPS',
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Accept', 'application/json'],
             ['Authorization', 'Bearer abc123'],
           ],
@@ -89,7 +89,7 @@ void main() {
         'host': 'example.com',
         'protocol': 'H2',
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             [':method', 'GET'],
             [':path', '/api'],
             ['Accept', 'text/html'],
@@ -195,7 +195,7 @@ void main() {
         'host': 'example.com',
         'protocol': 'HTTPS',
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['X-Test', "it's a test"],
           ],
         },
@@ -212,7 +212,7 @@ void main() {
         'host': 'example.com',
         'protocol': 'HTTPS',
         'metadata': {
-          'requestHeaders': [
+          'reqHeaders': [
             ['Content-Type', 'application/json'],
             ['Accept', 'application/json'],
             ['X-Request-Id', '12345'],

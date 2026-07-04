@@ -157,47 +157,4 @@ public class HTTPRecorder: ProtocolRecorder {
 
         return record
     }
-
-    /// Backward-compatible overload for callers that don't have a FlowBuildContext.
-    public func buildFlowRecordLegacy(sessionRecorder: SessionRecorder?) -> FlowRecord {
-        var ctx = FlowBuildContext(
-            flowId: flowId,
-            reqPayloadRef: reqPayloadRef,
-            rspPayloadRef: rspPayloadRef,
-            uploadBytes: uploadBytes,
-            downloadBytes: downloadBytes
-        )
-        if let sr = sessionRecorder {
-            ctx = FlowBuildContext(
-                flowId: flowId,
-                reqPayloadRef: reqPayloadRef,
-                rspPayloadRef: rspPayloadRef,
-                uploadBytes: uploadBytes,
-                downloadBytes: downloadBytes,
-                protoFlags: sr.protoFlags,
-                connReuse: sr.connReuse,
-                certChainRef: sr.certChainRef
-            )
-        }
-        var record = buildFlowRecord(context: ctx)
-
-        // Merge extra SessionRecorder metadata that FlowBuildContext doesn't carry
-        if let sr = sessionRecorder {
-            record.pushStatus = sr.pushStatus
-            if let poolKey = sr.connReusePoolKey {
-                record.metadata["connReusePoolKey"] = poolKey
-            }
-            if sr.keepAliveRequestIndex > 0 {
-                record.metadata["keepAliveRequestIndex"] = sr.keepAliveRequestIndex
-            }
-            if let streamId = sr.h2StreamId {
-                record.metadata["h2StreamId"] = streamId
-            }
-            if let summary = sr.certChainSummary {
-                record.metadata["certChainSummary"] = summary
-            }
-        }
-
-        return record
-    }
 }

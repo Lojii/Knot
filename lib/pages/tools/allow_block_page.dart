@@ -132,7 +132,7 @@ class _DomainListTab extends StatelessWidget {
             return ListView.separated(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: list.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
                 return ListTile(
                   dense: true,

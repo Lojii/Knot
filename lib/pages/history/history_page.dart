@@ -149,7 +149,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
         Get.find<TaskController>().selectTask(task);
         Get.find<AppPageController>().showCapture();
       } else if (value == 'delete') {
-        _deleteTask(ctx, task);
+        if (ctx.mounted) _deleteTask(ctx, task);
       }
     });
   }
@@ -269,7 +269,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
             return ListView.separated(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
               itemCount: tasks.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (ctx, i) {
                 final task = tasks[i];
                 final isCurrent = taskCtrl.currentTask.value?.id == task.id;

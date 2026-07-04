@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
+import 'package:knot/i18n/translations.dart';
 import 'package:knot/widgets/body_viewer.dart';
 
 void main() {
@@ -9,10 +12,17 @@ void main() {
     String contentType = '',
     String label = '',
   }) {
-    return MaterialApp(
+    return GetMaterialApp(
+      translations: AppTranslations(),
+      locale: const Locale('en', 'US'),
       home: Scaffold(
-        body: SingleChildScrollView(
-          child: BodyViewer(body: body, contentType: contentType, label: label),
+        body: SizedBox(
+          height: 600,
+          child: BodyViewer(
+            bytes: Uint8List.fromList(utf8.encode(body)),
+            contentType: contentType,
+            label: label,
+          ),
         ),
       ),
     );
@@ -116,14 +126,14 @@ void main() {
       expect(find.textContaining('00000000'), findsOneWidget);
     });
 
-    testWidgets('Hex dump limited to 4KB shows truncation message', (tester) async {
-      // Create body larger than 4KB
-      final bigBody = 'A' * 5000;
+    testWidgets('Hex dump limited to 8KB shows truncation message', (tester) async {
+      // Create body larger than HexViewer's default 8192-byte limit
+      final bigBody = 'A' * 10000;
       await tester.pumpWidget(buildWidget(body: bigBody));
       await tester.tap(find.text('Hex'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('truncated at 4096'), findsOneWidget);
+      expect(find.textContaining('truncated at 8192'), findsOneWidget);
     });
 
     testWidgets('Hex dump for small body shows no truncation', (tester) async {

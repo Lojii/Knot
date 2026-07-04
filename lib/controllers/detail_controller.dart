@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:brotli/brotli.dart';
 import 'package:get/get.dart';
 import '../api/api_client.dart';

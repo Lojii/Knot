@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:knot/utils/har_export.dart';
 import 'package:knot/models/flow_summary.dart';
 
 /// Since HarExport.fromFlows requires an ApiClient and network calls,
@@ -10,7 +9,7 @@ import 'package:knot/models/flow_summary.dart';
 /// For unit-testable aspects, we verify the HAR JSON structure by calling
 /// internal methods via a test-friendly wrapper approach.
 void main() {
-  FlowSummary _makeFlow({
+  FlowSummary makeFlow({
     String flowId = 'f-1',
     String method = 'GET',
     String host = 'example.com',
@@ -49,7 +48,7 @@ void main() {
     // The minimal entry is used when detail fetch fails.
 
     test('minimal entry has correct request fields', () {
-      final flow = _makeFlow();
+      final flow = makeFlow();
       // Reconstruct what _buildMinimalEntry would produce
       final startedMs = (flow.startedAt * 1000).round();
       final startedDt = DateTime.fromMillisecondsSinceEpoch(startedMs, isUtc: true);
@@ -94,7 +93,7 @@ void main() {
     });
 
     test('minimal entry has correct response fields', () {
-      final flow = _makeFlow(status: 404, downloadBytes: 512);
+      final flow = makeFlow(status: 404, downloadBytes: 512);
       final entry = _buildTestMinimalEntry(flow);
 
       final rsp = entry['response'] as Map;
@@ -106,7 +105,7 @@ void main() {
     });
 
     test('minimal entry has all timing fields set to -1', () {
-      final flow = _makeFlow();
+      final flow = makeFlow();
       final entry = _buildTestMinimalEntry(flow);
 
       final timings = entry['timings'] as Map;
@@ -118,7 +117,7 @@ void main() {
     });
 
     test('startedDateTime is UTC ISO8601', () {
-      final flow = _makeFlow(startedAt: 1700000000.0);
+      final flow = makeFlow(startedAt: 1700000000.0);
       final entry = _buildTestMinimalEntry(flow);
 
       final dt = entry['startedDateTime'] as String;
@@ -129,13 +128,13 @@ void main() {
     });
 
     test('time field uses durationMs', () {
-      final flow = _makeFlow(durationMs: 250.0);
+      final flow = makeFlow(durationMs: 250.0);
       final entry = _buildTestMinimalEntry(flow);
       expect(entry['time'], 250);
     });
 
     test('time field is 0 when durationMs is null', () {
-      final flow = _makeFlow(durationMs: null);
+      final flow = makeFlow(durationMs: null);
       final entry = _buildTestMinimalEntry(flow);
       expect(entry['time'], 0);
     });
@@ -143,42 +142,42 @@ void main() {
 
   group('HarExport URL construction', () {
     test('HTTPS protocol uses https scheme', () {
-      final flow = _makeFlow(protocol: 'HTTPS', host: 'api.io', uri: '/v1');
+      final flow = makeFlow(protocol: 'HTTPS', host: 'api.io', uri: '/v1');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], startsWith('https://'));
     });
 
     test('H2 protocol uses https scheme', () {
-      final flow = _makeFlow(protocol: 'H2', host: 'api.io', uri: '/v1');
+      final flow = makeFlow(protocol: 'H2', host: 'api.io', uri: '/v1');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], startsWith('https://'));
     });
 
     test('HTTP protocol uses http scheme', () {
-      final flow = _makeFlow(protocol: 'HTTP', host: 'api.io', uri: '/v1');
+      final flow = makeFlow(protocol: 'HTTP', host: 'api.io', uri: '/v1');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], startsWith('http://'));
     });
 
     test('non-standard port included in URL', () {
-      final flow = _makeFlow(protocol: 'HTTP', host: 'localhost', port: 8080, uri: '/api');
+      final flow = makeFlow(protocol: 'HTTP', host: 'localhost', port: 8080, uri: '/api');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], 'http://localhost:8080/api');
     });
 
     test('port 80 omitted from URL', () {
-      final flow = _makeFlow(protocol: 'HTTP', host: 'example.com', port: 80, uri: '/');
+      final flow = makeFlow(protocol: 'HTTP', host: 'example.com', port: 80, uri: '/');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], 'http://example.com/');
     });
 
     test('port 443 omitted from URL', () {
-      final flow = _makeFlow(protocol: 'HTTPS', host: 'example.com', port: 443, uri: '/');
+      final flow = makeFlow(protocol: 'HTTPS', host: 'example.com', port: 443, uri: '/');
       final entry = _buildTestMinimalEntry(flow);
       final req = entry['request'] as Map;
       expect(req['url'], 'https://example.com/');
@@ -219,31 +218,31 @@ void main() {
 
   group('HarExport status text mapping', () {
     test('200 -> OK', () {
-      final flow = _makeFlow(status: 200);
+      final flow = makeFlow(status: 200);
       final entry = _buildTestMinimalEntry(flow);
       expect((entry['response'] as Map)['statusText'], 'OK');
     });
 
     test('201 -> Created', () {
-      final flow = _makeFlow(status: 201);
+      final flow = makeFlow(status: 201);
       final entry = _buildTestMinimalEntry(flow);
       expect((entry['response'] as Map)['statusText'], 'Created');
     });
 
     test('404 -> Not Found', () {
-      final flow = _makeFlow(status: 404);
+      final flow = makeFlow(status: 404);
       final entry = _buildTestMinimalEntry(flow);
       expect((entry['response'] as Map)['statusText'], 'Not Found');
     });
 
     test('500 -> Internal Server Error', () {
-      final flow = _makeFlow(status: 500);
+      final flow = makeFlow(status: 500);
       final entry = _buildTestMinimalEntry(flow);
       expect((entry['response'] as Map)['statusText'], 'Internal Server Error');
     });
 
     test('unknown status -> empty string', () {
-      final flow = _makeFlow(status: 999);
+      final flow = makeFlow(status: 999);
       final entry = _buildTestMinimalEntry(flow);
       expect((entry['response'] as Map)['statusText'], '');
     });
@@ -251,7 +250,7 @@ void main() {
 
   group('HarExport query string parsing', () {
     test('URL with query params produces queryString entries', () {
-      final flow = _makeFlow(uri: '/search?q=test&page=1');
+      final flow = makeFlow(uri: '/search?q=test&page=1');
       final uri = flow.uri;
       final qIdx = uri.indexOf('?');
       final queryParams = <Map<String, String>>[];
@@ -268,7 +267,7 @@ void main() {
     });
 
     test('URL without query params produces empty queryString', () {
-      final flow = _makeFlow(uri: '/api/data');
+      final flow = makeFlow(uri: '/api/data');
       final uri = flow.uri;
       final qIdx = uri.indexOf('?');
       expect(qIdx, -1);
@@ -282,7 +281,7 @@ void main() {
         ['Accept', 'text/html'],
       ];
       final formatted = rawHeaders
-          .where((h) => !(h.first as String).startsWith(':'))
+          .where((h) => !h.first.startsWith(':'))
           .map((h) => {'name': h.first, 'value': h.last})
           .toList();
       expect(formatted.length, 2);
@@ -297,7 +296,7 @@ void main() {
         ['Accept', 'text/html'],
       ];
       final formatted = rawHeaders
-          .where((h) => !(h.first as String).startsWith(':'))
+          .where((h) => !h.first.startsWith(':'))
           .map((h) => {'name': h.first, 'value': h.last})
           .toList();
       expect(formatted.length, 1);
@@ -328,10 +327,11 @@ void main() {
     });
 
     test('ssl is -1 when tlsDoneAt is null', () {
-      final connectedAt = 1000.0;
-      double? tlsDoneAt;
-      final sslMs = tlsDoneAt != null ? ((tlsDoneAt - connectedAt) * 1000).round() : -1;
-      expect(sslMs, -1);
+      const connectedAt = 1000.0;
+      int sslMs(double? tlsDoneAt) =>
+          tlsDoneAt != null ? ((tlsDoneAt - connectedAt) * 1000).round() : -1;
+      expect(sslMs(null), -1);
+      expect(sslMs(1000.050), 50);
     });
   });
 }

@@ -152,65 +152,43 @@ void main() {
     });
   });
 
-  group('AppTheme.methodColor', () {
-    test('returns non-null color for GET', () {
+  group('AppTheme method colors', () {
+    test('defaults define colors for all HTTP methods plus fallback', () {
       AppTheme.loadFromJson('invalid'); // reset to defaults
-      final color = AppTheme.methodColor('GET');
-      expect(color, isNotNull);
+      for (final mode in [AppTheme.lightMode, AppTheme.darkMode]) {
+        for (final m in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'default']) {
+          expect(mode.colors.method[m], isNotNull, reason: 'missing $m');
+        }
+      }
     });
 
-    test('returns correct colors for all HTTP methods', () {
+    test('method map is keyed by uppercase names', () {
       AppTheme.loadFromJson('invalid'); // reset to defaults
-      expect(AppTheme.methodColor('GET'), isNotNull);
-      expect(AppTheme.methodColor('POST'), isNotNull);
-      expect(AppTheme.methodColor('PUT'), isNotNull);
-      expect(AppTheme.methodColor('DELETE'), isNotNull);
-      expect(AppTheme.methodColor('PATCH'), isNotNull);
-    });
-
-    test('returns default color for unknown method', () {
-      AppTheme.loadFromJson('invalid'); // reset to defaults
-      final defaultColor = AppTheme.methodColor('UNKNOWN');
-      expect(defaultColor, isNotNull);
-    });
-
-    test('is case-insensitive', () {
-      AppTheme.loadFromJson('invalid'); // reset to defaults
-      expect(AppTheme.methodColor('get'), AppTheme.methodColor('GET'));
+      // methodColorOf uppercases its input before the lookup
+      expect(AppTheme.lightMode.colors.method['get'], isNull);
+      expect(AppTheme.lightMode.colors.method['GET'], isNotNull);
     });
   });
 
-  group('AppTheme.statusColor', () {
-    test('returns green color for 200', () {
+  group('AppTheme status colors', () {
+    test('light mode defaults', () {
       AppTheme.loadFromJson('invalid'); // reset to defaults
-      final color = AppTheme.statusColor(200);
-      expect(color, isNotNull);
-      // Should be the 2xx color from defaults
-      expect(color, AppTheme.parseHex('#34C759'));
+      final status = AppTheme.lightMode.colors.status;
+      expect(status['2xx'], AppTheme.parseHex('#34C759'));
+      expect(status['3xx'], AppTheme.parseHex('#007AFF'));
+      expect(status['4xx'], AppTheme.parseHex('#FF9F0A'));
+      expect(status['5xx'], AppTheme.parseHex('#FF3B30'));
+      expect(status['default'], AppTheme.parseHex('#8E8E93'));
     });
 
-    test('returns correct color for 301 (3xx)', () {
-      AppTheme.loadFromJson('invalid');
-      final color = AppTheme.statusColor(301);
-      expect(color, AppTheme.parseHex('#007AFF'));
-    });
-
-    test('returns correct color for 404 (4xx)', () {
-      AppTheme.loadFromJson('invalid');
-      final color = AppTheme.statusColor(404);
-      expect(color, AppTheme.parseHex('#FF9F0A'));
-    });
-
-    test('returns correct color for 500 (5xx)', () {
-      AppTheme.loadFromJson('invalid');
-      final color = AppTheme.statusColor(500);
-      expect(color, AppTheme.parseHex('#FF3B30'));
-    });
-
-    test('returns default color for unknown code', () {
-      AppTheme.loadFromJson('invalid');
-      final color = AppTheme.statusColor(0);
-      expect(color, AppTheme.parseHex('#8E8E93'));
+    test('dark mode defaults', () {
+      AppTheme.loadFromJson('invalid'); // reset to defaults
+      final status = AppTheme.darkMode.colors.status;
+      expect(status['2xx'], AppTheme.parseHex('#30D158'));
+      expect(status['3xx'], AppTheme.parseHex('#0A84FF'));
+      expect(status['4xx'], AppTheme.parseHex('#FF9F0A'));
+      expect(status['5xx'], AppTheme.parseHex('#FF453A'));
+      expect(status['default'], AppTheme.parseHex('#8E8E93'));
     });
   });
 }

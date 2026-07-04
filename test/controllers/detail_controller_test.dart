@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:knot/api/api_client.dart';
@@ -19,12 +20,14 @@ void main() {
       expect(controller.detail.value, isNull);
     });
 
-    test('requestBody is empty initially', () {
-      expect(controller.requestBody.value, '');
+    test('body bytes are null initially', () {
+      expect(controller.requestBodyBytes.value, isNull);
+      expect(controller.responseBodyBytes.value, isNull);
     });
 
-    test('responseBody is empty initially', () {
-      expect(controller.responseBody.value, '');
+    test('body text getters are empty initially', () {
+      expect(controller.requestBodyText, '');
+      expect(controller.responseBodyText, '');
     });
 
     test('isLoadingDetail is false initially', () {
@@ -41,16 +44,17 @@ void main() {
   });
 
   group('DetailController - clear', () {
-    test('clear resets detail to null', () {
-      controller.detail.value = null; // already null, just to set up
-      controller.requestBody.value = 'some request';
-      controller.responseBody.value = 'some response';
+    test('clear resets detail and body bytes', () {
+      controller.requestBodyBytes.value = Uint8List.fromList([1, 2, 3]);
+      controller.responseBodyBytes.value = Uint8List.fromList([4, 5]);
 
       controller.clear();
 
       expect(controller.detail.value, isNull);
-      expect(controller.requestBody.value, '');
-      expect(controller.responseBody.value, '');
+      expect(controller.requestBodyBytes.value, isNull);
+      expect(controller.responseBodyBytes.value, isNull);
+      expect(controller.requestBodyText, '');
+      expect(controller.responseBodyText, '');
     });
 
     test('clear on already-empty state does not throw', () {
@@ -65,6 +69,37 @@ void main() {
 
       controller.selectedTab.value = 2;
       expect(controller.selectedTab.value, 2);
+    });
+  });
+
+  group('DetailController.parseHeaders', () {
+    test('parses new array-of-arrays format', () {
+      final raw = {
+        'metadata': {
+          'reqHeaders': [
+            ['Content-Type', 'text/html'],
+            ['X-Custom', 'abc'],
+          ],
+        },
+      };
+      final headers = DetailController.parseHeaders(raw, 'reqHeaders');
+      expect(headers, [('Content-Type', 'text/html'), ('X-Custom', 'abc')]);
+    });
+
+    test('parses old array-of-maps format', () {
+      final raw = {
+        'metadata': {
+          'rspHeaders': [
+            {'Content-Type': 'application/json'},
+          ],
+        },
+      };
+      final headers = DetailController.parseHeaders(raw, 'rspHeaders');
+      expect(headers, [('Content-Type', 'application/json')]);
+    });
+
+    test('returns empty list when metadata is missing', () {
+      expect(DetailController.parseHeaders({}, 'reqHeaders'), isEmpty);
     });
   });
 }

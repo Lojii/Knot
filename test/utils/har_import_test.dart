@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:knot/utils/har_import.dart';
 
 void main() {
-  String _buildHar(List<Map<String, dynamic>> entries) {
+  String buildHar(List<Map<String, dynamic>> entries) {
     return jsonEncode({
       'log': {
         'version': '1.2',
@@ -13,7 +13,7 @@ void main() {
     });
   }
 
-  Map<String, dynamic> _makeEntry({
+  Map<String, dynamic> makeEntry({
     String method = 'GET',
     String url = 'https://example.com/api',
     int status = 200,
@@ -34,43 +34,43 @@ void main() {
         'method': method,
         'url': url,
         'httpVersion': httpVersion,
-        if (requestHeaders != null) 'headers': requestHeaders,
+        'headers': ?requestHeaders,
         'bodySize': requestBodySize,
       },
       'response': {
         'status': status,
         'statusText': 'OK',
         'httpVersion': httpVersion,
-        if (responseHeaders != null) 'headers': responseHeaders,
+        'headers': ?responseHeaders,
         'content': {
           'size': bodySize,
           'mimeType': mimeType,
         },
         'bodySize': bodySize,
       },
-      if (timings != null) 'timings': timings,
+      'timings': ?timings,
     };
   }
 
   group('HarImport.parse - basic parsing', () {
     test('parses single entry and returns one FlowSummary', () {
-      final har = _buildHar([_makeEntry()]);
+      final har = buildHar([makeEntry()]);
       final flows = HarImport.parse(har);
       expect(flows.length, 1);
     });
 
     test('parses multiple entries', () {
-      final har = _buildHar([
-        _makeEntry(url: 'https://a.com/1'),
-        _makeEntry(url: 'https://b.com/2'),
-        _makeEntry(url: 'https://c.com/3'),
+      final har = buildHar([
+        makeEntry(url: 'https://a.com/1'),
+        makeEntry(url: 'https://b.com/2'),
+        makeEntry(url: 'https://c.com/3'),
       ]);
       final flows = HarImport.parse(har);
       expect(flows.length, 3);
     });
 
     test('empty entries array returns empty list', () {
-      final har = _buildHar([]);
+      final har = buildHar([]);
       final flows = HarImport.parse(har);
       expect(flows, isEmpty);
     });
@@ -96,34 +96,34 @@ void main() {
 
   group('HarImport.parse - field extraction', () {
     test('parses method from request', () {
-      final har = _buildHar([_makeEntry(method: 'POST')]);
+      final har = buildHar([makeEntry(method: 'POST')]);
       final flow = HarImport.parse(har).first;
       expect(flow.method, 'POST');
     });
 
     test('parses various HTTP methods', () {
       for (final method in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']) {
-        final har = _buildHar([_makeEntry(method: method)]);
+        final har = buildHar([makeEntry(method: method)]);
         final flow = HarImport.parse(har).first;
         expect(flow.method, method, reason: 'method $method');
       }
     });
 
     test('parses host from URL', () {
-      final har = _buildHar([_makeEntry(url: 'https://api.example.com/v1/users')]);
+      final har = buildHar([makeEntry(url: 'https://api.example.com/v1/users')]);
       final flow = HarImport.parse(har).first;
       expect(flow.host, 'api.example.com');
     });
 
     test('parses path from URL', () {
-      final har = _buildHar([_makeEntry(url: 'https://example.com/v1/users')]);
+      final har = buildHar([makeEntry(url: 'https://example.com/v1/users')]);
       final flow = HarImport.parse(har).first;
       expect(flow.uri, '/v1/users');
     });
 
     test('parses URL with query parameters', () {
-      final har = _buildHar([
-        _makeEntry(url: 'https://example.com/search?q=test&page=2'),
+      final har = buildHar([
+        makeEntry(url: 'https://example.com/search?q=test&page=2'),
       ]);
       final flow = HarImport.parse(har).first;
       expect(flow.uri, contains('/search'));
@@ -132,25 +132,25 @@ void main() {
     });
 
     test('parses status from response', () {
-      final har = _buildHar([_makeEntry(status: 404)]);
+      final har = buildHar([makeEntry(status: 404)]);
       final flow = HarImport.parse(har).first;
       expect(flow.status, 404);
     });
 
     test('parses download bytes from response bodySize', () {
-      final har = _buildHar([_makeEntry(bodySize: 2048)]);
+      final har = buildHar([makeEntry(bodySize: 2048)]);
       final flow = HarImport.parse(har).first;
       expect(flow.downloadBytes, 2048);
     });
 
     test('parses upload bytes from request bodySize', () {
-      final har = _buildHar([_makeEntry(requestBodySize: 512)]);
+      final har = buildHar([makeEntry(requestBodySize: 512)]);
       final flow = HarImport.parse(har).first;
       expect(flow.uploadBytes, 512);
     });
 
     test('parses port from URL', () {
-      final har = _buildHar([_makeEntry(url: 'https://example.com:8443/api')]);
+      final har = buildHar([makeEntry(url: 'https://example.com:8443/api')]);
       final flow = HarImport.parse(har).first;
       expect(flow.port, 8443);
     });
@@ -158,28 +158,28 @@ void main() {
 
   group('HarImport.parse - protocol detection', () {
     test('h2 httpVersion maps to H2 protocol', () {
-      final har = _buildHar([_makeEntry(httpVersion: 'h2')]);
+      final har = buildHar([makeEntry(httpVersion: 'h2')]);
       final flow = HarImport.parse(har).first;
       expect(flow.protocol, 'H2');
     });
 
     test('HTTP/2 httpVersion maps to H2 protocol', () {
-      final har = _buildHar([_makeEntry(httpVersion: 'HTTP/2')]);
+      final har = buildHar([makeEntry(httpVersion: 'HTTP/2')]);
       final flow = HarImport.parse(har).first;
       expect(flow.protocol, 'H2');
     });
 
     test('https URL with HTTP/1.1 maps to HTTPS protocol', () {
-      final har = _buildHar([
-        _makeEntry(url: 'https://example.com/api', httpVersion: 'HTTP/1.1'),
+      final har = buildHar([
+        makeEntry(url: 'https://example.com/api', httpVersion: 'HTTP/1.1'),
       ]);
       final flow = HarImport.parse(har).first;
       expect(flow.protocol, 'HTTPS');
     });
 
     test('http URL with HTTP/1.1 maps to HTTP protocol', () {
-      final har = _buildHar([
-        _makeEntry(url: 'http://example.com/api', httpVersion: 'HTTP/1.1'),
+      final har = buildHar([
+        makeEntry(url: 'http://example.com/api', httpVersion: 'HTTP/1.1'),
       ]);
       final flow = HarImport.parse(har).first;
       expect(flow.protocol, 'HTTP');
@@ -188,14 +188,14 @@ void main() {
 
   group('HarImport.parse - flow IDs', () {
     test('imported flow IDs have "imported-" prefix', () {
-      final har = _buildHar([_makeEntry(), _makeEntry()]);
+      final har = buildHar([makeEntry(), makeEntry()]);
       final flows = HarImport.parse(har);
       expect(flows[0].flowId, startsWith('imported-'));
       expect(flows[1].flowId, startsWith('imported-'));
     });
 
     test('imported flow IDs include index', () {
-      final har = _buildHar([_makeEntry(), _makeEntry(), _makeEntry()]);
+      final har = buildHar([makeEntry(), makeEntry(), makeEntry()]);
       final flows = HarImport.parse(har);
       expect(flows[0].flowId, contains('imported-0'));
       expect(flows[1].flowId, contains('imported-1'));
@@ -205,8 +205,8 @@ void main() {
 
   group('HarImport.parse - timing data', () {
     test('uses timings sum for durationMs when available', () {
-      final har = _buildHar([
-        _makeEntry(
+      final har = buildHar([
+        makeEntry(
           timeMs: 500,
           timings: {
             'connect': 10,
@@ -222,8 +222,8 @@ void main() {
     });
 
     test('uses time field when timings are all -1', () {
-      final har = _buildHar([
-        _makeEntry(
+      final har = buildHar([
+        makeEntry(
           timeMs: 300,
           timings: {
             'connect': -1,
@@ -239,14 +239,14 @@ void main() {
     });
 
     test('uses time field when timings are absent', () {
-      final har = _buildHar([_makeEntry(timeMs: 250)]);
+      final har = buildHar([makeEntry(timeMs: 250)]);
       final flow = HarImport.parse(har).first;
       expect(flow.durationMs, 250.0);
     });
 
     test('partially valid timings are summed correctly', () {
-      final har = _buildHar([
-        _makeEntry(
+      final har = buildHar([
+        makeEntry(
           timeMs: 500,
           timings: {
             'connect': 10,
@@ -264,8 +264,8 @@ void main() {
 
   group('HarImport.parse - startedDateTime parsing', () {
     test('parses valid ISO8601 startedDateTime', () {
-      final har = _buildHar([
-        _makeEntry(startedDateTime: '2024-06-15T12:00:00.000Z'),
+      final har = buildHar([
+        makeEntry(startedDateTime: '2024-06-15T12:00:00.000Z'),
       ]);
       final flow = HarImport.parse(har).first;
       final expected = DateTime.parse('2024-06-15T12:00:00.000Z')
@@ -275,8 +275,8 @@ void main() {
     });
 
     test('computes endedAt from startedAt + time', () {
-      final har = _buildHar([
-        _makeEntry(
+      final har = buildHar([
+        makeEntry(
           startedDateTime: '2024-06-15T12:00:00.000Z',
           timeMs: 500,
         ),
@@ -352,8 +352,8 @@ void main() {
     });
 
     test('summary includes method, path, and status', () {
-      final har = _buildHar([
-        _makeEntry(method: 'POST', url: 'https://api.com/v2/create', status: 201),
+      final har = buildHar([
+        makeEntry(method: 'POST', url: 'https://api.com/v2/create', status: 201),
       ]);
       final flow = HarImport.parse(har).first;
       expect(flow.summary, contains('POST'));

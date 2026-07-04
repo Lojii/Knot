@@ -25,9 +25,5 @@ let package = Package(
                 .product(name: "KnotStorage", package: "KnotStorage"),
             ]
         ),
-        .testTarget(
-            name: "KnotWebServiceTests",
-            dependencies: ["KnotWebService"]
-        ),
     ]
 )

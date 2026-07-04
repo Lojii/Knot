@@ -58,7 +58,7 @@ class ImageViewer extends StatelessWidget {
       child: Image.memory(
         bytes,
         fit: BoxFit.contain,
-        errorBuilder: (_, error, __) => _errorWidget(context, '$error'),
+        errorBuilder: (_, error, _) => _errorWidget(context, '$error'),
       ),
     );
   }

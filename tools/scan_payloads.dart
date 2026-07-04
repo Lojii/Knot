@@ -1,12 +1,13 @@
 #!/usr/bin/env dart
-/// Scans all captured payload files, detects file types via magic bytes,
-/// decompresses gzip/zlib/brotli before detection, and outputs statistics.
-///
-/// Usage: dart run tools/scan_payloads.dart
+// ignore_for_file: avoid_print
+
+// Scans all captured payload files, detects file types via magic bytes,
+// decompresses gzip/zlib/brotli before detection, and outputs statistics.
+//
+// Usage: dart run tools/scan_payloads.dart
 
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:convert';
 
 // ── Inline magic bytes detection (same logic as lib/utils/magic_bytes.dart) ──
 
@@ -127,7 +128,9 @@ String? _readStr(Uint8List b, int off, int len) {
 }
 Uint8List _trimWS(Uint8List b) {
   int i = 0;
-  while (i < b.length && (b[i] == 0x20 || b[i] == 0x09 || b[i] == 0x0A || b[i] == 0x0D)) i++;
+  while (i < b.length && (b[i] == 0x20 || b[i] == 0x09 || b[i] == 0x0A || b[i] == 0x0D)) {
+    i++;
+  }
   return i > 0 ? b.sublist(i) : b;
 }
 bool _isText(Uint8List bytes) {

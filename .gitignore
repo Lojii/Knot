@@ -8,7 +8,6 @@ dwarf*.txt
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
-*.DS_Store
 
 ## Obj-C/Swift specific
 *.hmap
@@ -35,30 +34,18 @@ Pods/Pods.xcodeproj
 !macos/Runner.xcworkspace/
 
 # Carthage
-#
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-# Carthage/Checkouts
-
 Carthage/Build
 
 # fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/#source-control
-
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
-# Code Injection
-#
-# After new code Injection tools there's a generated folder /iOSInjectionProject
-# https://github.com/johnno1962/injectionforxcode
-
+# Code Injection (https://github.com/johnno1962/injectionforxcode)
 iOSInjectionProject/
+
+# Swift Package Manager
 .build/
 
 node_modules/
@@ -67,9 +54,8 @@ node_modules/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-*.iml
 .metadata
-.idea/
+
 # IDE
 .idea/
 *.iml
@@ -77,9 +63,10 @@ node_modules/
 # macOS
 .DS_Store
 
-# Build artifacts
-build/
+# Logs (e.g. flutter_01.log crash reports)
+*.log
+
+# Build artifacts / tooling
 tmp/
 .superpowers/
-docs/
 .claude/
