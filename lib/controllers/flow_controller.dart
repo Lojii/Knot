@@ -26,30 +26,57 @@ class FlowController extends GetxController {
   final allFlows = <FlowSummary>[];
   final isLoading = false.obs;
 
+  /// flowId → index into [allFlows], so [updateFlowFromPush] avoids an O(n)
+  /// linear scan per WebSocket message. Inserting at the head shifts every
+  /// index, so instead of rebuilding on each insert we mark the map dirty and
+  /// rebuild lazily at most once before the next lookup.
+  final Map<String, int> _flowIndex = {};
+  bool _indexDirty = false;
+
+  void _rebuildIndex() {
+    _flowIndex.clear();
+    for (var i = 0; i < allFlows.length; i++) {
+      _flowIndex[allFlows[i].flowId] = i;
+    }
+    _indexDirty = false;
+  }
+
   int _currentPage = 1;
+
+  /// Incremented on every [setTaskId]. An in-flight [_loadAllFlows] checks this
+  /// after each await and abandons itself if a newer load has started, so
+  /// concurrent loads (e.g. reconnect mid-load) can't interleave pages into
+  /// the same list.
+  int _loadGeneration = 0;
 
   void setTaskId(int tid) {
     taskId = tid;
     _currentPage = 1;
+    _loadGeneration++;
     allFlows.clear();
-    _loadAllFlows();
+    _flowIndex.clear();
+    _indexDirty = false;
+    _loadAllFlows(_loadGeneration);
   }
 
-  Future<void> _loadAllFlows() async {
+  Future<void> _loadAllFlows(int generation) async {
     isLoading.value = true;
     _currentPage = 1;
-    allFlows.clear();
     try {
       final result = await api.getFlows(taskId: taskId!, page: 1, size: 200);
+      if (generation != _loadGeneration) return;
       allFlows.addAll(result.items);
       final totalCount = result.total;
-      while (allFlows.length < totalCount) {
+      while (allFlows.length < totalCount && allFlows.length < maxFlows) {
         _currentPage++;
         final more = await api.getFlows(taskId: taskId!, page: _currentPage, size: 200);
+        if (generation != _loadGeneration) return;
         if (more.items.isEmpty) break;
         allFlows.addAll(more.items);
       }
     } catch (e) { debugPrint("[Knot] Error: $e"); }
+    if (generation != _loadGeneration) return;
+    _rebuildIndex();
     isLoading.value = false;
     _recomputeAll();
   }
@@ -67,6 +94,9 @@ class FlowController extends GetxController {
     if (allFlows.length > maxFlows) {
       allFlows.removeRange(maxFlows, allFlows.length);
     }
+    // insert(0, …) shifts every existing index; defer the rebuild until an
+    // update actually needs the map.
+    _indexDirty = true;
     _tableCtrl.reapplyFiltersDebounced();
     _treeCtrl.addDomainFromPush(flow);
     _filterCtrl.addFlowToFilters(flow);
@@ -75,10 +105,11 @@ class FlowController extends GetxController {
   void updateFlowFromPush(Map<String, dynamic> data) {
     final fid = data['flowId'] as String?;
     if (fid == null) return;
-    final idx = allFlows.indexWhere((f) => f.flowId == fid);
-    if (idx >= 0) {
+    if (_indexDirty) _rebuildIndex();
+    final idx = _flowIndex[fid];
+    if (idx != null && idx >= 0 && idx < allFlows.length && allFlows[idx].flowId == fid) {
       allFlows[idx] = FlowSummary.fromJson(data);
-      _tableCtrl.reapplyFilters();
+      _tableCtrl.reapplyFiltersDebounced();
     }
   }
 }

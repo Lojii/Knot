@@ -62,6 +62,12 @@ public class SessionRecorder {
     private var dbGroup: TaskDatabaseGroup?
     private var flowId: String?
 
+    /// Guards against `recordClosed()` running twice. Multiple handler paths
+    /// (stream end, channelUnregistered fallback, rule abort/timeout) can each
+    /// call it; a second call would double-decrement the task DB ref-count and
+    /// evict a group still in use by another live recorder.
+    private var closed = false
+
     /// Exposes the underlying `TaskDatabaseGroup` so that protocol-specific
     /// recorders (GRPCRecorder, WebSocketRecorder, etc.) can write their own
     /// records directly to the same task databases.
@@ -439,6 +445,10 @@ public class SessionRecorder {
     // MARK: - Lifecycle
 
     public func recordClosed() {
+        // Idempotent: ignore repeat calls so the DB ref-count is decremented once.
+        if closed { return }
+        closed = true
+
         session.endTime = Date().timeIntervalSince1970
         NSLog("[SessionRecorder] recordClosed: taskId=\(taskId), dbGroup=\(dbGroup != nil), httpRecorder=\(httpRecorder != nil), flowId=\(flowId ?? "nil")")
 

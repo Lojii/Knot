@@ -31,7 +31,10 @@ class TaskController extends GetxController {
     currentTask.value = task;
     TaskScope.ensure(task.id);
     TaskScope.flowCtrl(task.id).setTaskId(task.id);
-    Get.find<LiveController>().ws.switchTask(task.id);
+    // Rebind the live listeners to the new task id (also switches the socket).
+    // Using switchTask alone would leave the old task's id captured in the
+    // message-handler closure, routing new pushes to the wrong controllers.
+    Get.find<LiveController>().connectToTask(task.id);
     TaskScope.detailCtrl(task.id).clear();
   }
 
@@ -46,18 +49,27 @@ class TaskController extends GetxController {
   /// Toggle capture on/off — used by both the global bar button and Cmd+E shortcut.
   Future<void> toggleCapture() async {
     if (isCapturing.value) {
-      await ProxyChannel.stopProxy();
-      isCapturing.value = false;
-      final tabMgr = Get.find<TabManager>();
-      final capTab = tabMgr.capturingTab;
-      if (capTab != null) tabMgr.markStopped(capTab.id);
+      try {
+        await ProxyChannel.stopProxy();
+        Get.find<LiveController>().ws.disconnect();
+        isCapturing.value = false;
+        final tabMgr = Get.find<TabManager>();
+        final capTab = tabMgr.capturingTab;
+        if (capTab != null) tabMgr.markStopped(capTab.id);
+      } catch (e) {
+        // Keep isCapturing true so the UI reflects that stop failed.
+        Get.snackbar('Error', 'Stop failed: $e');
+      }
     } else {
       try {
         final result = await ProxyChannel.startProxy();
         final port = (result['port'] as int?) ?? 0;
+        final token = result['token'] as String?;
         if (port > 0) {
           Get.find<ApiClient>().baseUrl = 'http://localhost:$port';
           Get.find<WsClient>().baseUrl = 'ws://localhost:$port';
+          Get.find<ApiClient>().authToken = token;
+          Get.find<WsClient>().authToken = token;
         }
         isCapturing.value = true;
         await loadTasks();
