@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -189,6 +191,30 @@ void main() {
       expect(status['4xx'], AppTheme.parseHex('#FF9F0A'));
       expect(status['5xx'], AppTheme.parseHex('#FF453A'));
       expect(status['default'], AppTheme.parseHex('#8E8E93'));
+    });
+  });
+
+  group('AppTheme semantic colors and xxl font size', () {
+    test('new semantic colors have defaults', () {
+      AppTheme.loadFromJson('invalid'); // reset to defaults
+      expect(AppTheme.lightMode.colors.favorite, const Color(0xFFFFC107));
+      expect(AppTheme.lightMode.colors.diffAdded, const Color(0xFF34C759));
+      expect(AppTheme.lightMode.colors.diffRemoved, const Color(0xFFFF3B30));
+      expect(AppTheme.darkMode.colors.diffAdded, const Color(0xFF30D158));
+    });
+
+    test('fontSize has xxl tier', () {
+      AppTheme.loadFromJson('invalid'); // reset to defaults
+      expect(AppTheme.fontSize.xxl, 20.0);
+    });
+
+    test('loadFromJson without new keys falls back to defaults for them', () {
+      final jsonString = File('assets/theme.json').readAsStringSync();
+      AppTheme.loadFromJson(jsonString);
+      expect(AppTheme.lightMode.colors.favorite, const Color(0xFFFFC107));
+      expect(AppTheme.fontSize.xxl, 20.0);
+
+      AppTheme.loadFromJson('invalid'); // reset to defaults
     });
   });
 }

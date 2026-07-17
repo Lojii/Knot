@@ -46,7 +46,10 @@
         "string": "#2E7D32",
         "number": "#E65100",
         "boolean": "#6A1B9A"
-      }
+      },
+      "favorite": "#FFC107",
+      "diffAdded": "#34C759",
+      "diffRemoved": "#FF3B30"
     },
     "toolbar": {
       "gradient": { "start": "#FAFAFA", "end": "#EBEBEB" },
@@ -124,7 +127,10 @@
         "string": "#C3E88D",
         "number": "#F78C6C",
         "boolean": "#C792EA"
-      }
+      },
+      "favorite": "#FFD60A",
+      "diffAdded": "#30D158",
+      "diffRemoved": "#FF453A"
     },
     "toolbar": {
       "gradient": { "start": "#2C2C2E", "end": "#232325" },
@@ -183,7 +189,8 @@
     "sm": 11,
     "md": 12,
     "lg": 13,
-    "xl": 14
+    "xl": 14,
+    "xxl": 20
   },
   "fontFamily": {
     "ui": "Inter",

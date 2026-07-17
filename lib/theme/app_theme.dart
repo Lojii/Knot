@@ -30,6 +30,9 @@ class ThemeColors {
   final Color syntaxStringColor;
   final Color syntaxNumberColor;
   final Color syntaxBoolColor;
+  final Color favorite;
+  final Color diffAdded;
+  final Color diffRemoved;
 
   const ThemeColors({
     required this.scaffold,
@@ -53,6 +56,9 @@ class ThemeColors {
     required this.syntaxStringColor,
     required this.syntaxNumberColor,
     required this.syntaxBoolColor,
+    this.favorite = const Color(0xFFFFC107),
+    this.diffAdded = const Color(0xFF34C759),
+    this.diffRemoved = const Color(0xFFFF3B30),
   });
 }
 
@@ -226,6 +232,7 @@ class FontSizeConfig {
   final double md;
   final double lg;
   final double xl;
+  final double xxl;
 
   const FontSizeConfig({
     required this.xs,
@@ -233,6 +240,7 @@ class FontSizeConfig {
     required this.md,
     required this.lg,
     required this.xl,
+    this.xxl = 20.0,
   });
 }
 
@@ -360,6 +368,9 @@ ModeColors _defaultDarkMode() {
       syntaxStringColor: const Color(0xFFC3E88D),
       syntaxNumberColor: const Color(0xFFF78C6C),
       syntaxBoolColor: const Color(0xFFC792EA),
+      favorite: const Color(0xFFFFD60A),
+      diffAdded: const Color(0xFF30D158),
+      diffRemoved: const Color(0xFFFF453A),
     ),
     toolbar: const ToolbarConfig(
       gradientStart: Color(0xFF2C2C2E),
@@ -426,7 +437,7 @@ const RadiusConfig _defaultRadius = RadiusConfig(
 );
 
 const FontSizeConfig _defaultFontSize = FontSizeConfig(
-  xs: 10.0, sm: 11.0, md: 12.0, lg: 13.0, xl: 14.0,
+  xs: 10.0, sm: 11.0, md: 12.0, lg: 13.0, xl: 14.0, xxl: 20.0,
 );
 
 // ============================================================
@@ -644,6 +655,9 @@ class AppTheme {
       syntaxStringColor: parseHex(syntax['string'] as String),
       syntaxNumberColor: parseHex(syntax['number'] as String),
       syntaxBoolColor: parseHex(syntax['boolean'] as String),
+      favorite: m['favorite'] != null ? parseHex(m['favorite'] as String) : const Color(0xFFFFC107),
+      diffAdded: m['diffAdded'] != null ? parseHex(m['diffAdded'] as String) : const Color(0xFF34C759),
+      diffRemoved: m['diffRemoved'] != null ? parseHex(m['diffRemoved'] as String) : const Color(0xFFFF3B30),
     );
   }
 
@@ -747,6 +761,7 @@ class AppTheme {
       md: (m['md'] as num).toDouble(),
       lg: (m['lg'] as num).toDouble(),
       xl: (m['xl'] as num).toDouble(),
+      xxl: m['xxl'] != null ? (m['xxl'] as num).toDouble() : 20.0,
     );
   }
 }
