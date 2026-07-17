@@ -208,6 +208,7 @@ class AppTranslations extends Translations {
     'action.compare': 'Compare',
     'action.execute': 'Execute',
     'action.abort': 'Abort',
+    'action.more': 'More',
 
     // ===== Snackbar Messages =====
     'msg.exporting_har': 'Exporting HAR...',
@@ -520,6 +521,7 @@ class AppTranslations extends Translations {
     'action.compare': '对比',
     'action.execute': '执行',
     'action.abort': '中止',
+    'action.more': '更多',
 
     // ===== Snackbar Messages =====
     'msg.exporting_har': '正在导出 HAR...',
