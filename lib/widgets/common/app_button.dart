@@ -5,13 +5,16 @@ import 'hoverable.dart';
 enum AppButtonVariant { primary, secondary, destructive }
 
 /// 统一按钮。primary=实心主色（主操作）；secondary=描边（普通操作）；
-/// destructive=红色文字（删除/清空）。内建 hover/pressed/光标/tooltip。
+/// destructive=红色文字（删除/清空）。内建 hover/光标/tooltip。
 class AppButton extends StatelessWidget {
   final String label;
   final IconData? icon;
   final VoidCallback? onPressed;
   final AppButtonVariant variant;
   final String? tooltip;
+
+  /// 加载中：图标位置显示转圈，按钮不可点但不降低不透明度。
+  final bool isLoading;
 
   const AppButton({
     super.key,
@@ -20,15 +23,16 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.variant = AppButtonVariant.secondary,
     this.tooltip,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colors(context);
-    final enabled = onPressed != null;
+    final enabled = onPressed != null && !isLoading;
 
     Widget button = Hoverable(
-      onTap: onPressed,
+      onTap: enabled ? onPressed : null,
       builder: (context, hovered) {
         final hover = hovered && enabled;
         final (Color bg, Color fg, Border? border) = switch (variant) {
@@ -50,7 +54,7 @@ class AppButton extends StatelessWidget {
         };
 
         return Opacity(
-          opacity: enabled ? 1.0 : 0.4,
+          opacity: onPressed != null || isLoading ? 1.0 : 0.4,
           child: Container(
             height: AppTheme.sizing.searchFieldHeight,
             padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
@@ -64,7 +68,14 @@ class AppButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (icon != null) ...[
+                if (isLoading) ...[
+                  SizedBox(
+                    width: AppTheme.sizing.iconSize,
+                    height: AppTheme.sizing.iconSize,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: fg),
+                  ),
+                  SizedBox(width: AppTheme.spacing.xs),
+                ] else if (icon != null) ...[
                   Icon(icon, size: AppTheme.sizing.iconSize, color: fg),
                   SizedBox(width: AppTheme.spacing.xs),
                 ],
