@@ -13,6 +13,8 @@ import '../../utils/har_export.dart';
 import '../../utils/har_import.dart';
 import '../../utils/list_export.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/hoverable.dart';
 import '../settings/settings_page.dart';
 
 class GlobalBar extends StatelessWidget {
@@ -134,6 +136,7 @@ class GlobalBar extends StatelessWidget {
                                 const Spacer(),
                                 IconButton(
                                   icon: const Icon(Icons.close, size: 18),
+                                  tooltip: 'action.close'.tr,
                                   onPressed: () => Navigator.of(ctx).pop(),
                                   visualDensity: VisualDensity.compact,
                                 ),
@@ -170,7 +173,7 @@ class _TabChip extends StatelessWidget {
     final colors = AppTheme.colors(context);
     final theme = Theme.of(context);
 
-    return GestureDetector(
+    return Hoverable(
       onTap: () {
         tabMgr.activateTab(tab.id);
         // When activating Home, switch to capture page view
@@ -181,11 +184,15 @@ class _TabChip extends StatelessWidget {
       },
       onSecondaryTapUp: (details) =>
           _showContextMenu(context, details.globalPosition, tab),
-      child: Container(
+      builder: (context, hovered) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         margin: const EdgeInsets.only(right: 2),
         decoration: BoxDecoration(
-          color: isActive ? colors.surface : Colors.transparent,
+          color: isActive
+              ? colors.surface
+              : hovered
+                  ? colors.surface.withValues(alpha: 0.5)
+                  : Colors.transparent,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(6),
             topRight: Radius.circular(6),
@@ -206,8 +213,8 @@ class _TabChip extends StatelessWidget {
                     Container(
                       width: 6,
                       height: 6,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: colors.statusDisconnected,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -228,9 +235,17 @@ class _TabChip extends StatelessWidget {
                   // Close button (not for capturing tabs)
                   if (tab.canClose) ...[
                     const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () => tabMgr.closeTab(tab.id),
-                      child: Icon(Icons.close, size: 12, color: colors.textSecondary),
+                    Tooltip(
+                      message: 'tab.close'.tr,
+                      waitDuration: const Duration(milliseconds: 500),
+                      child: Hoverable(
+                        onTap: () => tabMgr.closeTab(tab.id),
+                        builder: (context, closeHovered) => Icon(
+                          Icons.close,
+                          size: 12,
+                          color: closeHovered ? colors.textPrimary : colors.textSecondary,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -318,7 +333,7 @@ class _TabChip extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.colors(ctx).diffRemoved),
             child: Text('action.delete'.tr),
           ),
         ],
@@ -350,24 +365,32 @@ class _StartStopButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => GestureDetector(
-      onTap: () => taskCtrl.toggleCapture(),
-      child: Container(
-        width: AppTheme.sizing.iconButtonSize,
-        height: AppTheme.sizing.iconButtonSize,
-        decoration: BoxDecoration(
-          color: taskCtrl.isCapturing.value
-              ? AppTheme.methodColorOf(context, 'DELETE')
-              : AppTheme.methodColorOf(context, 'GET'),
-          borderRadius: BorderRadius.circular(5),
+    return Obx(() {
+      final capturing = taskCtrl.isCapturing.value;
+      final color = capturing
+          ? AppTheme.methodColorOf(context, 'DELETE')
+          : AppTheme.methodColorOf(context, 'GET');
+      return Tooltip(
+        message: capturing ? 'toolbar.stop'.tr : 'toolbar.start'.tr,
+        waitDuration: const Duration(milliseconds: 500),
+        child: Hoverable(
+          onTap: () => taskCtrl.toggleCapture(),
+          builder: (context, hovered) => Container(
+            width: AppTheme.sizing.iconButtonSize,
+            height: AppTheme.sizing.iconButtonSize,
+            decoration: BoxDecoration(
+              color: hovered ? color.withValues(alpha: 0.85) : color,
+              borderRadius: BorderRadius.circular(AppTheme.radius.md),
+            ),
+            child: Icon(
+              capturing ? Icons.stop : Icons.play_arrow,
+              size: 14,
+              color: Colors.white, // 有色底上的前景色（刻意例外）
+            ),
+          ),
         ),
-        child: Icon(
-          taskCtrl.isCapturing.value ? Icons.stop : Icons.play_arrow,
-          size: 14,
-          color: Colors.white,
-        ),
-      ),
-    ));
+      );
+    });
   }
 }
 
@@ -588,12 +611,10 @@ class _ToolsMenuButton extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('tools.import_har'.tr),
-        content: TextField(
+        content: AppTextField(
           controller: controller,
-          decoration: InputDecoration(
-            hintText: 'import.har_path_hint'.tr,
-            labelText: 'import.har_path_label'.tr,
-          ),
+          hintText: 'import.har_path_hint'.tr,
+          labelText: 'import.har_path_label'.tr,
         ),
         actions: [
           TextButton(

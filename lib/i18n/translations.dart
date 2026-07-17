@@ -197,6 +197,7 @@ class AppTranslations extends Translations {
     'history.batch_delete_failed': 'Batch delete failed: @error',
 
     // ===== Actions =====
+    'action.close': 'Close',
     'action.cancel': 'Cancel',
     'action.save': 'Save',
     'action.delete': 'Delete',
@@ -508,6 +509,7 @@ class AppTranslations extends Translations {
     'history.batch_delete_failed': '批量删除失败：@error',
 
     // ===== Actions =====
+    'action.close': '关闭',
     'action.cancel': '取消',
     'action.save': '保存',
     'action.delete': '删除',
