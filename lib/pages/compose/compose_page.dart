@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import '../../controllers/page_controller.dart';
 import '../../widgets/body_viewer.dart';
 import '../../widgets/key_value_table.dart';
+import '../../widgets/common/app_button.dart';
+import '../../widgets/common/app_tab_bar.dart';
+import '../../widgets/common/app_text_field.dart';
 import '../../theme/app_theme.dart';
 
 /// Full-page Compose panel for building and sending custom HTTP requests.
@@ -266,7 +269,7 @@ class _ComposePageState extends State<ComposePage> {
             children: [
               // Method dropdown
               Container(
-                height: 36,
+                height: AppTheme.sizing.searchFieldHeight,
                 padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                 decoration: BoxDecoration(
                   border: Border.all(color: theme.dividerColor),
@@ -293,42 +296,23 @@ class _ComposePageState extends State<ComposePage> {
               // URL field
               Expanded(
                 child: SizedBox(
-                  height: 36,
-                  child: TextField(
+                  height: AppTheme.sizing.searchFieldHeight,
+                  child: AppTextField(
                     controller: _urlController,
+                    hintText: 'compose.url_hint'.tr,
                     style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.md),
-                    decoration: InputDecoration(
-                      hintText: 'compose.url_hint'.tr,
-                      hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.md),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing.sm,
-                        vertical: AppTheme.spacing.xs,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                      ),
-                      isDense: true,
-                    ),
                     onSubmitted: (_) => _sendRequest(),
                   ),
                 ),
               ),
               SizedBox(width: AppTheme.spacing.sm),
               // Send button
-              SizedBox(
-                height: 36,
-                child: ElevatedButton.icon(
-                  onPressed: _isSending ? null : _sendRequest,
-                  icon: _isSending
-                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.send, size: 16),
-                  label: Text('action.send'.tr),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
-                    textStyle: TextStyle(fontSize: AppTheme.fontSize.md, fontWeight: FontWeight.bold),
-                  ),
-                ),
+              AppButton(
+                label: 'action.send'.tr,
+                icon: Icons.send,
+                variant: AppButtonVariant.primary,
+                isLoading: _isSending,
+                onPressed: _isSending ? null : _sendRequest,
               ),
             ],
           ),
@@ -365,28 +349,21 @@ class _ComposePageState extends State<ComposePage> {
           // Body section
           _sectionTitle('compose.body'.tr),
           SizedBox(height: AppTheme.spacing.xs),
-          _buildBodyTabs(theme),
+          _buildBodyTabs(),
           SizedBox(height: AppTheme.spacing.xs),
           SizedBox(
             height: 200,
-            child: TextField(
+            child: AppTextField(
               controller: _bodyController,
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
               style: AppTheme.mono(context),
-              decoration: InputDecoration(
-                hintText: _bodyTab == 1
-                    ? '{"key": "value"}'
-                    : _bodyTab == 2
-                        ? 'key=value&key2=value2'
-                        : 'Request body...',
-                hintStyle: TextStyle(color: theme.hintColor, fontSize: AppTheme.fontSize.sm),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                ),
-                contentPadding: EdgeInsets.all(AppTheme.spacing.sm),
-              ),
+              hintText: _bodyTab == 1
+                  ? '{"key": "value"}'
+                  : _bodyTab == 2
+                      ? 'key=value&key2=value2'
+                      : 'Request body...',
             ),
           ),
         ],
@@ -401,37 +378,12 @@ class _ComposePageState extends State<ComposePage> {
     ));
   }
 
-  Widget _buildBodyTabs(ThemeData theme) {
+  Widget _buildBodyTabs() {
     final labels = ['tab.raw'.tr, 'tab.json'.tr, 'tab.form'.tr];
-    return Row(
-      children: List.generate(labels.length, (i) {
-        final isActive = _bodyTab == i;
-        return Padding(
-          padding: EdgeInsets.only(right: AppTheme.spacing.xs),
-          child: GestureDetector(
-            onTap: () => setState(() => _bodyTab = i),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacing.sm,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? theme.colorScheme.primary.withAlpha(26)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                border: Border.all(
-                  color: isActive ? theme.colorScheme.primary : theme.dividerColor,
-                ),
-              ),
-              child: Text(labels[i], style: TextStyle(
-                fontSize: AppTheme.fontSize.sm,
-                color: isActive ? theme.colorScheme.primary : null,
-              )),
-            ),
-          ),
-        );
-      }),
+    return AppTabBar(
+      tabs: labels,
+      activeIndex: _bodyTab,
+      onChanged: (i) => setState(() => _bodyTab = i),
     );
   }
 
@@ -451,38 +403,20 @@ class _ComposePageState extends State<ComposePage> {
             child: Row(
               children: [
                 Expanded(
-                  child: SizedBox(
-                    height: 30,
-                    child: TextField(
-                      controller: rows[i].$1,
-                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
-                      decoration: InputDecoration(
-                        hintText: keyHint,
-                        hintStyle: TextStyle(fontSize: AppTheme.fontSize.sm),
-                        contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radius.sm)),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => onChanged?.call(),
-                    ),
+                  child: AppTextField(
+                    controller: rows[i].$1,
+                    style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
+                    hintText: keyHint,
+                    onChanged: (_) => onChanged?.call(),
                   ),
                 ),
                 SizedBox(width: AppTheme.spacing.xs),
                 Expanded(
-                  child: SizedBox(
-                    height: 30,
-                    child: TextField(
-                      controller: rows[i].$2,
-                      style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
-                      decoration: InputDecoration(
-                        hintText: valueHint,
-                        hintStyle: TextStyle(fontSize: AppTheme.fontSize.sm),
-                        contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radius.sm)),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => onChanged?.call(),
-                    ),
+                  child: AppTextField(
+                    controller: rows[i].$2,
+                    style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.sm),
+                    hintText: valueHint,
+                    onChanged: (_) => onChanged?.call(),
                   ),
                 ),
                 SizedBox(width: AppTheme.spacing.xs),
@@ -501,14 +435,11 @@ class _ComposePageState extends State<ComposePage> {
           ),
         Align(
           alignment: Alignment.centerLeft,
-          child: TextButton.icon(
+          child: AppButton(
+            label: 'action.add'.tr,
+            icon: Icons.add,
+            variant: AppButtonVariant.secondary,
             onPressed: onAdd,
-            icon: const Icon(Icons.add, size: 14),
-            label: Text('action.add'.tr, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
-            ),
           ),
         ),
       ],

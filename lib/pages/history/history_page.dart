@@ -7,6 +7,7 @@ import '../../controllers/tab_controller.dart';
 import '../../controllers/page_controller.dart';
 import '../../models/task_model.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/empty_state.dart';
 
 class HistoryPanel extends StatefulWidget {
   const HistoryPanel({super.key});
@@ -125,7 +126,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
           TextButton(onPressed: () => Navigator.pop(c, false), child: Text('action.cancel'.tr)),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.colors(c).diffRemoved),
             child: Text('action.delete'.tr),
           ),
         ],
@@ -141,7 +142,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
       items: [
         PopupMenuItem(value: 'open', child: Text('menu.open'.tr)),
         const PopupMenuDivider(),
-        PopupMenuItem(value: 'delete', child: Text('menu.delete'.tr, style: const TextStyle(color: Colors.red))),
+        PopupMenuItem(value: 'delete', child: Text('menu.delete'.tr, style: TextStyle(color: AppTheme.colors(ctx).diffRemoved))),
       ],
     ).then((value) {
       if (value == 'open') {
@@ -208,8 +209,8 @@ class _HistoryPanelState extends State<HistoryPanel> {
                       icon: const Icon(Icons.delete_outline, size: 14),
                       label: Text('history.delete_count'.trParams({'count': '${_selectedIds.length}'})),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppTheme.colors(context).diffRemoved,
+                        foregroundColor: Colors.white, // 有色底上的前景色（刻意例外）
                         padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.md),
                         minimumSize: const Size(0, 28),
                       ),
@@ -262,9 +263,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
             }
             final tasks = _getVisibleTasks();
             if (tasks.isEmpty) {
-              return Center(
-                child: Text('empty.no_history'.tr, style: TextStyle(color: theme.hintColor)),
-              );
+              return EmptyState(icon: Icons.history, title: 'empty.no_history'.tr);
             }
             return ListView.separated(
               padding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
@@ -298,7 +297,7 @@ class _HistoryPanelState extends State<HistoryPanel> {
               // Deleting overlay
               if (_isDeleting)
                 Container(
-                  color: Colors.black.withAlpha(30),
+                  color: Colors.black.withAlpha(30), // 模态遮罩层，明暗主题下均适用（刻意例外）
                   child: Center(
                     child: Card(
                       child: Padding(
@@ -452,6 +451,7 @@ class _TaskRow extends StatelessWidget {
                   width: 28,
                   child: IconButton(
                     icon: const Icon(Icons.more_horiz, size: 16),
+                    tooltip: 'action.more'.tr,
                     padding: EdgeInsets.zero,
                     visualDensity: VisualDensity.compact,
                     onPressed: () {

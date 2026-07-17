@@ -7,6 +7,7 @@ import '../../controllers/task_scope.dart';
 import '../../controllers/tree_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/empty_state.dart';
 
 const double _msPerPixel = 2.0;
 const double _gapWidth = 50.0;
@@ -313,8 +314,10 @@ class _WaterfallTabState extends State<WaterfallTab> {
       selCtrl.selectedFlow.value;
       final flows = tableCtrl.flows.toList();
       if (flows.isEmpty) {
-        return Center(child: Text('empty.no_requests_yet'.tr,
-            style: TextStyle(color: colors.textSecondary)));
+        return EmptyState(
+          icon: Icons.waterfall_chart,
+          title: 'empty.no_requests_yet'.tr,
+        );
       }
 
       // Recompute only when flows change (not on scroll)

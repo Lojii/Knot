@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/hoverable.dart';
 
 class FilterBar extends StatefulWidget {
   final FocusNode searchFocusNode;
@@ -153,42 +155,24 @@ class _FilterBarState extends State<FilterBar> {
             duration: const Duration(milliseconds: 200),
             width: searchExpanded ? AppTheme.sizing.searchFieldWidth : 100,
             height: AppTheme.sizing.searchFieldHeight,
-            child: TextField(
+            child: AppTextField(
               controller: _searchController,
               focusNode: widget.searchFocusNode,
-              decoration: InputDecoration(
-                hintText: 'toolbar.search'.tr,
-                prefixIcon: const Icon(Icons.search, size: 16),
-                suffixIcon: searchExpanded
-                    ? Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: Text(
-                          '\u2318F',
-                          style: TextStyle(
-                            fontSize: AppTheme.fontSize.xs,
-                            color: AppTheme.colors(context).textSecondary,
-                          ),
+              hintText: 'toolbar.search'.tr,
+              prefixIcon: const Icon(Icons.search, size: 16),
+              suffixIcon: searchExpanded
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Text(
+                        '\u2318F',
+                        style: TextStyle(
+                          fontSize: AppTheme.fontSize.xs,
+                          color: AppTheme.colors(context).textSecondary,
                         ),
-                      )
-                    : null,
-                suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                isDense: true,
-                filled: true,
-                fillColor: AppTheme.colors(context).surface,
-                contentPadding: EdgeInsets.symmetric(vertical: AppTheme.spacing.sm),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(color: AppTheme.colors(context).divider, width: 0.5),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(color: AppTheme.colors(context).divider, width: 0.5),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.md),
-                  borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 0.5),
-                ),
-              ),
+                      ),
+                    )
+                  : null,
+              suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
               onChanged: (v) {
                 setState(() {}); // update searchHasText for width
                 tableCtrl.search(v);
@@ -204,12 +188,16 @@ class _FilterBarState extends State<FilterBar> {
     final chipConfig = AppTheme.mode(context).filterChip;
     return Padding(
       padding: EdgeInsets.only(right: AppTheme.spacing.xs),
-      child: GestureDetector(
+      child: Hoverable(
         onTap: onTap,
-        child: Container(
+        builder: (context, hovered) => Container(
           padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
           decoration: BoxDecoration(
-            color: isActive ? chipConfig.activeBackground : chipConfig.inactiveBackground,
+            color: isActive
+                ? chipConfig.activeBackground
+                : hovered
+                    ? chipConfig.activeBackground.withValues(alpha: 0.4)
+                    : chipConfig.inactiveBackground,
             borderRadius: BorderRadius.circular(AppTheme.radius.sm),
             border: Border.all(
               color: isActive ? chipConfig.activeBorder : chipConfig.inactiveBorder,

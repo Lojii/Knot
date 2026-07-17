@@ -111,7 +111,7 @@ class _DashboardTabState extends State<DashboardTab> {
           children: [
             Icon(icon, size: 20, color: themeColors.textSecondary),
             SizedBox(height: AppTheme.spacing.xs),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(value, style: TextStyle(fontSize: AppTheme.fontSize.xxl, fontWeight: FontWeight.bold)),
             Text(label, style: TextStyle(fontSize: AppTheme.fontSize.xs, color: themeColors.textSecondary)),
           ],
         ),
@@ -121,14 +121,22 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Widget _protocolPie(DashboardController dc, ThemeData theme) {
     final data = dc.protocols;
-    if (data.isEmpty) return SizedBox(height: 120, child: Center(child: Text('empty.no_data'.tr)));
 
     return Builder(builder: (context) {
       final themeColors = AppTheme.colors(context);
+      if (data.isEmpty) {
+        return SizedBox(
+          height: 120,
+          child: Center(
+            child: Text('empty.no_data'.tr,
+                style: TextStyle(color: themeColors.textSecondary, fontSize: AppTheme.fontSize.sm)),
+          ),
+        );
+      }
       final sections = data.entries.where((e) => e.value > 0).map((e) => PieChartSectionData(
         value: e.value.toDouble(),
         title: '${e.key}\n${e.value}',
-        titleStyle: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.bold, color: Colors.white),
+        titleStyle: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.bold, color: Colors.white), // 有色扇区上的前景色（刻意例外）
         color: themeColors.protocol[e.key] ?? AppTheme.methodColorOf(context, 'default'),
         radius: 50,
       )).toList();
@@ -139,7 +147,18 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Widget _statusList(DashboardController dc, ThemeData theme) {
     final data = dc.statuses;
-    if (data.isEmpty) return SizedBox(height: 120, child: Center(child: Text('empty.no_data'.tr)));
+    if (data.isEmpty) {
+      return Builder(builder: (context) {
+        final themeColors = AppTheme.colors(context);
+        return SizedBox(
+          height: 120,
+          child: Center(
+            child: Text('empty.no_data'.tr,
+                style: TextStyle(color: themeColors.textSecondary, fontSize: AppTheme.fontSize.sm)),
+          ),
+        );
+      });
+    }
     return Column(
       children: data.entries.map((e) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -157,7 +176,7 @@ class _DashboardTabState extends State<DashboardTab> {
 
   Widget _trafficStat(String label, int bytes, Color color) => Column(
     children: [
-      Text(_fmt(bytes), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+      Text(_fmt(bytes), style: TextStyle(fontSize: AppTheme.fontSize.xxl, fontWeight: FontWeight.bold, color: color)),
       Text(label, style: TextStyle(fontSize: AppTheme.fontSize.sm)),
     ],
   );

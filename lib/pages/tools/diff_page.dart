@@ -6,6 +6,7 @@ import '../../controllers/task_scope.dart';
 import '../../models/flow_summary.dart';
 import '../../models/flow_detail.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_button.dart';
 
 /// Side-by-side diff comparison of two flows.
 class DiffPage extends StatefulWidget {
@@ -115,9 +116,10 @@ class _DiffPageState extends State<DiffPage> {
               onChanged: (f) => setState(() => _flowB = f),
             ),
             SizedBox(height: AppTheme.spacing.lg),
-            FilledButton.icon(
-              icon: const Icon(Icons.compare_arrows, size: 16),
-              label: Text('action.compare'.tr),
+            AppButton(
+              icon: Icons.compare_arrows,
+              label: 'action.compare'.tr,
+              variant: AppButtonVariant.primary,
               onPressed: _flowA != null && _flowB != null ? _loadAndCompare : null,
             ),
           ],
@@ -267,6 +269,17 @@ class _DiffColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.colors(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 浅色模式下加深语义色以保证白底可读性（背景色调仍用原 token）
+    final addedText = isDark
+        ? colors.diffAdded
+        : Color.alphaBlend(
+            Colors.black.withValues(alpha: 0.35), colors.diffAdded);
+    final removedText = isDark
+        ? colors.diffRemoved
+        : Color.alphaBlend(
+            Colors.black.withValues(alpha: 0.30), colors.diffRemoved);
     return ListView.builder(
       padding: EdgeInsets.all(AppTheme.spacing.sm),
       itemCount: sections.length,
@@ -306,15 +319,15 @@ class _DiffColumn extends StatelessWidget {
                 ),
                 color: isDiff
                     ? (isLeft
-                        ? Colors.red.withValues(alpha: 0.08)
-                        : Colors.green.withValues(alpha: 0.08))
+                        ? colors.diffRemoved.withValues(alpha: 0.08)
+                        : colors.diffAdded.withValues(alpha: 0.08))
                     : null,
                 child: Text(
                   line,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontFamily: 'monospace',
                     color: isDiff
-                        ? (isLeft ? Colors.red.shade700 : Colors.green.shade700)
+                        ? (isLeft ? removedText : addedText)
                         : null,
                   ),
                 ),

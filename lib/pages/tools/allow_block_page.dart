@@ -2,59 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/tools_controller.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_button.dart';
+import '../../widgets/common/app_tab_bar.dart';
+import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/empty_state.dart';
 
 /// Inline panel for managing domain Allow/Block lists.
-class AllowBlockPanel extends StatelessWidget {
+class AllowBlockPanel extends StatefulWidget {
   const AllowBlockPanel({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          _AllowBlockTabBar(),
-          Expanded(child: _AllowBlockTabBody()),
-        ],
-      ),
-    );
-  }
+  State<AllowBlockPanel> createState() => _AllowBlockPanelState();
 }
 
-class _AllowBlockTabBar extends StatelessWidget {
-  const _AllowBlockTabBar();
+class _AllowBlockPanelState extends State<AllowBlockPanel> {
+  int _tabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      height: AppTheme.sizing.toolbarHeight,
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.dividerColor)),
-      ),
-      child: TabBar(
-        tabs: [
-          Tab(text: 'tab.allow_list'.tr),
-          Tab(text: 'tab.block_list'.tr),
-        ],
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        labelPadding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
-      ),
-    );
-  }
-}
-
-class _AllowBlockTabBody extends StatelessWidget {
-  const _AllowBlockTabBody();
-
-  @override
-  Widget build(BuildContext context) {
-    return const TabBarView(
+    return Column(
       children: [
-        _DomainListTab(isAllow: true),
-        _DomainListTab(isAllow: false),
+        Container(
+          height: AppTheme.sizing.toolbarHeight,
+          padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.lg),
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: theme.dividerColor)),
+          ),
+          child: AppTabBar(
+            tabs: ['tab.allow_list'.tr, 'tab.block_list'.tr],
+            activeIndex: _tabIndex,
+            onChanged: (i) => setState(() => _tabIndex = i),
+          ),
+        ),
+        Expanded(
+          child: IndexedStack(
+            index: _tabIndex,
+            children: const [
+              _DomainListTab(isAllow: true),
+              _DomainListTab(isAllow: false),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -100,16 +91,11 @@ class _DomainListTab extends StatelessWidget {
                   ),
                 ),
               ),
-              TextButton.icon(
+              AppButton(
+                label: 'action.add'.tr,
+                icon: Icons.add,
+                variant: AppButtonVariant.primary,
                 onPressed: () => _showAddDialog(context),
-                icon: const Icon(Icons.add, size: 14),
-                label: Text('action.add'.tr),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(0, 28),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.sm,
-                  ),
-                ),
               ),
             ],
           ),
@@ -119,14 +105,9 @@ class _DomainListTab extends StatelessWidget {
           child: Obx(() {
             final list = isAllow ? toolsCtrl.allowList : toolsCtrl.blockList;
             if (list.isEmpty) {
-              return Center(
-                child: Text(
-                  isAllow ? 'empty.no_allow'.tr : 'empty.no_block'.tr,
-                  style: TextStyle(
-                    color: theme.hintColor,
-                    fontSize: AppTheme.fontSize.md,
-                  ),
-                ),
+              return EmptyState(
+                icon: Icons.filter_list,
+                title: isAllow ? 'empty.no_allow'.tr : 'empty.no_block'.tr,
               );
             }
             return ListView.separated(
@@ -146,6 +127,7 @@ class _DomainListTab extends StatelessWidget {
                       size: 16,
                       color: theme.hintColor,
                     ),
+                    tooltip: 'action.delete'.tr,
                     visualDensity: VisualDensity.compact,
                     onPressed: () {
                       if (isAllow) {
@@ -174,25 +156,11 @@ class _DomainListTab extends StatelessWidget {
         title: Text(isAllow ? 'allow_block.add_allow'.tr : 'allow_block.add_block'.tr),
         content: SizedBox(
           width: 360,
-          child: TextField(
+          child: AppTextField(
             controller: controller,
             autofocus: true,
             style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
-            decoration: InputDecoration(
-              hintText: '*.example.com',
-              hintStyle: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: AppTheme.fontSize.sm,
-              ),
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacing.sm,
-                vertical: AppTheme.spacing.sm,
-              ),
-            ),
+            hintText: '*.example.com',
             onSubmitted: (value) {
               if (value.trim().isNotEmpty) {
                 if (isAllow) {

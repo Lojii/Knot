@@ -5,6 +5,19 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ============================================================
+// Semantic color defaults (single source of truth for the
+// constructor defaults, hardcoded modes and JSON parser fallbacks)
+// ============================================================
+
+const _kFavoriteLight = Color(0xFFFFC107);
+const _kFavoriteDark = Color(0xFFFFD60A);
+const _kDiffAddedLight = Color(0xFF34C759);
+const _kDiffAddedDark = Color(0xFF30D158);
+const _kDiffRemovedLight = Color(0xFFFF3B30);
+const _kDiffRemovedDark = Color(0xFFFF453A);
+const _kFontSizeXxl = 20.0;
+
+// ============================================================
 // Data classes
 // ============================================================
 
@@ -56,9 +69,9 @@ class ThemeColors {
     required this.syntaxStringColor,
     required this.syntaxNumberColor,
     required this.syntaxBoolColor,
-    this.favorite = const Color(0xFFFFC107),
-    this.diffAdded = const Color(0xFF34C759),
-    this.diffRemoved = const Color(0xFFFF3B30),
+    this.favorite = _kFavoriteLight,
+    this.diffAdded = _kDiffAddedLight,
+    this.diffRemoved = _kDiffRemovedLight,
   });
 }
 
@@ -240,7 +253,7 @@ class FontSizeConfig {
     required this.md,
     required this.lg,
     required this.xl,
-    this.xxl = 20.0,
+    this.xxl = _kFontSizeXxl,
   });
 }
 
@@ -291,6 +304,9 @@ ModeColors _defaultLightMode() {
       syntaxStringColor: const Color(0xFF2E7D32),
       syntaxNumberColor: const Color(0xFFE65100),
       syntaxBoolColor: const Color(0xFF6A1B9A),
+      favorite: _kFavoriteLight,
+      diffAdded: _kDiffAddedLight,
+      diffRemoved: _kDiffRemovedLight,
     ),
     toolbar: const ToolbarConfig(
       gradientStart: Color(0xFFFAFAFA),
@@ -368,9 +384,9 @@ ModeColors _defaultDarkMode() {
       syntaxStringColor: const Color(0xFFC3E88D),
       syntaxNumberColor: const Color(0xFFF78C6C),
       syntaxBoolColor: const Color(0xFFC792EA),
-      favorite: const Color(0xFFFFD60A),
-      diffAdded: const Color(0xFF30D158),
-      diffRemoved: const Color(0xFFFF453A),
+      favorite: _kFavoriteDark,
+      diffAdded: _kDiffAddedDark,
+      diffRemoved: _kDiffRemovedDark,
     ),
     toolbar: const ToolbarConfig(
       gradientStart: Color(0xFF2C2C2E),
@@ -437,7 +453,7 @@ const RadiusConfig _defaultRadius = RadiusConfig(
 );
 
 const FontSizeConfig _defaultFontSize = FontSizeConfig(
-  xs: 10.0, sm: 11.0, md: 12.0, lg: 13.0, xl: 14.0, xxl: 20.0,
+  xs: 10.0, sm: 11.0, md: 12.0, lg: 13.0, xl: 14.0, xxl: _kFontSizeXxl,
 );
 
 // ============================================================
@@ -493,13 +509,17 @@ class AppTheme {
     return Color(fallback);
   }
 
+  /// Parse an optional hex value, falling back when the key is absent.
+  static Color _parseHexOr(dynamic v, Color fallback) =>
+      v != null ? parseHex(v as String) : fallback;
+
   // ============ loadFromJson ============
 
   static void loadFromJson(String jsonString) {
     try {
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
-      _light = _parseModeColors(data['light'] as Map<String, dynamic>);
-      _dark = _parseModeColors(data['dark'] as Map<String, dynamic>);
+      _light = _parseModeColors(data['light'] as Map<String, dynamic>, isDark: false);
+      _dark = _parseModeColors(data['dark'] as Map<String, dynamic>, isDark: true);
       _spacing = _parseSpacing(data['spacing'] as Map<String, dynamic>);
       _sizing = _parseSizing(data['sizing'] as Map<String, dynamic>);
       _fontConfig = _parseFontConfig(data['fontFamily'] as Map<String, dynamic>);
@@ -607,7 +627,7 @@ class AppTheme {
 
   // ============ Private parsers ============
 
-  static ModeColors _parseModeColors(Map<String, dynamic> m) {
+  static ModeColors _parseModeColors(Map<String, dynamic> m, {required bool isDark}) {
     final colorsMap = m['colors'] as Map<String, dynamic>;
     final toolbarMap = m['toolbar'] as Map<String, dynamic>;
     final tableMap = m['table'] as Map<String, dynamic>;
@@ -616,7 +636,7 @@ class AppTheme {
     final tabMap = m['detailTab'] as Map<String, dynamic>;
 
     return ModeColors(
-      colors: _parseThemeColors(colorsMap),
+      colors: _parseThemeColors(colorsMap, isDark: isDark),
       toolbar: _parseToolbarConfig(toolbarMap),
       table: _parseTableConfig(tableMap),
       tree: _parseTreeConfig(treeMap),
@@ -625,7 +645,7 @@ class AppTheme {
     );
   }
 
-  static ThemeColors _parseThemeColors(Map<String, dynamic> m) {
+  static ThemeColors _parseThemeColors(Map<String, dynamic> m, {required bool isDark}) {
     Map<String, Color> colorMap(Map<String, dynamic> raw) =>
         raw.map((k, v) => MapEntry(k, parseHex(v as String)));
 
@@ -655,9 +675,9 @@ class AppTheme {
       syntaxStringColor: parseHex(syntax['string'] as String),
       syntaxNumberColor: parseHex(syntax['number'] as String),
       syntaxBoolColor: parseHex(syntax['boolean'] as String),
-      favorite: m['favorite'] != null ? parseHex(m['favorite'] as String) : const Color(0xFFFFC107),
-      diffAdded: m['diffAdded'] != null ? parseHex(m['diffAdded'] as String) : const Color(0xFF34C759),
-      diffRemoved: m['diffRemoved'] != null ? parseHex(m['diffRemoved'] as String) : const Color(0xFFFF3B30),
+      favorite: _parseHexOr(m['favorite'], isDark ? _kFavoriteDark : _kFavoriteLight),
+      diffAdded: _parseHexOr(m['diffAdded'], isDark ? _kDiffAddedDark : _kDiffAddedLight),
+      diffRemoved: _parseHexOr(m['diffRemoved'], isDark ? _kDiffRemovedDark : _kDiffRemovedLight),
     );
   }
 
@@ -761,7 +781,7 @@ class AppTheme {
       md: (m['md'] as num).toDouble(),
       lg: (m['lg'] as num).toDouble(),
       xl: (m['xl'] as num).toDouble(),
-      xxl: m['xxl'] != null ? (m['xxl'] as num).toDouble() : 20.0,
+      xxl: m['xxl'] != null ? (m['xxl'] as num).toDouble() : _kFontSizeXxl,
     );
   }
 }

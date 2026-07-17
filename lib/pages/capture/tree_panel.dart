@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/tree_controller.dart';
 import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/empty_state.dart';
 
 // ============================================================
 // Shared constants for unified tree row styling
@@ -43,10 +44,9 @@ class TreePanel extends StatelessWidget {
         treeCtrl.selectedApp.value;
 
         if (!hasData) {
-          return Center(
-            child: Text('empty.no_data'.tr,
-                style: TextStyle(
-                    color: AppTheme.colors(context).textSecondary)),
+          return EmptyState(
+            icon: Icons.account_tree_outlined,
+            title: 'empty.no_data'.tr,
           );
         }
 
@@ -395,7 +395,7 @@ class _PinnedRow extends StatelessWidget {
       isSelected: isSelected,
       text: item.label,
       leadingIcon:
-          const Icon(Icons.star, size: 12, color: Color(0xFFFFC107)),
+          Icon(Icons.star, size: 12, color: AppTheme.colors(context).favorite),
       onTap: () {
         if (item.type == PinType.domain && item.identifier != null) {
           treeCtrl.selectDomain(item.identifier);

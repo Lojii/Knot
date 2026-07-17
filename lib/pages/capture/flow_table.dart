@@ -9,6 +9,8 @@ import '../../controllers/tools_controller.dart';
 import '../../models/flow_summary.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/request_sender.dart';
+import '../../widgets/common/app_toast.dart';
+import '../../widgets/common/empty_state.dart';
 
 class FlowTable extends StatefulWidget {
   const FlowTable({super.key});
@@ -75,8 +77,11 @@ class _FlowTableState extends State<FlowTable> {
             children: [
               _buildHeader(theme, tableCtrl, colWidths, totalWidth),
               Expanded(
-                child: Center(child: Text('empty.no_requests'.tr,
-                    style: TextStyle(color: theme.hintColor))),
+                child: EmptyState(
+                  icon: Icons.inbox_outlined,
+                  title: 'empty.no_requests'.tr,
+                  description: 'home.start_hint'.tr,
+                ),
               ),
             ],
           );
@@ -150,9 +155,11 @@ class _FlowTableState extends State<FlowTable> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1,
-                style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.bold))),
+                style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w600,
+                    color: AppTheme.colors(context).textSecondary))),
             if (arrow.isNotEmpty)
-              Text(arrow, style: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.bold)),
+              Text(arrow, style: TextStyle(fontSize: AppTheme.fontSize.xs, fontWeight: FontWeight.w600,
+                  color: AppTheme.colors(context).textSecondary)),
           ],
         ),
       ),
@@ -207,7 +214,7 @@ class _FlowTableState extends State<FlowTable> {
                   style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
               const SizedBox(width: 7),
               SizedBox(width: colWidths[1], child: Text(flow.host,
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis, maxLines: 1)),
               const SizedBox(width: 7),
               SizedBox(width: colWidths[2], child: Tooltip(
                   message: flow.uri,
@@ -222,14 +229,14 @@ class _FlowTableState extends State<FlowTable> {
                   style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.statusColorOf(context, int.tryParse(flow.statusCode) ?? 0)), overflow: TextOverflow.ellipsis, maxLines: 1)),
               const SizedBox(width: 7),
               SizedBox(width: colWidths[5], child: Text(_FlowRow._formatTime(flow.startedAt),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.colors(context).textSecondary), overflow: TextOverflow.ellipsis, maxLines: 1)),
               const SizedBox(width: 7),
               SizedBox(width: colWidths[6], child: Text(
                   flow.durationMs != null ? '${flow.durationMs!.toStringAsFixed(0)}ms' : '-',
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.colors(context).textSecondary), overflow: TextOverflow.ellipsis, maxLines: 1)),
               const SizedBox(width: 7),
               SizedBox(width: colWidths[7], child: Text(_FlowRow._formatSize(flow.downloadBytes),
-                  style: TextStyle(fontSize: AppTheme.fontSize.sm), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  style: TextStyle(fontSize: AppTheme.fontSize.sm, color: AppTheme.colors(context).textSecondary), overflow: TextOverflow.ellipsis, maxLines: 1)),
             ],
           ),
         ),
@@ -325,6 +332,7 @@ class _FlowRow {
       } else if (value == 'curl') {
         final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
         Clipboard.setData(ClipboardData(text: curl));
+        showAppToast(context, 'detail.curl_copied'.tr);
       } else if (value == 'repeat') {
         _repeatRequest(context, flow);
       } else if (value == 'compose') {
@@ -508,7 +516,7 @@ class _ColorSubmenu extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: entry.value,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24),
+                        border: Border.all(color: AppTheme.colors(context).divider),
                       ),
                     ),
                   ),
