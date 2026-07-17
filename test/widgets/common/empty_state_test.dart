@@ -25,5 +25,7 @@ void main() {
       home: Scaffold(body: EmptyState(icon: Icons.inbox, title: 'Empty')),
     ));
     expect(find.text('Empty'), findsOneWidget);
+    expect(find.byType(TextButton), findsNothing);
+    expect(tester.widgetList(find.byType(Text)).length, 1);
   });
 }

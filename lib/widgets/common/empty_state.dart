@@ -33,12 +33,15 @@ class EmptyState extends StatelessWidget {
               )),
           if (description != null) ...[
             SizedBox(height: AppTheme.spacing.xs),
-            Text(description!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.textSecondary.withValues(alpha: 0.8),
-                  fontSize: AppTheme.fontSize.sm,
-                )),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: Text(description!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.textSecondary.withValues(alpha: 0.8),
+                    fontSize: AppTheme.fontSize.sm,
+                  )),
+            ),
           ],
           if (action != null) ...[
             SizedBox(height: AppTheme.spacing.md),
