@@ -6,6 +6,7 @@ import '../../controllers/task_scope.dart';
 import '../../models/flow_summary.dart';
 import '../../widgets/key_value_table.dart';
 import '../../widgets/body_viewer.dart';
+import '../../widgets/common/app_tab_bar.dart';
 import '../../theme/app_theme.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -65,7 +66,6 @@ class _TitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colors(context);
-    final detailTab = AppTheme.mode(context).detailTab;
 
     final statusCode = int.tryParse(flow.statusCode) ?? 0;
     final statusColor = AppTheme.statusColorOf(context, statusCode);
@@ -100,10 +100,11 @@ class _TitleBar extends StatelessWidget {
           // Status code
           if (flow.statusCode.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacing.xs, vertical: 1),
               decoration: BoxDecoration(
                 color: statusColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(AppTheme.radius.sm),
               ),
               child: Text(flow.statusCode,
                   style: TextStyle(
@@ -120,44 +121,15 @@ class _TitleBar extends StatelessWidget {
           // Tab buttons: Data / Details
           Obx(() {
             final active = panelCtrl.activeTab.value;
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _tabButton(context, 'detail.data'.tr, 0, active, detailTab),
-                const SizedBox(width: 2),
-                _tabButton(context, 'detail.details'.tr, 1, active, detailTab),
-              ],
+            return AppTabBar(
+              tabs: ['detail.data'.tr, 'detail.details'.tr],
+              activeIndex: active,
+              onChanged: panelCtrl.switchTab,
+              fontSize: AppTheme.fontSize.xs,
+              horizontalPadding: AppTheme.spacing.sm,
             );
           }),
         ],
-      ),
-    );
-  }
-
-  Widget _tabButton(BuildContext context, String label, int index, int active,
-      DetailTabConfig detailTab) {
-    final isActive = active == index;
-    return GestureDetector(
-      onTap: () => panelCtrl.switchTab(index),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing.sm, vertical: 2),
-          decoration: BoxDecoration(
-            color:
-                isActive ? detailTab.activeBackground : Colors.transparent,
-            borderRadius: BorderRadius.circular(detailTab.radius),
-          ),
-          child: Text(label,
-              style: TextStyle(
-                fontSize: AppTheme.fontSize.xs,
-                fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                color: isActive
-                    ? detailTab.activeText
-                    : detailTab.inactiveText,
-              )),
-        ),
       ),
     );
   }
@@ -309,52 +281,18 @@ class _SubTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detailTab = AppTheme.mode(context).detailTab;
     return Container(
       height: AppTheme.sizing.detailTabHeight,
       padding:
           EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
       child: Obx(() {
-        final active = activeIndex.value;
-        return Row(
-          children: [
-            Text(label,
-                style: TextStyle(
-                  fontSize: AppTheme.fontSize.xs,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                  color: AppTheme.colors(context).textSecondary,
-                )),
-            SizedBox(width: AppTheme.spacing.sm),
-            ...List.generate(tabs.length, (i) {
-              final isActive = active == i;
-              return GestureDetector(
-                onTap: () => onTap(i),
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.spacing.sm, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? detailTab.activeBackground
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(detailTab.radius),
-                    ),
-                    child: Text(tabs[i],
-                        style: TextStyle(
-                          fontSize: AppTheme.fontSize.xs,
-                          fontWeight:
-                              isActive ? FontWeight.w500 : FontWeight.normal,
-                          color: isActive
-                              ? detailTab.activeText
-                              : detailTab.inactiveText,
-                        )),
-                  ),
-                ),
-              );
-            }),
-          ],
+        return AppTabBar(
+          tabs: tabs,
+          activeIndex: activeIndex.value,
+          onChanged: onTap,
+          label: label,
+          fontSize: AppTheme.fontSize.xs,
+          horizontalPadding: AppTheme.spacing.sm,
         );
       }),
     );
@@ -803,7 +741,7 @@ class _DetailCard extends StatelessWidget {
         children: [
           Text(title,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: AppTheme.fontSize.xs,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
                 color: AppTheme.colors(context).textSecondary,
