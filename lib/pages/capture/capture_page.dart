@@ -8,6 +8,7 @@ import '../../controllers/tab_controller.dart';
 import '../../controllers/task_scope.dart';
 import '../../utils/request_sender.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_toast.dart';
 import 'global_bar.dart';
 import 'filter_bar.dart';
 import 'tree_panel.dart';
@@ -200,6 +201,7 @@ class _CaptureContentState extends State<_CaptureContent> {
               if (flow != null) {
                 final curl = "curl -X ${flow.method} '${flow.protocol.toLowerCase()}://${flow.host}${flow.uri}'";
                 Clipboard.setData(ClipboardData(text: curl));
+                showAppToast(context, 'detail.curl_copied'.tr);
               }
               return null;
             },
