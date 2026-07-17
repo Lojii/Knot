@@ -35,9 +35,6 @@ enum ResponseHelper {
         var headers = HTTPHeaders()
         headers.add(name: "content-type", value: contentType)
         headers.add(name: "content-length", value: "\(body.count)")
-        headers.add(name: "access-control-allow-origin", value: "*")
-        headers.add(name: "access-control-allow-methods", value: "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-        headers.add(name: "access-control-allow-headers", value: "Content-Type")
 
         let head = HTTPResponseHead(version: .http1_1, status: status, headers: headers)
         context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
@@ -45,6 +42,17 @@ enum ResponseHelper {
         var buffer = context.channel.allocator.buffer(capacity: body.count)
         buffer.writeBytes(body)
         context.write(NIOAny(HTTPServerResponsePart.body(.byteBuffer(buffer))), promise: nil)
+        context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
+    }
+
+    /// Answer a CORS preflight. No `access-control-allow-origin` is sent, so
+    /// cross-origin browser requests remain blocked; same-origin callers (the
+    /// bundled dashboard) and the native Flutter client are unaffected.
+    static func sendPreflight(context: ChannelHandlerContext) {
+        var headers = HTTPHeaders()
+        headers.add(name: "content-length", value: "0")
+        let head = HTTPResponseHead(version: .http1_1, status: .noContent, headers: headers)
+        context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
         context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
     }
 

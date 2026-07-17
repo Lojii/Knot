@@ -39,12 +39,14 @@ void main() async {
   // Startup: start web API server only — no task creation, no capture
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     int port = 0;
+    String? token;
 
     // Check if already running
     try {
       final status = await ProxyChannel.getStatus();
       if (status['running'] == true) {
         port = (status['port'] as int?) ?? 0;
+        token = status['token'] as String?;
       }
     } catch (e) { debugPrint("[Knot] Error: $e"); }
 
@@ -53,6 +55,7 @@ void main() async {
       try {
         final result = await ProxyChannel.startProxy();
         port = (result['port'] as int?) ?? 0;
+        token = result['token'] as String?;
       } catch (e) { debugPrint("[Knot] Error: $e"); }
     }
 
@@ -60,6 +63,8 @@ void main() async {
     if (port > 0) {
       api.baseUrl = 'http://localhost:$port';
       ws.baseUrl = 'ws://localhost:$port';
+      api.authToken = token;
+      ws.authToken = token;
       // Pre-load history for the + menu
       Get.find<HistoryController>().loadTasks();
     }

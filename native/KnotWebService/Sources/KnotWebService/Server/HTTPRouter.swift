@@ -9,6 +9,16 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
     private var uri: String?
     private var method: HTTPMethod?
     private var body: ByteBuffer?
+    private var headers: HTTPHeaders?
+
+    private let authToken: String
+
+    /// Reject request bodies larger than this to prevent unbounded memory growth.
+    private static let maxBodyBytes = 8 * 1024 * 1024
+
+    init(authToken: String) {
+        self.authToken = authToken
+    }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let part = unwrapInboundIn(data)
@@ -17,6 +27,7 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
         case .head(let head):
             self.uri = head.uri
             self.method = head.method
+            self.headers = head.headers
             self.body = nil
 
         case .body(let buf):
@@ -26,31 +37,52 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
                 var b = buf
                 self.body?.writeBuffer(&b)
             }
+            if let count = self.body?.readableBytes, count > Self.maxBodyBytes {
+                self.body = nil
+                self.uri = nil
+                ResponseHelper.errorResponse(context: context, status: .payloadTooLarge, message: "Request body too large")
+            }
 
         case .end:
             guard let uri = self.uri, let method = self.method else {
                 send404(context: context)
                 return
             }
+            let reqHeaders = self.headers ?? HTTPHeaders()
             let bodyData = body.flatMap { $0.getData(at: $0.readerIndex, length: $0.readableBytes) }
             self.uri = nil
             self.method = nil
+            self.headers = nil
             self.body = nil
-            route(context: context, method: method, uri: uri, bodyData: bodyData)
+            route(context: context, method: method, uri: uri, headers: reqHeaders, bodyData: bodyData)
         }
     }
 
     // MARK: - Routing
 
-    private func route(context: ChannelHandlerContext, method: HTTPMethod, uri: String, bodyData: Data? = nil) {
+    private func route(context: ChannelHandlerContext, method: HTTPMethod, uri: String, headers: HTTPHeaders = HTTPHeaders(), bodyData: Data? = nil) {
         let (path, queryParams) = parseURI(uri)
         let seg = pathSegments(path)
         let n = seg.count
 
-        // GET /
+        // CORS preflight — answer before auth (no body is exposed).
+        if method == .OPTIONS {
+            ResponseHelper.sendPreflight(context: context)
+            return
+        }
+
+        // GET / — dashboard is served same-origin and needs no token.
         if method == .GET && n == 0 {
             serveDashboard(context: context)
             return
+        }
+
+        // Everything under /api requires the session token.
+        if n >= 1 && seg[0] == "api" {
+            guard RequestAuth.isAuthorized(headers: headers, uri: uri, expected: authToken) else {
+                ResponseHelper.errorResponse(context: context, status: .unauthorized, message: "Unauthorized")
+                return
+            }
         }
 
         // /api/rules/...
@@ -322,7 +354,8 @@ final class HTTPRouter: ChannelInboundHandler, RemovableChannelHandler {
     // MARK: - Dashboard
 
     private func serveDashboard(context: ChannelHandlerContext) {
-        let body = Data(DashboardHTML.html.utf8)
+        let html = DashboardHTML.html.replacingOccurrences(of: "__KNOT_TOKEN__", with: authToken)
+        let body = Data(html.utf8)
         ResponseHelper.sendHTTP(context: context, status: .ok, contentType: "text/html; charset=utf-8", body: body)
     }
 

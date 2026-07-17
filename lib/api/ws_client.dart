@@ -6,11 +6,19 @@ enum WsStatus { disconnected, connecting, connected }
 
 class WsClient {
   String baseUrl;
+
+  /// Per-session bearer token; appended to the WS URL as `?token=`.
+  String? authToken;
+
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
   Timer? _reconnectTimer;
   int _reconnectAttempts = 0;
   int? _taskId;
+
+  /// Set when the client is intentionally closed so the auto-reconnect loop
+  /// does not fire after an explicit [disconnect].
+  bool _intentionalClose = false;
 
   final _messageController = StreamController<WsMessage>.broadcast();
   final _statusController = StreamController<WsStatus>.broadcast();
@@ -23,14 +31,27 @@ class WsClient {
   WsClient({this.baseUrl = 'ws://localhost:9090'});
 
   void connect({int? taskId}) {
+    // Tear down any existing connection so this doubles as a task switch
+    // without leaking the previous channel.
+    _reconnectTimer?.cancel();
+    _subscription?.cancel();
+    _channel?.sink.close();
+    _channel = null;
     _taskId = taskId;
     _reconnectAttempts = 0;
+    _intentionalClose = false;
     _doConnect();
   }
 
   void _doConnect() {
     _setStatus(WsStatus.connecting);
-    final url = _taskId != null ? '$baseUrl/ws?taskId=$_taskId' : '$baseUrl/ws';
+    final params = <String, String>{};
+    if (_taskId != null) params['taskId'] = '$_taskId';
+    if (authToken != null) params['token'] = authToken!;
+    final query = params.entries
+        .map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}')
+        .join('&');
+    final url = query.isEmpty ? '$baseUrl/ws' : '$baseUrl/ws?$query';
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
       _subscription = _channel!.stream.listen(
@@ -53,20 +74,18 @@ class WsClient {
     _setStatus(WsStatus.disconnected);
     _subscription?.cancel();
     _channel = null;
-    // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
-    final delay = Duration(seconds: (1 << _reconnectAttempts).clamp(1, 30));
+    // Do not reconnect after an intentional disconnect.
+    if (_intentionalClose) return;
+    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, capped at 30s.
+    // Cap the shift so the counter can't overflow to 0/negative on long outages.
+    final delay = Duration(seconds: (1 << (_reconnectAttempts.clamp(0, 5))).clamp(1, 30));
     _reconnectAttempts++;
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(delay, _doConnect);
   }
 
-  void switchTask(int taskId) {
-    _taskId = taskId;
-    disconnect();
-    connect(taskId: taskId);
-  }
-
   void disconnect() {
+    _intentionalClose = true;
     _reconnectTimer?.cancel();
     _subscription?.cancel();
     _channel?.sink.close();

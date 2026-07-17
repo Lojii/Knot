@@ -16,9 +16,21 @@ class ApiException implements Exception {
 
 class ApiClient {
   String baseUrl;
+
+  /// Per-session bearer token issued by the native web server. Sent on every
+  /// request; the server rejects `/api/*` calls without it.
+  String? authToken;
+
   final http.Client _client = http.Client();
 
   ApiClient({this.baseUrl = 'http://localhost:9090'});
+
+  Map<String, String> _headers([Map<String, String>? extra]) {
+    final h = <String, String>{};
+    if (authToken != null) h['Authorization'] = 'Bearer $authToken';
+    if (extra != null) h.addAll(extra);
+    return h;
+  }
 
   // ── Helpers ──
 
@@ -50,7 +62,7 @@ class ApiClient {
   // ── Tasks ──
 
   Future<List<TaskModel>> getTasks() async {
-    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks'))
+    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks'), headers: _headers())
         .timeout(const Duration(seconds: 10));
     final list = _unwrapList(resp);
     return list.map((e) => TaskModel.fromJson(e as Map<String, dynamic>)).toList();
@@ -59,14 +71,14 @@ class ApiClient {
   Future<void> renameTask(int taskId, String name) async {
     final resp = await _client.patch(
       Uri.parse('$baseUrl/api/tasks/$taskId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers({'Content-Type': 'application/json'}),
       body: jsonEncode({'name': name}),
     ).timeout(const Duration(seconds: 10));
     _checkStatus(resp);
   }
 
   Future<void> deleteTask(int taskId) async {
-    final resp = await _client.delete(Uri.parse('$baseUrl/api/tasks/$taskId'))
+    final resp = await _client.delete(Uri.parse('$baseUrl/api/tasks/$taskId'), headers: _headers())
         .timeout(const Duration(seconds: 10));
     _checkStatus(resp);
   }
@@ -74,7 +86,7 @@ class ApiClient {
   Future<void> batchDeleteTasks(List<int> ids) async {
     final resp = await _client.post(
       Uri.parse('$baseUrl/api/tasks/batch-delete'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers({'Content-Type': 'application/json'}),
       body: jsonEncode({'ids': ids}),
     ).timeout(const Duration(seconds: 30));
     _checkStatus(resp);
@@ -98,7 +110,7 @@ class ApiClient {
     if (status != null) params['status'] = status;
 
     final uri = Uri.parse('$baseUrl/api/tasks/$taskId/flows').replace(queryParameters: params);
-    final resp = await _client.get(uri).timeout(const Duration(seconds: 10));
+    final resp = await _client.get(uri, headers: _headers()).timeout(const Duration(seconds: 10));
     final data = _unwrap(resp);
     final items = (data['items'] as List? ?? [])
         .map((e) => FlowSummary.fromJson(e as Map<String, dynamic>))
@@ -109,6 +121,7 @@ class ApiClient {
   Future<FlowDetail> getFlowDetail(int taskId, String flowId) async {
     final resp = await _client.get(
       Uri.parse('$baseUrl/api/tasks/$taskId/flows/$flowId'),
+      headers: _headers(),
     ).timeout(const Duration(seconds: 10));
     _checkStatus(resp);
     final json = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -116,7 +129,7 @@ class ApiClient {
   }
 
   Future<({List<String> protocols, List<String> contentTypes})> getFlowFilters(int taskId) async {
-    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks/$taskId/flows/filters'))
+    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks/$taskId/flows/filters'), headers: _headers())
         .timeout(const Duration(seconds: 10));
     final data = _unwrap(resp);
     final protocols = (data['protocols'] as List?)?.map((e) => e as String).toList() ?? [];
@@ -130,7 +143,7 @@ class ApiClient {
     if (keyword != null) params['keyword'] = keyword;
     final uri = Uri.parse('$baseUrl/api/tasks/$taskId/flows/domains')
         .replace(queryParameters: params.isEmpty ? null : params);
-    final resp = await _client.get(uri).timeout(const Duration(seconds: 10));
+    final resp = await _client.get(uri, headers: _headers()).timeout(const Duration(seconds: 10));
     final data = _unwrap(resp);
     final items = data['items'] as List? ?? [];
     return items.map((e) {
@@ -140,7 +153,7 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> getFlowStats(int taskId) async {
-    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks/$taskId/flows/stats'))
+    final resp = await _client.get(Uri.parse('$baseUrl/api/tasks/$taskId/flows/stats'), headers: _headers())
         .timeout(const Duration(seconds: 10));
     return _unwrap(resp);
   }
@@ -149,7 +162,7 @@ class ApiClient {
 
   Future<Uint8List> getPayloadBytes(int taskId, String flowId, String direction, {bool preview = false}) async {
     final url = '$baseUrl/api/tasks/$taskId/flows/$flowId/$direction${preview ? "?preview=true" : ""}';
-    final resp = await _client.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+    final resp = await _client.get(Uri.parse(url), headers: _headers()).timeout(const Duration(seconds: 30));
     _checkStatus(resp);
     return resp.bodyBytes;
   }
@@ -160,7 +173,7 @@ class ApiClient {
     final body = <String, dynamic>{'action': action};
     if (modifiedRequest != null) body['modifiedRequest'] = modifiedRequest;
     final resp = await _client.patch(Uri.parse('$baseUrl/api/breakpoint/$flowId/resume'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers({'Content-Type': 'application/json'}),
       body: jsonEncode(body))
         .timeout(const Duration(seconds: 10));
     _checkStatus(resp);

@@ -10,6 +10,10 @@ import NIOPosix
 
 let portFile = "/tmp/knot-proxy-port"
 
+// Unbuffered stdout so logs (port/token/lifecycle) appear immediately even when
+// this debug server's output is redirected to a file or pipe.
+setbuf(stdout, nil)
+
 // MARK: - Setup
 
 // Database root: use app group container if available, else ~/.knot
@@ -39,6 +43,9 @@ do {
     // Write port so the Flutter app can find us
     try? "\(webPort)".write(toFile: portFile, atomically: true, encoding: .utf8)
     print("[KnotServer] API: http://127.0.0.1:\(webPort)")
+    // Print the per-session token so this standalone/debug binary's API is usable
+    // (all /api/* routes and the WS upgrade require it).
+    print("[KnotServer] Token: \(webServer.authToken)")
 } catch {
     print("[KnotServer] Web server failed: \(error)")
     exit(1)

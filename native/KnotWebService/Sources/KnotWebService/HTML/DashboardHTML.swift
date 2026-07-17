@@ -188,7 +188,7 @@ body { background: #1a1a2e; color: #e0e0e0; font-family: -apple-system, BlinkMac
 
   function connect() {
     var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(proto + '//' + location.host + '/ws');
+    ws = new WebSocket(proto + '//' + location.host + '/ws?token=__KNOT_TOKEN__');
 
     ws.onopen = function() {
       $('ws-status').textContent = 'Connected';

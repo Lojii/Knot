@@ -13,6 +13,7 @@ class AppDelegate: FlutterAppDelegate {
     // Proxy state — will hold ProxyServer instance once TunnelServices is linked
      var proxyServer: ProxyServer?
      var captureTask: CaptureTask?
+     var webServer: KnotWebServer?
     var proxyProcess: Process?  // Fallback: external binary
 
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -52,6 +53,8 @@ class AppDelegate: FlutterAppDelegate {
 
     override func applicationWillTerminate(_ notification: Notification) {
         stopProxyProcess()
+        webServer?.stop()
+        webServer = nil
         // proxyServer?.stop()
     }
 
@@ -61,6 +64,11 @@ class AppDelegate: FlutterAppDelegate {
     /// 1. In-process (when TunnelServices is linked via Xcode — enables debugging)
     /// 2. External binary (knot-server, fallback)
     private func startProxy(result: @escaping FlutterResult) {
+        // Check if already running — web-only in-process mode
+        if let server = webServer, let apiPort = server.boundPort {
+            result(["running": true, "port": apiPort, "token": server.authToken])
+            return
+        }
         // Check if already running — in-process mode
         if let server = proxyServer, server.localBoundPort != nil {
             let apiPort = server.webBoundPort ?? 0
@@ -90,6 +98,12 @@ class AppDelegate: FlutterAppDelegate {
             MitmService.storeFolder = groupURL.path.hasSuffix("/") ? groupURL.path : "\(groupURL.path)/"
         }
 
+        // Enforce data-retention policy before serving traffic (keeps the most
+        // recent 200 tasks and drops anything older than 30 days), so the
+        // capture database and payload files can't grow without bound.
+        DatabaseManager.shared.enforceRetention(
+            maxTasks: 200, maxAgeDays: 30, now: Date().timeIntervalSince1970)
+
         // Start Web API only — NO task creation, NO proxy capture.
         // Tasks are created on-demand when user clicks Start in the UI.
         let webServer = KnotWebServer(
@@ -98,9 +112,10 @@ class AppDelegate: FlutterAppDelegate {
         )
         do {
             let webPort = try webServer.start()
+            self.webServer = webServer
             try? "\(webPort)".write(toFile: "/tmp/knot-proxy-port", atomically: true, encoding: .utf8)
             NSLog("[Knot] API on port \(webPort)")
-            result(["running": true, "port": webPort])
+            result(["running": true, "port": webPort, "token": webServer.authToken])
         } catch {
             NSLog("[Knot] Web server failed: \(error)")
             result(FlutterError(code: "START_FAILED", message: "\(error)", details: nil))
@@ -155,6 +170,11 @@ class AppDelegate: FlutterAppDelegate {
     }
 
     private func getStatus(result: @escaping FlutterResult) {
+        // Web-only in-process mode
+        if let server = webServer, let apiPort = server.boundPort {
+            result(["running": true, "port": apiPort, "token": server.authToken])
+            return
+        }
         // In-process mode
         if let server = proxyServer, server.localBoundPort != nil {
             let apiPort = server.webBoundPort ?? 0

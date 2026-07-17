@@ -19,6 +19,10 @@ public final class KnotWebServer: @unchecked Sendable {
     private let ownsGroup: Bool
     private var serverChannel: Channel?
 
+    /// Bearer token required on all `/api/*` requests and the WebSocket upgrade.
+    /// Generated per launch and shared with the Flutter UI over the method channel.
+    public let authToken: String
+
     /// The port the web server is actually bound to (available after `start()`).
     public var boundPort: Int? {
         serverChannel?.localAddress?.port
@@ -35,10 +39,12 @@ public final class KnotWebServer: @unchecked Sendable {
     public init(
         preferredPort: Int = 9090,
         maxPortRetries: Int = 10,
-        eventLoopGroup: EventLoopGroup? = nil
+        eventLoopGroup: EventLoopGroup? = nil,
+        authToken: String? = nil
     ) {
         self.preferredPort = preferredPort
         self.maxPortRetries = maxPortRetries
+        self.authToken = authToken ?? UUID().uuidString
         if let elg = eventLoopGroup {
             self.group = elg
             self.ownsGroup = false
@@ -54,10 +60,15 @@ public final class KnotWebServer: @unchecked Sendable {
     @discardableResult
     public func start() throws -> Int {
         let pm = self.pushManager
+        let token = self.authToken
 
         let upgrader = NIOWebSocketServerUpgrader(
-            shouldUpgrade: { channel, _ in
-                channel.eventLoop.makeSucceededFuture(HTTPHeaders())
+            shouldUpgrade: { channel, head in
+                // Require the session token as a query parameter; reject otherwise.
+                guard RequestAuth.tokenFromURI(head.uri) == token else {
+                    return channel.eventLoop.makeSucceededFuture(nil)
+                }
+                return channel.eventLoop.makeSucceededFuture(HTTPHeaders())
             },
             upgradePipelineHandler: { channel, _ in
                 // Remove HTTPRouter and HTTPServerProtocolErrorHandler BEFORE
@@ -85,7 +96,7 @@ public final class KnotWebServer: @unchecked Sendable {
                         completionHandler: { _ in }
                     )
                 ).flatMap {
-                    channel.pipeline.addHandler(HTTPRouter())
+                    channel.pipeline.addHandler(HTTPRouter(authToken: token))
                 }
             }
 
