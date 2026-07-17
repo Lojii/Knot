@@ -10,10 +10,16 @@ class AppTextField extends StatelessWidget {
   final String? labelText;
   final Widget? prefixIcon;
   final Widget? suffix;
+  final Widget? suffixIcon;
+  final BoxConstraints? suffixIconConstraints;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
-  final int maxLines;
+  final int? maxLines;
+  final int? minLines;
+  final bool expands;
+  final TextAlignVertical? textAlignVertical;
+  final TextStyle? style;
 
   const AppTextField({
     super.key,
@@ -23,10 +29,16 @@ class AppTextField extends StatelessWidget {
     this.labelText,
     this.prefixIcon,
     this.suffix,
+    this.suffixIcon,
+    this.suffixIconConstraints,
     this.onChanged,
     this.onSubmitted,
     this.autofocus = false,
     this.maxLines = 1,
+    this.minLines,
+    this.expands = false,
+    this.textAlignVertical,
+    this.style,
   });
 
   OutlineInputBorder _border(Color color) => OutlineInputBorder(
@@ -42,12 +54,17 @@ class AppTextField extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       maxLines: maxLines,
-      style: TextStyle(fontSize: AppTheme.fontSize.md),
+      minLines: minLines,
+      expands: expands,
+      textAlignVertical: textAlignVertical,
+      style: style ?? TextStyle(fontSize: AppTheme.fontSize.md),
       decoration: InputDecoration(
         hintText: hintText,
         labelText: labelText,
         prefixIcon: prefixIcon,
         suffix: suffix,
+        suffixIcon: suffixIcon,
+        suffixIconConstraints: suffixIconConstraints,
         isDense: true,
         filled: true,
         fillColor: colors.surface,
