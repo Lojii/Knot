@@ -269,7 +269,7 @@ class _ComposePageState extends State<ComposePage> {
             children: [
               // Method dropdown
               Container(
-                height: 36,
+                height: AppTheme.sizing.searchFieldHeight,
                 padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm),
                 decoration: BoxDecoration(
                   border: Border.all(color: theme.dividerColor),
@@ -295,11 +295,14 @@ class _ComposePageState extends State<ComposePage> {
               SizedBox(width: AppTheme.spacing.sm),
               // URL field
               Expanded(
-                child: AppTextField(
-                  controller: _urlController,
-                  hintText: 'compose.url_hint'.tr,
-                  style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.md),
-                  onSubmitted: (_) => _sendRequest(),
+                child: SizedBox(
+                  height: AppTheme.sizing.searchFieldHeight,
+                  child: AppTextField(
+                    controller: _urlController,
+                    hintText: 'compose.url_hint'.tr,
+                    style: AppTheme.mono(context).copyWith(fontSize: AppTheme.fontSize.md),
+                    onSubmitted: (_) => _sendRequest(),
+                  ),
                 ),
               ),
               SizedBox(width: AppTheme.spacing.sm),
