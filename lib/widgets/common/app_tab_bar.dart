@@ -12,6 +12,9 @@ class AppTabBar extends StatelessWidget {
   final String? label;
   final double? fontSize;
 
+  /// 胶囊水平内边距；为 null 时使用 spacing.md。密集场景（详情面板）传 spacing.sm。
+  final double? horizontalPadding;
+
   const AppTabBar({
     super.key,
     required this.tabs,
@@ -19,6 +22,7 @@ class AppTabBar extends StatelessWidget {
     required this.onChanged,
     this.label,
     this.fontSize,
+    this.horizontalPadding,
   });
 
   @override
@@ -43,27 +47,34 @@ class AppTabBar extends StatelessWidget {
           final isActive = activeIndex == i;
           return Padding(
             padding: EdgeInsets.only(right: i < tabs.length - 1 ? 2 : 0),
-            child: Hoverable(
-              onTap: () => onChanged(i),
-              builder: (context, hovered) => Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.md, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? detailTab.activeBackground
-                      : hovered
-                          ? detailTab.activeBackground.withValues(alpha: 0.5)
-                          : Colors.transparent,
-                  borderRadius: BorderRadius.circular(detailTab.radius),
+            child: Semantics(
+              button: true,
+              selected: isActive,
+              label: tabs[i],
+              child: Hoverable(
+                onTap: () => onChanged(i),
+                builder: (context, hovered) => Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding ?? AppTheme.spacing.md,
+                      vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? detailTab.activeBackground
+                        : hovered
+                            ? detailTab.activeBackground.withValues(alpha: 0.5)
+                            : Colors.transparent,
+                    borderRadius: BorderRadius.circular(detailTab.radius),
+                  ),
+                  child: Text(tabs[i],
+                      style: TextStyle(
+                        fontSize: size,
+                        fontWeight:
+                            isActive ? FontWeight.w500 : FontWeight.normal,
+                        color: isActive
+                            ? detailTab.activeText
+                            : detailTab.inactiveText,
+                      )),
                 ),
-                child: Text(tabs[i],
-                    style: TextStyle(
-                      fontSize: size,
-                      fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                      color: isActive
-                          ? detailTab.activeText
-                          : detailTab.inactiveText,
-                    )),
               ),
             ),
           );

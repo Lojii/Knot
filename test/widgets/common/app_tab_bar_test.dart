@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,5 +86,64 @@ void main() {
       decoration.color,
       AppTheme.lightMode.detailTab.activeBackground.withValues(alpha: 0.5),
     );
+  });
+
+  testWidgets('hovering the active tab keeps full activeBackground', (tester) async {
+    await tester.pumpWidget(wrap(AppTabBar(
+      tabs: const ['List', 'Waterfall'],
+      activeIndex: 0,
+      onChanged: (_) {},
+    )));
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+    await tester.pump();
+
+    await gesture.moveTo(tester.getCenter(find.text('List')));
+    await tester.pumpAndSettle();
+
+    final container = tester.widget<Container>(
+      find.ancestor(of: find.text('List'), matching: find.byType(Container)).first,
+    );
+    final decoration = container.decoration! as BoxDecoration;
+    expect(decoration.color, AppTheme.lightMode.detailTab.activeBackground);
+  });
+
+  testWidgets('horizontalPadding overrides the default pill padding', (tester) async {
+    await tester.pumpWidget(wrap(AppTabBar(
+      tabs: const ['List', 'Waterfall'],
+      activeIndex: 0,
+      onChanged: (_) {},
+      horizontalPadding: AppTheme.spacing.sm,
+    )));
+
+    final container = tester.widget<Container>(
+      find.ancestor(of: find.text('List'), matching: find.byType(Container)).first,
+    );
+    expect(
+      container.padding,
+      EdgeInsets.symmetric(horizontal: AppTheme.spacing.sm, vertical: 2),
+    );
+  });
+
+  testWidgets('tabs expose button semantics; active tab is selected', (tester) async {
+    final handle = tester.ensureSemantics();
+
+    await tester.pumpWidget(wrap(AppTabBar(
+      tabs: const ['List', 'Waterfall'],
+      activeIndex: 0,
+      onChanged: (_) {},
+    )));
+
+    final active = tester.getSemantics(find.text('List'));
+    expect(active.flagsCollection.isButton, isTrue);
+    expect(active.flagsCollection.isSelected, Tristate.isTrue);
+
+    final inactive = tester.getSemantics(find.text('Waterfall'));
+    expect(inactive.flagsCollection.isButton, isTrue);
+    expect(inactive.flagsCollection.isSelected, isNot(Tristate.isTrue));
+
+    handle.dispose();
   });
 }
