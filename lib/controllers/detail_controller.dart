@@ -27,9 +27,17 @@ class DetailController extends GetxController {
   String get requestContentEncoding => _headerValue(detail.value, 'reqHeaders', 'content-encoding');
   String get responseContentEncoding => _headerValue(detail.value, 'rspHeaders', 'content-encoding');
 
-  // Convenience: decode bytes as text (utf-8 with fallback)
-  String get requestBodyText => _decodeText(requestBodyBytes.value);
-  String get responseBodyText => _decodeText(responseBodyBytes.value);
+  // Convenience: decode bytes as text (utf-8 with fallback).
+  // Cached so widget rebuilds don't re-decode the whole buffer each access.
+  String? _requestBodyText;
+  String? _responseBodyText;
+  String get requestBodyText => _requestBodyText ??= _decodeText(requestBodyBytes.value);
+  String get responseBodyText => _responseBodyText ??= _decodeText(responseBodyBytes.value);
+
+  /// Payloads at/above this size are decompressed on a background isolate to
+  /// keep the UI thread responsive; smaller ones decode inline (compute has
+  /// non-trivial spawn/copy overhead not worth paying for tiny bodies).
+  static const _isolateThreshold = 256 * 1024;
 
   Future<void> loadDetail(int taskId, String flowId) async {
     isLoadingDetail.value = true;
@@ -41,30 +49,41 @@ class DetailController extends GetxController {
 
   Future<void> loadBodies(int taskId, String flowId) async {
     isLoadingBody.value = true;
-    try {
-      // Fetch raw bytes from server (no server-side decompression)
-      final results = await Future.wait([
-        api.getPayloadBytes(taskId, flowId, 'request'),
-        api.getPayloadBytes(taskId, flowId, 'response'),
-      ]);
-
-      // Client-side decompression based on Content-Encoding + magic bytes
-      requestBodyBytes.value = _decompress(results[0], requestContentEncoding);
-      responseBodyBytes.value = _decompress(results[1], responseContentEncoding);
-    } catch (_) {
-      requestBodyBytes.value = null;
-      responseBodyBytes.value = null;
-    }
+    _requestBodyText = null;
+    _responseBodyText = null;
+    // Fetch + decompress each direction independently so a missing request
+    // body (e.g. a GET) doesn't blank out an available response body.
+    requestBodyBytes.value = await _loadOne(taskId, flowId, 'request', requestContentEncoding);
+    responseBodyBytes.value = await _loadOne(taskId, flowId, 'response', responseContentEncoding);
     isLoadingBody.value = false;
+  }
+
+  Future<Uint8List?> _loadOne(int taskId, String flowId, String direction, String encoding) async {
+    try {
+      final bytes = await api.getPayloadBytes(taskId, flowId, direction);
+      if (bytes.length >= _isolateThreshold) {
+        return await compute(_decompressIsolate, (bytes, encoding));
+      }
+      return _decompress(bytes, encoding);
+    } catch (e) {
+      debugPrint("[Knot] $direction body load failed: $e");
+      return null;
+    }
   }
 
   void clear() {
     detail.value = null;
     requestBodyBytes.value = null;
     responseBodyBytes.value = null;
+    _requestBodyText = null;
+    _responseBodyText = null;
   }
 
   // ── Decompression ──
+
+  /// Isolate entrypoint for [compute]: must be a top-level/static function.
+  static Uint8List _decompressIsolate((Uint8List, String) args) =>
+      _decompress(args.$1, args.$2);
 
   /// Client-side decompression: Content-Encoding header + magic bytes fallback.
   static Uint8List _decompress(Uint8List bytes, String encoding) {

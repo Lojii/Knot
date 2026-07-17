@@ -97,8 +97,37 @@ class FlowTableController extends GetxController {
       return true;
     }).toList();
 
+    _sortList(result);
     flows.value = result;
     total.value = result.length;
+  }
+
+  /// Sort [list] in place per the active sort column. Kept here (not in the
+  /// view) so the list is sorted once per data change instead of re-sorted on
+  /// every widget rebuild.
+  void _sortList(List<FlowSummary> list) {
+    final col = sortColumn.value;
+    if (col == null) return;
+    int Function(FlowSummary, FlowSummary) cmp;
+    switch (col) {
+      case SortColumn.protocol:
+        cmp = (a, b) => a.protocol.compareTo(b.protocol);
+      case SortColumn.host:
+        cmp = (a, b) => a.host.compareTo(b.host);
+      case SortColumn.path:
+        cmp = (a, b) => a.uri.compareTo(b.uri);
+      case SortColumn.method:
+        cmp = (a, b) => a.method.compareTo(b.method);
+      case SortColumn.status:
+        cmp = (a, b) => a.statusCode.compareTo(b.statusCode);
+      case SortColumn.time:
+        cmp = (a, b) => a.startedAt.compareTo(b.startedAt);
+      case SortColumn.duration:
+        cmp = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
+      case SortColumn.size:
+        cmp = (a, b) => a.downloadBytes.compareTo(b.downloadBytes);
+    }
+    list.sort(sortAscending.value ? cmp : (a, b) => cmp(b, a));
   }
 
   /// Debounced reapplyFilters — coalesces rapid WS pushes into one recompute.
@@ -153,6 +182,8 @@ class FlowTableController extends GetxController {
       sortColumn.value = col;
       sortAscending.value = true;
     }
+    // Re-sort the already-filtered list once, in the controller.
+    reapplyFilters();
   }
 
   @override

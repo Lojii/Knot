@@ -70,16 +70,17 @@ enum PayloadRoutes {
             return
         }
 
+        // Resolve the file path (DB access) up front, then release the DB group
+        // before streaming so the group ref isn't held for the whole transfer.
+        let filePath: String
         do {
             let group = try DatabaseManager.shared.openTask(tid)
             defer { DatabaseManager.shared.closeTask(tid) }
 
-            // Try decoded file first
             let decodedPath = PathManager.decodedPayloadPath(taskId: tid, flowId: flowId, direction: payloadDir)
-            var filePath = decodedPath
-
-            if !FileManager.default.fileExists(atPath: filePath) {
-                // Fall back to raw payload
+            if FileManager.default.fileExists(atPath: decodedPath) {
+                filePath = decodedPath
+            } else {
                 guard let flow = try FlowDAO.find(db: group.proto, flowId: flowId) else {
                     ResponseHelper.errorResponse(context: context, status: .notFound, message: "Flow not found")
                     return
@@ -91,42 +92,13 @@ enum PayloadRoutes {
                 }
                 filePath = PathManager.rawPayloadPath(taskId: tid, ref: ref)
             }
-
-            guard FileManager.default.fileExists(atPath: filePath) else {
-                ResponseHelper.errorResponse(context: context, status: .notFound, message: "Payload file not found")
-                return
-            }
-
-            let reader: PayloadReader
-            do {
-                reader = try PayloadReader(filePath: filePath)
-            } catch {
-                ResponseHelper.errorResponse(context: context, status: .internalServerError,
-                                             message: "Cannot open payload: \(error.localizedDescription)")
-                return
-            }
-            defer { reader.close() }
-
-            // Stream full file via chunked transfer
-            var headers = HTTPHeaders()
-            headers.add(name: "content-type", value: "application/octet-stream")
-            headers.add(name: "transfer-encoding", value: "chunked")
-            headers.add(name: "access-control-allow-origin", value: "*")
-
-            let head = HTTPResponseHead(version: .http1_1, status: .ok, headers: headers)
-            context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
-
-            for chunk in reader.chunks() {
-                var buffer = context.channel.allocator.buffer(capacity: chunk.count)
-                buffer.writeBytes(chunk)
-                context.write(NIOAny(HTTPServerResponsePart.body(.byteBuffer(buffer))), promise: nil)
-            }
-
-            context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
         } catch {
             ResponseHelper.errorResponse(context: context, status: .internalServerError,
                                          message: "Failed to read payload: \(error.localizedDescription)")
+            return
         }
+
+        streamFile(context: context, filePath: filePath)
     }
 
     // MARK: - Private
@@ -145,6 +117,8 @@ enum PayloadRoutes {
 
         let preview = queryParams["preview"] == "true"
 
+        // Resolve file path (DB access) then release the group before streaming.
+        let filePath: String
         do {
             let group = try DatabaseManager.shared.openTask(tid)
             defer { DatabaseManager.shared.closeTask(tid) }
@@ -165,55 +139,85 @@ enum PayloadRoutes {
                 return
             }
 
-            let filePath = PathManager.rawPayloadPath(taskId: tid, ref: payloadRef)
-            guard FileManager.default.fileExists(atPath: filePath) else {
-                ResponseHelper.errorResponse(context: context, status: .notFound, message: "Payload file not found")
-                return
-            }
+            filePath = PathManager.rawPayloadPath(taskId: tid, ref: payloadRef)
+        } catch {
+            ResponseHelper.errorResponse(context: context, status: .internalServerError,
+                                         message: "Failed to read payload: \(error.localizedDescription)")
+            return
+        }
 
+        if preview {
             let reader: PayloadReader
             do {
                 reader = try PayloadReader(filePath: filePath)
             } catch {
-                ResponseHelper.errorResponse(context: context, status: .internalServerError,
-                                             message: "Cannot open payload: \(error.localizedDescription)")
+                ResponseHelper.errorResponse(context: context, status: .notFound, message: "Payload file not found")
                 return
             }
             defer { reader.close() }
+            let previewSize = min(4096, Int(reader.size))
+            let data = reader.read(offset: 0, length: previewSize)
+            ResponseHelper.sendHTTP(context: context, status: .ok,
+                                    contentType: "application/octet-stream", body: data)
+            return
+        }
 
-            if preview {
-                // Preview mode: return first 4KB as a single response
-                let previewSize = min(4096, Int(reader.size))
-                let data = reader.read(offset: 0, length: previewSize)
-                ResponseHelper.sendHTTP(
-                    context: context,
-                    status: .ok,
-                    contentType: "application/octet-stream",
-                    body: data
-                )
-            } else {
-                // Streaming mode: chunked transfer
-                var headers = HTTPHeaders()
-                headers.add(name: "content-type", value: "application/octet-stream")
-                headers.add(name: "transfer-encoding", value: "chunked")
-                headers.add(name: "access-control-allow-origin", value: "*")
-                headers.add(name: "access-control-allow-methods", value: "GET, POST, OPTIONS")
-                headers.add(name: "access-control-allow-headers", value: "Content-Type")
+        streamFile(context: context, filePath: filePath)
+    }
 
-                let head = HTTPResponseHead(version: .http1_1, status: .ok, headers: headers)
-                context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
+    /// Stream a file to the client with chunked transfer encoding, flushing each
+    /// chunk and reading the next only after the previous write completes. This
+    /// bounds outbound memory to a single chunk and applies natural backpressure,
+    /// instead of queueing the whole file into the channel's write buffer.
+    private static func streamFile(context: ChannelHandlerContext, filePath: String, chunkSize: Int = 64 * 1024) {
+        guard FileManager.default.fileExists(atPath: filePath) else {
+            ResponseHelper.errorResponse(context: context, status: .notFound, message: "Payload file not found")
+            return
+        }
 
-                for chunk in reader.chunks() {
-                    var buffer = context.channel.allocator.buffer(capacity: chunk.count)
-                    buffer.writeBytes(chunk)
-                    context.write(NIOAny(HTTPServerResponsePart.body(.byteBuffer(buffer))), promise: nil)
-                }
-
-                context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
-            }
+        let reader: PayloadReader
+        do {
+            reader = try PayloadReader(filePath: filePath, chunkSize: chunkSize)
         } catch {
             ResponseHelper.errorResponse(context: context, status: .internalServerError,
-                                         message: "Failed to read payload: \(error.localizedDescription)")
+                                         message: "Cannot open payload: \(error.localizedDescription)")
+            return
+        }
+
+        var headers = HTTPHeaders()
+        headers.add(name: "content-type", value: "application/octet-stream")
+        headers.add(name: "transfer-encoding", value: "chunked")
+        let head = HTTPResponseHead(version: .http1_1, status: .ok, headers: headers)
+        context.write(NIOAny(HTTPServerResponsePart.head(head)), promise: nil)
+
+        streamNextChunk(context: context, reader: reader, offset: 0, chunkSize: chunkSize)
+    }
+
+    private static func streamNextChunk(context: ChannelHandlerContext, reader: PayloadReader,
+                                        offset: Int64, chunkSize: Int) {
+        let chunk = reader.read(offset: offset, length: chunkSize)
+        if chunk.isEmpty {
+            context.writeAndFlush(NIOAny(HTTPServerResponsePart.end(nil)), promise: nil)
+            reader.close()
+            return
+        }
+
+        var buffer = context.channel.allocator.buffer(capacity: chunk.count)
+        buffer.writeBytes(chunk)
+        let promise = context.eventLoop.makePromise(of: Void.self)
+        context.writeAndFlush(NIOAny(HTTPServerResponsePart.body(.byteBuffer(buffer))), promise: promise)
+
+        let nextOffset = offset + Int64(chunk.count)
+        promise.futureResult.whenComplete { result in
+            switch result {
+            case .success:
+                // whenComplete runs on the channel's event loop; safe to recurse
+                // (scheduled, not stack-growing) and to reuse context/reader.
+                streamNextChunk(context: context, reader: reader, offset: nextOffset, chunkSize: chunkSize)
+            case .failure:
+                // Client went away mid-transfer; stop reading and release the file.
+                reader.close()
+            }
         }
     }
 }

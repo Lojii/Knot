@@ -39,32 +39,6 @@ class _FlowTableState extends State<FlowTable> {
     super.dispose();
   }
 
-  List<FlowSummary> _applySorting(List<FlowSummary> items, SortColumn? col, bool asc) {
-    if (col == null) return items;
-    final sorted = List<FlowSummary>.from(items);
-    int Function(FlowSummary, FlowSummary) comparator;
-    switch (col) {
-      case SortColumn.protocol:
-        comparator = (a, b) => a.protocol.compareTo(b.protocol);
-      case SortColumn.host:
-        comparator = (a, b) => a.host.compareTo(b.host);
-      case SortColumn.path:
-        comparator = (a, b) => a.uri.compareTo(b.uri);
-      case SortColumn.method:
-        comparator = (a, b) => a.method.compareTo(b.method);
-      case SortColumn.status:
-        comparator = (a, b) => a.statusCode.compareTo(b.statusCode);
-      case SortColumn.time:
-        comparator = (a, b) => a.startedAt.compareTo(b.startedAt);
-      case SortColumn.duration:
-        comparator = (a, b) => (a.durationMs ?? 0).compareTo(b.durationMs ?? 0);
-      case SortColumn.size:
-        comparator = (a, b) => a.downloadBytes.compareTo(b.downloadBytes);
-    }
-    sorted.sort(asc ? comparator : (a, b) => comparator(b, a));
-    return sorted;
-  }
-
   static const _columns = <(String, SortColumn)>[
     ('Proto', SortColumn.protocol),
     ('col.host', SortColumn.host),
@@ -88,12 +62,11 @@ class _FlowTableState extends State<FlowTable> {
       final totalWidth = constraints.maxWidth - AppTheme.spacing.sm * 2 - 7 * 7;
 
       return Obx(() {
-        selCtrl.selectedFlow.value;
         final weights = tableCtrl.columnWeights.toList();
         final totalWeight = weights.fold<double>(0, (s, w) => s + w);
 
-        var items = tableCtrl.flows.toList();
-        items = _applySorting(items, tableCtrl.sortColumn.value, tableCtrl.sortAscending.value);
+        // flows is already filtered + sorted by FlowTableController.
+        final items = tableCtrl.flows;
 
         List<double> colWidths = weights.map((w) => w / totalWeight * totalWidth).toList();
 
@@ -118,10 +91,15 @@ class _FlowTableState extends State<FlowTable> {
               child: ListView.builder(
                 controller: _scrollController,
                 itemCount: items.length,
+                itemExtent: AppTheme.sizing.tableRowHeight,
                 itemBuilder: (ctx, i) {
                   final f = items[i];
-                  final isSelected = selCtrl.selectedFlow.value?.flowId == f.flowId;
-                  return _buildRow(context, f, isSelected, colWidths);
+                  // Scope the selection highlight to each row so selecting a
+                  // flow repaints only two rows, not the whole table.
+                  return Obx(() {
+                    final isSelected = selCtrl.selectedFlow.value?.flowId == f.flowId;
+                    return _buildRow(context, f, isSelected, colWidths);
+                  });
                 },
               ),
             ),
