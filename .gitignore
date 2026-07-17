@@ -70,3 +70,4 @@ node_modules/
 tmp/
 .superpowers/
 .claude/
+.worktrees/
