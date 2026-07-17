@@ -222,17 +222,19 @@ void main() {
         colors.remove('diffRemoved');
       }
       (raw['fontSize'] as Map<String, dynamic>).remove('xxl');
+      // Sentinel on an unrelated key: proves the stripped JSON was actually
+      // parsed rather than the whole config falling back to defaults.
+      ((raw['light'] as Map<String, dynamic>)['colors']
+          as Map<String, dynamic>)['primary'] = '#123456';
 
       AppTheme.loadFromJson(jsonEncode(raw));
 
+      expect(AppTheme.lightMode.colors.primary, const Color(0xFF123456));
+      // Missing keys fall back to their per-mode defaults.
       expect(AppTheme.lightMode.colors.favorite, const Color(0xFFFFC107));
+      expect(AppTheme.darkMode.colors.favorite, const Color(0xFFFFD60A));
+      expect(AppTheme.darkMode.colors.diffAdded, const Color(0xFF30D158));
       expect(AppTheme.fontSize.xxl, 20.0);
-      // Proves parsing did NOT fall back entirely: the missing-key parse
-      // defaults (0xFFFFC107 / 0xFF34C759) differ from the hardcoded dark
-      // defaults (0xFFFFD60A / 0xFF30D158), so these only hold when the
-      // stripped JSON was actually parsed.
-      expect(AppTheme.darkMode.colors.favorite, const Color(0xFFFFC107));
-      expect(AppTheme.darkMode.colors.diffAdded, const Color(0xFF34C759));
 
       AppTheme.loadFromJson('invalid'); // reset to defaults
     });
