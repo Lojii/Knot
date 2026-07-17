@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -209,10 +210,29 @@ void main() {
     });
 
     test('loadFromJson without new keys falls back to defaults for them', () {
-      final jsonString = File('assets/theme.json').readAsStringSync();
-      AppTheme.loadFromJson(jsonString);
+      // Strip the new keys from theme.json so the missing-key fallback
+      // branches in the parsers are genuinely exercised.
+      final raw = jsonDecode(File('assets/theme.json').readAsStringSync())
+          as Map<String, dynamic>;
+      for (final mode in ['light', 'dark']) {
+        final colors = (raw[mode] as Map<String, dynamic>)['colors']
+            as Map<String, dynamic>;
+        colors.remove('favorite');
+        colors.remove('diffAdded');
+        colors.remove('diffRemoved');
+      }
+      (raw['fontSize'] as Map<String, dynamic>).remove('xxl');
+
+      AppTheme.loadFromJson(jsonEncode(raw));
+
       expect(AppTheme.lightMode.colors.favorite, const Color(0xFFFFC107));
       expect(AppTheme.fontSize.xxl, 20.0);
+      // Proves parsing did NOT fall back entirely: the missing-key parse
+      // defaults (0xFFFFC107 / 0xFF34C759) differ from the hardcoded dark
+      // defaults (0xFFFFD60A / 0xFF30D158), so these only hold when the
+      // stripped JSON was actually parsed.
+      expect(AppTheme.darkMode.colors.favorite, const Color(0xFFFFC107));
+      expect(AppTheme.darkMode.colors.diffAdded, const Color(0xFF34C759));
 
       AppTheme.loadFromJson('invalid'); // reset to defaults
     });
