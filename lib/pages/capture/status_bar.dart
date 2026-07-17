@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../api/ws_client.dart';
 import '../../controllers/live_controller.dart';
 import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/connection_indicator.dart';
 
 class CaptureStatusBar extends StatelessWidget {
   const CaptureStatusBar({super.key});
@@ -34,15 +34,10 @@ class CaptureStatusBar extends StatelessWidget {
       child: Obx(() {
         final wsStatus = liveCtrl.wsStatus.value;
         final themeColors = AppTheme.colors(context);
-        final dotColor = switch (wsStatus) {
-          WsStatus.connected => themeColors.statusConnected,
-          WsStatus.connecting => themeColors.statusConnecting,
-          WsStatus.disconnected => themeColors.statusDisconnected,
-        };
         return Row(
           children: [
-            Container(width: 6, height: 6, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
+            ConnectionIndicator(status: wsStatus),
+            _sep(context),
             _item(context, 'Listening on :${liveCtrl.listenPort.value}'),
             _sep(context),
             _item(context, 'Mem: ${liveCtrl.memoryMB.value.toStringAsFixed(0)} MB'),
