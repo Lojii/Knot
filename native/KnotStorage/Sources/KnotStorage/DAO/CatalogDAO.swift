@@ -149,6 +149,27 @@ public enum CatalogDAO {
         try db.run("DELETE FROM capture_task WHERE id = ?", taskId)
     }
 
+    /// Return the ids of tasks that should be retired under the retention policy:
+    /// any task older than `maxAgeSeconds` (if > 0), plus any task beyond the
+    /// newest `maxTasks` (if > 0). Ordered so callers can delete them directly.
+    public static func findRetiredTaskIds(db: Connection, now: TimeInterval,
+                                          maxTasks: Int, maxAgeSeconds: TimeInterval) throws -> [Int64] {
+        // All task ids, newest first.
+        let stmt = try db.prepare("SELECT id, created_at FROM capture_task ORDER BY created_at DESC")
+        let rows = stmt.map { (($0[0] as? Int64 ?? 0), ($0[1] as? Double ?? 0)) }
+
+        var retire = Set<Int64>()
+        for (index, (id, createdAt)) in rows.enumerated() {
+            if maxTasks > 0 && index >= maxTasks {
+                retire.insert(id)
+            }
+            if maxAgeSeconds > 0 && createdAt > 0 && (now - createdAt) > maxAgeSeconds {
+                retire.insert(id)
+            }
+        }
+        return Array(retire)
+    }
+
     /// Insert a full CaptureTaskRecord with all columns. Returns the new row id.
     @discardableResult
     public static func insertFullTask(db: Connection, task: CaptureTaskRecord) throws -> Int64 {

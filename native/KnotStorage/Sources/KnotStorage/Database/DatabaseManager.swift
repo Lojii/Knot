@@ -79,6 +79,56 @@ public class DatabaseManager {
         }
     }
 
+    /// Enforce the data-retention policy: delete tasks beyond the newest
+    /// `maxTasks` and/or older than `maxAgeDays`. Active (in-use) tasks are
+    /// skipped. Catalog rows are removed before their directories.
+    ///
+    /// Best called at startup before serving traffic to avoid contending with
+    /// concurrent catalog reads on the same connection.
+    /// - Returns: number of tasks deleted.
+    @discardableResult
+    public func enforceRetention(maxTasks: Int, maxAgeDays: Int, now: TimeInterval) -> Int {
+        let maxAgeSeconds = maxAgeDays > 0 ? TimeInterval(maxAgeDays) * 86_400 : 0
+        let ids: [Int64]
+        do {
+            ids = try CatalogDAO.findRetiredTaskIds(db: catalogDB, now: now,
+                                                    maxTasks: maxTasks, maxAgeSeconds: maxAgeSeconds)
+        } catch {
+            Self.logger.error("enforceRetention: query failed: \(error.localizedDescription)")
+            return 0
+        }
+
+        var deleted = 0
+        for id in ids {
+            poolLock.lock()
+            let active = activePools[id] != nil
+            poolLock.unlock()
+            if active { continue }
+
+            do {
+                try CatalogDAO.deleteTask(db: catalogDB, taskId: id)
+                try deleteTask(id)
+                deleted += 1
+            } catch {
+                Self.logger.error("enforceRetention: failed to delete task \(id): \(error.localizedDescription)")
+            }
+        }
+        if deleted > 0 {
+            Self.logger.info("enforceRetention: deleted \(deleted) task(s)")
+        }
+        return deleted
+    }
+
+    /// Checkpoint every currently-open task group's WAL.
+    public func checkpointActiveTasks() {
+        poolLock.lock()
+        let groups = Array(activePools.values)
+        poolLock.unlock()
+        for group in groups {
+            group.checkpoint()
+        }
+    }
+
     /// Close connections and delete entire task directory.
     public func deleteTask(_ taskId: Int64) throws {
         poolLock.lock()

@@ -67,6 +67,22 @@ public class TaskDatabaseGroup {
         connectionWriteQueue = DispatchQueue(label: "db.connection.\(taskId)")
     }
 
+    /// Truncate each database's WAL back into the main file. Run on the write
+    /// queues so it serializes with in-flight writes. Bounds unbounded WAL
+    /// growth during and after a long capture session.
+    public func checkpoint() {
+        let pairs: [(Connection, DispatchQueue)] = [
+            (transport, transportWriteQueue),
+            (proto, protoWriteQueue),
+            (decoded, decodedWriteQueue),
+            (state, stateWriteQueue),
+            (connection, connectionWriteQueue),
+        ]
+        for (db, queue) in pairs {
+            queue.sync { try? db.execute("PRAGMA wal_checkpoint(TRUNCATE)") }
+        }
+    }
+
     static func configurePragmas(_ db: Connection, profile: PragmaProfile) throws {
         try db.execute("PRAGMA journal_mode = WAL")
         try db.execute("PRAGMA synchronous = NORMAL")
