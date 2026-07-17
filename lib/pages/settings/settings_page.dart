@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../controllers/theme_controller.dart';
 import '../../controllers/cert_controller.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_button.dart';
 
 class SettingsPanel extends StatelessWidget {
   const SettingsPanel({super.key});
@@ -58,10 +59,11 @@ class SettingsPanel extends StatelessWidget {
         _section(theme, 'settings.certificate'.tr, [
           Obx(() {
             final status = certCtrl.status.value;
+            final colors = AppTheme.colors(context);
             final (icon, color, label) = switch (status) {
-              CertStatus.trusted => (Icons.verified, const Color(0xFF34C759), 'settings.cert_trusted'.tr),
-              CertStatus.installed => (Icons.warning_amber, const Color(0xFFFF9F0A), 'settings.cert_installed'.tr),
-              CertStatus.none => (Icons.cancel_outlined, const Color(0xFFFF3B30), 'settings.cert_not_installed'.tr),
+              CertStatus.trusted => (Icons.verified, colors.statusConnected, 'settings.cert_trusted'.tr),
+              CertStatus.installed => (Icons.warning_amber, colors.statusConnecting, 'settings.cert_installed'.tr),
+              CertStatus.none => (Icons.cancel_outlined, colors.statusDisconnected, 'settings.cert_not_installed'.tr),
               CertStatus.checking => (Icons.hourglass_empty, theme.hintColor, 'settings.cert_checking'.tr),
             };
 
@@ -73,18 +75,20 @@ class SettingsPanel extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (status != CertStatus.trusted && status != CertStatus.checking)
-                    TextButton.icon(
+                    AppButton(
+                      label: 'settings.install'.tr,
+                      icon: Icons.security,
+                      variant: AppButtonVariant.secondary,
                       onPressed: () => _installCert(context, certCtrl),
-                      icon: const Icon(Icons.security, size: 14),
-                      label: Text('settings.install'.tr),
                     ),
                   if (status == CertStatus.trusted)
-                    const Icon(Icons.check_circle, color: Color(0xFF34C759), size: 18),
+                    Icon(Icons.check_circle, color: colors.statusConnected, size: 18),
                   const SizedBox(width: 8),
-                  TextButton.icon(
+                  AppButton(
+                    label: 'settings.export'.tr,
+                    icon: Icons.download,
+                    variant: AppButtonVariant.secondary,
                     onPressed: () => _exportCert(context, certCtrl),
-                    icon: const Icon(Icons.download, size: 14),
-                    label: Text('settings.export'.tr),
                   ),
                 ],
               ),

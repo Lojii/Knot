@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/task_scope.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_text_field.dart';
 
 /// Modal dialog that appears when a breakpoint is hit.
 /// Shows request details and allows the user to resume, cancel, or abort.
@@ -62,11 +63,12 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colors(context);
 
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.pause_circle_filled, color: Colors.orange, size: 20),
+          Icon(Icons.pause_circle_filled, color: colors.statusConnecting, size: 20),
           SizedBox(width: AppTheme.spacing.sm),
           Text('breakpoint.hit'.trParams({'flowId': flowId})),
         ],
@@ -115,19 +117,9 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
               fontWeight: FontWeight.bold,
             )),
             const SizedBox(height: 2),
-            TextField(
+            AppTextField(
               controller: _urlCtrl,
               style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.sm),
-              decoration: InputDecoration(
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacing.sm,
-                  vertical: AppTheme.spacing.sm,
-                ),
-              ),
             ),
             SizedBox(height: AppTheme.spacing.sm),
             // Headers
@@ -139,21 +131,11 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
             const SizedBox(height: 2),
             SizedBox(
               height: 120,
-              child: TextField(
+              child: AppTextField(
                 controller: _headersCtrl,
                 maxLines: null,
                 expands: true,
                 style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.sm),
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.sm,
-                    vertical: AppTheme.spacing.sm,
-                  ),
-                ),
               ),
             ),
           ],
@@ -164,7 +146,7 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
         // Abort (red)
         TextButton(
           onPressed: _sending ? null : () => _resume('abort'),
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          style: TextButton.styleFrom(foregroundColor: colors.diffRemoved),
           child: Text('action.abort'.tr),
         ),
         Row(
@@ -180,8 +162,8 @@ class _BreakpointHitDialogState extends State<BreakpointHitDialog> {
             ElevatedButton(
               onPressed: _sending ? null : () => _resume('execute'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                backgroundColor: colors.diffAdded,
+                foregroundColor: Colors.white, // 有色底上的前景色（刻意例外）
               ),
               child: Text('action.execute'.tr),
             ),

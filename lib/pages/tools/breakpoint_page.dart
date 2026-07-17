@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/tools_controller.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/common/app_button.dart';
+import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/empty_state.dart';
 
 /// Inline panel for managing Breakpoint rules.
 /// Pauses matching requests so the user can inspect/modify before forwarding.
@@ -34,16 +37,11 @@ class BreakpointPanel extends StatelessWidget {
                 ),
               )),
               const Spacer(),
-              TextButton.icon(
+              AppButton(
+                label: 'action.add_rule'.tr,
+                icon: Icons.add,
+                variant: AppButtonVariant.primary,
                 onPressed: () => _showRuleDialog(context),
-                icon: const Icon(Icons.add, size: 14),
-                label: Text('action.add_rule'.tr),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(0, 28),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.sm,
-                  ),
-                ),
               ),
             ],
           ),
@@ -53,29 +51,10 @@ class BreakpointPanel extends StatelessWidget {
           child: Obx(() {
             final rules = toolsCtrl.breakpointRules;
             if (rules.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.pause_circle_outline, size: 48, color: theme.hintColor),
-                    SizedBox(height: AppTheme.spacing.sm),
-                    Text(
-                      'empty.no_breakpoints'.tr,
-                      style: TextStyle(
-                        color: theme.hintColor,
-                        fontSize: AppTheme.fontSize.md,
-                      ),
-                    ),
-                    SizedBox(height: AppTheme.spacing.xs),
-                    Text(
-                      'empty.no_breakpoints_desc'.tr,
-                      style: TextStyle(
-                        color: theme.hintColor,
-                        fontSize: AppTheme.fontSize.sm,
-                      ),
-                    ),
-                  ],
-                ),
+              return EmptyState(
+                icon: Icons.pause_circle_outline,
+                title: 'empty.no_breakpoints'.tr,
+                description: 'empty.no_breakpoints_desc'.tr,
               );
             }
             return ListView.separated(
@@ -210,6 +189,7 @@ class _RuleRow extends StatelessWidget {
             // Delete
             IconButton(
               icon: Icon(Icons.delete_outline, size: 16, color: theme.hintColor),
+              tooltip: 'action.delete'.tr,
               visualDensity: VisualDensity.compact,
               onPressed: onDelete,
             ),
@@ -301,24 +281,10 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
               ),
             ),
             SizedBox(height: AppTheme.spacing.xs),
-            TextField(
+            AppTextField(
               controller: _patternCtrl,
               style: AppTheme.monoStyle(context, fontSize: AppTheme.fontSize.md),
-              decoration: InputDecoration(
-                hintText: '*.api.com/v1/*',
-                hintStyle: TextStyle(
-                  color: theme.hintColor,
-                  fontSize: AppTheme.fontSize.sm,
-                ),
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacing.sm,
-                  vertical: AppTheme.spacing.sm,
-                ),
-              ),
+              hintText: '*.api.com/v1/*',
               autofocus: true,
             ),
             SizedBox(height: AppTheme.spacing.lg),
@@ -407,24 +373,10 @@ class _BreakpointRuleDialogState extends State<_BreakpointRuleDialog> {
             const SizedBox(height: 2),
             SizedBox(
               height: 32,
-              child: TextField(
+              child: AppTextField(
                 controller: _commentCtrl,
                 style: TextStyle(fontSize: AppTheme.fontSize.sm),
-                decoration: InputDecoration(
-                  hintText: 'breakpoint.optional_desc'.tr,
-                  hintStyle: TextStyle(
-                    color: theme.hintColor,
-                    fontSize: AppTheme.fontSize.xs,
-                  ),
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radius.sm),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.spacing.sm,
-                    vertical: AppTheme.spacing.xs,
-                  ),
-                ),
+                hintText: 'breakpoint.optional_desc'.tr,
               ),
             ),
           ],
