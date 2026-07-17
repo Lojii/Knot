@@ -41,16 +41,16 @@ Knot 的 Flutter macOS 界面走仿 macOS 原生路线（Apple 系统色 + Inter
 - 供 tab chip、filter chip、树节点、自定义可点击区域使用，解决「点了才知道能点」。
 
 ### 6. AppToast — 统一操作反馈
-- `showAppToast(context, message, {icon})`：浮动式紧凑 SnackBar，约 2 秒自动消失。
+- `showAppToast(context, message, {icon})`：基于 `Overlay` 实现的浮动式紧凑提示，不依赖 `ScaffoldMessenger`（部分页面可能不在其之下），约 2 秒自动消失。
 - 复制/导出/保存等操作后统一走它。
 
 ### 顺手清理
-- 删除死代码 `lib/widgets/json_viewer.dart`（无引用）。
+- 删除死代码 `lib/widgets/json_viewer.dart`（`lib/` 内无引用），连同其测试 `test/widgets/json_viewer_test.dart` 一并删除，否则 `flutter analyze` 会失败。
 - `status_bar.dart` 改为复用现成的 `ConnectionIndicator`（当前手工重写了相同的圆点+状态色逻辑，`status_bar.dart:37-44`）。
 
 ### 主题补充
 - 可映射到现有语义色的硬编码直接映射：如 `settings_page.dart:62-64` 证书状态色 → `colors.status` / `statusConnected` 系；`global_bar.dart:210,321` 的 `Colors.red` → 主题红。
-- 确实缺位的新增进 `ThemeColors` 与 `theme.json` 解析：diff 增删色（`diff_page.dart:309-317`）、收藏星标色（`tree_panel.dart:398`）。
+- 确实缺位的新增进 `ThemeColors` 与 `theme.json` 解析：diff 增删色（`diff_page.dart:309-317`）、收藏星标色（`tree_panel.dart:398`）。`fontSize` 新增的 `xxl` 档同样纳入 `theme.json` 可覆盖范围。
 - 解析沿用现有 fallback 机制：`theme.json` 缺字段或解析失败时回退硬编码默认值，旧配置不崩。
 
 ## 第 2 部分：逐页替换与体验修复
